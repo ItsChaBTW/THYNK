@@ -1,8 +1,45 @@
 ﻿@page
-@model ConfirmEmailModel
+@model THYNK.Areas.Identity.Pages.Account.ConfirmEmailModel
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Confirm Email";
 }
 
-<h1>@ViewData["Title"]</h1>
-<partial name="_StatusMessage" model="Model.StatusMessage" />
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h2>@ViewData["Title"]</h2>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <p>
+                        A confirmation code has been sent to your email address.
+                        Please check your email and enter the code below to confirm your account.
+                    </p>
+                </div>
+
+                <form asp-page-handler="ConfirmEmail" method="post">
+                    <input asp-for="Email" type="hidden" />
+                    
+                    <div class="form-group">
+                        <label asp-for="ConfirmationCode">Confirmation Code</label>
+                        <input asp-for="ConfirmationCode" class="form-control" placeholder="Enter your 7-character code" />
+                        <span asp-validation-for="ConfirmationCode" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-info-circle"></i> If you did not receive the code, please check your spam folder.
+                    </div>
+                    
+                    <div class="form-group d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Confirm Email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

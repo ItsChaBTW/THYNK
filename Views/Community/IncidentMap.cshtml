@@ -1,0 +1,374 @@
+@{
+    ViewData["Title"] = "Incident Map";
+    Layout = "_CommunityLayout";
+}
+
+<div class="row">
+    <div class="col-md-9">
+        <div class="card dashboard-card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-primary">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div>
+                        <h5 class="m-0">Incident Map</h5>
+                        <small>View all reported incidents on the map</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div id="map" class="map-container"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="m-0"><i class="fas fa-filter me-2"></i>Filters</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Incident Type</label>
+                    <select id="filter-type" class="form-select form-select-sm">
+                        <option value="all">All Types</option>
+                        @foreach (var type in Enum.GetValues(typeof(DisasterType)))
+                        {
+                            <option value="@type">@type</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Severity Level</label>
+                    <select id="filter-severity" class="form-select form-select-sm">
+                        <option value="all">All Severity Levels</option>
+                        @foreach (var severity in Enum.GetValues(typeof(SeverityLevel)))
+                        {
+                            <option value="@severity">@severity</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select id="filter-status" class="form-select form-select-sm">
+                        <option value="all">All Status</option>
+                        @foreach (var status in Enum.GetValues(typeof(ReportStatus)))
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date Range</label>
+                    <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">From</span>
+                        <input type="date" id="filter-date-from" class="form-control form-control-sm">
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">To</span>
+                        <input type="date" id="filter-date-to" class="form-control form-control-sm">
+                    </div>
+                </div>
+                <button id="apply-filters" class="btn btn-primary btn-sm w-100">Apply Filters</button>
+                <button id="reset-filters" class="btn btn-outline-secondary btn-sm w-100 mt-2">Reset Filters</button>
+            </div>
+        </div>
+
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <h5 class="m-0"><i class="fas fa-info-circle me-2"></i>Legend</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <h6 class="mb-2">Incident Type</h6>
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="badge bg-danger me-2" style="width: 20px; height: 20px;"></span>
+                        <small>Earthquake</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="badge bg-primary me-2" style="width: 20px; height: 20px;"></span>
+                        <small>Flood</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="badge bg-warning me-2" style="width: 20px; height: 20px;"></span>
+                        <small>Fire</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="badge bg-dark me-2" style="width: 20px; height: 20px;"></span>
+                        <small>Other</small>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="mb-2">Severity</h6>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-success me-2"></i>
+                        <small>Low</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-warning me-2"></i>
+                        <small>Medium</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-danger me-2"></i>
+                        <small>High</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-circle text-dark me-2"></i>
+                        <small>Critical</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="incident-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title">Incident Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span id="modal-date" class="text-muted"></span>
+                    <span id="modal-severity" class="badge"></span>
+                </div>
+                <p id="modal-description"></p>
+                <div class="d-flex justify-content-between mt-3">
+                    <span id="modal-type" class="badge bg-secondary"></span>
+                    <span id="modal-status" class="badge"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="view-details-link" href="#" class="btn btn-primary">View Full Details</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Initialize the map
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [120.9842, 14.5995], // Default to Philippines
+            zoom: 9
+        });
+
+        // Add map controls
+        map.addControl(new mapboxgl.NavigationControl());
+        map.addControl(new mapboxgl.FullscreenControl());
+        map.addControl(new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true
+        }));
+
+        // Store the markers
+        let markers = [];
+        let incidents = [];
+
+        // Get the incident modal
+        const incidentModal = new bootstrap.Modal(document.getElementById('incident-modal'));
+
+        // Load incidents when map is ready
+        map.on('load', function() {
+            loadIncidents();
+            
+            // Set up event listeners for filters
+            document.getElementById('apply-filters').addEventListener('click', applyFilters);
+            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+        });
+
+        // Load incidents from the API
+        function loadIncidents() {
+            fetch('@Url.Action("GetMapData", "Community")')
+                .then(response => response.json())
+                .then(data => {
+                    incidents = data;
+                    renderMarkers(incidents);
+                })
+                .catch(error => console.error('Error loading incidents:', error));
+        }
+
+        // Render markers on the map
+        function renderMarkers(data) {
+            // Remove existing markers
+            for (let marker of markers) {
+                marker.remove();
+            }
+            markers = [];
+
+            // Add new markers
+            for (let incident of data) {
+                // Set marker color based on incident type
+                let markerColor;
+                switch(incident.type) {
+                    case 'Earthquake': markerColor = '#dc3545'; break;
+                    case 'Flood': markerColor = '#0d6efd'; break;
+                    case 'Fire': markerColor = '#ffc107'; break;
+                    case 'Landslide': markerColor = '#6c757d'; break;
+                    case 'Storm': markerColor = '#6610f2'; break;
+                    case 'Accident': markerColor = '#fd7e14'; break;
+                    default: markerColor = '#343a40';
+                }
+                
+                // Set marker size based on severity
+                let markerSize;
+                switch(incident.severity) {
+                    case 'Low': markerSize = 30; break;
+                    case 'Medium': markerSize = 40; break;
+                    case 'High': markerSize = 50; break;
+                    case 'Critical': markerSize = 60; break;
+                    default: markerSize = 40;
+                }
+
+                // Create custom HTML element for marker
+                const el = document.createElement('div');
+                el.className = 'incident-marker';
+                el.style.backgroundColor = markerColor;
+                el.style.width = `${markerSize}px`;
+                el.style.height = `${markerSize}px`;
+                el.style.borderRadius = '50%';
+                el.style.border = '2px solid white';
+                
+                // Create marker
+                const marker = new mapboxgl.Marker(el)
+                    .setLngLat([incident.longitude, incident.latitude])
+                    .addTo(map);
+                
+                // Add click event
+                marker.getElement().addEventListener('click', () => showIncidentDetails(incident));
+                
+                markers.push(marker);
+            }
+        }
+
+        // Show incident details modal
+        function showIncidentDetails(incident) {
+            document.getElementById('modal-title').textContent = incident.title;
+            document.getElementById('modal-date').textContent = new Date(incident.dateReported).toLocaleString();
+            document.getElementById('modal-description').textContent = incident.description;
+            document.getElementById('modal-type').textContent = incident.type;
+            
+            // Set severity badge
+            const severityBadge = document.getElementById('modal-severity');
+            severityBadge.textContent = incident.severity;
+            switch(incident.severity) {
+                case 'Low': 
+                    severityBadge.className = 'badge bg-info'; 
+                    break;
+                case 'Medium': 
+                    severityBadge.className = 'badge bg-warning'; 
+                    break;
+                case 'High': 
+                    severityBadge.className = 'badge bg-danger'; 
+                    break;
+                case 'Critical': 
+                    severityBadge.className = 'badge bg-dark'; 
+                    break;
+                default: 
+                    severityBadge.className = 'badge bg-secondary';
+            }
+            
+            // Set status badge
+            const statusBadge = document.getElementById('modal-status');
+            statusBadge.textContent = incident.status;
+            switch(incident.status) {
+                case 'Pending': 
+                    statusBadge.className = 'badge bg-warning'; 
+                    break;
+                case 'Verified': 
+                    statusBadge.className = 'badge bg-info'; 
+                    break;
+                case 'InProgress': 
+                    statusBadge.className = 'badge bg-primary'; 
+                    break;
+                case 'Resolved': 
+                    statusBadge.className = 'badge bg-success'; 
+                    break;
+                default: 
+                    statusBadge.className = 'badge bg-secondary';
+            }
+            
+            // Set link to view full details
+            document.getElementById('view-details-link').href = `/Community/ReportDetails/${incident.id}`;
+            
+            // Show modal
+            incidentModal.show();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const typeFilter = document.getElementById('filter-type').value;
+            const severityFilter = document.getElementById('filter-severity').value;
+            const statusFilter = document.getElementById('filter-status').value;
+            const dateFromFilter = document.getElementById('filter-date-from').value;
+            const dateToFilter = document.getElementById('filter-date-to').value;
+            
+            let filteredIncidents = [...incidents];
+            
+            // Filter by type
+            if (typeFilter !== 'all') {
+                filteredIncidents = filteredIncidents.filter(incident => incident.type === typeFilter);
+            }
+            
+            // Filter by severity
+            if (severityFilter !== 'all') {
+                filteredIncidents = filteredIncidents.filter(incident => incident.severity === severityFilter);
+            }
+            
+            // Filter by status
+            if (statusFilter !== 'all') {
+                filteredIncidents = filteredIncidents.filter(incident => incident.status === statusFilter);
+            }
+            
+            // Filter by date range
+            if (dateFromFilter) {
+                const fromDate = new Date(dateFromFilter);
+                filteredIncidents = filteredIncidents.filter(incident => new Date(incident.dateReported) >= fromDate);
+            }
+            
+            if (dateToFilter) {
+                const toDate = new Date(dateToFilter);
+                toDate.setHours(23, 59, 59); // Set to end of day
+                filteredIncidents = filteredIncidents.filter(incident => new Date(incident.dateReported) <= toDate);
+            }
+            
+            // Render filtered markers
+            renderMarkers(filteredIncidents);
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('filter-type').value = 'all';
+            document.getElementById('filter-severity').value = 'all';
+            document.getElementById('filter-status').value = 'all';
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            
+            renderMarkers(incidents);
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .map-container {
+            height: 75vh;
+            min-height: 500px;
+        }
+        .mapboxgl-popup {
+            max-width: 300px;
+        }
+        .incident-marker {
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+} 

@@ -1,0 +1,223 @@
+@model IEnumerable<THYNK.Models.EducationalResource>
+@{
+    ViewData["Title"] = "Educational Resources";
+    Layout = "_CommunityLayout";
+}
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-info">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div>
+                        <h5 class="m-0">Educational Resources</h5>
+                        <small>Learn how to prepare for and respond to emergencies</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" id="search-resources" class="form-control" placeholder="Search resources...">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select id="filter-resource-type" class="form-select">
+                            <option value="all">All Resource Types</option>
+                            @foreach (var type in Enum.GetValues(typeof(ResourceType)))
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="offline-only">
+                            <label class="form-check-label" for="offline-only">Offline Only</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="resource-container">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var resource in Model)
+                        {
+                            <div class="col-md-4 mb-4 resource-item" 
+                                data-type="@resource.Type" 
+                                data-offline="@resource.IsOfflineAccessible.ToString().ToLower()"
+                                data-title="@resource.Title"
+                                data-tags="@resource.Tags">
+                                <div class="card h-100 @(resource.IsOfflineAccessible ? "border-success" : "")">
+                                    <div class="card-header bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="card-title mb-0">@resource.Title</h5>
+                                            @if (resource.IsOfflineAccessible)
+                                            {
+                                                <span class="badge bg-success" title="Available offline">
+                                                    <i class="fas fa-wifi-slash"></i>
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">@resource.Description</p>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge bg-primary">@resource.Type</span>
+                                            <small class="text-muted">Added @resource.DateAdded.ToString("MMM dd, yyyy")</small>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(resource.Tags))
+                                        {
+                                            <div class="mb-2">
+                                                @foreach (var tag in resource.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                                {
+                                                    <span class="badge bg-secondary me-1">@tag.Trim()</span>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="card-footer bg-white border-top-0">
+                                        <a href="@Url.Action("ResourceDetails", "Community", new { id = resource.Id })" class="btn btn-info text-white btn-sm">
+                                            <i class="fas fa-book-open me-1"></i> View Resource
+                                        </a>
+                                        @if (!string.IsNullOrEmpty(resource.FileUrl) && resource.IsOfflineAccessible)
+                                        {
+                                            <a href="@resource.FileUrl" download class="btn btn-outline-success btn-sm float-end">
+                                                <i class="fas fa-download me-1"></i> 
+                                                Download
+                                                @if (resource.FileSizeKB.HasValue)
+                                                {
+                                                    <span>(@(resource.FileSizeKB < 1024 ? $"{resource.FileSizeKB} KB" : $"{resource.FileSizeKB / 1024.0:F1} MB"))</span>
+                                                }
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-books text-muted fa-4x mb-3"></i>
+                            <h4>No educational resources available yet</h4>
+                            <p>Please check back later as we continue to add resources.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="m-0"><i class="fas fa-info-circle me-2"></i>Offline Access Instructions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3 mb-md-0">
+                        <div class="p-3">
+                            <i class="fas fa-download text-primary fa-3x mb-3"></i>
+                            <h5>1. Download Resources</h5>
+                            <p>Look for resources with the <span class="badge bg-success"><i class="fas fa-wifi-slash"></i></span> icon and download them to your device.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center mb-3 mb-md-0">
+                        <div class="p-3">
+                            <i class="fas fa-cog text-primary fa-3x mb-3"></i>
+                            <h5>2. Enable Offline Mode</h5>
+                            <p>In your browser settings, allow this website to store data for offline use.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="p-3">
+                            <i class="fas fa-wifi-slash text-primary fa-3x mb-3"></i>
+                            <h5>3. Access Anytime</h5>
+                            <p>Once downloaded, you can access these resources even without an internet connection.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Search and filter functionality
+        $(document).ready(function() {
+            // Search resources
+            $("#search-resources").on("keyup", function() {
+                let value = $(this).val().toLowerCase();
+                filterResources();
+            });
+            
+            // Filter by type
+            $("#filter-resource-type").on("change", function() {
+                filterResources();
+            });
+            
+            // Filter offline only
+            $("#offline-only").on("change", function() {
+                filterResources();
+            });
+            
+            function filterResources() {
+                let searchText = $("#search-resources").val().toLowerCase();
+                let typeFilter = $("#filter-resource-type").val();
+                let offlineOnly = $("#offline-only").is(":checked");
+                
+                $(".resource-item").each(function() {
+                    let title = $(this).data("title").toLowerCase();
+                    let type = $(this).data("type");
+                    let tags = $(this).data("tags") ? $(this).data("tags").toLowerCase() : "";
+                    let offlineAccessible = $(this).data("offline") === "true";
+                    
+                    let matchesSearch = title.includes(searchText) || tags.includes(searchText);
+                    let matchesType = typeFilter === "all" || type === typeFilter;
+                    let matchesOffline = !offlineOnly || offlineAccessible;
+                    
+                    if (matchesSearch && matchesType && matchesOffline) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+                
+                // Show message if no results
+                if ($(".resource-item:visible").length === 0) {
+                    if ($("#no-results").length === 0) {
+                        $("#resource-container").append(`
+                            <div id="no-results" class="col-12 text-center py-4">
+                                <i class="fas fa-search text-muted fa-3x mb-3"></i>
+                                <h4>No matching resources found</h4>
+                                <p>Try adjusting your search criteria or filters.</p>
+                            </div>
+                        `);
+                    }
+                } else {
+                    $("#no-results").remove();
+                }
+            }
+            
+            // Install Service Worker for offline capability
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            }
+        });
+    </script>
+} 

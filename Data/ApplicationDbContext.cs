@@ -10,4 +10,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         : base(options)
     {
     }
+
+    public DbSet<DisasterReport> DisasterReports { get; set; }
+    public DbSet<CommunityUpdate> CommunityUpdates { get; set; }
+    public DbSet<EducationalResource> EducationalResources { get; set; }
+    public DbSet<Alert> Alerts { get; set; }
 }

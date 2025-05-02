@@ -12,16 +12,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using THYNK.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace THYNK.Areas.Identity.Pages.Account
 {
     public class ConfirmEmailModel : PageModel
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public ConfirmEmailModel(UserManager<ApplicationUser> userManager)
+        public ConfirmEmailModel(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         /// <summary>
@@ -30,23 +33,65 @@ namespace THYNK.Areas.Identity.Pages.Account
         /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
-        public async Task<IActionResult> OnGetAsync(string userId, string code)
+        
+        [BindProperty]
+        public string Email { get; set; }
+        
+        [BindProperty]
+        [Required(ErrorMessage = "Confirmation code is required")]
+        [Display(Name = "Confirmation Code")]
+        [StringLength(7, MinimumLength = 7, ErrorMessage = "The confirmation code must be 7 characters")]
+        public string ConfirmationCode { get; set; }
+
+        public IActionResult OnGet(string email)
         {
-            if (userId == null || code == null)
+            if (string.IsNullOrEmpty(email))
             {
                 return RedirectToPage("/Index");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
+            Email = email;
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostConfirmEmailAsync()
+        {
+            if (!ModelState.IsValid)
             {
-                return NotFound($"Unable to load user with ID '{userId}'.");
+                return Page();
             }
 
-            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-            var result = await _userManager.ConfirmEmailAsync(user, code);
-            StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
-            return Page();
+            // Find user by email
+            var user = await _userManager.FindByEmailAsync(Email);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid email address.");
+                return Page();
+            }
+
+            // Check if the confirmation code matches
+            if (user.EmailConfirmationCode != ConfirmationCode)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid confirmation code. Please check and try again.");
+                return Page();
+            }
+
+            // Mark email as confirmed
+            user.EmailConfirmed = true;
+            
+            // Clear the confirmation code
+            user.EmailConfirmationCode = string.Empty;
+            
+            // Update the user
+            await _userManager.UpdateAsync(user);
+
+            // Sign in the user
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            
+            StatusMessage = "Thank you for confirming your email.";
+            
+            // Redirect to community dashboard
+            return LocalRedirect("~/Community/Dashboard");
         }
     }
 }
