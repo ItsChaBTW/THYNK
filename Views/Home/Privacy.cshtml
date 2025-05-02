@@ -1,6 +1,133 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white py-4">
+                    <h1 class="mb-0">Privacy Policy</h1>
+                </div>
+                <div class="card-body p-4 p-lg-5">
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-2x"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Effective Date: May 1, 2025</h5>
+                                <p class="mb-0">This policy explains how THYNK collects, uses, shares, and protects your personal information.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <section class="mb-5">
+                        <h2 class="border-bottom pb-2 mb-4">Introduction</h2>
+                        <p>THYNK is committed to protecting your privacy and the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our disaster reporting system.</p>
+                        <p>We understand the sensitive nature of disaster reporting and take our responsibility to protect your data seriously. Please read this policy carefully to understand our practices regarding your personal information.</p>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="border-bottom pb-2 mb-4">Information We Collect</h2>
+                        <h5>Personal Identification Information</h5>
+                        <ul>
+                            <li>Name and contact information (email address, phone number)</li>
+                            <li>Account credentials</li>
+                            <li>Profile information (including profile pictures, if provided)</li>
+                        </ul>
+
+                        <h5>Disaster Report Information</h5>
+                        <ul>
+                            <li>Incident details (type, severity, description)</li>
+                            <li>Location data (GPS coordinates, addresses, neighborhood information)</li>
+                            <li>Images or media you upload related to incidents</li>
+                            <li>Timestamps of reports and activities</li>
+                        </ul>
+
+                        <h5>Technical Information</h5>
+                        <ul>
+                            <li>Device information (browser type, operating system, device type)</li>
+                            <li>IP address and general location data</li>
+                            <li>Usage patterns and interaction with our platform</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="border-bottom pb-2 mb-4">How We Use Your Information</h2>
+                        <p>We use the information we collect to:</p>
+                        <ul>
+                            <li>Process and respond to disaster reports</li>
+                            <li>Share critical information with emergency services and local government units</li>
+                            <li>Provide you with alerts and updates about incidents in your area</li>
+                            <li>Improve our services and develop new features</li>
+                            <li>Ensure the security and integrity of our platform</li>
+                            <li>Comply with legal obligations</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="border-bottom pb-2 mb-4">Information Sharing</h2>
+                        <p>We may share your information with:</p>
+                        <ul>
+                            <li>Emergency services and response teams</li>
+                            <li>Local Government Units (LGUs) and relevant government agencies</li>
+                            <li>Service providers who perform services on our behalf</li>
+                            <li>Other users, when you post community updates (limited to information you choose to share)</li>
+                        </ul>
+                        <p>We will never sell your personal information to third parties or use it for commercial purposes unrelated to our disaster response mission.</p>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="border-bottom pb-2 mb-4">Data Security</h2>
+                        <p>We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the Internet or electronic storage is 100% secure, and we cannot guarantee absolute security.</p>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="border-bottom pb-2 mb-4">Your Rights</h2>
+                        <p>Depending on your location, you may have the right to:</p>
+                        <ul>
+                            <li>Access the personal information we hold about you</li>
+                            <li>Correct inaccurate or incomplete information</li>
+                            <li>Delete your personal information</li>
+                            <li>Restrict or object to certain processing of your data</li>
+                            <li>Data portability (receiving a copy of your data)</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2 class="border-bottom pb-2 mb-4">Contact Us</h2>
+                        <p>If you have any questions about this Privacy Policy or our data practices, please contact us at:</p>
+                        <div class="card bg-light p-3 mb-4">
+                            <p class="mb-1"><strong>Email:</strong> privacy@thynk.com</p>
+                            <p class="mb-1"><strong>Phone:</strong> +63 (2) 8888-1234</p>
+                            <p class="mb-0"><strong>Address:</strong> THYNK Headquarters, 123 Safety Avenue, Manila, Philippines</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        section h5 {
+            color: #0d6efd;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .card-header {
+            border-radius: 0.375rem 0.375rem 0 0;
+        }
+        
+        ul {
+            padding-left: 1.5rem;
+        }
+        
+        ul li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+}

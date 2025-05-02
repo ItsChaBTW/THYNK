@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8f9fa" />
+  
+  <!-- City silhouette -->
+  <g fill="#e9ecef">
+    <rect x="50" y="300" width="80" height="200" />
+    <rect x="150" y="250" width="60" height="250" />
+    <rect x="230" y="320" width="100" height="180" />
+    <rect x="350" y="200" width="70" height="300" />
+    <rect x="440" y="280" width="90" height="220" />
+    <rect x="550" y="220" width="50" height="280" />
+    <rect x="620" y="270" width="120" height="230" />
+  </g>
+  
+  <!-- Map grid lines -->
+  <g stroke="#dee2e6" stroke-width="1">
+    <line x1="0" y1="350" x2="800" y2="350" />
+    <line x1="0" y1="400" x2="800" y2="400" />
+    <line x1="0" y1="450" x2="800" y2="450" />
+    <line x1="0" y1="500" x2="800" y2="500" />
+    
+    <line x1="100" y1="300" x2="100" y2="550" />
+    <line x1="200" y1="300" x2="200" y2="550" />
+    <line x1="300" y1="300" x2="300" y2="550" />
+    <line x1="400" y1="300" x2="400" y2="550" />
+    <line x1="500" y1="300" x2="500" y2="550" />
+    <line x1="600" y1="300" x2="600" y2="550" />
+    <line x1="700" y1="300" x2="700" y2="550" />
+  </g>
+  
+  <!-- Map pins -->
+  <g>
+    <!-- Red pin (emergency) -->
+    <circle cx="180" cy="380" r="15" fill="#dc3545" />
+    <polygon points="180,380 165,420 195,420" fill="#dc3545" />
+    <circle cx="180" cy="380" r="8" fill="white" />
+    
+    <!-- Yellow pin (warning) -->
+    <circle cx="320" cy="420" r="15" fill="#ffc107" />
+    <polygon points="320,420 305,460 335,460" fill="#ffc107" />
+    <circle cx="320" cy="420" r="8" fill="white" />
+    
+    <!-- Blue pin (flood) -->
+    <circle cx="500" cy="400" r="15" fill="#0d6efd" />
+    <polygon points="500,400 485,440 515,440" fill="#0d6efd" />
+    <circle cx="500" cy="400" r="8" fill="white" />
+    
+    <!-- Green pin (resolved) -->
+    <circle cx="650" cy="370" r="15" fill="#198754" />
+    <polygon points="650,370 635,410 665,410" fill="#198754" />
+    <circle cx="650" cy="370" r="8" fill="white" />
+  </g>
+  
+  <!-- Responder -->
+  <g transform="translate(400, 150)">
+    <!-- Responder figure -->
+    <circle cx="0" cy="-40" r="20" fill="#6c757d" /> <!-- Head -->
+    <rect x="-15" y="-20" width="30" height="50" fill="#0d6efd" /> <!-- Body -->
+    <rect x="-20" y="-20" width="40" height="15" fill="#0d6efd" /> <!-- Shoulders -->
+    <rect x="-15" y="30" width="10" height="30" fill="#6c757d" /> <!-- Left leg -->
+    <rect x="5" y="30" width="10" height="30" fill="#6c757d" /> <!-- Right leg -->
+    <rect x="-30" y="-10" width="15" height="10" fill="#6c757d" /> <!-- Left arm -->
+    
+    <!-- Mobile device -->
+    <rect x="15" y="-15" width="20" height="30" rx="2" fill="#212529" />
+    <rect x="17" y="-12" width="16" height="24" rx="1" fill="#f8f9fa" />
+    <circle cx="25" cy="-2" r="8" fill="#0d6efd" opacity="0.5" />
+    <circle cx="25" cy="-2" r="5" fill="#0d6efd" />
+  </g>
+  
+  <!-- Community member -->
+  <g transform="translate(250, 180)">
+    <circle cx="0" cy="-30" r="15" fill="#6c757d" /> <!-- Head -->
+    <rect x="-12" y="-15" width="24" height="40" fill="#198754" /> <!-- Body -->
+    <rect x="-16" y="-15" width="32" height="12" fill="#198754" /> <!-- Shoulders -->
+    <rect x="-12" y="25" width="8" height="25" fill="#6c757d" /> <!-- Left leg -->
+    <rect x="4" y="25" width="8" height="25" fill="#6c757d" /> <!-- Right leg -->
+    
+    <!-- Hand raised -->
+    <rect x="12" y="-15" width="8" height="25" fill="#6c757d" transform="rotate(-30, 12, -15)" />
+  </g>
+  
+  <!-- Notification alerts -->
+  <g>
+    <circle cx="400" cy="80" r="40" fill="#dc3545" opacity="0.1" />
+    <circle cx="400" cy="80" r="30" fill="#dc3545" opacity="0.2" />
+    <circle cx="400" cy="80" r="20" fill="#dc3545" />
+    <text x="400" y="85" font-family="Arial" font-size="20" fill="white" text-anchor="middle">!</text>
+    
+    <circle cx="550" cy="120" r="35" fill="#ffc107" opacity="0.1" />
+    <circle cx="550" cy="120" r="25" fill="#ffc107" opacity="0.2" />
+    <circle cx="550" cy="120" r="15" fill="#ffc107" />
+    <text x="550" y="125" font-family="Arial" font-size="15" fill="white" text-anchor="middle">!</text>
+    
+    <circle cx="250" cy="100" r="35" fill="#0d6efd" opacity="0.1" />
+    <circle cx="250" cy="100" r="25" fill="#0d6efd" opacity="0.2" />
+    <circle cx="250" cy="100" r="15" fill="#0d6efd" />
+    <text x="250" y="105" font-family="Arial" font-size="15" fill="white" text-anchor="middle">i</text>
+  </g>
+  
+  <!-- Data visualization -->
+  <g transform="translate(620, 150)">
+    <rect x="0" y="0" width="120" height="80" rx="5" fill="white" stroke="#dee2e6" stroke-width="1" />
+    <line x1="10" y1="60" x2="110" y2="60" stroke="#adb5bd" stroke-width="1" />
+    <line x1="10" y1="20" x2="10" y2="60" stroke="#adb5bd" stroke-width="1" />
+    
+    <!-- Chart bars -->
+    <rect x="20" y="30" width="15" height="30" fill="#0d6efd" opacity="0.7" />
+    <rect x="45" y="40" width="15" height="20" fill="#0d6efd" opacity="0.7" />
+    <rect x="70" y="25" width="15" height="35" fill="#0d6efd" opacity="0.7" />
+    <rect x="95" y="20" width="15" height="40" fill="#0d6efd" opacity="0.7" />
+    
+    <!-- Chart title -->
+    <rect x="10" y="5" width="60" height="5" fill="#adb5bd" />
+  </g>
+  
+  <!-- Connection lines -->
+  <g stroke="#0d6efd" stroke-width="2" stroke-dasharray="5,5" opacity="0.5">
+    <line x1="250" y1="180" x2="180" y2="380" />
+    <line x1="400" y1="150" x2="320" y2="420" />
+    <line x1="400" y1="150" x2="500" y2="400" />
+    <line x1="400" y1="80" x2="400" y2="130" />
+  </g>
+  
+  <!-- Ground -->
+  <rect x="0" y="500" width="800" height="100" fill="#dee2e6" />
+</svg> 

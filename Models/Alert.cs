@@ -46,7 +46,7 @@ namespace THYNK.Models
         public required string IssuedByUserId { get; set; }
         
         [ForeignKey("IssuedByUserId")]
-        public ApplicationUser IssuedByUser { get; set; }
+        public required ApplicationUser IssuedByUser { get; set; }
 
         // Additional instructions or resources
         public required string Instructions { get; set; }

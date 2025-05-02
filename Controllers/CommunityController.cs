@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using THYNK.Data;
 using THYNK.Models;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace THYNK.Controllers
 {
@@ -15,10 +18,12 @@ namespace THYNK.Controllers
     public class CommunityController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public CommunityController(ApplicationDbContext context)
+        public CommunityController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // Dashboard main page
@@ -61,7 +66,7 @@ namespace THYNK.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitReport(DisasterReport report)
+        public async Task<IActionResult> SubmitReport(DisasterReport report, IFormFile photo)
         {
             if (ModelState.IsValid)
             {
@@ -69,8 +74,48 @@ namespace THYNK.Controllers
                 report.DateReported = DateTime.Now;
                 report.Status = ReportStatus.Pending;
                 
+                // Handle photo upload if provided
+                if (photo != null && photo.Length > 0)
+                {
+                    // Create folder if it doesn't exist
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "reports");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
+                    // Generate unique filename
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    
+                    // Save file to disk
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await photo.CopyToAsync(fileStream);
+                    }
+                    
+                    // Set ImageUrl property
+                    report.ImageUrl = "/uploads/reports/" + uniqueFileName;
+                }
+                else
+                {
+                    // Set default image if no photo provided
+                    report.ImageUrl = "/images/default-report.jpg";
+                }
+                
+                // Ensure any empty location fields are set to a default value
+                report.Purok = string.IsNullOrEmpty(report.Purok) ? "Unknown" : report.Purok;
+                report.Barangay = string.IsNullOrEmpty(report.Barangay) ? "Unknown" : report.Barangay;
+                report.City = string.IsNullOrEmpty(report.City) ? "Unknown" : report.City;
+                report.Country = string.IsNullOrEmpty(report.Country) ? "Philippines" : report.Country;
+                
+                // Set empty AdditionalInfo to an empty string rather than null
+                report.AdditionalInfo = report.AdditionalInfo ?? string.Empty;
+                
                 _context.Add(report);
                 await _context.SaveChangesAsync();
+                
+                TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
                 return RedirectToAction(nameof(Dashboard));
             }
             return View(report);
@@ -166,7 +211,10 @@ namespace THYNK.Controllers
                     r.Longitude,
                     r.Severity,
                     r.Status,
-                    r.DateReported
+                    r.DateReported,
+                    r.Location,
+                    r.Barangay,
+                    r.City
                 })
                 .ToListAsync();
                 

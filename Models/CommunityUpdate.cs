@@ -28,7 +28,7 @@ namespace THYNK.Models
         public required string UserId { get; set; }
         
         [ForeignKey("UserId")]
-        public ApplicationUser User { get; set; }
+        public required ApplicationUser User { get; set; }
 
         // Optional location information
         public required string Location { get; set; }

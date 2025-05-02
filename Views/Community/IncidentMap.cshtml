@@ -135,6 +135,11 @@
                     <span id="modal-severity" class="badge"></span>
                 </div>
                 <p id="modal-description"></p>
+                <div class="mt-3">
+                    <h6><i class="fas fa-map-marker-alt text-danger me-2"></i>Location</h6>
+                    <p id="modal-location" class="mb-1"></p>
+                    <p id="modal-detailed-location" class="small text-muted mb-3"></p>
+                </div>
                 <div class="d-flex justify-content-between mt-3">
                     <span id="modal-type" class="badge bg-secondary"></span>
                     <span id="modal-status" class="badge"></span>
@@ -242,6 +247,21 @@
                     .setLngLat([incident.longitude, incident.latitude])
                     .addTo(map);
                 
+                // Add popup information
+                const popup = new mapboxgl.Popup({
+                    offset: 25,
+                    closeButton: false
+                }).setHTML(`
+                    <strong>${incident.title}</strong><br>
+                    <span class="text-muted small">${incident.type}</span>
+                `);
+                
+                marker.setPopup(popup);
+                
+                // Show popup on hover
+                marker.getElement().addEventListener('mouseenter', () => marker.togglePopup());
+                marker.getElement().addEventListener('mouseleave', () => marker.togglePopup());
+                
                 // Add click event
                 marker.getElement().addEventListener('click', () => showIncidentDetails(incident));
                 
@@ -249,22 +269,35 @@
             }
         }
 
-        // Show incident details modal
+        // Show incident details in modal
         function showIncidentDetails(incident) {
             document.getElementById('modal-title').textContent = incident.title;
             document.getElementById('modal-date').textContent = new Date(incident.dateReported).toLocaleString();
             document.getElementById('modal-description').textContent = incident.description;
+            document.getElementById('modal-location').textContent = incident.location;
+            
+            // Set detailed location if available
+            let detailedLocation = '';
+            if (incident.barangay && incident.barangay !== 'Unknown') {
+                detailedLocation += `Barangay ${incident.barangay}, `;
+            }
+            if (incident.city && incident.city !== 'Unknown') {
+                detailedLocation += incident.city;
+            }
+            document.getElementById('modal-detailed-location').textContent = detailedLocation;
+            
             document.getElementById('modal-type').textContent = incident.type;
+            document.getElementById('view-details-link').href = `/Community/ReportDetails/${incident.id}`;
             
             // Set severity badge
             const severityBadge = document.getElementById('modal-severity');
             severityBadge.textContent = incident.severity;
             switch(incident.severity) {
                 case 'Low': 
-                    severityBadge.className = 'badge bg-info'; 
+                    severityBadge.className = 'badge bg-success'; 
                     break;
                 case 'Medium': 
-                    severityBadge.className = 'badge bg-warning'; 
+                    severityBadge.className = 'badge bg-warning text-dark'; 
                     break;
                 case 'High': 
                     severityBadge.className = 'badge bg-danger'; 
@@ -281,10 +314,10 @@
             statusBadge.textContent = incident.status;
             switch(incident.status) {
                 case 'Pending': 
-                    statusBadge.className = 'badge bg-warning'; 
+                    statusBadge.className = 'badge bg-warning text-dark'; 
                     break;
                 case 'Verified': 
-                    statusBadge.className = 'badge bg-info'; 
+                    statusBadge.className = 'badge bg-info text-dark'; 
                     break;
                 case 'InProgress': 
                     statusBadge.className = 'badge bg-primary'; 
@@ -292,14 +325,13 @@
                 case 'Resolved': 
                     statusBadge.className = 'badge bg-success'; 
                     break;
+                case 'Declined': 
+                    statusBadge.className = 'badge bg-danger'; 
+                    break;
                 default: 
                     statusBadge.className = 'badge bg-secondary';
             }
             
-            // Set link to view full details
-            document.getElementById('view-details-link').href = `/Community/ReportDetails/${incident.id}`;
-            
-            // Show modal
             incidentModal.show();
         }
 

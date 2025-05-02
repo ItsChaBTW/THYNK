@@ -25,6 +25,15 @@ namespace THYNK.Models
         [Required]
         public required string Location { get; set; }
 
+        // Detailed location information
+        public required string Purok { get; set; } = string.Empty;
+        
+        public required string Barangay { get; set; } = string.Empty;
+        
+        public required string City { get; set; } = string.Empty;
+        
+        public required string Country { get; set; } = string.Empty;
+
         [Required]
         public required double Latitude { get; set; }
 
@@ -43,7 +52,7 @@ namespace THYNK.Models
         public required string UserId { get; set; }
         
         [ForeignKey("UserId")]
-        public ApplicationUser User { get; set; }
+        public required ApplicationUser User { get; set; }
 
         // Images or files related to the disaster
         public required string ImageUrl { get; set; }
