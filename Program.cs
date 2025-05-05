@@ -4,6 +4,7 @@ using THYNK.Data;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using THYNK.Services;
 using THYNK.Models;
+using Microsoft.AspNetCore.Authentication.Google;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,17 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 // Configure email settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+// Add Google Authentication
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        options.ClientId = "11636115526-jphpfc89sg5tka1gkv86a3166n9j1qd3.apps.googleusercontent.com";
+        options.ClientSecret = "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";
+    });
+
+builder.Services.AddScoped<IPSGCService, PSGCService>();
+builder.Services.AddHttpClient<IPSGCService, PSGCService>();
 
 builder.Services.AddControllersWithViews();
 

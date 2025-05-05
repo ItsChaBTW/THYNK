@@ -7,66 +7,35 @@ namespace THYNK.Models
     public class Alert
     {
         [Key]
-        public required int Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
         [StringLength(100)]
-        public required string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [Required]
-        public required string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         [Required]
-        public required AlertType Type { get; set; }
+        public AlertSeverity Severity { get; set; }
 
         [Required]
-        public required AlertSeverity Severity { get; set; }
+        public DateTime DateIssued { get; set; } = DateTime.Now;
 
-        [Required]
-        public required DateTime DateIssued { get; set; } = DateTime.Now;
-
-        // Expiration date for the alert
         public DateTime? ExpiresAt { get; set; }
 
-        // Affected area
-        public required string AffectedArea { get; set; }
+        [Required]
+        public bool IsActive { get; set; } = true;
 
-        // Geographic boundaries for the affected area
-        public double? CenterLatitude { get; set; }
-        public double? CenterLongitude { get; set; }
-        public double? RadiusKm { get; set; }
+        [Required]
+        public string AffectedArea { get; set; } = string.Empty;
 
-        // Related disaster report if applicable
-        public int? DisasterReportId { get; set; }
-        
-        [ForeignKey("DisasterReportId")]
-        public DisasterReport? DisasterReport { get; set; }
-
-        // User who issued the alert (usually an LGU or admin)
-        public required string IssuedByUserId { get; set; }
+        // Reference to the LGU user who created the alert
+        [Required]
+        public string IssuedByUserId { get; set; } = string.Empty;
         
         [ForeignKey("IssuedByUserId")]
-        public required ApplicationUser IssuedByUser { get; set; }
-
-        // Additional instructions or resources
-        public required string Instructions { get; set; }
-        
-        // Flag to indicate if the alert is active
-        [Required]
-        public required bool IsActive { get; set; } = true;
-    }
-
-    public enum AlertType
-    {
-        Weather,
-        Earthquake,
-        Flood,
-        Fire,
-        Landslide,
-        Traffic,
-        Health,
-        Security,
-        General
+        public ApplicationUser User { get; set; } = null!;
     }
 
     public enum AlertSeverity

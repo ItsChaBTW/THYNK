@@ -171,24 +171,11 @@ namespace THYNK.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double?>("CenterLatitude")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("CenterLongitude")
-                        .HasColumnType("float");
-
                     b.Property<DateTime>("DateIssued")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("DisasterReportId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Instructions")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -201,9 +188,6 @@ namespace THYNK.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double?>("RadiusKm")
-                        .HasColumnType("float");
-
                     b.Property<int>("Severity")
                         .HasColumnType("int");
 
@@ -212,12 +196,7 @@ namespace THYNK.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("DisasterReportId");
 
                     b.HasIndex("IssuedByUserId");
 
@@ -232,12 +211,33 @@ namespace THYNK.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("BarangayCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BarangayName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CityMunicipalityCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CityMunicipalityName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -281,6 +281,22 @@ namespace THYNK.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ProvinceCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProvinceName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RegionCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RegionName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -305,6 +321,10 @@ namespace THYNK.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("ApplicationUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("THYNK.Models.CommunityUpdate", b =>
@@ -483,6 +503,27 @@ namespace THYNK.Migrations
                     b.ToTable("EducationalResources");
                 });
 
+            modelBuilder.Entity("THYNK.Models.LGUUser", b =>
+                {
+                    b.HasBaseType("THYNK.Models.ApplicationUser");
+
+                    b.Property<string>("IDDocumentUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OrganizationName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasDiscriminator().HasValue("LGUUser");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -536,19 +577,13 @@ namespace THYNK.Migrations
 
             modelBuilder.Entity("THYNK.Models.Alert", b =>
                 {
-                    b.HasOne("THYNK.Models.DisasterReport", "DisasterReport")
-                        .WithMany()
-                        .HasForeignKey("DisasterReportId");
-
-                    b.HasOne("THYNK.Models.ApplicationUser", "IssuedByUser")
+                    b.HasOne("THYNK.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("IssuedByUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DisasterReport");
-
-                    b.Navigation("IssuedByUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("THYNK.Models.CommunityUpdate", b =>

@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("THYNK")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dce66cedef6c0449be59b09a40e5f8c49936a5d6")]
 [assembly: System.Reflection.AssemblyProductAttribute("THYNK")]
 [assembly: System.Reflection.AssemblyTitleAttribute("THYNK")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

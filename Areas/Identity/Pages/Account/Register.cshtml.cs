@@ -91,6 +91,35 @@ namespace THYNK.Areas.Identity.Pages.Account
             [Display(Name = "Email")]
             public string Email { get; set; }
 
+            [Required]
+            [Display(Name = "Phone Number")]
+            [RegularExpression(@"^9\d{9}$", ErrorMessage = "Phone number must start with 9 followed by 9 digits")]
+            public string PhoneNumber { get; set; }
+
+            [Required]
+            [Display(Name = "Province")]
+            public string ProvinceCode { get; set; }
+
+            [Required]
+            [Display(Name = "Province Name")]
+            public string ProvinceName { get; set; } = string.Empty;
+
+            [Required]
+            [Display(Name = "City/Municipality")]
+            public string CityMunicipalityCode { get; set; }
+
+            [Required]
+            [Display(Name = "City/Municipality Name")]
+            public string CityMunicipalityName { get; set; } = string.Empty;
+
+            [Required]
+            [Display(Name = "Barangay")]
+            public string BarangayCode { get; set; }
+
+            [Required]
+            [Display(Name = "Barangay Name")]
+            public string BarangayName { get; set; } = string.Empty;
+
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
@@ -120,7 +149,7 @@ namespace THYNK.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/Community/Dashboard"); // Change default redirect to Community Dashboard
+            returnUrl ??= Url.Content("~/Community/Dashboard");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
@@ -135,6 +164,17 @@ namespace THYNK.Areas.Identity.Pages.Account
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                
+                // Set phone number with country code
+                user.PhoneNumber = "+63" + Input.PhoneNumber;
+
+                // Set address information
+                user.ProvinceCode = Input.ProvinceCode;
+                user.ProvinceName = Input.ProvinceName;
+                user.CityMunicipalityCode = Input.CityMunicipalityCode;
+                user.CityMunicipalityName = Input.CityMunicipalityName;
+                user.BarangayCode = Input.BarangayCode;
+                user.BarangayName = Input.BarangayName;
                 
                 // Generate a 7-character random confirmation code
                 user.EmailConfirmationCode = GenerateRandomCode(7);

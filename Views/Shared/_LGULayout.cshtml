@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - THYNK LGU</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/community.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/THYNK.styles.css" asp-append-version="true" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Mapbox CSS -->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4">
+                <h3 class="m-0">THYNK</h3>
+                <small>LGU Dashboard</small>
+            </div>
+            <div class="list-group list-group-flush my-3">
+                <a href="@Url.Action("Dashboard", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+                <a href="@Url.Action("ManageReports", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageReports" ? "active" : "")">
+                    <i class="fas fa-clipboard-list me-2"></i>Manage Reports
+                </a>
+                <a href="@Url.Action("CreateAlert", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CreateAlert" ? "active" : "")">
+                    <i class="fas fa-bell me-2"></i>Create Alert
+                </a>
+                <a href="@Url.Action("ManageAlerts", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageAlerts" ? "active" : "")">
+                    <i class="fas fa-bell-slash me-2"></i>Manage Alerts
+                </a>
+                <a href="@Url.Action("IncidentMap", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
+                    <i class="fas fa-map-marked-alt me-2"></i>Incident Map
+                </a>
+                <a href="@Url.Action("ManageResources", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageResources" ? "active" : "")">
+                    <i class="fas fa-book me-2"></i>Manage Resources
+                </a>
+                <a href="@Url.Action("CommunityFeed", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" ? "active" : "")">
+                    <i class="fas fa-users me-2"></i>Community Feed
+                </a>
+                <a href="@Url.Action("Support", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
+                    <i class="fas fa-question-circle me-2"></i>Support & FAQs
+                </a>
+            </div>
+        </div>
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-link" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-2"></i>@User.Identity?.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" href="@Url.Action("Profile", "LGU")"><i class="fas fa-user me-2"></i>Profile</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                                            <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div class="container-fluid p-4">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html> 

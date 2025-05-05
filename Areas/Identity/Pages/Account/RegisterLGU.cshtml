@@ -1,0 +1,98 @@
+@page
+@model RegisterLGUModel
+@{
+    ViewData["Title"] = "Register as LGU User";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" enctype="multipart/form-data">
+            <h2>Create a new LGU account.</h2>
+            <hr />
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            
+            <div class="form-floating mb-3">
+                <input asp-for="Input.FirstName" class="form-control" aria-required="true" placeholder="John" />
+                <label asp-for="Input.FirstName">First Name</label>
+                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input asp-for="Input.LastName" class="form-control" aria-required="true" placeholder="Doe" />
+                <label asp-for="Input.LastName">Last Name</label>
+                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Position" class="form-control" aria-required="true" placeholder="Barangay Captain" />
+                <label asp-for="Input.Position">Position / Designation</label>
+                <span asp-validation-for="Input.Position" class="text-danger"></span>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input asp-for="Input.OrganizationName" class="form-control" aria-required="true" placeholder="Barangay XYZ" />
+                <label asp-for="Input.OrganizationName">Organization Name</label>
+                <span asp-validation-for="Input.OrganizationName" class="text-danger"></span>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <label asp-for="Input.Email">Email Address</label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <div class="input-group">
+                    <span class="input-group-text">+63</span>
+                    <input asp-for="Input.PhoneNumber" class="form-control" aria-required="true" placeholder="9123456789" />
+                    <label asp-for="Input.PhoneNumber">Phone Number</label>
+                </div>
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Input.IDDocument" class="form-label">Government ID or Office ID (Recommended)</label>
+                <input asp-for="Input.IDDocument" class="form-control" type="file" accept=".jpg,.jpeg,.png,.pdf" />
+                <span asp-validation-for="Input.IDDocument" class="text-danger"></span>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <label asp-for="Input.Password">Password</label>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+            
+            <div class="form-floating mb-3">
+                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+            
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register as LGU User</button>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">LGU Registration</h3>
+            </div>
+            <div class="card-body">
+                <h4>Benefits of registering as an LGU user:</h4>
+                <ul>
+                    <li>Access to disaster management tools and resources</li>
+                    <li>Ability to verify and respond to community reports</li>
+                    <li>Send official alerts and announcements</li>
+                    <li>Coordinate with other LGU units</li>
+                    <li>Access to detailed analytics and reporting</li>
+                </ul>
+                <p>By registering as an LGU user, you'll help make your community safer and more prepared for emergencies.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+} 

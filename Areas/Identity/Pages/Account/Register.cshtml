@@ -28,6 +28,45 @@
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
+                <div class="input-group">
+                    <span class="input-group-text">+63</span>
+                    <input asp-for="Input.PhoneNumber" class="form-control" aria-required="true" placeholder="9123456789" />
+                    <label asp-for="Input.PhoneNumber">Phone Number</label>
+                </div>
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <h4 class="mt-4">Address Information</h4>
+            <div class="form-floating mb-3">
+                <select asp-for="Input.ProvinceCode" class="form-select" id="provinceSelect" required>
+                    <option value="">Select Province</option>
+                </select>
+                <label asp-for="Input.ProvinceCode">Province</label>
+                <span asp-validation-for="Input.ProvinceCode" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="Input.CityMunicipalityCode" class="form-select" id="cityMunicipalitySelect" disabled required>
+                    <option value="">Select City/Municipality</option>
+                </select>
+                <label asp-for="Input.CityMunicipalityCode">City/Municipality</label>
+                <span asp-validation-for="Input.CityMunicipalityCode" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <select asp-for="Input.BarangayCode" class="form-select" id="barangaySelect" disabled required>
+                    <option value="">Select Barangay</option>
+                </select>
+                <label asp-for="Input.BarangayCode">Barangay</label>
+                <span asp-validation-for="Input.BarangayCode" class="text-danger"></span>
+            </div>
+
+            <!-- Hidden fields for names -->
+            <input type="hidden" asp-for="Input.ProvinceName" id="provinceName" />
+            <input type="hidden" asp-for="Input.CityMunicipalityName" id="cityMunicipalityName" />
+            <input type="hidden" asp-for="Input.BarangayName" id="barangayName" />
+
+            <div class="form-floating mb-3">
                 <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                 <label asp-for="Input.Password">Password</label>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
@@ -62,4 +101,160 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Load regions on page load
+            loadRegions();
+
+            // Fetch provinces from PSGC API
+            $.ajax({
+                url: 'https://psgc.gitlab.io/api/provinces',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    const select = $('#provinceSelect');
+                    select.find('option:not(:first)').remove();
+                    data.forEach(function(province) {
+                        select.append($('<option></option>')
+                            .attr('value', province.code)
+                            .attr('data-name', province.name)
+                            .text(province.name));
+                    });
+                    select.prop('disabled', false);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Failed to fetch provinces:', status, error);
+                    setTimeout(function() {
+                        loadRegions();
+                    }, 1000);
+                }
+            });
+
+            // Load cities/municipalities when a province is selected
+            $('#provinceSelect').on('change', function() {
+                const provinceCode = $(this).val();
+                if (!provinceCode) return;
+
+                const cityMunicipalitySelect = $('#cityMunicipalitySelect');
+                cityMunicipalitySelect.prop('disabled', true)
+                    .find('option:not(:first)').remove();
+                $('#barangaySelect').prop('disabled', true)
+                    .find('option:not(:first)').remove();
+
+                // Update province name
+                $('#provinceName').val($(this).find(':selected').data('name'));
+
+                // Fetch municipalities
+                $.ajax({
+                    url: `https://psgc.gitlab.io/api/provinces/${provinceCode}/municipalities/`,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        data.forEach(function(municipality) {
+                            cityMunicipalitySelect.append($('<option></option>')
+                                .attr('value', municipality.code)
+                                .attr('data-name', municipality.name)
+                                .attr('data-type', 'municipality')
+                                .text(municipality.name));
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to fetch municipalities:', status, error);
+                    }
+                });
+
+                // Fetch cities
+                $.ajax({
+                    url: `https://psgc.gitlab.io/api/provinces/${provinceCode}/cities/`,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        data.forEach(function(city) {
+                            cityMunicipalitySelect.append($('<option></option>')
+                                .attr('value', city.code)
+                                .attr('data-name', city.name)
+                                .attr('data-type', 'city')
+                                .text(city.name));
+                        });
+                        cityMunicipalitySelect.prop('disabled', false);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to fetch cities:', status, error);
+                    }
+                });
+            });
+
+            // Load barangays when a city/municipality is selected
+            $('#cityMunicipalitySelect').on('change', function() {
+                const selectedCode = $(this).val();
+                if (!selectedCode) return;
+
+                const selectedType = $(this).find(':selected').data('type');
+                const barangaySelect = $('#barangaySelect');
+                barangaySelect.prop('disabled', true)
+                    .find('option:not(:first)').remove();
+
+                // Update city/municipality name
+                $('#cityMunicipalityName').val($(this).find(':selected').data('name'));
+
+                // Determine the correct URL for fetching barangays
+                let url;
+                if (selectedType === 'city') {
+                    url = `https://psgc.gitlab.io/api/cities/${selectedCode}/barangays/`;
+                } else {
+                    url = `https://psgc.gitlab.io/api/municipalities/${selectedCode}/barangays/`;
+                }
+
+                // Fetch barangays based on selected city/municipality
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        data.forEach(function(barangay) {
+                            barangaySelect.append($('<option></option>')
+                                .attr('value', barangay.code)
+                                .attr('data-name', barangay.name)
+                                .text(barangay.name));
+                        });
+                        barangaySelect.prop('disabled', false);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Failed to fetch barangays:', status, error);
+                        setTimeout(function() {
+                            loadRegions();
+                        }, 1000);
+                    }
+                });
+            });
+
+            // Update barangay name when selected
+            $('#barangaySelect').on('change', function() {
+                $('#barangayName').val($(this).find(':selected').data('name'));
+            });
+        });
+
+        function loadRegions() {
+            $.ajax({
+                url: '/api/psgc/regions',
+                method: 'GET',
+                success: function(data) {
+                    console.log('Regions loaded:', data);
+                    const select = $('#regionSelect');
+                    select.find('option:not(:first)').remove();
+                    data.forEach(function(item) {
+                        select.append($('<option></option>')
+                            .attr('value', item.code)
+                            .text(item.name));
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading regions:', error);
+                    setTimeout(function() {
+                        loadRegions();
+                    }, 1000);
+                }
+            });
+        }
+    </script>
 }

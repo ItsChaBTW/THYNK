@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK.csproj": {}
+    "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK\\THYNK.csproj": {}
   },
   "projects": {
-    "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK.csproj": {
+    "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK\\THYNK.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK.csproj",
+        "projectUniqueName": "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK\\THYNK.csproj",
         "projectName": "THYNK",
-        "projectPath": "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK.csproj",
-        "packagesPath": "C:\\Users\\LENOVO i5\\.nuget\\packages\\",
-        "outputPath": "C:\\xampp\\htdocs\\Projects\\THYNK\\obj\\",
+        "projectPath": "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK\\THYNK.csproj",
+        "packagesPath": "C:\\Users\\HOME\\.nuget\\packages\\",
+        "outputPath": "C:\\xampp\\htdocs\\Projects\\THYNK\\THYNK\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\LENOVO i5\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\HOME\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -43,6 +43,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Authentication.Google": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": {
               "target": "Package",
               "version": "[8.0.0, )"

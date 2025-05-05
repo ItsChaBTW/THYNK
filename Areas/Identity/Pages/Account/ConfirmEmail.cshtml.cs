@@ -83,15 +83,30 @@ namespace THYNK.Areas.Identity.Pages.Account
             user.EmailConfirmationCode = string.Empty;
             
             // Update the user
-            await _userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError(string.Empty, "Error confirming email. Please try again.");
+                return Page();
+            }
 
             // Sign in the user
             await _signInManager.SignInAsync(user, isPersistent: false);
             
             StatusMessage = "Thank you for confirming your email.";
             
-            // Redirect to community dashboard
-            return LocalRedirect("~/Community/Dashboard");
+            // Redirect based on user role
+            if (user.UserRole == UserRoleType.LGU)
+            {
+                return LocalRedirect("~/LGU/Dashboard");
+            }
+            else if (user.UserRole == UserRoleType.Community)
+            {
+                return LocalRedirect("~/Community/Dashboard");
+            }
+            
+            // Default redirect if role is not set
+            return LocalRedirect("~/");
         }
     }
 }

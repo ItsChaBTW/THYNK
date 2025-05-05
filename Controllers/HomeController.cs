@@ -19,23 +19,24 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // Check if user is authenticated
         if (User.Identity.IsAuthenticated)
         {
-            // Get current user
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(userId);
 
-            // Check if user is in Community role
-            bool isInCommunityRole = await _userManager.IsInRoleAsync(user, "Community");
-            
-            // Redirect to Community Dashboard if user is in Community role
-            if (isInCommunityRole)
+            if (user != null)
             {
-                return RedirectToAction("Dashboard", "Community");
+                // Check UserRole property (1 = LGU)
+                if (user.UserRole == UserRoleType.LGU)
+                {
+                    return RedirectToAction("Dashboard", "LGU");
+                }
+                else if (user.UserRole == UserRoleType.Community)
+                {
+                    return RedirectToAction("Dashboard", "Community");
+                }
             }
         }
-        
         return View();
     }
 

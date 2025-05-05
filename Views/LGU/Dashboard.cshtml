@@ -1,0 +1,244 @@
+@{
+    ViewData["Title"] = "LGU Dashboard";
+    Layout = "_LGULayout";
+}
+
+<div class="row">
+    <!-- Quick Actions -->
+    <div class="col-12 mb-4">
+        <div class="card dashboard-card border-0 bg-light">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Quick Actions</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="@Url.Action("CreateAlert", "LGU")" class="btn btn-danger w-100 py-3">
+                            <i class="fas fa-bell me-2"></i> Create Alert
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-primary w-100 py-3">
+                            <i class="fas fa-clipboard-list me-2"></i> Manage Reports
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-info text-white w-100 py-3">
+                            <i class="fas fa-book me-2"></i> Manage Resources
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Alerts -->
+    <div class="col-12 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-danger text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-danger">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div>
+                        <h5 class="m-0">Active Alerts</h5>
+                        <small>Currently active alerts in your area</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.ActiveAlerts != null && ViewBag.ActiveAlerts.Count > 0)
+                {
+                    <div class="list-group">
+                        @foreach (var alert in ViewBag.ActiveAlerts)
+                        {
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">
+                                        <span class="alert-badge @(alert.Severity == AlertSeverity.Critical ? "alert-critical" : 
+                                                                    alert.Severity == AlertSeverity.Danger ? "alert-danger" : 
+                                                                    alert.Severity == AlertSeverity.Warning ? "alert-warning" : "alert-info")"></span>
+                                        @alert.Title
+                                    </h5>
+                                    <small>@alert.DateIssued.ToString("MMM dd, HH:mm")</small>
+                                </div>
+                                <p class="mb-1">@alert.Message</p>
+                                <small>@alert.AffectedArea</small>
+                            </div>
+                        }
+                    </div>
+                    <div class="mt-3">
+                        <a href="@Url.Action("ManageAlerts", "LGU")" class="btn btn-outline-danger">Manage Alerts</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
+                        <p>No active alerts at this time.</p>
+                        <a href="@Url.Action("CreateAlert", "LGU")" class="btn btn-danger">Create New Alert</a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Reports -->
+    <div class="col-md-6 mb-4">
+        <div class="card dashboard-card h-100">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-primary">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        <h5 class="m-0">Recent Reports</h5>
+                        <small>Latest incidents reported in your area</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
+                {
+                    <div class="list-group">
+                        @foreach (var report in ViewBag.RecentReports)
+                        {
+                            <a href="@Url.Action("ManageReports", "LGU")" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">@report.Title</h5>
+                                    <small>@report.DateReported.ToString("MMM dd, HH:mm")</small>
+                                </div>
+                                <p class="mb-1 text-truncate">@report.Description</p>
+                                <small>
+                                    <span class="badge bg-secondary">@report.Type</span>
+                                    <span class="badge @(report.Severity == SeverityLevel.Low ? "bg-info" : 
+                                                         report.Severity == SeverityLevel.Medium ? "bg-warning" : 
+                                                         report.Severity == SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                                        @report.Severity
+                                    </span>
+                                    <span class="badge @(report.Status == ReportStatus.Pending ? "bg-warning" : 
+                                                        report.Status == ReportStatus.Verified ? "bg-info" : 
+                                                        report.Status == ReportStatus.InProgress ? "bg-primary" : 
+                                                        report.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                                        @report.Status
+                                    </span>
+                                </small>
+                            </a>
+                        }
+                    </div>
+                    <div class="mt-3">
+                        <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-outline-primary">Manage All Reports</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard-check text-success fa-4x mb-3"></i>
+                        <p>No recent reports in your area.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Updates -->
+    <div class="col-md-6 mb-4">
+        <div class="card dashboard-card h-100">
+            <div class="card-header bg-success text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-success">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div>
+                        <h5 class="m-0">Community Updates</h5>
+                        <small>Latest updates from your community</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (ViewBag.CommunityUpdates != null && ViewBag.CommunityUpdates.Count > 0)
+                {
+                    <div class="list-group">
+                        @foreach (var update in ViewBag.CommunityUpdates)
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">
+                                        <span class="badge @(update.Type == UpdateType.HelpRequest ? "bg-danger" : 
+                                                            update.Type == UpdateType.StatusUpdate ? "bg-info" : 
+                                                            update.Type == UpdateType.ResourceSharing ? "bg-success" : 
+                                                            update.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
+                                            @update.Type
+                                        </span>
+                                    </h5>
+                                    <small>@update.DatePosted.ToString("MMM dd, HH:mm")</small>
+                                </div>
+                                <p class="mb-1">@update.Content</p>
+                                <small>Posted by @update.User.UserName</small>
+                            </div>
+                        }
+                    </div>
+                    <div class="mt-3">
+                        <a href="@Url.Action("CommunityFeed", "LGU")" class="btn btn-outline-success">View Community Feed</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments text-muted fa-4x mb-3"></i>
+                        <p>No community updates available.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Educational Resources -->
+    <div class="col-12">
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-info">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div>
+                        <h5 class="m-0">Educational Resources</h5>
+                        <small>Manage educational content for your community</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-plus-circle text-primary fa-3x mb-3"></i>
+                                <h5>Add New Resource</h5>
+                                <p class="small">Create new educational content</p>
+                                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-primary">Add Resource</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-edit text-warning fa-3x mb-3"></i>
+                                <h5>Edit Resources</h5>
+                                <p class="small">Update existing content</p>
+                                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-warning">Edit Resources</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line text-success fa-3x mb-3"></i>
+                                <h5>View Analytics</h5>
+                                <p class="small">Track resource usage</p>
+                                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-success">View Analytics</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

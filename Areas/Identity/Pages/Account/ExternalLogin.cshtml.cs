@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using THYNK.Models;
+using System.Linq;
 
 namespace THYNK.Areas.Identity.Pages.Account
 {
@@ -78,13 +79,34 @@ namespace THYNK.Areas.Identity.Pages.Account
         /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
-            [EmailAddress]
-            public string Email { get; set; }
+            [Display(Name = "Phone Number")]
+            [RegularExpression(@"^9\d{9}$", ErrorMessage = "Phone number must start with 9 followed by 9 digits")]
+            public string PhoneNumber { get; set; }
+
+            [Required]
+            [Display(Name = "Province")]
+            public string ProvinceCode { get; set; }
+
+            [Required]
+            [Display(Name = "Province Name")]
+            public string ProvinceName { get; set; } = string.Empty;
+
+            [Required]
+            [Display(Name = "City/Municipality")]
+            public string CityMunicipalityCode { get; set; }
+
+            [Required]
+            [Display(Name = "City/Municipality Name")]
+            public string CityMunicipalityName { get; set; } = string.Empty;
+
+            [Required]
+            [Display(Name = "Barangay")]
+            public string BarangayCode { get; set; }
+
+            [Required]
+            [Display(Name = "Barangay Name")]
+            public string BarangayName { get; set; } = string.Empty;
         }
         
         public IActionResult OnGet() => RedirectToPage("./Login");
@@ -99,7 +121,7 @@ namespace THYNK.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl = "/Community/Dashboard";  // Set default to Community Dashboard
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
@@ -128,20 +150,14 @@ namespace THYNK.Areas.Identity.Pages.Account
                 // If the user does not have an account, then ask the user to create an account.
                 ReturnUrl = returnUrl;
                 ProviderDisplayName = info.ProviderDisplayName;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
-                {
-                    Input = new InputModel
-                    {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    };
-                }
+                Input = new InputModel();
                 return Page();
             }
         }
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/Community/Dashboard");
             // Get the information about the user from the external login provider
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
@@ -154,8 +170,36 @@ namespace THYNK.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+                // Get email from Google claims
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                
+                // Create username from email (remove domain and special characters)
+                var username = email.Split('@')[0].Replace(".", "").Replace("-", "").Replace("_", "");
+                
+                // Set username and email
+                await _userStore.SetUserNameAsync(user, username, CancellationToken.None);
+                await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
+
+                // Set first and last name from Google claims
+                user.FirstName = info.Principal.FindFirstValue(ClaimTypes.GivenName) ?? username;
+                user.LastName = info.Principal.FindFirstValue(ClaimTypes.Surname) ?? "";
+
+                // Set phone number with country code
+                user.PhoneNumber = "+63" + Input.PhoneNumber;
+
+                // Set address information
+                user.ProvinceCode = Input.ProvinceCode;
+                user.ProvinceName = Input.ProvinceName;
+                user.CityMunicipalityCode = Input.CityMunicipalityCode;
+                user.CityMunicipalityName = Input.CityMunicipalityName;
+                user.BarangayCode = Input.BarangayCode;
+                user.BarangayName = Input.BarangayName;
+
+                // Set user role to Community
+                user.UserRole = UserRoleType.Community;
+
+                // Mark email as confirmed since it's from Google
+                user.EmailConfirmed = true;
 
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
@@ -165,24 +209,11 @@ namespace THYNK.Areas.Identity.Pages.Account
                     {
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
 
-                        var userId = await _userManager.GetUserIdAsync(user);
-                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        var callbackUrl = Url.Page(
-                            "/Account/ConfirmEmail",
-                            pageHandler: null,
-                            values: new { area = "Identity", userId = userId, code = code },
-                            protocol: Request.Scheme);
+                        // Add user to Community role
+                        await _userManager.AddToRoleAsync(user, "Community");
+                        _logger.LogInformation("User added to Community role.");
 
-                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                        // If account confirmation is required, we need to show the link if we don't have a real email sender
-                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                        {
-                            return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
-                        }
-
+                        // Sign in the user
                         await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
                         return LocalRedirect(returnUrl);
                     }
@@ -196,6 +227,16 @@ namespace THYNK.Areas.Identity.Pages.Account
             ProviderDisplayName = info.ProviderDisplayName;
             ReturnUrl = returnUrl;
             return Page();
+        }
+
+        // Helper method to generate a random alphanumeric code
+        private string GenerateRandomCode(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var random = new Random();
+            var code = new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+            return code;
         }
 
         private ApplicationUser CreateUser()
