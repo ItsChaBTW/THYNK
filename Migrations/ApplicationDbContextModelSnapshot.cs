@@ -391,6 +391,12 @@ namespace THYNK.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssignedToId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Barangay")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -447,6 +453,8 @@ namespace THYNK.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AssignedToId");
 
                     b.HasIndex("UserId");
 
@@ -510,6 +518,9 @@ namespace THYNK.Migrations
                     b.Property<string>("IDDocumentUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
 
                     b.Property<string>("OrganizationName")
                         .IsRequired()
@@ -605,11 +616,17 @@ namespace THYNK.Migrations
 
             modelBuilder.Entity("THYNK.Models.DisasterReport", b =>
                 {
+                    b.HasOne("THYNK.Models.LGUUser", "AssignedTo")
+                        .WithMany()
+                        .HasForeignKey("AssignedToId");
+
                     b.HasOne("THYNK.Models.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AssignedTo");
 
                     b.Navigation("User");
                 });

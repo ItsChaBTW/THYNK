@@ -152,7 +152,7 @@ namespace THYNK.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("LGU user created a new account with password.");
+                    _logger.LogInformation("LGU/SLU user created a new account with password.");
 
                     // Add user to LGU role
                     await _userManager.AddToRoleAsync(user, "LGU");
@@ -164,7 +164,7 @@ namespace THYNK.Areas.Identity.Pages.Account
                     await _emailSender.SendEmailAsync(
                         Input.Email,
                         "Confirm your email - THYNK",
-                        $"Hello {user.FirstName},<br><br>Thank you for registering with THYNK as an LGU user. Please use the following code to confirm your email address:<br><br><strong>{user.EmailConfirmationCode}</strong><br><br>This code is valid for 24 hours.<br><br>If you did not register for THYNK, please ignore this email.<br><br>Thank you,<br>The THYNK Team");
+                        $"Hello {user.FirstName},<br><br>Thank you for registering with THYNK as an LGU/SLU user. Please use the following code to confirm your email address:<br><br><strong>{user.EmailConfirmationCode}</strong><br><br>This code is valid for 24 hours.<br><br>If you did not register for THYNK, please ignore this email.<br><br>Thank you,<br>The THYNK Team");
 
                     // Redirect to email confirmation page
                     return RedirectToPage("ConfirmEmail", new { email = Input.Email });

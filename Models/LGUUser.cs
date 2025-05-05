@@ -21,5 +21,8 @@ namespace THYNK.Models
 
         [NotMapped]
         public IFormFile? IDDocument { get; set; }
+        
+        // Approval status
+        public bool IsApproved { get; set; } = false;
     }
 } 

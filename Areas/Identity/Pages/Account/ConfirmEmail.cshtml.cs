@@ -98,6 +98,13 @@ namespace THYNK.Areas.Identity.Pages.Account
             // Redirect based on user role
             if (user.UserRole == UserRoleType.LGU)
             {
+                // Check if LGU user is approved before redirecting to dashboard
+                if (user is LGUUser lguUser && !lguUser.IsApproved)
+                {
+                    await _signInManager.SignOutAsync();
+                    StatusMessage = "Thank you for confirming your email. Your LGU account is pending approval. Please wait for administrator verification.";
+                    return RedirectToPage("./PendingApproval");
+                }
                 return LocalRedirect("~/LGU/Dashboard");
             }
             else if (user.UserRole == UserRoleType.Community)

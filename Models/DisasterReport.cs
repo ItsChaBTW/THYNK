@@ -49,16 +49,26 @@ namespace THYNK.Models
         public required ReportStatus Status { get; set; } = ReportStatus.Pending;
 
         // Reference to the user who reported the disaster
-        public required string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         
         [ForeignKey("UserId")]
-        public required ApplicationUser User { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public ApplicationUser? User { get; set; }
 
         // Images or files related to the disaster
-        public required string ImageUrl { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
 
         // Additional details
-        public required string AdditionalInfo { get; set; }
+        public required string AdditionalInfo { get; set; } = string.Empty;
+        
+        // Assignment information
+        public string? AssignedToId { get; set; }
+        
+        [ForeignKey("AssignedToId")]
+        [System.Text.Json.Serialization.JsonIgnore]
+        public LGUUser? AssignedTo { get; set; }
+        
+        public DateTime? AssignedAt { get; set; }
     }
 
     public enum DisasterType

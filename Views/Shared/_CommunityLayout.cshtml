@@ -69,6 +69,49 @@
             </nav>
 
             <div class="container-fluid px-4">
+                <!-- Add notification messages -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i> @TempData["WarningMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-times-circle me-2"></i> @TempData["ErrorMessage"]
+                        @if (TempData["InnerErrorMessage"] != null)
+                        {
+                            <div class="mt-2 small">@TempData["InnerErrorMessage"]</div>
+                        }
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                <!-- Show validation errors if any -->
+                @if (ViewBag.ValidationErrors != null)
+                {
+                    <div class="alert alert-danger mt-3">
+                        <i class="fas fa-times-circle me-2"></i> <strong>Validation Errors:</strong>
+                        <ul class="mb-0 mt-2">
+                            @foreach (var error in ViewBag.ValidationErrors)
+                            {
+                                <li>@error.Key: @string.Join(", ", error.Errors)</li>
+                            }
+                        </ul>
+                    </div>
+                }
+                
                 <div class="row my-4">
                     <div class="col">
                         @RenderBody()

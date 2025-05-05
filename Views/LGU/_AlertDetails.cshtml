@@ -1,0 +1,90 @@
+@model THYNK.Models.Alert
+
+<div class="card border-0">
+    <div class="card-body px-0">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Alert Information</h5>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Title</label>
+                    <p>@Model.Title</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Message</label>
+                    <p>@Model.Message</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Affected Area</label>
+                    <p>@Model.AffectedArea</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5 class="border-bottom pb-2">Status</h5>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Severity</label>
+                    <p>
+                        <span class="badge @(Model.Severity == THYNK.Models.AlertSeverity.Info ? "bg-info" : 
+                                            Model.Severity == THYNK.Models.AlertSeverity.Warning ? "bg-warning" : 
+                                            Model.Severity == THYNK.Models.AlertSeverity.Danger ? "bg-danger" : 
+                                            Model.Severity == THYNK.Models.AlertSeverity.Critical ? "bg-dark" : "bg-secondary")">
+                            @Model.Severity
+                        </span>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Date Issued</label>
+                    <p>@Model.DateIssued.ToString("MMMM dd, yyyy HH:mm")</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Status</label>
+                    <p>@(Model.IsActive ? "Active" : "Inactive")</p>
+                </div>
+                @if (Model.ExpiresAt.HasValue)
+                {
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Expires At</label>
+                        <p>@Model.ExpiresAt.Value.ToString("MMMM dd, yyyy HH:mm")</p>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <h5 class="border-bottom pb-2">Issued By</h5>
+                @if (Model.User != null)
+                {
+                    <div class="mb-3">
+                        <p><strong>@Model.User.FirstName @Model.User.LastName</strong> (@Model.User.Email)</p>
+                    </div>
+                }
+                else
+                {
+                    <p>Unknown issuer</p>
+                }
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-end">
+                    @if (Model.IsActive)
+                    {
+                        <a href="@Url.Action("EditAlert", "LGU", new { id = Model.Id })" class="btn btn-warning me-2">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#deactivateModal@(Model.Id)" data-bs-dismiss="modal">
+                            <i class="fas fa-ban me-1"></i> Deactivate
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal@(Model.Id)" data-bs-dismiss="modal">
+                            <i class="fas fa-trash me-1"></i> Delete
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

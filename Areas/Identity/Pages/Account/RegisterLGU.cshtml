@@ -1,7 +1,7 @@
 @page
 @model RegisterLGUModel
 @{
-    ViewData["Title"] = "Register as LGU User";
+    ViewData["Title"] = "Register as LGU/SLU User";
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -9,7 +9,7 @@
 <div class="row">
     <div class="col-md-6">
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" enctype="multipart/form-data">
-            <h2>Create a new LGU account.</h2>
+            <h2>Create a new LGU/SLU account.</h2>
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             
@@ -70,24 +70,27 @@
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
             
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register as LGU User</button>
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register as LGU/SLU User</button>
         </form>
     </div>
     <div class="col-md-6">
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h3 class="mb-0">LGU Registration</h3>
+                <h3 class="mb-0">LGU/SLU Registration</h3>
             </div>
             <div class="card-body">
-                <h4>Benefits of registering as an LGU user:</h4>
+                <h4>Benefits of registering as an LGU/SLU user:</h4>
                 <ul>
                     <li>Access to disaster management tools and resources</li>
                     <li>Ability to verify and respond to community reports</li>
                     <li>Send official alerts and announcements</li>
-                    <li>Coordinate with other LGU units</li>
+                    <li>Coordinate with other government units</li>
                     <li>Access to detailed analytics and reporting</li>
                 </ul>
-                <p>By registering as an LGU user, you'll help make your community safer and more prepared for emergencies.</p>
+                <p>By registering as an LGU/SLU user, you'll help make your community safer and more prepared for emergencies.</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i><strong>Note:</strong> SLU (Secondary Level Users) represent official government departments or agencies (e.g., BFP, CDRRMC) with the same permissions as LGU users.
+                </div>
             </div>
         </div>
     </div>

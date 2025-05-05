@@ -1,0 +1,172 @@
+@model THYNK.Models.LGUUser
+@{
+    ViewData["Title"] = "LGU/SLU Application Details";
+    Layout = "_AdminLayout";
+}
+
+<div class="card admin-card mb-4">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex align-items-center">
+            <div class="card-icon bg-white text-primary">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div>
+                <h5 class="m-0">LGU/SLU Application Details</h5>
+                <small>Review the details of this Local Government Unit or Secondary Level User application</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info mb-4">
+            <i class="fas fa-info-circle me-2"></i> <strong>Note:</strong> SLU (Secondary Level Users) represent official government departments or agencies (e.g., BFP, CDRRMC) with the same permissions as LGU users.
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2">Personal Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">First Name</label>
+                            <p>@Model.FirstName</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Last Name</label>
+                            <p>@Model.LastName</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <p>@Model.Email</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Phone Number</label>
+                            <p>@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Not provided" : Model.PhoneNumber)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2">Organization Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Organization Name</label>
+                            <p>@Model.OrganizationName</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Position</label>
+                            <p>@Model.Position</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2">Account Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">User ID</label>
+                            <p>@Model.Id</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Application Date</label>
+                            <p>@(Model.DateCreated.ToString("MMM dd, yyyy HH:mm"))</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">ID Document</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        @if (!string.IsNullOrEmpty(Model.IDDocumentUrl))
+                        {
+                            <img src="@Model.IDDocumentUrl" class="img-fluid mb-3 border" alt="ID Document" />
+                            <a href="@Model.IDDocumentUrl" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-external-link-alt me-1"></i> View Full Size
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i> No ID document uploaded
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                                <i class="fas fa-check me-2"></i> Approve Application
+                            </button>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                <i class="fas fa-times me-2"></i> Reject Application
+                            </button>
+                            <a href="@Url.Action("PendingLGUApplications", "Admin")" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Back to List
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approveModalLabel">Approve LGU/SLU Application</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to approve the application for <strong>@Model.FirstName @Model.LastName</strong> from <strong>@Model.OrganizationName</strong>?</p>
+                <p>Once approved, they will be able to access LGU/SLU features.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="ApproveLGU" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success">Approve Application</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel">Reject LGU/SLU Application</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="RejectLGU" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <p>Are you sure you want to reject the application for <strong>@Model.FirstName @Model.LastName</strong> from <strong>@Model.OrganizationName</strong>?</p>
+                    <p>This action will delete the account and notify the applicant.</p>
+                    <div class="mb-3">
+                        <label for="rejectionReason" class="form-label">Reason for Rejection:</label>
+                        <textarea id="rejectionReason" name="rejectionReason" class="form-control" rows="3" required></textarea>
+                        <div class="form-text">Please provide a reason for rejection that will be included in the notification email.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Reject Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 

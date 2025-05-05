@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - THYNK Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/THYNK.styles.css" asp-append-version="true" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Mapbox CSS -->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="sidebar-heading text-center py-4">
+                <h3 class="m-0">THYNK</h3>
+                <small>Admin Dashboard</small>
+            </div>
+            <div class="list-group list-group-flush my-3">
+                <a href="@Url.Action("Dashboard", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+                
+                <!-- User Management -->
+                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
+                    <span>User Management</span>
+                </div>
+                <a href="@Url.Action("PendingLGUApplications", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "PendingLGUApplications" ? "active" : "")">
+                    <i class="fas fa-user-shield me-2"></i>Pending LGU Applications
+                </a>
+                <a href="@Url.Action("ManageUsers", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageUsers" ? "active" : "")">
+                    <i class="fas fa-users me-2"></i>Manage Users
+                </a>
+                
+                <!-- Content Management -->
+                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
+                    <span>Content Management</span>
+                </div>
+                <a href="@Url.Action("IncidentReports", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Incident Reports
+                </a>
+                <a href="@Url.Action("PendingPosts", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "PendingPosts" || ViewContext.RouteData.Values["Action"].ToString() == "PostDetails" ? "active" : "")">
+                    <i class="fas fa-clipboard-list me-2"></i>Pending Posts
+                </a>
+                
+                <!-- Alerts & Notifications -->
+                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
+                    <span>Alerts & Notifications</span>
+                </div>
+                <a href="@Url.Action("ManageAlerts", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageAlerts" ? "active" : "")">
+                    <i class="fas fa-bell me-2"></i>Manage Alerts
+                </a>
+                <a href="@Url.Action("CreateAlert", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CreateAlert" ? "active" : "")">
+                    <i class="fas fa-plus-circle me-2"></i>Create Alert
+                </a>
+                
+                <!-- System -->
+                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
+                    <span>System</span>
+                </div>
+                <a href="@Url.Action("SystemLogs", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "SystemLogs" ? "active" : "")">
+                    <i class="fas fa-history me-2"></i>System Logs
+                </a>
+            </div>
+        </div>
+        <!-- Page Content -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light py-3 px-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-align-left text-dark fs-4 me-3" id="menu-toggle"></i>
+                    <h2 class="m-0">@ViewData["Title"]</h2>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item dropdown">
+                            <partial name="_LoginPartial" />
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-fluid px-4">
+                <!-- Add notification messages -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i> @TempData["WarningMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                        <i class="fas fa-times-circle me-2"></i> @TempData["ErrorMessage"]
+                        @if (TempData["InnerErrorMessage"] != null)
+                        {
+                            <div class="mt-2 small">@TempData["InnerErrorMessage"]</div>
+                        }
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                
+                <div class="row my-4">
+                    <div class="col">
+                        @RenderBody()
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - THYNK - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Mapbox JS -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        // Toggle sidebar
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html> 

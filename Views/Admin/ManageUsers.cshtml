@@ -1,0 +1,173 @@
+@model IEnumerable<THYNK.Models.ApplicationUser>
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Manage Users";
+    Layout = "_AdminLayout";
+}
+
+<div class="card admin-card mb-4">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex align-items-center">
+            <div class="card-icon bg-white text-primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <div>
+                <h5 class="m-0">Manage Users</h5>
+                <small>View and manage user accounts across the system</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <form method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by name or email" value="@Context.Request.Query["search"]" />
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="btn-group">
+                    <a href="@Url.Action("ManageUsers", new { role = "" })" class="btn @(Context.Request.Query["role"] == "" ? "btn-primary" : "btn-outline-primary")">All</a>
+                    <a href="@Url.Action("ManageUsers", new { role = "Admin" })" class="btn @(Context.Request.Query["role"] == "Admin" ? "btn-primary" : "btn-outline-primary")">Admins</a>
+                    <a href="@Url.Action("ManageUsers", new { role = "LGU" })" class="btn @(Context.Request.Query["role"] == "LGU" ? "btn-primary" : "btn-outline-primary")">LGUs</a>
+                    <a href="@Url.Action("ManageUsers", new { role = "Community" })" class="btn @(Context.Request.Query["role"] == "Community" ? "btn-primary" : "btn-outline-primary")">Community</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        var isLocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now;
+                        <tr>
+                            <td>@user.FirstName @user.LastName</td>
+                            <td>@user.Email</td>
+                            <td>
+                                @if (user is THYNK.Models.LGUUser)
+                                {
+                                    <span class="badge bg-info">LGU</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-@(user.UserRole == THYNK.Models.UserRoleType.Admin ? "danger" : "success")">
+                                        @user.UserRole
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (isLocked)
+                                {
+                                    <span class="badge bg-danger">Deactivated</span>
+                                }
+                                else if (user is THYNK.Models.LGUUser lguUser && !lguUser.IsApproved)
+                                {
+                                    <span class="badge bg-warning text-dark">Pending Approval</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                            </td>
+                            <td>@user.DateCreated.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                <div class="btn-group">
+                                    @if (isLocked)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#reactivateModal@(user.Id)">
+                                            <i class="fas fa-user-check"></i> Reactivate
+                                        </button>
+                                    }
+                                    else if (user.UserRole != THYNK.Models.UserRoleType.Admin || (user.UserRole == THYNK.Models.UserRoleType.Admin && user.Id != User.FindFirstValue(ClaimTypes.NameIdentifier)))
+                                    {
+                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deactivateModal@(user.Id)">
+                                            <i class="fas fa-user-slash"></i> Deactivate
+                                        </button>
+                                    }
+                                </div>
+
+                                <!-- Deactivate Modal -->
+                                @if (!isLocked && (user.UserRole != THYNK.Models.UserRoleType.Admin || (user.UserRole == THYNK.Models.UserRoleType.Admin && user.Id != User.FindFirstValue(ClaimTypes.NameIdentifier))))
+                                {
+                                    <div class="modal fade" id="deactivateModal@(user.Id)" tabindex="-1" aria-labelledby="deactivateModalLabel@(user.Id)" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deactivateModalLabel@(user.Id)">Deactivate User</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to deactivate the account for <strong>@user.FirstName @user.LastName</strong>?</p>
+                                                    <p>The user will no longer be able to access the system.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="DeactivateUser" asp-route-id="@user.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger">Deactivate User</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Reactivate Modal -->
+                                @if (isLocked)
+                                {
+                                    <div class="modal fade" id="reactivateModal@(user.Id)" tabindex="-1" aria-labelledby="reactivateModalLabel@(user.Id)" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="reactivateModalLabel@(user.Id)">Reactivate User</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to reactivate the account for <strong>@user.FirstName @user.LastName</strong>?</p>
+                                                    <p>The user will be able to access the system again.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="ReactivateUser" asp-route-id="@user.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-success">Reactivate User</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No users found matching your search criteria.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Add any JavaScript functionality here
+        });
+    </script>
+} 

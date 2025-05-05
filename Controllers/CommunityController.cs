@@ -68,39 +68,92 @@ namespace THYNK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitReport(DisasterReport report, IFormFile photo)
         {
-            if (ModelState.IsValid)
+            // Manual validation for required fields that might be missed by model validation
+            if (string.IsNullOrEmpty(report.Title))
             {
-                report.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                ModelState.AddModelError("Title", "Title is required");
+            }
+            
+            if (string.IsNullOrEmpty(report.Description))
+            {
+                ModelState.AddModelError("Description", "Description is required");
+            }
+            
+            if (string.IsNullOrEmpty(report.Location))
+            {
+                ModelState.AddModelError("Location", "Location is required");
+            }
+            
+            // Debug: Add validation state information to TempData
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new { Key = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage).ToList() })
+                    .ToList();
+                
+                ViewBag.ValidationErrors = errors;
+                TempData["ErrorMessage"] = "Form validation failed. Please check the highlighted fields.";
+                return View(report);
+            }
+            
+            try
+            {
+                // Debug: Make sure UserId is set
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "User ID could not be determined. Please log in again.";
+                    return View(report);
+                }
+                
+                report.UserId = userId;
                 report.DateReported = DateTime.Now;
                 report.Status = ReportStatus.Pending;
                 
                 // Handle photo upload if provided
                 if (photo != null && photo.Length > 0)
                 {
-                    // Create folder if it doesn't exist
-                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "reports");
-                    if (!Directory.Exists(uploadsFolder))
+                    try
                     {
-                        Directory.CreateDirectory(uploadsFolder);
+                        // Create folder if it doesn't exist
+                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "reports");
+                        if (!Directory.Exists(uploadsFolder))
+                        {
+                            Directory.CreateDirectory(uploadsFolder);
+                        }
+                        
+                        // Generate unique filename
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                        
+                        // Save file to disk
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await photo.CopyToAsync(fileStream);
+                        }
+                        
+                        // Set ImageUrl property
+                        report.ImageUrl = "/uploads/reports/" + uniqueFileName;
                     }
-                    
-                    // Generate unique filename
-                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    
-                    // Save file to disk
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    catch (Exception ex)
                     {
-                        await photo.CopyToAsync(fileStream);
+                        // If image upload fails, set default image and continue
+                        report.ImageUrl = "/images/default-report.jpg";
+                        TempData["WarningMessage"] = "Photo upload failed, but report will still be submitted: " + ex.Message;
                     }
-                    
-                    // Set ImageUrl property
-                    report.ImageUrl = "/uploads/reports/" + uniqueFileName;
                 }
                 else
                 {
                     // Set default image if no photo provided
                     report.ImageUrl = "/images/default-report.jpg";
+                }
+                
+                // Debug: Check if coordinates are set
+                if (report.Latitude == 0 && report.Longitude == 0)
+                {
+                    TempData["WarningMessage"] = "Location coordinates appear to be missing. Please ensure you've pinned a location on the map.";
+                    // Don't return - we'll still try to save with zeros
                 }
                 
                 // Ensure any empty location fields are set to a default value
@@ -112,13 +165,33 @@ namespace THYNK.Controllers
                 // Set empty AdditionalInfo to an empty string rather than null
                 report.AdditionalInfo = report.AdditionalInfo ?? string.Empty;
                 
-                _context.Add(report);
-                await _context.SaveChangesAsync();
+                // Debug: Add the report object explicitly
+                _context.DisasterReports.Add(report);
                 
-                TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
-                return RedirectToAction(nameof(Dashboard));
+                // Debug: Save changes and capture how many records were affected
+                int recordsAffected = await _context.SaveChangesAsync();
+                
+                if (recordsAffected > 0)
+                {
+                    TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
+                    return RedirectToAction(nameof(Dashboard));
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "No records were affected when saving to database.";
+                    return View(report);
+                }
             }
-            return View(report);
+            catch (Exception ex)
+            {
+                // Capture the exception details for debugging
+                TempData["ErrorMessage"] = "Error submitting report: " + ex.Message;
+                if (ex.InnerException != null)
+                {
+                    TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
+                }
+                return View(report);
+            }
         }
         
         // View community feed

@@ -1,0 +1,185 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_AdminLayout";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-primary" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-3 fs-4"></i>
+                <div>
+                    <h4 class="alert-heading mb-1">Welcome to the THYNK Admin Dashboard</h4>
+                    <p class="mb-0">Manage users, review reports, moderate content, and send alerts from this central control panel.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Pending LGU Applications -->
+    <div class="col-md-6 col-xl-3">
+        <div class="stats-box">
+            <div class="stats-icon bg-warning text-white">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="stats-number">@ViewBag.PendingLGUCount</div>
+            <div class="stats-label">Pending LGU Applications</div>
+            <a href="@Url.Action("PendingLGUApplications", "Admin")" class="btn btn-sm btn-link p-0 mt-2">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+    </div>
+    
+    <!-- Pending Reports -->
+    <div class="col-md-6 col-xl-3">
+        <div class="stats-box">
+            <div class="stats-icon bg-danger text-white">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="stats-number">@ViewBag.PendingReportsCount</div>
+            <div class="stats-label">Pending Reports</div>
+            <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.Pending })" class="btn btn-sm btn-link p-0 mt-2">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+    </div>
+    
+    <!-- Pending Posts -->
+    <div class="col-md-6 col-xl-3">
+        <div class="stats-box">
+            <div class="stats-icon bg-info text-white">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="stats-number">@ViewBag.PendingPostsCount</div>
+            <div class="stats-label">Pending Posts</div>
+            <a href="@Url.Action("PendingPosts", "Admin")" class="btn btn-sm btn-link p-0 mt-2">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+    </div>
+    
+    <!-- Active Users -->
+    <div class="col-md-6 col-xl-3">
+        <div class="stats-box">
+            <div class="stats-icon bg-success text-white">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stats-number">@ViewBag.ActiveUsersCount</div>
+            <div class="stats-label">Active Users</div>
+            <a href="@Url.Action("ManageUsers", "Admin")" class="btn btn-sm btn-link p-0 mt-2">View Details <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Reports -->
+    <div class="col-lg-8">
+        <div class="card admin-card">
+            <div class="card-header bg-light">
+                <div class="d-flex align-items-center">
+                    <h5 class="mb-0">Recent Reports</h5>
+                    <a href="@Url.Action("IncidentReports", "Admin")" class="btn btn-sm btn-outline-primary ms-auto">View All</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
+                            {
+                                @foreach (var report in ViewBag.RecentReports)
+                                {
+                                    <tr>
+                                        <td>@report.Title</td>
+                                        <td>@report.Type</td>
+                                        <td>@report.Barangay, @report.City</td>
+                                        <td>@report.DateReported.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            <span class="status-badge status-@report.Status.ToString().ToLower()">
+                                                @report.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="@Url.Action("ReportDetails", "Admin", new { id = report.Id })" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-3">No recent reports found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <div class="card admin-card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("CreateAlert", "Admin")" class="btn btn-primary">
+                        <i class="fas fa-bell me-2"></i> Issue New Alert
+                    </a>
+                    <a href="@Url.Action("PendingLGUApplications", "Admin")" class="btn btn-outline-primary">
+                        <i class="fas fa-user-check me-2"></i> Review LGU Applications
+                    </a>
+                    <a href="@Url.Action("PendingPosts", "Admin")" class="btn btn-outline-primary">
+                        <i class="fas fa-clipboard-check me-2"></i> Moderate Community Posts
+                    </a>
+                    <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.Pending })" class="btn btn-outline-primary">
+                        <i class="fas fa-exclamation-circle me-2"></i> Review Pending Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Status -->
+        <div class="card admin-card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">System Status</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-server text-success me-2"></i> Database Connection</span>
+                        <span class="badge bg-success rounded-pill">Active</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-envelope text-success me-2"></i> Email Service</span>
+                        <span class="badge bg-success rounded-pill">Active</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-map-marked-alt text-success me-2"></i> Map API</span>
+                        <span class="badge bg-success rounded-pill">Active</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-comments text-success me-2"></i> Chat Support</span>
+                        <span class="badge bg-success rounded-pill">Active</span>
+                    </li>
+                </ul>
+                <div class="mt-3 text-end">
+                    <a href="@Url.Action("SystemLogs", "Admin")" class="btn btn-sm btn-link text-decoration-none">
+                        View System Logs <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

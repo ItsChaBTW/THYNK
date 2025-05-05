@@ -1,0 +1,214 @@
+@model IEnumerable<THYNK.Models.DisasterReport>
+@{
+    ViewData["Title"] = "Incident Reports";
+    Layout = "_AdminLayout";
+}
+
+<div class="card admin-card mb-4">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex align-items-center">
+            <div class="card-icon bg-white text-primary">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <h5 class="m-0">Incident Reports</h5>
+                <small>Review, verify, and assign reports to appropriate LGU/SLU users</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <form method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search reports..." value="@Context.Request.Query["search"]" />
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="btn-group">
+                    <a href="@Url.Action("IncidentReports", "Admin")" class="btn @(ViewBag.CurrentFilter == null ? "btn-primary" : "btn-outline-primary")">All</a>
+                    <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.Pending })" class="btn @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Pending ? "btn-primary" : "btn-outline-primary")">Pending</a>
+                    <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.Verified })" class="btn @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Verified ? "btn-primary" : "btn-outline-primary")">Verified</a>
+                    <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.InProgress })" class="btn @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.InProgress ? "btn-primary" : "btn-outline-primary")">In Progress</a>
+                    <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.Resolved })" class="btn @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Resolved ? "btn-primary" : "btn-outline-primary")">Resolved</a>
+                </div>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No reports found matching your criteria.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Location</th>
+                            <th>Reported By</th>
+                            <th>Date Reported</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var report in Model)
+                        {
+                            <tr>
+                                <td>@report.Title</td>
+                                <td>
+                                    <span class="badge bg-secondary">@report.Type</span>
+                                </td>
+                                <td>
+                                    <span class="badge @(report.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
+                                                      report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
+                                                      report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                                        @report.Severity
+                                    </span>
+                                </td>
+                                <td>@(string.IsNullOrEmpty(report.Location) ? "Not specified" : report.Location)</td>
+                                <td>@(report.User?.FirstName + " " + report.User?.LastName ?? "Unknown")</td>
+                                <td>@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
+                                <td>
+                                    <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
+                                                      report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
+                                                      report.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
+                                                      report.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                                        @report.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="@Url.Action("ReportDetails", "Admin", new { id = report.Id })" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        @if (report.Status == THYNK.Models.ReportStatus.Pending)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#verifyModal@(report.Id)">
+                                                <i class="fas fa-check"></i> Verify
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#declineModal@(report.Id)">
+                                                <i class="fas fa-times"></i> Decline
+                                            </button>
+                                        }
+                                        @if (report.Status == THYNK.Models.ReportStatus.Verified)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignModal@(report.Id)">
+                                                <i class="fas fa-user-check"></i> Assign
+                                            </button>
+                                        }
+                                    </div>
+
+                                    <!-- Verify Modal -->
+                                    @if (report.Status == THYNK.Models.ReportStatus.Pending)
+                                    {
+                                        <div class="modal fade" id="verifyModal@(report.Id)" tabindex="-1" aria-labelledby="verifyModalLabel@(report.Id)" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="verifyModalLabel@(report.Id)">Verify Report</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>Are you sure you want to verify this report?</p>
+                                                        <p><strong>Title:</strong> @report.Title</p>
+                                                        <p><strong>Reported by:</strong> @(report.User?.FirstName + " " + report.User?.LastName ?? "Unknown")</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <form asp-action="VerifyReport" asp-route-id="@report.Id" method="post">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="btn btn-success">Verify Report</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Decline Modal -->
+                                        <div class="modal fade" id="declineModal@(report.Id)" tabindex="-1" aria-labelledby="declineModalLabel@(report.Id)" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="declineModalLabel@(report.Id)">Decline Report</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form asp-action="DeclineReport" asp-route-id="@report.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <div class="modal-body">
+                                                            <p>Are you sure you want to decline this report?</p>
+                                                            <p><strong>Title:</strong> @report.Title</p>
+                                                            <p><strong>Reported by:</strong> @(report.User?.FirstName + " " + report.User?.LastName ?? "Unknown")</p>
+                                                            <div class="mb-3">
+                                                                <label for="reason@(report.Id)" class="form-label">Reason for declining:</label>
+                                                                <textarea id="reason@(report.Id)" name="reason" class="form-control" rows="3" required></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-danger">Decline Report</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <!-- Assign Modal -->
+                                    @if (report.Status == THYNK.Models.ReportStatus.Verified)
+                                    {
+                                        <div class="modal fade" id="assignModal@(report.Id)" tabindex="-1" aria-labelledby="assignModalLabel@(report.Id)" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="assignModalLabel@(report.Id)">Assign Report to LGU/SLU</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form asp-action="AssignReportToLGU" asp-route-reportId="@report.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <div class="modal-body">
+                                                            <p>Assign this report to an LGU/SLU user for action:</p>
+                                                            <p><strong>Title:</strong> @report.Title</p>
+                                                            <p><strong>Type:</strong> @report.Type</p>
+                                                            <div class="mb-3">
+                                                                <label for="lguUserId@(report.Id)" class="form-label">Select LGU/SLU User:</label>
+                                                                <select id="lguUserId@(report.Id)" name="lguUserId" class="form-select" required>
+                                                                    <option value="">-- Select LGU/SLU --</option>
+                                                                    @if (ViewBag.LGUUsers != null)
+                                                                    {
+                                                                        @foreach (var lgu in ViewBag.LGUUsers)
+                                                                        {
+                                                                            <option value="@lgu.Id">@lgu.OrganizationName - @lgu.FirstName @lgu.LastName</option>
+                                                                        }
+                                                                    }
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="assignmentNote@(report.Id)" class="form-label">Assignment Note:</label>
+                                                                <textarea id="assignmentNote@(report.Id)" name="assignmentNote" class="form-control" rows="3" placeholder="Optional note for the LGU/SLU user"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Assign Report</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div> 

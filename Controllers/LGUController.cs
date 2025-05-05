@@ -6,6 +6,7 @@ using THYNK.Data;
 using THYNK.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Authentication;
 
 namespace THYNK.Controllers
 {
@@ -46,6 +47,15 @@ namespace THYNK.Controllers
                 return;
             }
 
+            // Check if LGU user is approved
+            if (user is LGUUser lguUser && !lguUser.IsApproved)
+            {
+                _logger.LogWarning($"Access denied for unapproved LGU user {userId}");
+                await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+                context.Result = new RedirectToPageResult("/Account/PendingApproval", new { area = "Identity" });
+                return;
+            }
+
             await base.OnActionExecutionAsync(context, next);
         }
 
@@ -81,14 +91,105 @@ namespace THYNK.Controllers
             return View();
         }
 
-        // Manage disaster reports
-        public async Task<IActionResult> ManageReports()
+        // Manage disaster reports with filtering
+        public async Task<IActionResult> ManageReports(ReportStatus? status = null, string search = null)
         {
-            var reports = await _context.DisasterReports
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports;
+            
+            // First get reports assigned to this LGU/SLU user
+            reportsQuery = reportsQuery.Where(r => r.AssignedToId == userId || r.Status == ReportStatus.InProgress || r.Status == ReportStatus.Verified);
+            
+            // Filter by status if provided
+            if (status.HasValue)
+            {
+                reportsQuery = reportsQuery.Where(r => r.Status == status.Value);
+            }
+            
+            // Filter by search text if provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                search = search.ToLower();
+                reportsQuery = reportsQuery.Where(r => 
+                    r.Title.ToLower().Contains(search) || 
+                    r.Description.ToLower().Contains(search) || 
+                    r.Location.ToLower().Contains(search));
+            }
+            
+            // Get reports, ordered by date
+            var reports = await reportsQuery
                 .OrderByDescending(r => r.DateReported)
                 .ToListAsync();
                 
+            ViewBag.CurrentFilter = status;
+            ViewBag.CurrentSearch = search;
+            
             return View(reports);
+        }
+        
+        // View report details
+        public async Task<IActionResult> ReportDetails(int id)
+        {
+            var report = await _context.DisasterReports
+                .Include(r => r.User)
+                .Include(r => r.AssignedTo)
+                .FirstOrDefaultAsync(r => r.Id == id);
+                
+            if (report == null)
+            {
+                return NotFound();
+            }
+            
+            return View(report);
+        }
+        
+        // Update report status
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateReportStatus(int id, int status, string notes)
+        {
+            var report = await _context.DisasterReports.FindAsync(id);
+            
+            if (report == null)
+            {
+                return NotFound();
+            }
+            
+            // Update report status
+            report.Status = (ReportStatus)status;
+            
+            // Add response log entry (if we had a ResponseLog table)
+            // Instead we can store in the AdditionalInfo field for now as JSON
+            var currentUser = await _userManager.GetUserAsync(User);
+            string responderName = $"{currentUser.FirstName} {currentUser.LastName}";
+            string responseNote = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] Status updated to {report.Status} by {responderName}. Notes: {notes}";
+            
+            // Append to existing info with a separator
+            if (!string.IsNullOrEmpty(report.AdditionalInfo))
+            {
+                report.AdditionalInfo += "\n\n---\n\n";
+            }
+            report.AdditionalInfo += responseNote;
+            
+            // If resolved, set the resolution date
+            if (report.Status == ReportStatus.Resolved)
+            {
+                // We would have a ResolutionDate field, but for now we'll just use AdditionalInfo
+                report.AdditionalInfo += $"\n\nResolved on: {DateTime.Now:yyyy-MM-dd HH:mm}";
+            }
+            
+            _context.Update(report);
+            await _context.SaveChangesAsync();
+            
+            // Notify the reporter if user info is available
+            if (report.User != null && !string.IsNullOrEmpty(report.User.Email))
+            {
+                // This would use the email service in a real app
+                _logger.LogInformation($"Would send email to {report.User.Email} about status update for report {report.Id}");
+            }
+            
+            TempData["SuccessMessage"] = "Report status has been updated successfully.";
+            return RedirectToAction(nameof(ReportDetails), new { id = id });
         }
 
         // Create new alert
@@ -115,12 +216,21 @@ namespace THYNK.Controllers
         }
 
         // Manage alerts
-        public async Task<IActionResult> ManageAlerts()
+        public async Task<IActionResult> ManageAlerts(bool? isActive = null)
         {
-            var alerts = await _context.Alerts
+            IQueryable<Alert> alertsQuery = _context.Alerts;
+            
+            // Filter for active/inactive alerts if requested
+            if (isActive.HasValue)
+            {
+                alertsQuery = alertsQuery.Where(a => a.IsActive == isActive.Value);
+            }
+            
+            var alerts = await alertsQuery
                 .OrderByDescending(a => a.DateIssued)
                 .ToListAsync();
                 
+            ViewBag.CurrentFilter = isActive;
             return View(alerts);
         }
 

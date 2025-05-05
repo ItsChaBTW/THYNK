@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - THYNK LGU</title>
+    <title>@ViewData["Title"] - THYNK LGU/SLU</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/community.css" asp-append-version="true" />
@@ -20,7 +20,7 @@
         <div class="bg-dark text-white" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4">
                 <h3 class="m-0">THYNK</h3>
-                <small>LGU Dashboard</small>
+                <small>LGU/SLU Dashboard</small>
             </div>
             <div class="list-group list-group-flush my-3">
                 <a href="@Url.Action("Dashboard", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">

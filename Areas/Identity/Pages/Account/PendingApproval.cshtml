@@ -1,0 +1,33 @@
+@page
+@model THYNK.Areas.Identity.Pages.Account.PendingApprovalModel
+@{
+    ViewData["Title"] = "Account Pending Approval";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-lg mt-5">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center font-weight-light my-4">Account Pending Approval</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info text-center" role="alert">
+                        <i class="fas fa-clock fa-3x mb-3"></i>
+                        <h4 class="alert-heading">Thank You for Confirming Your Email!</h4>
+                        <p>Your LGU account registration has been received and is currently pending approval by an administrator.</p>
+                        <hr>
+                        <p class="mb-0">You will receive an email notification when your account has been approved.</p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p>If you have any questions or need assistance, please contact our support team.</p>
+                        <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Return to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

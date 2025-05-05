@@ -119,13 +119,26 @@ namespace THYNK.Areas.Identity.Pages.Account
                     var user = await _userManager.FindByEmailAsync(Input.Email);
                     if (user != null)
                     {
-                        if (user.UserRole == UserRoleType.LGU)
+                        // Redirect based on UserRole value
+                        switch (user.UserRole)
                         {
-                            return LocalRedirect("/LGU/Dashboard");
-                        }
-                        else if (user.UserRole == UserRoleType.Community)
-                        {
-                            return LocalRedirect("/Community/Dashboard");
+                            case UserRoleType.Community: // 0
+                                return LocalRedirect("/Community/Dashboard");
+                                
+                            case UserRoleType.LGU: // 1
+                                // Additional check for approved LGU users
+                                if (user is LGUUser lguUser && !lguUser.IsApproved)
+                                {
+                                    await _signInManager.SignOutAsync();
+                                    return RedirectToPage("./PendingApproval");
+                                }
+                                return LocalRedirect("/LGU/Dashboard");
+                                
+                            case UserRoleType.Admin: // 2
+                                return LocalRedirect("/Admin/Dashboard");
+                                
+                            default:
+                                return LocalRedirect("~/");
                         }
                     }
                     
