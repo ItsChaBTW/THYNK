@@ -40,6 +40,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasMaxLength(100);
 
         builder.Entity<LGUUser>()
+            .Property(u => u.Email)
+            .IsRequired()
+            .HasMaxLength(256);
+
+        builder.Entity<LGUUser>()
             .Property(u => u.IDDocumentUrl)
             .HasMaxLength(500);
     }

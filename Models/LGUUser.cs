@@ -13,10 +13,6 @@ namespace THYNK.Models
         [StringLength(100)]
         public required string OrganizationName { get; set; }
 
-        [Required]
-        [EmailAddress]
-        public override string Email { get; set; }
-
         public string? IDDocumentUrl { get; set; }
 
         [NotMapped]

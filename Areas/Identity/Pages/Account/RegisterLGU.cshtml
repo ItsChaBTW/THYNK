@@ -43,6 +43,10 @@
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             
+            <!-- Hidden fields for debugging the NULL username issue -->
+            <input type="hidden" name="Input.NullUsername" value="NULL" />
+            <input type="hidden" name="Input.NullNormalizedUsername" value="NULL" />
+            
             <div class="form-floating mb-3">
                 <div class="input-group">
                     <span class="input-group-text">+63</span>
