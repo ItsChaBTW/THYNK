@@ -1,0 +1,251 @@
+@model IEnumerable<THYNK.Models.CommunityUpdate>
+@{
+    ViewData["Title"] = "Pending Community Posts";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid px-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex align-items-center">
+                <div class="card-icon bg-white text-primary">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <h5 class="m-0">Pending Community Posts</h5>
+                    <small>Review and moderate community posts</small>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                    <h5>No Pending Posts</h5>
+                    <p class="text-muted">There are no community posts waiting for approval.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Content</th>
+                                <th>Type</th>
+                                <th>User</th>
+                                <th>Date Posted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var post in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                            {
+                                                <img src="@post.ImageUrl" alt="Post Image" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                            }
+                                            <div>
+                                                <p class="mb-0">@(post.Content.Length > 100 ? post.Content.Substring(0, 100) + "..." : post.Content)</p>
+                                                @if (!string.IsNullOrEmpty(post.Location))
+                                                {
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-map-marker-alt me-1"></i>@post.Location
+                                                    </small>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@post.Type</span>
+                                    </td>
+                                    <td>
+                                        @(post.User?.FirstName + " " + post.User?.LastName ?? "Unknown User")
+                                    </td>
+                                    <td>@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal@(post.Id)">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </button>
+                                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#approveModal@(post.Id)">
+                                                <i class="fas fa-check me-1"></i>Approve
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal@(post.Id)">
+                                                <i class="fas fa-times me-1"></i>Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- View Modal -->
+                                <div class="modal fade" id="viewModal@(post.Id)" tabindex="-1" aria-labelledby="viewModalLabel@(post.Id)" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="viewModalLabel@(post.Id)">View Post Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                                    {
+                                                        <div class="col-md-4 mb-3">
+                                                            <img src="@post.ImageUrl" alt="Post Image" class="img-fluid rounded">
+                                                        </div>
+                                                    }
+                                                    <div class="@(string.IsNullOrEmpty(post.ImageUrl) ? "col-12" : "col-md-8")">
+                                                        <div class="card mb-3">
+                                                            <div class="card-body">
+                                                                <h6 class="card-subtitle mb-2 text-muted">
+                                                                    <span class="badge bg-secondary">@post.Type</span>
+                                                                    <small class="ms-2">Posted on @post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+                                                                </h6>
+                                                                <p class="card-text">@post.Content</p>
+                                                                @if (!string.IsNullOrEmpty(post.Location))
+                                                                {
+                                                                    <p class="card-text">
+                                                                        <small class="text-muted">
+                                                                            <i class="fas fa-map-marker-alt me-1"></i>@post.Location
+                                                                        </small>
+                                                                    </p>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div class="card">
+                                                            <div class="card-body">
+                                                                <h6 class="card-subtitle mb-2 text-muted">Posted by</h6>
+                                                                <p class="card-text">
+                                                                    @(post.User?.FirstName + " " + post.User?.LastName ?? "Unknown User")
+                                                                    <br>
+                                                                    <small class="text-muted">@post.User?.Email</small>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal@(post.Id)" data-bs-dismiss="modal">
+                                                    <i class="fas fa-check me-2"></i>Approve Post
+                                                </button>
+                                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal@(post.Id)" data-bs-dismiss="modal">
+                                                    <i class="fas fa-times me-2"></i>Reject Post
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Approve Modal -->
+                                <div class="modal fade" id="approveModal@(post.Id)" tabindex="-1" aria-labelledby="approveModalLabel@(post.Id)" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="approveModalLabel@(post.Id)">Approve Post</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to approve this post?</p>
+                                                <div class="alert alert-info">
+                                                    <h6 class="mb-2">Post Details:</h6>
+                                                    <p class="mb-1"><strong>Content:</strong> @post.Content</p>
+                                                    <p class="mb-1"><strong>Type:</strong> @post.Type</p>
+                                                    <p class="mb-1"><strong>Posted by:</strong> @(post.User?.FirstName + " " + post.User?.LastName ?? "Unknown User")</p>
+                                                    <p class="mb-1"><strong>Date:</strong> @post.DatePosted.ToString("MMM dd, yyyy HH:mm")</p>
+                                                    @if (!string.IsNullOrEmpty(post.Location))
+                                                    {
+                                                        <p class="mb-0"><strong>Location:</strong> @post.Location</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form asp-action="ApprovePost" asp-route-id="@post.Id" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="fas fa-check me-2"></i>Approve Post
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Reject Modal -->
+                                <div class="modal fade" id="rejectModal@(post.Id)" tabindex="-1" aria-labelledby="rejectModalLabel@(post.Id)" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="rejectModalLabel@(post.Id)">Reject Post</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form asp-action="RejectPost" asp-route-id="@post.Id" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to reject this post?</p>
+                                                    <div class="alert alert-warning">
+                                                        <h6 class="mb-2">Post Details:</h6>
+                                                        <p class="mb-1"><strong>Content:</strong> @post.Content</p>
+                                                        <p class="mb-1"><strong>Type:</strong> @post.Type</p>
+                                                        <p class="mb-1"><strong>Posted by:</strong> @(post.User?.FirstName + " " + post.User?.LastName ?? "Unknown User")</p>
+                                                        <p class="mb-1"><strong>Date:</strong> @post.DatePosted.ToString("MMM dd, yyyy HH:mm")</p>
+                                                        @if (!string.IsNullOrEmpty(post.Location))
+                                                        {
+                                                            <p class="mb-0"><strong>Location:</strong> @post.Location</p>
+                                                        }
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="rejectionReason@(post.Id)" class="form-label">Reason for rejection:</label>
+                                                        <textarea id="rejectionReason@(post.Id)" name="rejectionReason" class="form-control" rows="3" required 
+                                                                placeholder="Please provide a clear reason for rejecting this post..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-times me-2"></i>Reject Post
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Enable tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    </script>
+} 

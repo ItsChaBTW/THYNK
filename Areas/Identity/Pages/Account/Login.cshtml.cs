@@ -119,6 +119,14 @@ namespace THYNK.Areas.Identity.Pages.Account
                     var user = await _userManager.FindByEmailAsync(Input.Email);
                     if (user != null)
                     {
+                        // Check if user is locked out
+                        if (user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.Now)
+                        {
+                            await _signInManager.SignOutAsync();
+                            ModelState.AddModelError(string.Empty, "This account has been locked out. Please contact support.");
+                            return Page();
+                        }
+
                         // Redirect based on UserRole value
                         switch (user.UserRole)
                         {
@@ -127,12 +135,17 @@ namespace THYNK.Areas.Identity.Pages.Account
                                 
                             case UserRoleType.LGU: // 1
                                 // Additional check for approved LGU users
-                                if (user is LGUUser lguUser && !lguUser.IsApproved)
+                                if (user is LGUUser lguUser)
                                 {
-                                    await _signInManager.SignOutAsync();
-                                    return RedirectToPage("./PendingApproval");
+                                    if (!lguUser.IsApproved)
+                                    {
+                                        await _signInManager.SignOutAsync();
+                                        return RedirectToPage("./PendingApproval");
+                                    }
+                                    return LocalRedirect("/LGU/Dashboard");
                                 }
-                                return LocalRedirect("/LGU/Dashboard");
+                                // If somehow not an LGUUser but has LGU role, redirect to home
+                                return LocalRedirect("~/");
                                 
                             case UserRoleType.Admin: // 2
                                 return LocalRedirect("/Admin/Dashboard");

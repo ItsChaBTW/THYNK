@@ -170,7 +170,7 @@
                                     <small>@update.DatePosted.ToString("MMM dd, HH:mm")</small>
                                 </div>
                                 <p class="mb-1">@update.Content</p>
-                                <small>Posted by @update.User.UserName</small>
+                                <small>Posted by @(update.User?.UserName ?? "Unknown User")</small>
                             </div>
                         }
                     </div>

@@ -7,42 +7,33 @@ namespace THYNK.Models
     public class CommunityUpdate
     {
         [Key]
-        public required int Id { get; set; }
+        public int Id { get; set; }
 
         [Required]
-        [StringLength(200)]
-        public required string Content { get; set; }
+        [StringLength(2000)]
+        public string Content { get; set; }
+
+        public DateTime DatePosted { get; set; }
 
         [Required]
-        public required DateTime DatePosted { get; set; } = DateTime.Now;
+        public UpdateType Type { get; set; }
 
-        // Type of update
-        [Required]
-        public required UpdateType Type { get; set; }
+        public ModerationStatus ModerationStatus { get; set; }
 
-        // Status of moderation
-        [Required]
-        public required ModerationStatus ModerationStatus { get; set; } = ModerationStatus.Pending;
-
-        // Reference to the user who posted the update
-        public required string UserId { get; set; }
+        public string UserId { get; set; }
         
         [ForeignKey("UserId")]
-        public required ApplicationUser User { get; set; }
+        public virtual ApplicationUser? User { get; set; }
 
-        // Optional location information
-        public required string Location { get; set; }
+        public string? Location { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
-        // Images or files related to the update
-        public required string ImageUrl { get; set; }
-
-        // If this is related to a disaster report
+        public string? ImageUrl { get; set; }
         public int? DisasterReportId { get; set; }
         
         [ForeignKey("DisasterReportId")]
-        public DisasterReport? DisasterReport { get; set; }
+        public virtual DisasterReport? DisasterReport { get; set; }
     }
 
     public enum UpdateType

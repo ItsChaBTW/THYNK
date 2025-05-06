@@ -1,0 +1,108 @@
+@model THYNK.Models.CommunityUpdate
+@{
+    ViewData["Title"] = "Create Post";
+    Layout = "_CommunityLayout";
+}
+
+<div class="container-fluid px-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="m-0">Create New Post</h5>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                            @if (TempData["InnerErrorMessage"] != null)
+                            {
+                                <br /><small>@TempData["InnerErrorMessage"]</small>
+                            }
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    <form asp-action="PostUpdate" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">What's on your mind?</label>
+                            <textarea asp-for="Content" class="form-control" rows="3" required 
+                                    placeholder="Share your thoughts, updates, or information with the community..."></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label">Post Type</label>
+                            <select asp-for="Type" asp-items="Html.GetEnumSelectList<UpdateType>()" class="form-select" required>
+                                <option value="">-- Select Type --</option>
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Location" class="form-label">Location (Optional)</label>
+                            <input asp-for="Location" class="form-control" placeholder="Enter your location or leave blank">
+                            <span asp-validation-for="Location" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Latitude" class="form-label">Latitude (Optional)</label>
+                                <input asp-for="Latitude" type="number" step="any" class="form-control" placeholder="Enter latitude">
+                                <span asp-validation-for="Latitude" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Longitude" class="form-label">Longitude (Optional)</label>
+                                <input asp-for="Longitude" type="number" step="any" class="form-control" placeholder="Enter longitude">
+                                <span asp-validation-for="Longitude" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="Image" class="form-label">Add Image (Optional)</label>
+                            <input type="file" class="form-control" id="Image" name="Image" accept="image/*">
+                            <div class="form-text">Supported formats: JPG, PNG, GIF (Max size: 5MB)</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Post Update
+                            </button>
+                            <a href="@Url.Action("CommunityFeed", "Community")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Feed
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Preview image before upload
+        document.getElementById('Image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    alert('File size must be less than 5MB');
+                    this.value = '';
+                    return;
+                }
+            }
+        });
+
+        // Optional: Add geolocation support
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('Latitude').value = position.coords.latitude;
+                document.getElementById('Longitude').value = position.coords.longitude;
+            });
+        }
+    </script>
+} 

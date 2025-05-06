@@ -55,6 +55,10 @@ namespace THYNK.Controllers
             ViewBag.ActiveAlerts = activeAlerts;
             ViewBag.CommunityUpdates = communityUpdates;
             
+            ViewBag.PendingPostsCount = await _context.CommunityUpdates
+                .Where(c => c.ModerationStatus == ModerationStatus.Pending)
+                .CountAsync();
+            
             return View();
         }
         
@@ -213,19 +217,101 @@ namespace THYNK.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostUpdate(CommunityUpdate update)
+        public async Task<IActionResult> PostUpdate(CommunityUpdate update, IFormFile Image)
         {
-            if (ModelState.IsValid)
+            try
             {
-                update.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                // Get the current user's ID
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "User not authenticated.";
+                    return View(update);
+                }
+
+                // Set required fields
+                update.UserId = userId;
                 update.DatePosted = DateTime.Now;
                 update.ModerationStatus = ModerationStatus.Pending;
+
+                // Handle image upload if provided
+                if (Image != null)
+                {
+                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "community_posts");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    var uniqueFileName = $"{Guid.NewGuid()}_{Image.FileName}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await Image.CopyToAsync(fileStream);
+                    }
+
+                    update.ImageUrl = $"/uploads/community_posts/{uniqueFileName}";
+                }
+                else
+                {
+                    update.ImageUrl = "/images/no-image.png"; // Set a default image URL
+                }
+
+                // Ensure location fields are properly set
+                if (string.IsNullOrEmpty(update.Location))
+                {
+                    update.Location = "Not specified";
+                }
+
+                // If coordinates are not provided, set them to null
+                if (update.Latitude == 0 && update.Longitude == 0)
+                {
+                    update.Latitude = null;
+                    update.Longitude = null;
+                }
+
+                // Debug: Log the update object before saving
+                TempData["DebugInfo"] = $"Attempting to save post: Content={update.Content}, Type={update.Type}, UserId={update.UserId}";
+
+                // Add the post to the database
+                _context.CommunityUpdates.Add(update);
                 
-                _context.Add(update);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(CommunityFeed));
+                // Debug: Log the entity state
+                var entry = _context.Entry(update);
+                TempData["DebugInfo"] += $", State={entry.State}";
+
+                var result = await _context.SaveChangesAsync();
+
+                if (result > 0)
+                {
+                    TempData["SuccessMessage"] = "Your post has been submitted and is pending approval.";
+                    return RedirectToAction(nameof(CommunityFeed));
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Failed to save the post. No records were affected.";
+                    return View(update);
+                }
             }
-            return View(update);
+            catch (DbUpdateException dbEx)
+            {
+                TempData["ErrorMessage"] = "Database error: " + dbEx.Message;
+                if (dbEx.InnerException != null)
+                {
+                    TempData["InnerErrorMessage"] = "Inner error: " + dbEx.InnerException.Message;
+                }
+                return View(update);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Error creating post: " + ex.Message;
+                if (ex.InnerException != null)
+                {
+                    TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
+                }
+                return View(update);
+            }
         }
         
         // Access educational resources

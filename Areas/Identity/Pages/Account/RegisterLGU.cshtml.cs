@@ -58,15 +58,12 @@ namespace THYNK.Areas.Identity.Pages.Account
 
         public class InputModel
         {
-            [Required]
             [Display(Name = "First Name")]
             public string FirstName { get; set; }
 
-            [Required]
             [Display(Name = "Last Name")]
             public string LastName { get; set; }
 
-            [Required]
             [Display(Name = "Position / Designation")]
             public string Position { get; set; }
 
@@ -78,12 +75,7 @@ namespace THYNK.Areas.Identity.Pages.Account
             [EmailAddress]
             [Display(Name = "Email Address")]
             public string Email { get; set; }
-            
-            // Hidden fields for debugging
-            public string NullUsername { get; set; }
-            public string NullNormalizedUsername { get; set; }
 
-            [Required]
             [Display(Name = "Phone Number")]
             [RegularExpression(@"^9\d{9}$", ErrorMessage = "Phone number must start with 9 followed by 9 digits")]
             public string PhoneNumber { get; set; }
@@ -123,10 +115,10 @@ namespace THYNK.Areas.Identity.Pages.Account
                     Position = Input.Position,
                     OrganizationName = Input.OrganizationName,
                     UserRole = UserRoleType.LGU,
-                    UserName = String.IsNullOrEmpty(Input.NullUsername) ? Input.Email : Input.NullUsername,
+                    UserName = Input.Email,
                     Email = Input.Email,
                     NormalizedEmail = Input.Email.ToUpper(),
-                    NormalizedUserName = String.IsNullOrEmpty(Input.NullNormalizedUsername) ? Input.Email.ToUpper() : Input.NullNormalizedUsername,
+                    NormalizedUserName = Input.Email.ToUpper(),
                     EmailConfirmed = false
                 };
 
@@ -161,16 +153,6 @@ namespace THYNK.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("LGU/SLU user created a new account with password.");
                     
-                    // Verify email was set properly
-                    var createdUser = await _userManager.FindByIdAsync(user.Id);
-                    if (string.IsNullOrEmpty(createdUser.Email))
-                    {
-                        _logger.LogWarning("Email was not set properly. Updating directly.");
-                        createdUser.Email = Input.Email;
-                        createdUser.NormalizedEmail = Input.Email.ToUpper();
-                        await _userManager.UpdateAsync(createdUser);
-                    }
-
                     // Add user to LGU role
                     await _userManager.AddToRoleAsync(user, "LGU");
                     _logger.LogInformation("User added to LGU role.");

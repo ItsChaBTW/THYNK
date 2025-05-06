@@ -11,6 +11,7 @@ using THYNK.Models;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using Microsoft.Extensions.Logging;
 
 namespace THYNK.Controllers
 {
@@ -22,19 +23,22 @@ namespace THYNK.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSender _emailSender;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ILogger<AdminController> _logger;
 
         public AdminController(
             ApplicationDbContext context, 
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IEmailSender emailSender,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            ILogger<AdminController> logger)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
             _emailSender = emailSender;
             _webHostEnvironment = webHostEnvironment;
+            _logger = logger;
         }
 
         // Dashboard
@@ -113,12 +117,23 @@ namespace THYNK.Controllers
             _context.Update(lguUser);
             await _context.SaveChangesAsync();
             
-            // Send approval email
-            await _emailSender.SendEmailAsync(
-                lguUser.Email,
-                "THYNK - LGU/SLU Account Approved",
-                $"Dear {lguUser.FirstName},<br><br>Your LGU/SLU account for THYNK has been approved. You can now log in and access the LGU/SLU features.<br><br>Thank you,<br>THYNK Administration Team"
-            );
+            // Send approval email only if email is not null
+            if (!string.IsNullOrEmpty(lguUser.Email))
+            {
+                try
+                {
+                    await _emailSender.SendEmailAsync(
+                        lguUser.Email,
+                        "THYNK - LGU/SLU Account Approved",
+                        $"Dear {lguUser.FirstName},<br><br>Your LGU/SLU account for THYNK has been approved. You can now log in and access the LGU/SLU features.<br><br>Thank you,<br>THYNK Administration Team"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log the error but don't fail the approval process
+                    _logger.LogError($"Failed to send approval email to {lguUser.Email}: {ex.Message}");
+                }
+            }
             
             TempData["SuccessMessage"] = "LGU/SLU account has been approved successfully.";
             return RedirectToAction(nameof(PendingLGUApplications));
@@ -154,9 +169,30 @@ namespace THYNK.Controllers
         }
 
         // Manage users
-        public async Task<IActionResult> ManageUsers()
+        public async Task<IActionResult> ManageUsers(string search = "", string role = "")
         {
-            var users = await _context.Users.ToListAsync();
+            IQueryable<ApplicationUser> query = _context.Users;
+
+            // Apply search filter if provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(u => u.Email.Contains(search));
+            }
+
+            // Apply role filter if provided
+            if (!string.IsNullOrEmpty(role))
+            {
+                if (role == "LGU")
+                {
+                    query = query.OfType<LGUUser>();
+                }
+                else
+                {
+                    query = query.Where(u => u.UserRole.ToString() == role);
+                }
+            }
+
+            var users = await query.ToListAsync();
             return View(users);
         }
 
@@ -228,6 +264,7 @@ namespace THYNK.Controllers
         {
             var report = await _context.DisasterReports
                 .Include(r => r.User)
+                .Include(r => r.AssignedTo)
                 .FirstOrDefaultAsync(r => r.Id == id);
                 
             if (report == null)
@@ -249,20 +286,53 @@ namespace THYNK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyReport(int id)
         {
-            var report = await _context.DisasterReports
-                .FirstOrDefaultAsync(r => r.Id == id);
-                
-            if (report == null)
+            try
             {
-                return NotFound();
+                var report = await _context.DisasterReports
+                    .Include(r => r.User)
+                    .FirstOrDefaultAsync(r => r.Id == id);
+                    
+                if (report == null)
+                {
+                    return NotFound();
+                }
+
+                if (report.Status != ReportStatus.Pending)
+                {
+                    TempData["ErrorMessage"] = "Only pending reports can be verified.";
+                    return RedirectToAction(nameof(ReportDetails), new { id = id });
+                }
+                
+                report.Status = ReportStatus.Verified;
+                _context.Update(report);
+                await _context.SaveChangesAsync();
+                
+                // Send email notification to user
+                if (report.User != null && !string.IsNullOrEmpty(report.User.Email))
+                {
+                    try
+                    {
+                        await _emailSender.SendEmailAsync(
+                            report.User.Email,
+                            "THYNK - Incident Report Verified",
+                            $"Dear {report.User.FirstName},<br><br>Your incident report titled '{report.Title}' has been verified by our team.<br><br>Thank you for helping keep our community safe.<br><br>THYNK Administration Team"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Failed to send verification email: {ex.Message}");
+                    }
+                }
+                
+                TempData["SuccessMessage"] = "Report has been verified successfully.";
+                return RedirectToAction(nameof(ReportDetails), new { id = id });
             }
-            
-            report.Status = ReportStatus.Verified;
-            _context.Update(report);
-            await _context.SaveChangesAsync();
-            
-            TempData["SuccessMessage"] = "Report has been verified successfully.";
-            return RedirectToAction(nameof(ReportDetails), new { id = id });
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error verifying report: {ex.Message}");
+                TempData["ErrorMessage"] = "An error occurred while verifying the report.";
+                return RedirectToAction(nameof(ReportDetails), new { id = id });
+            }
         }
 
         // Decline incident report
@@ -300,38 +370,64 @@ namespace THYNK.Controllers
         // Assign report to LGU
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AssignReportToLGU(int reportId, string lguUserId)
+        public async Task<IActionResult> AssignReportToLGU(int reportId, string lguUserId, string assignmentNote)
         {
-            var report = await _context.DisasterReports
-                .FirstOrDefaultAsync(r => r.Id == reportId);
-                
-            var lguUser = await _context.Users
-                .OfType<LGUUser>()
-                .FirstOrDefaultAsync(u => u.Id == lguUserId);
-                
-            if (report == null || lguUser == null)
+            try
             {
-                return NotFound();
+                var report = await _context.DisasterReports
+                    .Include(r => r.User)
+                    .FirstOrDefaultAsync(r => r.Id == reportId);
+                    
+                var lguUser = await _context.Users
+                    .OfType<LGUUser>()
+                    .FirstOrDefaultAsync(u => u.Id == lguUserId && u.IsApproved);
+                    
+                if (report == null || lguUser == null)
+                {
+                    return NotFound();
+                }
+
+                if (report.Status != ReportStatus.Verified)
+                {
+                    TempData["ErrorMessage"] = "Only verified reports can be assigned to LGU users.";
+                    return RedirectToAction(nameof(ReportDetails), new { id = reportId });
+                }
+                
+                report.Status = ReportStatus.InProgress;
+                report.AssignedToId = lguUserId;
+                report.AssignedAt = DateTime.Now;
+                
+                _context.Update(report);
+                await _context.SaveChangesAsync();
+                
+                // Send notification to LGU
+                if (!string.IsNullOrEmpty(lguUser.Email))
+                {
+                    try
+                    {
+                        await _emailSender.SendEmailAsync(
+                            lguUser.Email,
+                            "THYNK - New Incident Report Assignment",
+                            $"Dear {lguUser.FirstName},<br><br>A new incident report titled '{report.Title}' has been assigned to you for action.<br><br>" +
+                            $"Assignment Note: {assignmentNote}<br><br>" +
+                            "Please log in to your LGU dashboard to view the details and take appropriate action.<br><br>Thank you,<br>THYNK Administration Team"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Failed to send assignment email: {ex.Message}");
+                    }
+                }
+                
+                TempData["SuccessMessage"] = "Report has been assigned successfully.";
+                return RedirectToAction(nameof(ReportDetails), new { id = reportId });
             }
-            
-            // Here you would create an assignment record or update the report with assignment info
-            // For simplicity, we'll just update the status to InProgress
-            report.Status = ReportStatus.InProgress;
-            report.AssignedToId = lguUserId;
-            report.AssignedAt = DateTime.Now;
-            
-            _context.Update(report);
-            await _context.SaveChangesAsync();
-            
-            // Send notification to LGU
-            await _emailSender.SendEmailAsync(
-                lguUser.Email,
-                "THYNK - New Incident Report Assignment",
-                $"Dear {lguUser.FirstName},<br><br>A new incident report titled '{report.Title}' has been assigned to you for action.<br><br>Please log in to your LGU dashboard to view the details and take appropriate action.<br><br>Thank you,<br>THYNK Administration Team"
-            );
-            
-            TempData["SuccessMessage"] = "Report has been assigned successfully.";
-            return RedirectToAction(nameof(ReportDetails), new { id = reportId });
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error assigning report: {ex.Message}");
+                TempData["ErrorMessage"] = "An error occurred while assigning the report.";
+                return RedirectToAction(nameof(ReportDetails), new { id = reportId });
+            }
         }
 
         #endregion
