@@ -25,39 +25,9 @@
     <div class="col-md-3">
         <div class="card dashboard-card mb-4">
             <div class="card-header bg-secondary text-white">
-                <h5 class="m-0"><i class="fas fa-filter me-2"></i>Filters</h5>
+                <h5 class="m-0"><i class="fas fa-filter me-2"></i>Date Filter</h5>
             </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Incident Type</label>
-                    <select id="filter-type" class="form-select form-select-sm">
-                        <option value="all">All Types</option>
-                        @foreach (var type in Enum.GetValues(typeof(DisasterType)))
-                        {
-                            <option value="@type">@type</option>
-                        }
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Severity Level</label>
-                    <select id="filter-severity" class="form-select form-select-sm">
-                        <option value="all">All Severity Levels</option>
-                        @foreach (var severity in Enum.GetValues(typeof(SeverityLevel)))
-                        {
-                            <option value="@severity">@severity</option>
-                        }
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Status</label>
-                    <select id="filter-status" class="form-select form-select-sm">
-                        <option value="all">All Status</option>
-                        @foreach (var status in Enum.GetValues(typeof(ReportStatus)))
-                        {
-                            <option value="@status">@status</option>
-                        }
-                    </select>
-                </div>
                 <div class="mb-3">
                     <label class="form-label">Date Range</label>
                     <div class="input-group input-group-sm mb-2">
@@ -69,8 +39,8 @@
                         <input type="date" id="filter-date-to" class="form-control form-control-sm">
                     </div>
                 </div>
-                <button id="apply-filters" class="btn btn-primary btn-sm w-100">Apply Filters</button>
-                <button id="reset-filters" class="btn btn-outline-secondary btn-sm w-100 mt-2">Reset Filters</button>
+                <button id="apply-filters" class="btn btn-primary btn-sm w-100">Apply Date Filter</button>
+                <button id="reset-filters" class="btn btn-outline-secondary btn-sm w-100 mt-2">Reset Filter</button>
             </div>
         </div>
 
@@ -80,22 +50,14 @@
             </div>
             <div class="card-body">
                 <div class="mb-2">
-                    <h6 class="mb-2">Incident Type</h6>
+                    <h6 class="mb-2">Status</h6>
                     <div class="d-flex align-items-center mb-1">
-                        <span class="badge bg-danger me-2" style="width: 20px; height: 20px;"></span>
-                        <small>Earthquake</small>
+                        <i class="fas fa-circle text-primary me-2"></i>
+                        <small>In Progress</small>
                     </div>
                     <div class="d-flex align-items-center mb-1">
-                        <span class="badge bg-primary me-2" style="width: 20px; height: 20px;"></span>
-                        <small>Flood</small>
-                    </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <span class="badge bg-warning me-2" style="width: 20px; height: 20px;"></span>
-                        <small>Fire</small>
-                    </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <span class="badge bg-dark me-2" style="width: 20px; height: 20px;"></span>
-                        <small>Other</small>
+                        <i class="fas fa-circle text-success me-2"></i>
+                        <small>Resolved</small>
                     </div>
                 </div>
                 <div>
@@ -111,10 +73,6 @@
                     <div class="d-flex align-items-center mb-1">
                         <i class="fas fa-circle text-danger me-2"></i>
                         <small>High</small>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-circle text-dark me-2"></i>
-                        <small>Critical</small>
                     </div>
                 </div>
             </div>
@@ -174,9 +132,10 @@
             trackUserLocation: true
         }));
 
-        // Store the markers
+        // Store the markers and incidents
         let markers = [];
         let incidents = [];
+        let organizations = new Set();
 
         // Get the incident modal
         const incidentModal = new bootstrap.Modal(document.getElementById('incident-modal'));
@@ -196,9 +155,35 @@
                 .then(response => response.json())
                 .then(data => {
                     incidents = data;
+                    // Collect unique organizations
+                    organizations.clear();
+                    incidents.forEach(incident => {
+                        if (incident.assignedTo && incident.assignedTo.organization) {
+                            organizations.add(incident.assignedTo.organization);
+                        }
+                    });
+                    // Populate organization filter
+                    populateOrganizationFilter();
+                    // Render all markers initially
                     renderMarkers(incidents);
                 })
                 .catch(error => console.error('Error loading incidents:', error));
+        }
+
+        // Populate organization filter dropdown
+        function populateOrganizationFilter() {
+            const orgSelect = document.getElementById('filter-organization');
+            // Clear existing options except the first one
+            while (orgSelect.options.length > 1) {
+                orgSelect.remove(1);
+            }
+            // Add organization options
+            organizations.forEach(org => {
+                const option = document.createElement('option');
+                option.value = org;
+                option.textContent = org;
+                orgSelect.appendChild(option);
+            });
         }
 
         // Render markers on the map
@@ -209,43 +194,40 @@
             }
             markers = [];
 
+            // Create bounds object to fit all markers
+            const bounds = new mapboxgl.LngLatBounds();
+
             // Add new markers
             for (let incident of data) {
                 // Set marker color based on incident type
                 let markerColor;
                 switch(incident.type) {
-                    case 'Earthquake': markerColor = '#dc3545'; break;
-                    case 'Flood': markerColor = '#0d6efd'; break;
-                    case 'Fire': markerColor = '#ffc107'; break;
-                    case 'Landslide': markerColor = '#6c757d'; break;
-                    case 'Storm': markerColor = '#6610f2'; break;
-                    case 'Accident': markerColor = '#fd7e14'; break;
-                    default: markerColor = '#343a40';
-                }
-                
-                // Set marker size based on severity
-                let markerSize;
-                switch(incident.severity) {
-                    case 'Low': markerSize = 30; break;
-                    case 'Medium': markerSize = 40; break;
-                    case 'High': markerSize = 50; break;
-                    case 'Critical': markerSize = 60; break;
-                    default: markerSize = 40;
+                    case 'Earthquake': markerColor = '#dc3545'; break; // Red
+                    case 'Flood': markerColor = '#0d6efd'; break; // Blue
+                    case 'Fire': markerColor = '#ffc107'; break; // Yellow
+                    case 'Landslide': markerColor = '#6c757d'; break; // Gray
+                    case 'Storm': markerColor = '#6610f2'; break; // Purple
+                    case 'Accident': markerColor = '#fd7e14'; break; // Orange
+                    default: markerColor = '#343a40'; // Dark gray
                 }
 
                 // Create custom HTML element for marker
                 const el = document.createElement('div');
                 el.className = 'incident-marker';
                 el.style.backgroundColor = markerColor;
-                el.style.width = `${markerSize}px`;
-                el.style.height = `${markerSize}px`;
+                el.style.width = '20px';
+                el.style.height = '20px';
                 el.style.borderRadius = '50%';
                 el.style.border = '2px solid white';
+                el.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.3)';
                 
                 // Create marker
                 const marker = new mapboxgl.Marker(el)
                     .setLngLat([incident.longitude, incident.latitude])
                     .addTo(map);
+                
+                // Extend bounds to include this marker
+                bounds.extend([incident.longitude, incident.latitude]);
                 
                 // Add popup information
                 const popup = new mapboxgl.Popup({
@@ -253,7 +235,11 @@
                     closeButton: false
                 }).setHTML(`
                     <strong>${incident.title}</strong><br>
-                    <span class="text-muted small">${incident.type}</span>
+                    <span class="text-muted small">${incident.type}</span><br>
+                    <span class="badge ${incident.status === 'InProgress' ? 'bg-primary' : 'bg-success'}">${incident.status}</span><br>
+                    ${incident.assignedTo ? 
+                        `<span class="text-primary small">Handled by: ${incident.assignedTo.organization}</span>` : 
+                        ''}
                 `);
                 
                 marker.setPopup(popup);
@@ -266,6 +252,13 @@
                 marker.getElement().addEventListener('click', () => showIncidentDetails(incident));
                 
                 markers.push(marker);
+            }
+
+            // Fit map to bounds if we have markers
+            if (data.length > 0) {
+                // Add padding to the bounds
+                const padding = { top: 50, bottom: 50, left: 50, right: 50 };
+                map.fitBounds(bounds, { padding: padding, maxZoom: 15 });
             }
         }
 
@@ -285,6 +278,18 @@
                 detailedLocation += incident.city;
             }
             document.getElementById('modal-detailed-location').textContent = detailedLocation;
+            
+            // Add assigned organization information if available
+            if (incident.assignedTo) {
+                const orgInfo = document.createElement('div');
+                orgInfo.className = 'mt-3';
+                orgInfo.innerHTML = `
+                    <h6><i class="fas fa-building text-primary me-2"></i>Handling Organization</h6>
+                    <p class="mb-1">${incident.assignedTo.organization}</p>
+                    <p class="small text-muted mb-0">Assigned to: ${incident.assignedTo.name}</p>
+                `;
+                document.getElementById('modal-body').insertBefore(orgInfo, document.getElementById('modal-body').lastElementChild);
+            }
             
             document.getElementById('modal-type').textContent = incident.type;
             document.getElementById('view-details-link').href = `/Community/ReportDetails/${incident.id}`;
@@ -337,53 +342,40 @@
 
         // Apply filters
         function applyFilters() {
-            const typeFilter = document.getElementById('filter-type').value;
-            const severityFilter = document.getElementById('filter-severity').value;
-            const statusFilter = document.getElementById('filter-status').value;
             const dateFromFilter = document.getElementById('filter-date-from').value;
             const dateToFilter = document.getElementById('filter-date-to').value;
             
             let filteredIncidents = [...incidents];
             
-            // Filter by type
-            if (typeFilter !== 'all') {
-                filteredIncidents = filteredIncidents.filter(incident => incident.type === typeFilter);
-            }
-            
-            // Filter by severity
-            if (severityFilter !== 'all') {
-                filteredIncidents = filteredIncidents.filter(incident => incident.severity === severityFilter);
-            }
-            
-            // Filter by status
-            if (statusFilter !== 'all') {
-                filteredIncidents = filteredIncidents.filter(incident => incident.status === statusFilter);
-            }
-            
             // Filter by date range
             if (dateFromFilter) {
                 const fromDate = new Date(dateFromFilter);
-                filteredIncidents = filteredIncidents.filter(incident => new Date(incident.dateReported) >= fromDate);
+                filteredIncidents = filteredIncidents.filter(incident => 
+                    new Date(incident.dateReported) >= fromDate
+                );
             }
             
             if (dateToFilter) {
                 const toDate = new Date(dateToFilter);
                 toDate.setHours(23, 59, 59); // Set to end of day
-                filteredIncidents = filteredIncidents.filter(incident => new Date(incident.dateReported) <= toDate);
+                filteredIncidents = filteredIncidents.filter(incident => 
+                    new Date(incident.dateReported) <= toDate
+                );
             }
             
             // Render filtered markers
             renderMarkers(filteredIncidents);
+            
+            // Show count of filtered incidents
+            const count = filteredIncidents.length;
+            const total = incidents.length;
+            alert(`Showing ${count} of ${total} incidents`);
         }
 
         // Reset filters
         function resetFilters() {
-            document.getElementById('filter-type').value = 'all';
-            document.getElementById('filter-severity').value = 'all';
-            document.getElementById('filter-status').value = 'all';
             document.getElementById('filter-date-from').value = '';
             document.getElementById('filter-date-to').value = '';
-            
             renderMarkers(incidents);
         }
     </script>
@@ -401,6 +393,10 @@
         .incident-marker {
             cursor: pointer;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .incident-marker:hover {
+            transform: scale(1.2);
         }
     </style>
 } 

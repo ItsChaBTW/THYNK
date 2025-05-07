@@ -360,7 +360,8 @@ namespace THYNK.Controllers
         public async Task<JsonResult> GetMapData()
         {
             var reports = await _context.DisasterReports
-                .Where(r => r.Status != ReportStatus.Declined)
+                .Include(r => r.AssignedTo)
+                .Where(r => r.Status == ReportStatus.InProgress || r.Status == ReportStatus.Resolved) // Show both in-progress and resolved
                 .Select(r => new {
                     r.Id,
                     r.Title,
@@ -373,7 +374,11 @@ namespace THYNK.Controllers
                     r.DateReported,
                     r.Location,
                     r.Barangay,
-                    r.City
+                    r.City,
+                    AssignedTo = r.AssignedTo != null ? new {
+                        Name = $"{r.AssignedTo.FirstName} {r.AssignedTo.LastName}",
+                        Organization = r.AssignedTo.OrganizationName
+                    } : null
                 })
                 .ToListAsync();
                 

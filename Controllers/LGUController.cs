@@ -63,9 +63,17 @@ namespace THYNK.Controllers
         public async Task<IActionResult> Dashboard()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
             
-            // Get recent disaster reports
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            // Get recent disaster reports assigned to this LGU organization
             var recentReports = await _context.DisasterReports
+                .Where(r => r.AssignedToId == userId || 
+                           (r.Status == ReportStatus.InProgress && r.AssignedTo.OrganizationName == currentUser.OrganizationName))
                 .OrderByDescending(r => r.DateReported)
                 .Take(5)
                 .ToListAsync();
@@ -95,10 +103,17 @@ namespace THYNK.Controllers
         public async Task<IActionResult> ManageReports(ReportStatus? status = null, string search = null)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports;
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
             
-            // First get reports assigned to this LGU/SLU user
-            reportsQuery = reportsQuery.Where(r => r.AssignedToId == userId || r.Status == ReportStatus.InProgress || r.Status == ReportStatus.Verified);
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+
+            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports
+                .Include(r => r.AssignedTo)
+                .Where(r => r.AssignedToId == userId || 
+                           (r.Status == ReportStatus.InProgress && r.AssignedTo.OrganizationName == currentUser.OrganizationName));
             
             // Filter by status if provided
             if (status.HasValue)
@@ -362,7 +377,23 @@ namespace THYNK.Controllers
         [HttpGet]
         public async Task<JsonResult> GetMapData()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return Json(new List<object>());
+            }
+
             var reports = await _context.DisasterReports
+                .Include(r => r.AssignedTo)
+                .Where(r => 
+                    // Reports assigned to this user
+                    r.AssignedToId == userId || 
+                    // OR reports in progress assigned to the same organization
+                    (r.Status == ReportStatus.InProgress && 
+                     r.AssignedTo != null && 
+                     r.AssignedTo.OrganizationName == currentUser.OrganizationName))
                 .Select(r => new {
                     r.Id,
                     r.Title,
@@ -371,9 +402,27 @@ namespace THYNK.Controllers
                     r.Status,
                     r.Latitude,
                     r.Longitude,
-                    r.DateReported
+                    r.DateReported,
+                    r.Location,
+                    HasLocation = r.Latitude != 0 && r.Longitude != 0,
+                    AssignedTo = r.AssignedTo != null ? new {
+                        Name = $"{r.AssignedTo.FirstName} {r.AssignedTo.LastName}",
+                        Organization = r.AssignedTo.OrganizationName
+                    } : null
                 })
                 .ToListAsync();
+
+            // Detailed logging for debugging
+            _logger.LogInformation($"Found {reports.Count} reports for user {userId}");
+            foreach (var report in reports)
+            {
+                _logger.LogInformation($"Report {report.Id}: Title={report.Title}, Status={report.Status}");
+                _logger.LogInformation($"Coordinates: Lat={report.Latitude}, Lng={report.Longitude}, HasLocation={report.HasLocation}");
+                if (report.AssignedTo != null)
+                {
+                    _logger.LogInformation($"Assigned to: {report.AssignedTo.Name} ({report.AssignedTo.Organization})");
+                }
+            }
                 
             return Json(reports);
         }
