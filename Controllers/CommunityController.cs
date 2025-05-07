@@ -119,26 +119,26 @@ namespace THYNK.Controllers
                 if (photo != null && photo.Length > 0)
                 {
                     try
+                {
+                    // Create folder if it doesn't exist
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "reports");
+                    if (!Directory.Exists(uploadsFolder))
                     {
-                        // Create folder if it doesn't exist
-                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "reports");
-                        if (!Directory.Exists(uploadsFolder))
-                        {
-                            Directory.CreateDirectory(uploadsFolder);
-                        }
-                        
-                        // Generate unique filename
-                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
-                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                        
-                        // Save file to disk
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await photo.CopyToAsync(fileStream);
-                        }
-                        
-                        // Set ImageUrl property
-                        report.ImageUrl = "/uploads/reports/" + uniqueFileName;
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
+                    // Generate unique filename
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(photo.FileName);
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    
+                    // Save file to disk
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await photo.CopyToAsync(fileStream);
+                    }
+                    
+                    // Set ImageUrl property
+                    report.ImageUrl = "/uploads/reports/" + uniqueFileName;
                     }
                     catch (Exception ex)
                     {
@@ -177,9 +177,9 @@ namespace THYNK.Controllers
                 
                 if (recordsAffected > 0)
                 {
-                    TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
-                    return RedirectToAction(nameof(Dashboard));
-                }
+                TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
+                return RedirectToAction(nameof(Dashboard));
+            }
                 else
                 {
                     TempData["ErrorMessage"] = "No records were affected when saving to database.";
@@ -193,8 +193,8 @@ namespace THYNK.Controllers
                 if (ex.InnerException != null)
                 {
                     TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
-                }
-                return View(report);
+            }
+            return View(report);
             }
         }
         
@@ -286,8 +286,8 @@ namespace THYNK.Controllers
                 if (result > 0)
                 {
                     TempData["SuccessMessage"] = "Your post has been submitted and is pending approval.";
-                    return RedirectToAction(nameof(CommunityFeed));
-                }
+                return RedirectToAction(nameof(CommunityFeed));
+            }
                 else
                 {
                     TempData["ErrorMessage"] = "Failed to save the post. No records were affected.";
@@ -310,7 +310,7 @@ namespace THYNK.Controllers
                 {
                     TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
                 }
-                return View(update);
+            return View(update);
             }
         }
         

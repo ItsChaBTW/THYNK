@@ -1,0 +1,421 @@
+@model THYNK.Models.ChatSession
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Chat Session";
+    Layout = User.IsInRole("Admin") || User.IsInRole("LGU") ? "_AdminLayout" : "_CommunityLayout";
+    var isAdmin = User.IsInRole("Admin") || User.IsInRole("LGU");
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row g-4">
+        <!-- Chat Section -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="chat-icon bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+                                <i class="fas fa-comments fa-lg"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">@(string.IsNullOrEmpty(Model.Title) ? "Chat Session #" + Model.Id : Model.Title)</h5>
+                                <p class="text-muted mb-0">Started @Model.StartTime.ToString("MMM dd, yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                        <div>
+                            @if (Model.Status != ChatStatus.Closed)
+                            {
+                                <form asp-action="CloseChat" method="post" class="d-inline-block" onsubmit="return confirm('Are you sure you want to close this chat session?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="sessionId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-outline-danger rounded-pill">
+                                        <i class="fas fa-times-circle me-1"></i>Close Chat
+                                    </button>
+                                </form>
+                            }
+                            
+                            @if (isAdmin)
+                            {
+                                <a href="@Url.Action("ActiveChats", "SupportAdmin")" class="btn btn-outline-secondary rounded-pill ms-2">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to Chats
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Index", "Support")" class="btn btn-outline-secondary rounded-pill ms-2">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to Support
+                                </a>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages bg-light rounded-3 p-3 mb-3" style="height: 500px; overflow-y: auto;">
+                        @if (Model.Messages != null && Model.Messages.Any())
+                        {
+                            foreach (var message in Model.Messages.OrderBy(m => m.Timestamp))
+                            {
+                                var isCurrentUser = message.SenderId == userId;
+                                
+                                <div class="message-bubble @(isCurrentUser ? "message-user" : "message-support") mb-3">
+                                    <div class="message-content @(isCurrentUser ? "bg-primary text-white" : "bg-white")">
+                                        <p class="mb-0">@message.Content</p>
+                                        @if (!string.IsNullOrEmpty(message.AttachmentUrl))
+                                        {
+                                            <div class="message-attachment mt-2">
+                                                <a href="@message.AttachmentUrl" target="_blank" class="btn btn-sm @(isCurrentUser ? "btn-light" : "btn-primary")">
+                                                    <i class="fas fa-paperclip me-1"></i>View Attachment
+                                                </a>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="message-meta">
+                                        <small class="text-muted">
+                                            @message.Timestamp.ToString("HH:mm") 
+                                            @(isAdmin && message.SenderId == Model.UserId ? " - " + Model.User?.UserName : "")
+                                        </small>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-comments text-muted fa-3x mb-3"></i>
+                                <p class="mb-0">No messages yet. Start the conversation!</p>
+                            </div>
+                        }
+                    </div>
+                    
+                    @if (Model.Status != ChatStatus.Closed)
+                    {
+                        var formAction = isAdmin ? "SendMessage" : "SendMessage";
+                        var controller = isAdmin ? "SupportAdmin" : "Support";
+                        
+                        <form asp-action="@formAction" asp-controller="@controller" method="post" class="chat-input-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="sessionId" value="@Model.Id" />
+                            <div class="input-group">
+                                <textarea name="message" class="form-control bg-light border-0" 
+                                          placeholder="Type your message here..." required rows="2"></textarea>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary">
+                            <i class="fas fa-lock me-2"></i>
+                            This chat session has been closed. You cannot send new messages.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Details Section -->
+        <div class="col-lg-4">
+            <!-- Session Details -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-title d-flex align-items-center mb-3">
+                        <span class="icon-circle bg-info bg-opacity-10 text-info rounded-circle p-1 me-2">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        Session Details
+                    </h6>
+                    
+                    <div class="details-list">
+                        <div class="detail-item d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Status</span>
+                            <span>
+                                @if (Model.Status == ChatStatus.Active)
+                                {
+                                    <span class="badge rounded-pill bg-success">Active</span>
+                                }
+                                else if (Model.Status == ChatStatus.Pending)
+                                {
+                                    <span class="badge rounded-pill bg-warning text-dark">Pending</span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-secondary">Closed</span>
+                                }
+                            </span>
+                        </div>
+                        <div class="detail-item d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Category</span>
+                            <span class="badge rounded-pill bg-info">
+                                @(string.IsNullOrEmpty(Model.Category) ? "General" : Model.Category)
+                            </span>
+                        </div>
+                        <div class="detail-item d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Started</span>
+                            <span>@Model.StartTime.ToString("MMM dd, HH:mm")</span>
+                        </div>
+                        @if (Model.EndTime.HasValue)
+                        {
+                            <div class="detail-item d-flex justify-content-between py-2 border-bottom">
+                                <span class="text-muted">Ended</span>
+                                <span>@Model.EndTime.Value.ToString("MMM dd, HH:mm")</span>
+                            </div>
+                        }
+                        <div class="detail-item d-flex justify-content-between py-2 border-bottom">
+                            <span class="text-muted">Duration</span>
+                            <span>
+                                @{
+                                    var endTime = Model.EndTime ?? DateTime.Now;
+                                    var duration = endTime - Model.StartTime;
+                                    
+                                    if (duration.TotalDays >= 1)
+                                    {
+                                        @($"{(int)duration.TotalDays}d {duration.Hours}h")
+                                    }
+                                    else if (duration.TotalHours >= 1)
+                                    {
+                                        @($"{(int)duration.TotalHours}h {duration.Minutes}m")
+                                    }
+                                    else
+                                    {
+                                        @($"{duration.Minutes}m {duration.Seconds}s")
+                                    }
+                                }
+                            </span>
+                        </div>
+                        @if (isAdmin)
+                        {
+                            <div class="detail-item d-flex justify-content-between py-2 border-bottom">
+                                <span class="text-muted">Messages</span>
+                                <span class="badge rounded-pill bg-primary">@(Model.Messages?.Count ?? 0)</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Information -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-title d-flex align-items-center mb-3">
+                        <span class="icon-circle bg-success bg-opacity-10 text-success rounded-circle p-1 me-2">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        @(isAdmin ? "User Information" : "Your Information")
+                    </h6>
+                    
+                    <div class="user-info">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-circle me-3">
+                                <i class="fas fa-user fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">@($"{Model.User?.FirstName} {Model.User?.LastName}")</h6>
+                                <small class="text-muted">@Model.User?.Email</small>
+                            </div>
+                        </div>
+                        
+                        @if (isAdmin)
+                        {
+                            <div class="details-list">
+                                <div class="detail-item d-flex justify-content-between py-2 border-bottom">
+                                    <span class="text-muted">User Type</span>
+                                    <span>
+                                        @if (Model.User?.UserRole == UserRoleType.Admin)
+                                        {
+                                            <span class="badge rounded-pill bg-danger">Admin</span>
+                                        }
+                                        else if (Model.User?.UserRole == UserRoleType.LGU)
+                                        {
+                                            <span class="badge rounded-pill bg-warning text-dark">LGU</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-primary">Community</span>
+                                        }
+                                    </span>
+                                </div>
+                                <div class="detail-item d-flex justify-content-between py-2 border-bottom">
+                                    <span class="text-muted">Username</span>
+                                    <span>@Model.User?.UserName</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            @if (isAdmin)
+            {
+                <!-- Quick Responses -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h6 class="card-title d-flex align-items-center mb-3">
+                            <span class="icon-circle bg-warning bg-opacity-10 text-warning rounded-circle p-1 me-2">
+                                <i class="fas fa-reply"></i>
+                            </span>
+                            Quick Responses
+                        </h6>
+                        
+                        <div class="quick-responses">
+                            <div class="mb-2">
+                                <button class="btn btn-outline-secondary w-100 text-start quick-response" data-response="Thank you for your message. I'll be assisting you today. Let me check this for you.">
+                                    <i class="fas fa-comment-dots me-2"></i>Initial Greeting
+                                </button>
+                            </div>
+                            <div class="mb-2">
+                                <button class="btn btn-outline-secondary w-100 text-start quick-response" data-response="I understand your concern. Let me help you resolve this issue.">
+                                    <i class="fas fa-check me-2"></i>Acknowledgment
+                                </button>
+                            </div>
+                            <div class="mb-2">
+                                <button class="btn btn-outline-secondary w-100 text-start quick-response" data-response="Could you please provide more details about this issue? This will help me assist you better.">
+                                    <i class="fas fa-question me-2"></i>Request Information
+                                </button>
+                            </div>
+                            <div class="mb-2">
+                                <button class="btn btn-outline-secondary w-100 text-start quick-response" data-response="Thank you for your patience. I'm still working on this and will update you soon.">
+                                    <i class="fas fa-clock me-2"></i>Wait Request
+                                </button>
+                            </div>
+                            <div>
+                                <button class="btn btn-outline-secondary w-100 text-start quick-response" data-response="Is there anything else I can help you with today?">
+                                    <i class="fas fa-check-circle me-2"></i>Closing Check
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .chat-icon,
+        .icon-circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-icon {
+            width: 48px;
+            height: 48px;
+        }
+        
+        .icon-circle {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+        
+        .message-bubble {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .message-user {
+            align-self: flex-end;
+            align-items: flex-end;
+            margin-left: auto;
+        }
+        
+        .message-support {
+            align-self: flex-start;
+            align-items: flex-start;
+            margin-right: auto;
+        }
+        
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 18px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .message-user .message-content {
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message-support .message-content {
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-meta {
+            margin-top: 4px;
+            font-size: 0.75rem;
+        }
+        
+        textarea.form-control {
+            min-height: 50px;
+            max-height: 150px;
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .quick-response {
+            transition: all 0.2s ease-in-out;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .quick-response:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Scroll to bottom of chat
+            const chatMessages = document.querySelector('.chat-messages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Auto-resize textarea
+            const textarea = document.querySelector('textarea');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+                });
+            }
+            
+            // Quick responses
+            const quickResponseButtons = document.querySelectorAll('.quick-response');
+            quickResponseButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const response = this.getAttribute('data-response');
+                    if (textarea) {
+                        textarea.value = response;
+                        textarea.style.height = 'auto';
+                        textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+                        textarea.focus();
+                    }
+                });
+            });
+        });
+    </script>
+} 

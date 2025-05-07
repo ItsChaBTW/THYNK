@@ -1,0 +1,114 @@
+@model THYNK.Models.FAQ
+@{
+    ViewData["Title"] = "Create FAQ";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="faq-icon bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+                            <i class="fas fa-plus-circle fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Create New FAQ</h5>
+                            <p class="text-muted mb-0">Add a frequently asked question to help users</p>
+                        </div>
+                    </div>
+                    
+                    <form asp-action="CreateFAQ" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Question" class="form-label">Question</label>
+                            <input asp-for="Question" class="form-control bg-light border-0" required />
+                            <span asp-validation-for="Question" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Answer" class="form-label">Answer</label>
+                            <textarea asp-for="Answer" class="form-control bg-light border-0" rows="6" required></textarea>
+                            <span asp-validation-for="Answer" class="text-danger"></span>
+                            <div class="form-text">
+                                You can use HTML formatting for better presentation. For example:
+                                <code>&lt;p&gt;</code>, <code>&lt;ul&gt;</code>, <code>&lt;ol&gt;</code>, <code>&lt;li&gt;</code>, <code>&lt;strong&gt;</code>, <code>&lt;em&gt;</code>, etc.
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Category" class="form-label">Category</label>
+                                <select asp-for="Category" class="form-select bg-light border-0">
+                                    <option value="General Usage">General Usage</option>
+                                    <option value="Reporting Incidents">Reporting Incidents</option>
+                                    <option value="Alerts and Notifications">Alerts and Notifications</option>
+                                    <option value="LGU/SLU Features">LGU/SLU Features</option>
+                                    <option value="Technical Support">Technical Support</option>
+                                    <option value="Account Management">Account Management</option>
+                                    <option value="Maps and Navigation">Maps and Navigation</option>
+                                </select>
+                                <span asp-validation-for="Category" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="DisplayOrder" class="form-label">Display Order</label>
+                                <input asp-for="DisplayOrder" class="form-control bg-light border-0" type="number" value="0" />
+                                <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                                <div class="form-text">
+                                    Lower numbers appear first within a category.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input asp-for="IsPublished" class="form-check-input" type="checkbox" checked />
+                                <label asp-for="IsPublished" class="form-check-label">Publish this FAQ</label>
+                                <span asp-validation-for="IsPublished" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="ManageFAQs" class="btn btn-light rounded-pill px-4">
+                                <i class="fas fa-arrow-left me-1"></i>Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-save me-1"></i>Create FAQ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .faq-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Auto-resize textarea
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.querySelector('textarea');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
+        });
+    </script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

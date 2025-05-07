@@ -44,7 +44,7 @@
                 <a href="@Url.Action("MyReports", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "MyReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
                     <i class="fas fa-clipboard-list me-2"></i>My Reports
                 </a>
-                <a href="@Url.Action("Support", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
+                <a href="@Url.Action("Index", "Support")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
                     <i class="fas fa-question-circle me-2"></i>Support & FAQs
                 </a>
             </div>
