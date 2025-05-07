@@ -29,37 +29,8 @@ namespace THYNK.Controllers
         // Dashboard main page
         public async Task<IActionResult> Dashboard()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
-            // Get recent disaster reports
-            var recentReports = await _context.DisasterReports
-                .OrderByDescending(r => r.DateReported)
-                .Take(5)
-                .ToListAsync();
-                
-            // Get recent alerts
-            var activeAlerts = await _context.Alerts
-                .Where(a => a.IsActive && (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now))
-                .OrderByDescending(a => a.DateIssued)
-                .Take(5)
-                .ToListAsync();
-                
-            // Get community updates
-            var communityUpdates = await _context.CommunityUpdates
-                .Where(c => c.ModerationStatus == ModerationStatus.Approved)
-                .OrderByDescending(c => c.DatePosted)
-                .Take(10)
-                .ToListAsync();
-                
-            ViewBag.RecentReports = recentReports;
-            ViewBag.ActiveAlerts = activeAlerts;
-            ViewBag.CommunityUpdates = communityUpdates;
-            
-            ViewBag.PendingPostsCount = await _context.CommunityUpdates
-                .Where(c => c.ModerationStatus == ModerationStatus.Pending)
-                .CountAsync();
-            
-            return View();
+            // Redirect to CommunityFeed instead of showing the dashboard
+            return RedirectToAction(nameof(CommunityFeed));
         }
         
         // Submit disaster report
