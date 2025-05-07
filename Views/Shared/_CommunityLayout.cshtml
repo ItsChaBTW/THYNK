@@ -20,17 +20,14 @@
         <div class="bg-dark text-white" id="sidebar-wrapper">
             <div class="sidebar-heading text-center py-4">
                 <h3 class="m-0">THYNK</h3>
-                <small>Community Dashboard</small>
+                <small>Community Portal</small>
             </div>
             <div class="list-group list-group-flush my-3">
-                <a href="@Url.Action("Dashboard", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
-                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                <a href="@Url.Action("CommunityFeed", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" || ViewContext.RouteData.Values["Action"].ToString() == "PostUpdate" ? "active" : "")">
+                    <i class="fas fa-users me-2"></i>Community Feed
                 </a>
                 <a href="@Url.Action("SubmitReport", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "SubmitReport" ? "active" : "")">
                     <i class="fas fa-exclamation-triangle me-2"></i>Report Incident
-                </a>
-                <a href="@Url.Action("CommunityFeed", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" || ViewContext.RouteData.Values["Action"].ToString() == "PostUpdate" ? "active" : "")">
-                    <i class="fas fa-users me-2"></i>Community Feed
                 </a>
                 <a href="@Url.Action("EducationalResources", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "EducationalResources" || ViewContext.RouteData.Values["Action"].ToString() == "ResourceDetails" ? "active" : "")">
                     <i class="fas fa-book me-2"></i>Educational Resources

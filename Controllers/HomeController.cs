@@ -35,7 +35,7 @@ public class HomeController : Controller
                     }
                     else if (user.UserRole == UserRoleType.Community)
                     {
-                        return RedirectToAction("Dashboard", "Community");
+                        return RedirectToAction("CommunityFeed", "Community");
                     }
                 }
             }
