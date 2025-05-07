@@ -4,36 +4,33 @@
     Layout = "_CommunityLayout";
 }
 
-<div class="container-fluid px-4 py-4">
-    <div class="row g-4">
-        <!-- Main Form Section -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-4">
-                        <div class="report-icon bg-danger bg-opacity-10 text-danger rounded-circle p-3 me-3">
-                            <i class="fas fa-exclamation-triangle fa-lg"></i>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card dashboard-card">
+            <div class="card-header bg-danger text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
                     </div>
                     <div>
-                            <h5 class="mb-1">Report Incident</h5>
-                            <p class="text-muted mb-0">Submit details about a disaster or accident</p>
-                        </div>
+                        <h5 class="m-0">Report Incident</h5>
+                        <small>Submit details about a disaster or accident</small>
                     </div>
-
+                </div>
+            </div>
+            <div class="card-body">
                 <form asp-action="SubmitReport" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-                        <div class="mb-4">
-                            <label asp-for="Title" class="form-label small text-muted">Title</label>
-                            <input asp-for="Title" class="form-control form-control-lg bg-light border-0" 
-                                   placeholder="Brief title of the incident" required />
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">Title</label>
+                        <input asp-for="Title" class="form-control" placeholder="Brief title of the incident" required />
                         <span asp-validation-for="Title" class="text-danger"></span>
                     </div>
 
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label asp-for="Type" class="form-label small text-muted">Incident Type</label>
-                                <select asp-for="Type" class="form-select bg-light border-0" required>
+                    <div class="mb-3">
+                        <label asp-for="Type" class="form-label">Incident Type</label>
+                        <select asp-for="Type" class="form-select" required>
                             @foreach (var type in Enum.GetValues(typeof(DisasterType)))
                             {
                                 <option value="@type">@type</option>
@@ -41,9 +38,16 @@
                         </select>
                         <span asp-validation-for="Type" class="text-danger"></span>
                     </div>
-                            <div class="col-md-6">
-                                <label asp-for="Severity" class="form-label small text-muted">Severity Level</label>
-                                <select asp-for="Severity" class="form-select bg-light border-0" required>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Detailed description of what happened" required></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Severity" class="form-label">Severity Level</label>
+                        <select asp-for="Severity" class="form-select" required>
                             @foreach (var severity in Enum.GetValues(typeof(SeverityLevel)))
                             {
                                 <option value="@severity">@severity</option>
@@ -51,57 +55,43 @@
                         </select>
                         <span asp-validation-for="Severity" class="text-danger"></span>
                     </div>
-                    </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Description" class="form-label small text-muted">Description</label>
-                            <textarea asp-for="Description" class="form-control bg-light border-0" rows="4" 
-                                      placeholder="Detailed description of what happened" required></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Use the map to pin the exact location or click "Detect" to use your current location. You can drag the pin to adjust.
                         </div>
-
-                        <div class="mb-4">
-                            <label class="form-label small text-muted">Location</label>
-                            <div class="alert alert-light border mb-3">
-                                <i class="fas fa-info-circle text-primary me-2"></i>
-                                Use the map to pin the exact location or click "Detect" to use your current location. You can drag the pin to adjust.
-                            </div>
-                            <div class="input-group mb-3">
-                                <input asp-for="Location" id="location" class="form-control bg-light border-0" 
-                                       placeholder="Complete address" required />
-                                <button type="button" class="btn btn-primary rounded-end" id="detect-location">
-                                    <i class="fas fa-map-marker-alt me-1"></i> Detect
+                        <div class="input-group mb-2">
+                            <input asp-for="Location" id="location" class="form-control" placeholder="Complete address" required />
+                            <button type="button" class="btn btn-primary" id="detect-location">
+                                <i class="fas fa-map-marker-alt"></i> Detect
                             </button>
                         </div>
                         <span asp-validation-for="Location" class="text-danger"></span>
                     </div>
 
-                        <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-6">
-                                <label asp-for="Purok" class="form-label small text-muted">Purok/Street</label>
-                                <input asp-for="Purok" id="purok" class="form-control bg-light border-0" 
-                                       placeholder="Purok or Street number" />
+                            <label asp-for="Purok" class="form-label">Purok/Street</label>
+                            <input asp-for="Purok" id="purok" class="form-control" placeholder="Purok or Street number" />
                             <span asp-validation-for="Purok" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                                <label asp-for="Barangay" class="form-label small text-muted">Barangay</label>
-                                <input asp-for="Barangay" id="barangay" class="form-control bg-light border-0" 
-                                       placeholder="Barangay name" />
+                            <label asp-for="Barangay" class="form-label">Barangay</label>
+                            <input asp-for="Barangay" id="barangay" class="form-control" placeholder="Barangay name" />
                             <span asp-validation-for="Barangay" class="text-danger"></span>
                         </div>
                     </div>
                     
-                        <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-6">
-                                <label asp-for="City" class="form-label small text-muted">City/Municipality</label>
-                                <input asp-for="City" id="city" class="form-control bg-light border-0" 
-                                       placeholder="City or Municipality" />
+                            <label asp-for="City" class="form-label">City/Municipality</label>
+                            <input asp-for="City" id="city" class="form-control" placeholder="City or Municipality" />
                             <span asp-validation-for="City" class="text-danger"></span>
                         </div>
                         <div class="col-md-6">
-                                <label asp-for="Country" class="form-label small text-muted">Country</label>
-                                <input asp-for="Country" id="country" class="form-control bg-light border-0" 
-                                       placeholder="Country" value="Philippines" />
+                            <label asp-for="Country" class="form-label">Country</label>
+                            <input asp-for="Country" id="country" class="form-control" placeholder="Country" value="Philippines" />
                             <span asp-validation-for="Country" class="text-danger"></span>
                         </div>
                     </div>
@@ -110,308 +100,282 @@
                     <input type="hidden" asp-for="Latitude" id="latitude" />
                     <input type="hidden" asp-for="Longitude" id="longitude" />
 
-                        <div class="mb-4">
-                            <label class="form-label small text-muted">Photo (Optional)</label>
-                            <div class="input-group">
-                                <input type="file" class="form-control bg-light border-0" id="photo" name="photo" 
-                                       accept="image/*" />
-                                <button type="button" class="btn btn-light border-0" id="clear-photo">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
+                    <div class="mb-3">
+                        <label class="form-label">Photo (Optional)</label>
+                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" />
                         <small class="text-muted">Upload a photo of the incident if available.</small>
                     </div>
 
-                        <div class="mb-4">
-                            <label asp-for="AdditionalInfo" class="form-label small text-muted">Additional Information (Optional)</label>
-                            <textarea asp-for="AdditionalInfo" class="form-control bg-light border-0" rows="3" 
-                                      placeholder="Any other details you'd like to share"></textarea>
+                    <div class="mb-3">
+                        <label asp-for="AdditionalInfo" class="form-label">Additional Information (Optional)</label>
+                        <textarea asp-for="AdditionalInfo" class="form-control" rows="3" placeholder="Any other details you'd like to share"></textarea>
                     </div>
 
-                        <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="Dashboard" class="btn btn-light rounded-pill px-4">
-                                <i class="fas fa-times me-1"></i>Cancel
-                            </a>
-                            <button type="submit" class="btn btn-danger rounded-pill px-4">
-                                <i class="fas fa-paper-plane me-1"></i>Submit Report
-                            </button>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-action="Dashboard" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-danger">Submit Report</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Map Preview -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="map-icon bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
-                            <i class="fas fa-map-marked-alt fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Pin Location</h6>
-                            <p class="text-muted small mb-0">Drag the marker to set the exact location</p>
-                        </div>
+    <div class="col-md-4">
+        <div class="card dashboard-card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="m-0"><i class="fas fa-map-marked-alt me-2"></i>Pin Location</h5>
             </div>
-                    <div id="map" class="map-preview rounded-3"></div>
+            <div class="card-body">
+                <div id="map" class="map-preview" style="height: 300px; border-radius: 5px;"></div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted"><i class="fas fa-info-circle"></i> Drag the marker to pinpoint the exact location</small>
                 </div>
-            </div>
-            
-            <!-- Guidelines -->
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="guidelines-icon bg-info bg-opacity-10 text-info rounded-circle p-3 me-3">
-                            <i class="fas fa-info-circle fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Reporting Guidelines</h6>
-                            <p class="text-muted small mb-0">Important information to remember</p>
-                        </div>
-                    </div>
-                    <div class="guidelines-content">
-                        <div class="d-flex mb-3">
-                            <div class="guideline-icon bg-success bg-opacity-10 text-success rounded-circle p-2 me-3">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Be Accurate</h6>
-                                <p class="text-muted small mb-0">Provide precise details about the incident</p>
             </div>
         </div>
-                        <div class="d-flex mb-3">
-                            <div class="guideline-icon bg-warning bg-opacity-10 text-warning rounded-circle p-2 me-3">
-                                <i class="fas fa-exclamation"></i>
+        
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <h5 class="m-0"><i class="fas fa-info-circle me-2"></i>Reporting Guidelines</h5>
             </div>
-                            <div>
-                                <h6 class="mb-1">Stay Safe</h6>
-                                <p class="text-muted small mb-0">Do not put yourself in danger to report</p>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><i class="fas fa-check-circle text-success me-2"></i>Be Accurate</h6>
+                    <p class="small">Provide as much accurate information as possible to help responders.</p>
                 </div>
+                <div class="mb-3">
+                    <h6><i class="fas fa-check-circle text-success me-2"></i>Be Clear</h6>
+                    <p class="small">Use simple and clear language to describe the incident.</p>
                 </div>
-                        <div class="d-flex">
-                            <div class="guideline-icon bg-info bg-opacity-10 text-info rounded-circle p-2 me-3">
-                                <i class="fas fa-camera"></i>
+                <div class="mb-3">
+                    <h6><i class="fas fa-check-circle text-success me-2"></i>Be Safe</h6>
+                    <p class="small">Only submit a report if you are in a safe location away from danger.</p>
                 </div>
                 <div>
-                                <h6 class="mb-1">Include Photos</h6>
-                                <p class="text-muted small mb-0">Add clear images if safely possible</p>
-                            </div>
-                        </div>
+                    <h6><i class="fas fa-check-circle text-success me-2"></i>Be Timely</h6>
+                    <p class="small">Report incidents as soon as safely possible to allow for quicker response.</p>
                 </div>
+                <hr />
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Important:</strong> For emergencies requiring immediate assistance, please call emergency services directly.
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@section Styles {
-    <style>
-        .map-preview {
-            height: 300px;
-            border-radius: 0.5rem;
-        }
-
-        .report-icon,
-        .map-icon,
-        .guidelines-icon {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .guideline-icon {
-            width: 32px;
-            height: 32px;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            box-shadow: none;
-            border-color: #dee2e6;
-        }
-
-        .form-control,
-        .form-select {
-            transition: all 0.2s ease-in-out;
-        }
-
-        .form-control:hover,
-        .form-select:hover {
-            background-color: #f8f9fa !important;
-        }
-
-        .alert-light {
-            background-color: #f8f9fa;
-            border-color: #e9ecef;
-        }
-
-        .btn {
-            transition: all 0.2s ease-in-out;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .btn-light {
-            background-color: #f8f9fa;
-            border-color: #e9ecef;
-        }
-
-        .btn-light:hover {
-            background-color: #e9ecef;
-            border-color: #dee2e6;
-        }
-    </style>
-}
-
 @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         // Initialize the map
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v11',
-            center: [120.9842, 14.5995],
-            zoom: 9
+            center: [120.9842, 14.5995], // Default to Philippines
+            zoom: 12
         });
 
-        // Add navigation controls
-        map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-        // Initialize marker
-        let marker = new mapboxgl.Marker({
-            draggable: true
-        })
-        .setLngLat([120.9842, 14.5995])
+        // Add map controls
+        map.addControl(new mapboxgl.NavigationControl());
+        
+        // Create a marker
+        const marker = new mapboxgl.Marker({
+            draggable: true,
+            color: '#E03131'
+        }).setLngLat([120.9842, 14.5995])
           .addTo(map);
 
-        // Update coordinates when marker is dragged
+        // Update coordinates and address when marker is dragged
         marker.on('dragend', function() {
             const lngLat = marker.getLngLat();
             document.getElementById('latitude').value = lngLat.lat;
             document.getElementById('longitude').value = lngLat.lng;
-            
-            // Reverse geocode to get address
-            fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxgl.accessToken}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.features && data.features.length > 0) {
-                        const place = data.features[0];
-                        document.getElementById('location').value = place.place_name;
-                        
-                        // Extract address components
-                        const context = place.context || [];
-                        let barangayFound = false;
-                        let purokFound = false;
-                        
-                        // Try to find detailed address components
-                        if (place.text) {
-                            document.getElementById('purok').value = place.text;
-                            purokFound = true;
-                        }
-                        
-                        context.forEach(item => {
-                            if (item.id.startsWith('neighborhood') || item.id.startsWith('locality')) {
-                                document.getElementById('barangay').value = item.text;
-                                barangayFound = true;
-                            } else if (item.id.startsWith('place')) {
-                                document.getElementById('city').value = item.text;
-                            }
-                        });
-                        
-                        // If barangay not found, try to extract it from the address
-                        if (!barangayFound) {
-                            // Look for address parts with "Barangay" or typical Filipino naming patterns
-                            const addressParts = place.place_name.split(',');
-                            for (let i = 0; i < addressParts.length; i++) {
-                                const part = addressParts[i].trim();
-                                if (part.includes('Barangay') || part.includes('Brgy.')) {
-                                    document.getElementById('barangay').value = part;
-                                    barangayFound = true;
-                                    break;
-                                }
-                            }
-                            
-                            // If still not found, use a placeholder based on location
-                            if (!barangayFound) {
-                                const roundedLat = Math.round(lngLat.lat * 1000) / 1000;
-                                const roundedLng = Math.round(lngLat.lng * 1000) / 1000;
-                                document.getElementById('barangay').value = `Area near ${roundedLat}, ${roundedLng}`;
-                            }
-                        }
-                        
-                        // If purok not found, create a default value
-                        if (!purokFound) {
-                            const city = document.getElementById('city').value;
-                            document.getElementById('purok').value = `Street in ${city || 'local area'}`;
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error reverse geocoding:', error);
-                    // Set default values if geocoding fails
-                    const roundedLat = Math.round(lngLat.lat * 1000) / 1000;
-                    const roundedLng = Math.round(lngLat.lng * 1000) / 1000;
-                    document.getElementById('purok').value = `Location ${roundedLat}, ${roundedLng}`;
-                    document.getElementById('barangay').value = `Area ${roundedLat}, ${roundedLng}`;
-                });
+            getAddressDetails(lngLat.lat, lngLat.lng);
         });
 
         // Detect current location
         document.getElementById('detect-location').addEventListener('click', function() {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
-                    const lngLat = {
-                        lng: position.coords.longitude,
-                        lat: position.coords.latitude
-                    };
+            // Show loading state
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+            this.disabled = true;
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
                     
-                    marker.setLngLat(lngLat);
+                    // Update form fields
+                    document.getElementById('latitude').value = lat;
+                    document.getElementById('longitude').value = lng;
+                    
+                    // Update map
                     map.flyTo({
-                        center: lngLat,
-                        zoom: 15
+                        center: [lng, lat],
+                        zoom: 15,
+                        essential: true
                     });
                     
-                    // Trigger dragend event to update form
-                    marker.fire('dragend');
-                }, function(error) {
-                    console.error("Error getting location:", error);
-                    alert('Could not detect your location. Please enter details manually or pin on the map.');
+                    marker.setLngLat([lng, lat]);
                     
-                    // Set default values if geolocation fails
-                    document.getElementById('purok').value = "Please enter Purok/Street";
-                    document.getElementById('barangay').value = "Please enter Barangay";
+                    // Get address details
+                    getAddressDetails(lat, lng);
+                    
+                    // Reset button
+                    document.getElementById('detect-location').innerHTML = '<i class="fas fa-map-marker-alt"></i> Detect';
+                    document.getElementById('detect-location').disabled = false;
+                    
+                }, function(error) {
+                    console.error('Error getting location:', error);
+                    alert('Could not get your location. Please enter it manually or pin on the map.');
+                    
+                    // Reset button
+                    document.getElementById('detect-location').innerHTML = '<i class="fas fa-map-marker-alt"></i> Detect';
+                    document.getElementById('detect-location').disabled = false;
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            } else {
+                alert('Geolocation is not supported by your browser. Please enter your location manually.');
+                
+                // Reset button
+                document.getElementById('detect-location').innerHTML = '<i class="fas fa-map-marker-alt"></i> Detect';
+                document.getElementById('detect-location').disabled = false;
+            }
+        });
+        
+        // Function to extract address components from MapBox geocoding response
+        function getAddressDetails(lat, lng) {
+            fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&types=address,neighborhood,locality,place,region,country`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features && data.features.length > 0) {
+                        // Set full address
+                        document.getElementById('location').value = data.features[0].place_name;
+                        
+                        // Parse address components
+                        let street = '';
+                        let neighborhood = '';
+                        let locality = '';
+                        let region = '';
+                        let country = 'Philippines';
+                        
+                        // Extract address components from features
+                        data.features.forEach(feature => {
+                            if (feature.place_type.includes('address')) {
+                                street = feature.text || '';
+                            }
+                            if (feature.place_type.includes('neighborhood')) {
+                                neighborhood = feature.text || '';
+                            }
+                            if (feature.place_type.includes('locality')) {
+                                locality = feature.text || '';
+                            }
+                            if (feature.place_type.includes('place')) {
+                                region = feature.text || '';
+                            }
+                            if (feature.place_type.includes('country')) {
+                                country = feature.text || 'Philippines';
+                            }
+                        });
+                        
+                        // Try to extract more detailed info from the context
+                        if (data.features[0].context) {
+                            data.features[0].context.forEach(context => {
+                                const id = context.id.split('.')[0];
+                                
+                                if (id === 'neighborhood' && !neighborhood) {
+                                    neighborhood = context.text;
+                                }
+                                if (id === 'locality' && !locality) {
+                                    locality = context.text;
+                                }
+                                if (id === 'place' && !region) {
+                                    region = context.text;
+                                }
+                                if (id === 'country') {
+                                    country = context.text;
+                                }
+                            });
+                        }
+                        
+                        // Populate form fields
+                        document.getElementById('purok').value = street || neighborhood || '';
+                        document.getElementById('barangay').value = neighborhood || locality || '';
+                        document.getElementById('city').value = locality || region || '';
+                        document.getElementById('country').value = country;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error reverse geocoding:', error);
+                });
+        }
+        
+        // Add click event to map to allow users to click anywhere and place marker
+        map.on('click', function(e) {
+            const lngLat = e.lngLat;
+            
+            // Update marker position
+            marker.setLngLat(lngLat);
+            
+            // Update form fields
+            document.getElementById('latitude').value = lngLat.lat;
+            document.getElementById('longitude').value = lngLat.lng;
+            
+            // Get address details
+            getAddressDetails(lngLat.lat, lngLat.lng);
+        });
+        
+        // Initialize the map location if coordinates are already set
+        document.addEventListener('DOMContentLoaded', function() {
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
+            
+            if (lat && lng) {
+                map.setCenter([lng, lat]);
+                marker.setLngLat([lng, lat]);
+            } else {
+                // Try to get user's current location on page load
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        map.setCenter([lng, lat]);
+                        marker.setLngLat([lng, lat]);
+                        
+                        document.getElementById('latitude').value = lat;
+                        document.getElementById('longitude').value = lng;
+                        
+                        getAddressDetails(lat, lng);
+                    }, function(error) {
+                        console.error('Error getting initial location:', error);
+                        // Keep default map location
                     }, {
                         enableHighAccuracy: true,
                         timeout: 10000,
                         maximumAge: 0
                     });
-            } else {
-                alert('Geolocation is not supported by your browser');
-                
-                // Set default values if geolocation is not supported
-                document.getElementById('purok').value = "Please enter Purok/Street";
-                document.getElementById('barangay').value = "Please enter Barangay";
+                }
             }
         });
-
-        // Clear photo input
-        document.getElementById('clear-photo').addEventListener('click', function() {
-            document.getElementById('photo').value = '';
-        });
-
-        // Auto-resize textarea
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(textarea => {
-            textarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
-        });
     </script>
+}
+
+@section Styles {
+    <style>
+        .map-preview {
+            width: 100%;
+            border: 1px solid #ddd;
+        }
+        
+        .mapboxgl-marker {
+            cursor: pointer;
+        }
+        
+        .mapboxgl-ctrl-group {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
 } 

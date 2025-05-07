@@ -19,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<FAQ> FAQs { get; set; }
     public DbSet<ChatSession> ChatSessions { get; set; }
     public DbSet<ChatMessage> ChatMessages { get; set; }
+    public DbSet<SupportChat> SupportChats { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -70,6 +71,42 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(c => c.AssignedToId)
             .OnDelete(DeleteBehavior.NoAction)
+            .IsRequired(false);
+
+        // Configure SupportChat relationships
+        builder.Entity<SupportChat>()
+            .HasOne(sc => sc.User)
+            .WithMany()
+            .HasForeignKey(sc => sc.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<SupportChat>()
+            .HasOne(sc => sc.AssignedTo)
+            .WithMany()
+            .HasForeignKey(sc => sc.AssignedToId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<SupportChat>()
+            .HasOne(sc => sc.ResolvedBy)
+            .WithMany()
+            .HasForeignKey(sc => sc.ResolvedById)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // Make some fields optional
+        builder.Entity<SupportChat>()
+            .Property(sc => sc.AssignedToId)
+            .IsRequired(false);
+
+        builder.Entity<SupportChat>()
+            .Property(sc => sc.ResolvedById)
+            .IsRequired(false);
+
+        builder.Entity<SupportChat>()
+            .Property(sc => sc.Resolution)
+            .IsRequired(false);
+
+        builder.Entity<SupportChat>()
+            .Property(sc => sc.Category)
             .IsRequired(false);
     }
 }
