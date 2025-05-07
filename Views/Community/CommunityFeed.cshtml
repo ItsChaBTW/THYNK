@@ -4,57 +4,59 @@
     Layout = "_CommunityLayout";
 }
 
-<div class="container-fluid px-4">
-    <div class="row">
+<div class="container-fluid px-4 py-4">
+    <div class="row g-4">
         <!-- Create Post Card -->
-        <div class="col-12 mb-4">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="m-0">Create Post</h5>
-                </div>
-                <div class="card-body">
-                    <form asp-action="PostUpdate" method="post" enctype="multipart/form-data">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
                         @Html.AntiForgeryToken()
-                        <div class="mb-3">
-                            <label for="content" class="form-label">What's on your mind?</label>
-                            <textarea class="form-control" id="content" name="Content" rows="3" required 
-                                    placeholder="Share your thoughts, updates, or information with the community..."></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="type" class="form-label">Post Type</label>
-                            <select class="form-select" id="type" name="Type" required>
-                                <option value="GeneralUpdate">General Update</option>
-                                <option value="HelpRequest">Help Request</option>
-                                <option value="StatusUpdate">Status Update</option>
-                                <option value="ResourceSharing">Resource Sharing</option>
-                                <option value="Information">Information</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="location" class="form-label">Location (Optional)</label>
-                            <input type="text" class="form-control" id="location" name="Location" 
-                                   placeholder="Enter your location or leave blank">
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="latitude" class="form-label">Latitude (Optional)</label>
-                                <input type="number" step="any" class="form-control" id="latitude" name="Latitude" 
-                                       placeholder="Enter latitude">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="avatar-circle me-3">
+                                <i class="fas fa-user"></i>
                             </div>
-                            <div class="col-md-6">
-                                <label for="longitude" class="form-label">Longitude (Optional)</label>
-                                <input type="number" step="any" class="form-control" id="longitude" name="Longitude" 
-                                       placeholder="Enter longitude">
+                            <div class="flex-grow-1">
+                                <textarea class="form-control border-0 bg-light" id="content" name="Content" rows="2" required 
+                                        placeholder="Share your thoughts, updates, or information with the community..."></textarea>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Add Image (Optional)</label>
-                            <input type="file" class="form-control" id="image" name="Image" accept="image/*">
-                            <div class="form-text">Supported formats: JPG, PNG, GIF (Max size: 5MB)</div>
+                        
+                        <div class="post-options mb-3">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <select class="form-select bg-light border-0" id="type" name="Type" required>
+                                        <option value="GeneralUpdate">General Update</option>
+                                        <option value="HelpRequest">Help Request</option>
+                                        <option value="StatusUpdate">Status Update</option>
+                                        <option value="ResourceSharing">Resource Sharing</option>
+                                        <option value="Information">Information</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0">
+                                            <i class="fas fa-map-marker-alt text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control bg-light border-0" id="location" name="Location" 
+                                               placeholder="Add location (optional)">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane me-2"></i>Post Update
+
+                        <div class="post-actions d-flex align-items-center justify-content-between">
+                            <div class="d-flex gap-2">
+                                <label class="btn btn-light rounded-pill px-3" for="image">
+                                    <i class="fas fa-image text-primary"></i>
+                                    <span class="ms-1">Photo</span>
+                                </label>
+                                <input type="file" class="d-none" id="image" name="Image" accept="image/*">
+                                <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
+                                <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
+                            </div>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-paper-plane me-2"></i>Post
                             </button>
                         </div>
                     </form>
@@ -64,67 +66,162 @@
 
         <!-- Feed Posts -->
         <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="m-0">Community Feed</h5>
+            <div class="feed-header d-flex justify-content-between align-items-center mb-4">
+                <h5 class="m-0">Community Updates</h5>
+                <div class="feed-filters">
+                    <select class="form-select form-select-sm bg-light border-0">
+                        <option value="all">All Posts</option>
+                        <option value="help">Help Requests</option>
+                        <option value="updates">Status Updates</option>
+                        <option value="resources">Resources</option>
+                    </select>
                 </div>
-                <div class="card-body">
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var post in Model)
-                        {
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div>
-                                            <h6 class="mb-0">
-                                                <span class="badge @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                foreach (var post in Model)
+                {
+                    <div class="card shadow-sm border-0 mb-4 post-card">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-circle me-3">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">@(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</h6>
+                                    <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+                                </div>
+                                <div class="post-type">
+                                    <span class="badge rounded-pill @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 
                                                                     post.Type == UpdateType.StatusUpdate ? "bg-info" : 
                                                                     post.Type == UpdateType.ResourceSharing ? "bg-success" : 
                                                                     post.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
-                                                    @post.Type
-                                                </span>
-                                            </h6>
-                                        </div>
-                                        <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
-                                    </div>
-                                    <p class="card-text">@post.Content</p>
-                                    @if (!string.IsNullOrEmpty(post.ImageUrl))
-                                    {
-                                        <img src="@post.ImageUrl" class="img-fluid rounded mb-2" alt="Post image">
-                                    }
-                                    @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
-                                    {
-                                        <p class="text-muted mb-0">
-                                            <i class="fas fa-map-marker-alt me-1"></i>@post.Location
-                                            @if (post.Latitude.HasValue && post.Longitude.HasValue)
-                                            {
-                                                <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
-                                                   target="_blank" class="ms-2">
-                                                    <i class="fas fa-external-link-alt"></i> View on Map
-                                                </a>
-                                            }
-                                        </p>
-                                    }
-                                    <div class="mt-2">
-                                        <small class="text-muted">Posted by @(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</small>
-                                    </div>
+                                        @post.Type
+                                    </span>
                                 </div>
                             </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="fas fa-comments text-muted fa-4x mb-3"></i>
-                            <p>No posts yet. Be the first to share something with the community!</p>
+
+                            <div class="post-content mb-3">
+                                <p class="card-text mb-0">@post.Content</p>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(post.ImageUrl))
+                            {
+                                <div class="post-image mb-3">
+                                    <img src="@post.ImageUrl" class="img-fluid rounded" alt="Post image">
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
+                            {
+                                <div class="post-location mb-3">
+                                    <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
+                                       target="_blank" class="text-decoration-none">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                        <span class="text-muted">@post.Location</span>
+                                        <i class="fas fa-external-link-alt ms-1 text-muted small"></i>
+                                    </a>
+                                </div>
+                            }
+
+                            <div class="post-actions d-flex align-items-center gap-3">
+                                <button class="btn btn-light btn-sm rounded-pill">
+                                    <i class="far fa-heart me-1"></i>Like
+                                </button>
+                                <button class="btn btn-light btn-sm rounded-pill">
+                                    <i class="far fa-comment me-1"></i>Comment
+                                </button>
+                                <button class="btn btn-light btn-sm rounded-pill">
+                                    <i class="far fa-share-square me-1"></i>Share
+                                </button>
+                            </div>
                         </div>
-                    }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5 empty-state">
+                    <div class="empty-state-icon mb-3">
+                        <i class="fas fa-comments text-muted fa-4x"></i>
+                    </div>
+                    <h5 class="text-muted mb-2">No Posts Yet</h5>
+                    <p class="text-muted mb-0">Be the first to share something with the community!</p>
                 </div>
-            </div>
+            }
         </div>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+
+        .post-card {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .post-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .post-image img {
+            max-height: 400px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .create-post-form .form-control,
+        .create-post-form .form-select {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .create-post-form .form-control:focus,
+        .create-post-form .form-select:focus {
+            box-shadow: none;
+            background-color: #fff;
+        }
+
+        .post-actions .btn {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .post-actions .btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .empty-state {
+            background-color: #f8f9fa;
+            border-radius: 1rem;
+        }
+
+        .feed-header {
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .post-type .badge {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+
+        .post-location a:hover {
+            color: #dc3545 !important;
+        }
+    </style>
+}
 
 @section Scripts {
     <script>
@@ -140,12 +237,19 @@
             }
         });
 
-        // Optional: Add geolocation support
+        // Geolocation support
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
                 document.getElementById('latitude').value = position.coords.latitude;
                 document.getElementById('longitude').value = position.coords.longitude;
             });
         }
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('content');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
     </script>
 } 

@@ -1,0 +1,501 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Support & FAQs";
+    Layout = User.IsInRole("Admin") ? "_AdminLayout" : 
+             User.IsInRole("LGU") ? "_LGULayout" : 
+             "_CommunityLayout";
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row g-4">
+        <!-- Main Section -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="support-icon bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+                            <i class="fas fa-headset fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Support Center</h5>
+                            <p class="text-muted mb-0">Get help and answers to your questions</p>
+                        </div>
+                    </div>
+
+                    @if (ViewBag.ActiveSession != null)
+                    {
+                        <!-- Active Chat Session -->
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="chat-icon bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
+                                    <i class="fas fa-comments fa-lg"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">@(string.IsNullOrEmpty(ViewBag.ActiveSession.Title) ? "Chat Support Session" : ViewBag.ActiveSession.Title)</h5>
+                                    <p class="text-muted mb-0">Started @ViewBag.ActiveSession.StartTime.ToString("MMM dd, yyyy HH:mm")</p>
+                                </div>
+                            </div>
+                            <div>
+                                <form asp-action="CloseChat" method="post" class="d-inline-block" onsubmit="return confirm('Are you sure you want to close this chat session?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="sessionId" value="@ViewBag.ActiveSession.Id" />
+                                    <button type="submit" class="btn btn-outline-danger rounded-pill">
+                                        <i class="fas fa-times-circle me-1"></i>Close Chat
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="chat-messages bg-light rounded-3 p-3 mb-3" style="height: 350px; overflow-y: auto;">
+                            @if (ViewBag.ActiveSession.Messages != null && ViewBag.ActiveSession.Messages.Count > 0)
+                            {
+                                foreach (var message in ViewBag.ActiveSession.Messages)
+                                {
+                                    <div class="message-bubble @(message.SenderId == userId ? "message-user" : "message-support") mb-3">
+                                        <div class="message-content @(message.SenderId == userId ? "bg-primary text-white" : "bg-white")">
+                                            <p class="mb-0">@message.Content</p>
+                                        </div>
+                                        <div class="message-meta">
+                                            <small class="text-muted">@message.Timestamp.ToString("HH:mm")</small>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-center py-5">
+                                    <i class="fas fa-comments text-muted fa-3x mb-3"></i>
+                                    <p class="mb-0">No messages yet. Start the conversation!</p>
+                                </div>
+                            }
+                        </div>
+                        
+                        <form asp-action="SendMessage" method="post" class="chat-input-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="sessionId" value="@ViewBag.ActiveSession.Id" />
+                            <div class="input-group">
+                                <textarea name="message" class="form-control bg-light border-0" 
+                                          placeholder="Type your message here..." required rows="2"></textarea>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <!-- Start New Chat -->
+                        <div class="start-chat-container">
+                            <div class="alert alert-light border rounded-3 mb-4">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <i class="fas fa-info-circle text-primary fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-2">Need assistance?</h6>
+                                        <p class="mb-0">Start a chat with our support team to get help with your queries or issues. 
+                                           You can check our FAQ section first to see if your question has already been answered.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <h6 class="mb-3">Start a New Chat</h6>
+                                    <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#startChatModal">
+                                        <i class="fas fa-comments me-2"></i>Start New Chat
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="faq-icon bg-success bg-opacity-10 text-success rounded-circle p-3 me-3">
+                            <i class="fas fa-question-circle fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">Frequently Asked Questions</h5>
+                            <p class="text-muted mb-0">Common questions and answers</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-container">
+                        @if (ViewBag.GroupedFaqs != null && ViewBag.GroupedFaqs.Count > 0)
+                        {
+                            <div class="accordion" id="faqAccordion">
+                                @foreach (var faqGroup in ViewBag.GroupedFaqs)
+                                {
+                                    <div class="accordion-item border-0 mb-3">
+                                        <h2 class="accordion-header" id="heading-@faqGroup.Key.Replace(" ", "-")">
+                                            <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#collapse-@faqGroup.Key.Replace(" ", "-")" aria-expanded="false" 
+                                                aria-controls="collapse-@faqGroup.Key.Replace(" ", "-")">
+                                                <i class="fas fa-folder me-2 text-primary"></i>
+                                                <strong>@(string.IsNullOrEmpty(faqGroup.Key) ? "General Questions" : faqGroup.Key)</strong>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse-@faqGroup.Key.Replace(" ", "-")" class="accordion-collapse collapse" 
+                                             aria-labelledby="heading-@faqGroup.Key.Replace(" ", "-")" data-bs-parent="#faqAccordion">
+                                            <div class="accordion-body pt-0">
+                                                <div class="accordion" id="subAccordion-@faqGroup.Key.Replace(" ", "-")">
+                                                    @foreach (var faq in faqGroup)
+                                                    {
+                                                        <div class="accordion-item border-0 border-bottom border-light">
+                                                            <h3 class="accordion-header" id="subHeading-@faq.Id">
+                                                                <button class="accordion-button collapsed bg-white" type="button" 
+                                                                    data-bs-toggle="collapse" data-bs-target="#subCollapse-@faq.Id" 
+                                                                    aria-expanded="false" aria-controls="subCollapse-@faq.Id">
+                                                                    @faq.Question
+                                                                </button>
+                                                            </h3>
+                                                            <div id="subCollapse-@faq.Id" class="accordion-collapse collapse" 
+                                                                 aria-labelledby="subHeading-@faq.Id" data-bs-parent="#subAccordion-@faqGroup.Key.Replace(" ", "-")">
+                                                                <div class="accordion-body bg-light rounded-3">
+                                                                    @Html.Raw(faq.Answer)
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-light border rounded-3">
+                                <p class="mb-0">No FAQs are available at the moment. Please start a chat if you have any questions.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Templates -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="template-icon bg-warning bg-opacity-10 text-warning rounded-circle p-3 me-3">
+                            <i class="fas fa-clipboard-list fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Quick Templates</h6>
+                            <p class="text-muted small mb-0">Common queries and reports</p>
+                        </div>
+                    </div>
+                    
+                    <div class="template-list">
+                        <div class="template-item mb-3">
+                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="technical">
+                                <i class="fas fa-tools me-2"></i>Technical Issue
+                            </button>
+                        </div>
+                        <div class="template-item mb-3">
+                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="account">
+                                <i class="fas fa-user-circle me-2"></i>Account Problem
+                            </button>
+                        </div>
+                        <div class="template-item mb-3">
+                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="report">
+                                <i class="fas fa-flag me-2"></i>Report Submission Issue
+                            </button>
+                        </div>
+                        <div class="template-item mb-3">
+                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="feature">
+                                <i class="fas fa-lightbulb me-2"></i>Feature Request
+                            </button>
+                        </div>
+                        <div class="template-item">
+                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="other">
+                                <i class="fas fa-question-circle me-2"></i>Other Inquiry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="contact-icon bg-info bg-opacity-10 text-info rounded-circle p-3 me-3">
+                            <i class="fas fa-address-card fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Contact Information</h6>
+                            <p class="text-muted small mb-0">Other ways to reach us</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-list">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="contact-method-icon bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Email Support</h6>
+                                <p class="text-muted small mb-0">support@thynk.com</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="contact-method-icon bg-success bg-opacity-10 text-success rounded-circle p-2 me-3">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Phone Support</h6>
+                                <p class="text-muted small mb-0">+63 123 456 7890</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="contact-method-icon bg-danger bg-opacity-10 text-danger rounded-circle p-2 me-3">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Support Hours</h6>
+                                <p class="text-muted small mb-0">Monday to Friday: 8:00 AM - 5:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Start Chat Modal -->
+<div class="modal fade" id="startChatModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Start New Chat</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="StartChat" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Title (Optional)</label>
+                        <input type="text" name="title" class="form-control" placeholder="Enter a title for your chat session">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="General">General</option>
+                            <option value="Technical">Technical</option>
+                            <option value="Account">Account</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Initial Message</label>
+                        <textarea name="initialMessage" class="form-control" rows="3" required 
+                                  placeholder="Describe what you need help with..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Start Chat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .support-icon, 
+        .faq-icon, 
+        .template-icon, 
+        .contact-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .contact-method-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .message-bubble {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+        
+        .message-user {
+            align-self: flex-end;
+            align-items: flex-end;
+            margin-left: auto;
+        }
+        
+        .message-support {
+            align-self: flex-start;
+            align-items: flex-start;
+            margin-right: auto;
+        }
+        
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 18px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .message-user .message-content {
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message-support .message-content {
+            border-bottom-left-radius: 5px;
+        }
+        
+        .message-meta {
+            margin-top: 4px;
+            font-size: 0.75rem;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background-color: #f8f9fa;
+            color: #0d6efd;
+            box-shadow: none;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: #dee2e6;
+        }
+        
+        .template-button {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .template-button:hover {
+            background-color: #f8f9fa;
+            border-color: #0d6efd;
+            transform: translateY(-2px);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-resize textarea
+            const textarea = document.querySelector('textarea[name="message"]');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+                });
+            }
+            
+            // Scroll to bottom of chat messages
+            const chatMessages = document.querySelector('.chat-messages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Template buttons
+            const templateButtons = document.querySelectorAll('.template-button');
+            templateButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const templateType = this.getAttribute('data-template');
+                    let title = '';
+                    let category = '';
+                    let message = '';
+                    
+                    switch(templateType) {
+                        case 'technical':
+                            title = 'Technical Issue Report';
+                            category = 'Technical Issue';
+                            message = 'I am experiencing a technical issue with the THYNK platform. Details:\n\n' +
+                                     '• What feature/page has the issue: \n' +
+                                     '• Description of the problem: \n' +
+                                     '• Steps to reproduce: \n' +
+                                     '• Device and browser: \n\n' +
+                                     'Please help me resolve this issue.';
+                            break;
+                        case 'account':
+                            title = 'Account Problem';
+                            category = 'Account Issue';
+                            message = 'I am having an issue with my THYNK account. Details:\n\n' +
+                                     '• Type of account issue: \n' +
+                                     '• Description of the problem: \n' +
+                                     '• Username/Email: \n\n' +
+                                     'Please assist me with resolving this account issue.';
+                            break;
+                        case 'report':
+                            title = 'Report Submission Issue';
+                            category = 'Report Problem';
+                            message = 'I am having trouble submitting an incident report. Details:\n\n' +
+                                     '• Type of report: \n' +
+                                     '• Error message (if any): \n' +
+                                     '• Description of the issue: \n\n' +
+                                     'Please help me successfully submit my report.';
+                            break;
+                        case 'feature':
+                            title = 'Feature Request';
+                            category = 'Feature Request';
+                            message = 'I would like to suggest a new feature for the THYNK platform. Details:\n\n' +
+                                     '• Proposed feature: \n' +
+                                     '• Description and benefits: \n' +
+                                     '• Use case scenarios: \n\n' +
+                                     'Thank you for considering my suggestion.';
+                            break;
+                        case 'other':
+                            title = 'General Inquiry';
+                            category = 'Other';
+                            message = 'I have a general inquiry about the THYNK platform. Details:\n\n' +
+                                     '• Topic of inquiry: \n' +
+                                     '• My question/concern: \n\n' +
+                                     'Thank you for your assistance.';
+                            break;
+                    }
+                    
+                    // Fill the form if it exists
+                    const titleInput = document.querySelector('input[name="title"]');
+                    const categorySelect = document.querySelector('select[name="category"]');
+                    const messageTextarea = document.querySelector('textarea[name="initialMessage"]');
+                    
+                    if (titleInput && categorySelect && messageTextarea) {
+                        titleInput.value = title;
+                        
+                        // Find and select the matching option
+                        for (let i = 0; i < categorySelect.options.length; i++) {
+                            if (categorySelect.options[i].text === category) {
+                                categorySelect.selectedIndex = i;
+                                break;
+                            }
+                        }
+                        
+                        messageTextarea.value = message;
+                        messageTextarea.style.height = 'auto';
+                        messageTextarea.style.height = (messageTextarea.scrollHeight) + 'px';
+                    }
+                    
+                    // If there's an active chat, insert into message input
+                    const messageInput = document.querySelector('input[name="message"]');
+                    if (messageInput) {
+                        messageInput.value = message;
+                    }
+                });
+            });
+        });
+    </script>
+} 

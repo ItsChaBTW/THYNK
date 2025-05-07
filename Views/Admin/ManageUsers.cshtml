@@ -53,7 +53,7 @@
                         var isLocked = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now;
                         <tr>
                             <td>@user.FirstName @user.LastName</td>
-                            <td>@user.UserName</td>
+                            <td>@user.Email</td>
                             <td>
                                 @if (user is THYNK.Models.LGUUser)
                                 {
