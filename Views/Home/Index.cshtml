@@ -1,184 +1,2596 @@
-﻿@{
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    @{
     ViewData["Title"] = "Home";
 }
 
-<div class="hero-section vh-100 d-flex align-items-center text-white">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">THYNK Disaster Reporting System</h1>
-                <p class="lead mb-4">A community-based platform for reporting, tracking, and responding to disasters and emergencies in your area.</p>
-                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-light btn-lg px-4 me-md-2">Join Now</a>
-                    <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-light btn-lg px-4">Learn More</a>
-                </div>
-            </div>
-            <div class="col-lg-6 d-none d-lg-block">
-                <img src="/images/disaster-response.svg" alt="Disaster Response" class="img-fluid rounded shadow-lg" />
-            </div>
+    <nav class="floating-nav">
+        <div class="nav-indicator">
+            <span class="active" data-section="home"></span>
+            <span data-section="features"></span>
+            <span data-section="process"></span>
+            <span data-section="education"></span>
+            <span data-section="faq"></span>
         </div>
-        <div class="row">
-            <div class="col-12 text-center">
-                <div class="scroll-indicator">
-                    <a href="#features" class="text-white">
-                        <div class="mt-5">
-                            <p class="mb-1">Scroll to Learn More</p>
-                            <i class="fas fa-chevron-down fa-2x bounce"></i>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    </nav>
 
-<div id="features" class="features-section py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold">How THYNK Works</h2>
-            <p class="lead text-muted">Simple. Effective. Community-driven.</p>
+<!-- Immersive Hero Section -->
+<section id="home" class="hero-immersive position-relative overflow-hidden">
+    <div class="parallax-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-particles"></div>
+    
+
+    
+    <div class="container position-relative">
+        <div class="row min-vh-100 align-items-center">
+            <div class="col-lg-7">
+                <div class="hero-content text-white">
+                    <div class="badge-pill animate-fade mb-4">
+                        <div class="pulse-dot"></div>
+                        <span>Community-Powered Emergency Response</span>
+                    </div>
+                    
+                    <h3 class="hero-title mb-4 animate-text">
+                       THYNK Disaster<br>
+                        <span>Response Network</span>
+                    </h3>
+                    
+                    <p class="hero-subtitle mb-5 animate-fade-delay">
+                        Our platform empowers communities to rapidly coordinate disaster response, 
+                        connect resources, and save lives through real-time collaborative action.
+                    </p>
+                    
+                    <div class="hero-cta d-flex gap-3 flex-wrap animate-fade-delay-2">
+                        <a href="#features" class="btn btn-outline-light btn-lg explore-btn">
+                            <span class="btn-text">Explore Platform</span>
+                            <span class="btn-icon"><i class="fas fa-compass"></i></span>
+                        </a>
+                    
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-visual position-relative">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' width='100%25' height='auto'%3E%3Cdefs%3E%3ClinearGradient id='mapGradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23F5F5F5'/%3E%3Cstop offset='100%25' stop-color='%23E5DFD2'/%3E%3C/linearGradient%3E%3Cfilter id='mapShadow' x='-10%25' y='-10%25' width='120%25' height='120%25'%3E%3CfeGaussianBlur stdDeviation='5' result='blur'/%3E%3CfeOffset dx='0' dy='10' result='offsetBlur'/%3E%3CfeFlood flood-color='rgba(0,0,0,0.2)' result='shadowColor'/%3E%3CfeComposite in='shadowColor' in2='offsetBlur' operator='in' result='shadowBlur'/%3E%3CfeBlend in='SourceGraphic' in2='shadowBlur' mode='normal'/%3E%3C/filter%3E%3ClinearGradient id='markerGradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23545454'/%3E%3Cstop offset='100%25' stop-color='%233c3c3c'/%3E%3C/linearGradient%3E%3ClinearGradient id='alertGradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23b56357'/%3E%3Cstop offset='100%25' stop-color='%23994a40'/%3E%3C/linearGradient%3E%3CradialGradient id='pulseGradient' cx='50%25' cy='50%25' r='50%25' fx='50%25' fy='50%25'%3E%3Cstop offset='0%25' stop-color='rgba(84,84,84,0.6)'/%3E%3Cstop offset='70%25' stop-color='rgba(84,84,84,0.2)'/%3E%3Cstop offset='100%25' stop-color='rgba(84,84,84,0)'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cg filter='url(%23mapShadow)' transform='translate(20,20) rotate(-8)'%3E%3Crect x='0' y='0' width='360' height='320' rx='20' ry='20' fill='url(%23mapGradient)' stroke='%23e0e0e0' stroke-width='1'/%3E%3Cpath d='M0,120 L90,100 L180,130 L270,110 L360,140' stroke='%23696969' stroke-width='0.5' fill='none' opacity='0.3'/%3E%3Cpath d='M0,180 L90,200 L180,170 L270,190 L360,160' stroke='%23696969' stroke-width='0.5' fill='none' opacity='0.3'/%3E%3Cpath d='M90,0 L70,80 L110,160 L80,240 L100,320' stroke='%23696969' stroke-width='0.5' fill='none' opacity='0.3'/%3E%3Cpath d='M180,0 L200,80 L170,160 L190,240 L160,320' stroke='%23696969' stroke-width='0.5' fill='none' opacity='0.3'/%3E%3Cpath d='M270,0 L260,80 L280,160 L250,240 L270,320' stroke='%23696969' stroke-width='0.5' fill='none' opacity='0.3'/%3E%3C!-- Connection Lines --%3E%3Cpath d='M90,80 L200,160' stroke='%23545454' stroke-width='1.5' stroke-dasharray='3,2' opacity='0.6'/%3E%3Cpath d='M200,160 L260,80' stroke='%23545454' stroke-width='1.5' stroke-dasharray='3,2' opacity='0.6'/%3E%3C!-- Markers --%3E%3Ccircle cx='90' cy='80' r='8' fill='url(%23markerGradient)'/%3E%3Ccircle cx='90' cy='80' r='15' fill='none' stroke='url(%23markerGradient)' stroke-width='1.5' opacity='0.5'%3E%3Canimate attributeName='r' from='15' to='25' dur='2s' repeatCount='indefinite'/%3E%3Canimate attributeName='opacity' from='0.5' to='0' dur='2s' repeatCount='indefinite'/%3E%3C/circle%3E%3Ccircle cx='200' cy='160' r='8' fill='url(%23markerGradient)'/%3E%3Ccircle cx='200' cy='160' r='15' fill='none' stroke='url(%23markerGradient)' stroke-width='1.5' opacity='0.5'%3E%3Canimate attributeName='r' from='15' to='25' dur='2s' repeatCount='indefinite'/%3E%3Canimate attributeName='opacity' from='0.5' to='0' dur='2s' repeatCount='indefinite'/%3E%3C/circle%3E%3Ccircle cx='260' cy='80' r='8' fill='url(%23markerGradient)'/%3E%3Ccircle cx='260' cy='80' r='15' fill='none' stroke='url(%23markerGradient)' stroke-width='1.5' opacity='0.5'%3E%3Canimate attributeName='r' from='15' to='25' dur='2s' repeatCount='indefinite'/%3E%3Canimate attributeName='opacity' from='0.5' to='0' dur='2s' repeatCount='indefinite'/%3E%3C/circle%3E%3C!-- Alert Box --%3E%3Crect x='30' y='230' width='170' height='60' rx='10' ry='10' fill='rgba(245,245,245,0.9)' stroke='rgba(181,99,87,0.3)' stroke-width='1'/%3E%3Crect x='40' y='240' width='40' height='40' rx='8' ry='8' fill='url(%23alertGradient)'/%3E%3Cpath d='M60,250 L60,260 M60,265 L60,270' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3Ctext x='90' y='255' font-family='Arial' font-size='12' font-weight='bold' fill='%23545454'%3EFlash Flood Warning%3C/text%3E%3Ctext x='90' y='275' font-family='Arial' font-size='10' fill='%23696969'%3ERiverside County%3C/text%3E%3C!-- Floating Icons --%3E%3Ccircle cx='50' cy='40' r='20' fill='rgba(245,245,245,0.8)'%3E%3Canimate attributeName='cy' from='40' to='30' dur='5s' repeatCount='indefinite' values='40;30;40' keyTimes='0;0.5;1' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1' calcMode='spline'/%3E%3C/circle%3E%3Cpath d='M40,40 C40,36 42,33 45,33 C48,33 48,38 51,38 C54,38 54,33 57,33 C60,33 60,36 60,40' stroke='%236e6e6e' stroke-width='2' fill='none'%3E%3Canimate attributeName='d' from='M40,40 C40,36 42,33 45,33 C48,33 48,38 51,38 C54,38 54,33 57,33 C60,33 60,36 60,40' to='M40,30 C40,26 42,23 45,23 C48,23 48,28 51,28 C54,28 54,23 57,23 C60,23 60,26 60,30' dur='5s' repeatCount='indefinite' values='M40,40 C40,36 42,33 45,33 C48,33 48,38 51,38 C54,38 54,33 57,33 C60,33 60,36 60,40;M40,30 C40,26 42,23 45,23 C48,23 48,28 51,28 C54,28 54,23 57,23 C60,23 60,26 60,30;M40,40 C40,36 42,33 45,33 C48,33 48,38 51,38 C54,38 54,33 57,33 C60,33 60,36 60,40' keyTimes='0;0.5;1' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1' calcMode='spline'/%3E%3C/path%3E%3Ccircle cx='300' cy='50' r='20' fill='rgba(245,245,245,0.8)'%3E%3Canimate attributeName='cy' from='50' to='40' dur='6s' repeatCount='indefinite' values='50;40;50' keyTimes='0;0.5;1' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1' calcMode='spline'/%3E%3C/circle%3E%3Cpath d='M290,50 L310,50 M300,40 L300,60' stroke='%23545454' stroke-width='2'%3E%3Canimate attributeName='d' from='M290,50 L310,50 M300,40 L300,60' to='M290,40 L310,40 M300,30 L300,50' dur='6s' repeatCount='indefinite' values='M290,50 L310,50 M300,40 L300,60;M290,40 L310,40 M300,30 L300,50;M290,50 L310,50 M300,40 L300,60' keyTimes='0;0.5;1' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1' calcMode='spline'/%3E%3C/path%3E%3Ccircle cx='150' cy='200' r='20' fill='rgba(245,245,245,0.8)'%3E%3Canimate attributeName='cy' from='200' to='190' dur='5.5s' repeatCount='indefinite' values='200;190;200' keyTimes='0;0.5;1' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1' calcMode='spline'/%3E%3C/circle%3E%3Cpath d='M140,200 L160,200 M140,190 L160,190 M140,210 L160,210' stroke='%23696969' stroke-width='2'%3E%3Canimate attributeName='d' from='M140,200 L160,200 M140,190 L160,190 M140,210 L160,210' to='M140,190 L160,190 M140,180 L160,180 M140,200 L160,200' dur='5.5s' repeatCount='indefinite' values='M140,200 L160,200 M140,190 L160,190 M140,210 L160,210;M140,190 L160,190 M140,180 L160,180 M140,200 L160,200;M140,200 L160,200 M140,190 L160,190 M140,210 L160,210' keyTimes='0;0.5;1' keySplines='0.4 0 0.6 1; 0.4 0 0.6 1' calcMode='spline'/%3E%3C/path%3E%3C/g%3E%3C/svg%3E" alt="THYNK Disaster Response Map Interface" class="hero-map-image">
+                </div>
+            </div>
         </div>
         
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-primary text-white mb-4">
-                            <i class="fas fa-exclamation-triangle fa-2x"></i>
-                        </div>
-                        <h3 class="h4 mb-3">Report Incidents</h3>
-                        <p class="text-muted mb-0">Submit detailed reports about disasters or emergencies in your area with precise location tracking.</p>
-                    </div>
-                </div>
+        <div class="scroll-prompt">
+            <div class="mouse-icon">
+                <div class="mouse-wheel"></div>
             </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-success text-white mb-4">
-                            <i class="fas fa-map-marked-alt fa-2x"></i>
-                        </div>
-                        <h3 class="h4 mb-3">Track on Map</h3>
-                        <p class="text-muted mb-0">View all reported incidents on an interactive map and track the status of emergency responses.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <div class="feature-icon bg-info text-white mb-4">
-                            <i class="fas fa-book-reader fa-2x"></i>
-                        </div>
-                        <h3 class="h4 mb-3">Stay Informed</h3>
-                        <p class="text-muted mb-0">Access educational resources and receive alerts about emerging situations in your community.</p>
-                    </div>
-                </div>
-            </div>
+            <span>Scroll to explore</span>
         </div>
     </div>
-</div>
+</section>
 
-<div class="stats-section py-5 bg-light">
+<!-- Features Section -->
+<section id="features" class="features-section py-8">
     <div class="container">
-        <div class="row text-center">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <h2 class="display-4 text-primary fw-bold">500+</h2>
-                    <p class="lead">Incidents Reported</p>
+        <div class="row justify-content-center mb-6">
+            <div class="col-lg-10 text-center">
+                <div class="section-tag animate-on-scroll">
+                    <span>Platform Features</span>
+                </div>
+                <h2 class="section-title animate-on-scroll">
+                    Emergency Management <span class="text-primary">Reimagined</span>
+                </h2>
+                <p class="section-subtitle animate-on-scroll">
+                    Our comprehensive platform integrates cutting-edge technology with community-driven solutions to transform disaster response.
+                </p>
+            </div>
+            </div>
+
+        <div class="feature-grid animate-on-scroll">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-map-marked-alt"></i>
+        </div>
+                <h3>Interactive Mapping</h3>
+                <p>Real-time visualization of incidents, resources, and emergency services on an interactive map interface.</p>
+                <div class="feature-hover-info">
+                    <ul>
+                        <li>GPS accuracy within 10 meters</li>
+                        <li>Works offline in disaster zones</li>
+                        <li>Automatic hazard zone calculation</li>
+                    </ul>
+                        </div>
+                </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+            </div>
+                <h3>Smart Alerts</h3>
+                <p>Receive targeted notifications about emergencies in your area with actionable information.</p>
+                <div class="feature-hover-info">
+                    <ul>
+                        <li>Personalized risk assessment</li>
+                        <li>Multi-channel delivery</li>
+                        <li>Automated escalation protocol</li>
+                    </ul>
+        </div>
+    </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i>
+</div>
+                <h3>Team Coordination</h3>
+                <p>Secure communication channels for emergency responders, volunteers, and community members.</p>
+                <div class="feature-hover-info">
+                    <ul>
+                        <li>End-to-end encryption</li>
+                        <li>Low-bandwidth operation</li>
+                        <li>Real-time translation support</li>
+                    </ul>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <h2 class="display-4 text-primary fw-bold">300+</h2>
-                    <p class="lead">Communities Served</p>
+        
+        </div>
+    </div>
+</section>
+
+<!-- Workflow Process -->
+<section id="process" class="process-section py-8">
+    <div class="container">
+        <div class="row justify-content-center mb-6">
+            <div class="col-lg-8 text-center">
+                <div class="section-tag animate-on-scroll">
+                    <span>How It Works</span>
+                </div>
+                <h2 class="section-title animate-on-scroll">
+                    Three Simple <span class="gradient-text">Steps</span>
+                </h2>
+                <p class="section-subtitle animate-on-scroll">
+                    Our platform streamlines emergency response coordination with an intuitive workflow designed for speed and effectiveness.
+                </p>
+            </div>
+        </div>
+        
+        <div class="process-cards animate-on-scroll">
+            <div class="process-card">
+                <div class="process-card-header">
+                    <div class="process-number">01</div>
+                    <div class="process-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <div class="process-content">
+                    <h3>Report Emergency</h3>
+                    <p>Submit detailed incident reports in under 60 seconds with our streamlined mobile interface. Add photos, location data, and severity assessments.</p>
+                    <div class="process-features">
+                        <div class="feature-tag">Mobile-Friendly</div>
+                        <div class="feature-tag">Works Offline</div>
+                        <div class="feature-tag">Multi-language</div>
+                    </div>
+                </div>
+                <div class="process-visual">
+                    <div class="device-mockup">
+                        <div class="device-screen">
+                            <img src="https://plus.unsplash.com/premium_photo-1686899260588-5f7244cfe985?q=80&w=1450&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Report Emergency" class="img-fluid">
+                        </div>
+                        <div class="device-notch"></div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <h2 class="display-4 text-primary fw-bold">90%</h2>
-                    <p class="lead">Resolution Rate</p>
+            
+            <div class="process-connector">
+                <div class="connector-line"></div>
+                <div class="connector-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            
+            <div class="process-card">
+                <div class="process-card-header">
+                    <div class="process-number">02</div>
+                    <div class="process-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                </div>
+                <div class="process-content">
+                    <h3>Track on Live Map</h3>
+                    <p>Visualize incidents, resources, and response teams on our interactive map. Get real-time updates and coordinate effectively with visual data.</p>
+                    <div class="process-features">
+                        <div class="feature-tag">Real-time Sync</div>
+                        <div class="feature-tag">Interactive</div>
+                        <div class="feature-tag">Resource Tracking</div>
+                    </div>
+                </div>
+                <div class="process-visual">
+                    <div class="device-mockup device-laptop">
+                        <div class="device-screen">
+                            <img src="https://images.unsplash.com/photo-1543696740-36def1d508d7?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Track on Map" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="process-connector">
+                <div class="connector-line"></div>
+                <div class="connector-arrow">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            
+            <div class="process-card">
+                <div class="process-card-header">
+                    <div class="process-number">03</div>
+                    <div class="process-icon">
+                        <i class="fas fa-hands-helping"></i>
+                    </div>
+                </div>
+                <div class="process-content">
+                    <h3>Coordinate Response</h3>
+                    <p>Connect emergency services, community volunteers, and local government through secure communication channels for efficient disaster response.</p>
+                    <div class="process-features">
+                        <div class="feature-tag">Team Management</div>
+                        <div class="feature-tag">Task Assignment</div>
+                        <div class="feature-tag">Progress Tracking</div>
+                    </div>
+                </div>
+                <div class="process-visual">
+                    <div class="device-mockup device-desktop">
+                        <div class="device-screen">
+                            <img src="https://images.unsplash.com/photo-1630769989573-d7f20f0193b0?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Coordinate Response" class="img-fluid">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="cta-section py-5">
+<!-- Educational Resources Section -->
+<section id="education" class="education-section py-8">
+    <div class="container">
+        <div class="row justify-content-center mb-6">
+            <div class="col-lg-8 text-center">
+                <div class="section-tag animate-on-scroll">
+                    <span>Disaster Knowledge Hub</span>
+                </div>
+                <h2 class="section-title animate-on-scroll">
+                    Understanding <span class="gradient-text">Disasters</span>
+                </h2>
+                <p class="section-subtitle animate-on-scroll">
+                    Knowledge is crucial for effective disaster preparedness. Explore our educational resources about different types of natural disasters and how to prepare for them.
+                </p>
+            </div>
+        </div>
+        
+        <div class="disaster-grid animate-on-scroll">
+            <div class="disaster-card">
+                <div class="disaster-icon">
+                    <i class="fas fa-water"></i>
+                </div>
+                <h3>Floods</h3>
+                <div class="disaster-content">
+                    <p>Floods are among the most common and destructive natural disasters, affecting millions worldwide each year.</p>
+                    <div class="disaster-tips">
+                        <h4>Safety Tips:</h4>
+                        <ul>
+                            <li>Evacuate immediately when advised</li>
+                            <li>Avoid walking or driving through floodwaters</li>
+                            <li>Move to higher ground away from rivers and streams</li>
+                            <li>Prepare an emergency kit in advance</li>
+                        </ul>
+                    </div>
+                    <div class="disaster-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">90%</span>
+                            <span class="stat-label">of natural disasters involve flooding</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="disaster-card">
+                <div class="disaster-icon">
+                    <i class="fas fa-wind"></i>
+                </div>
+                <h3>Typhoons & Hurricanes</h3>
+                <div class="disaster-content">
+                    <p>These powerful tropical cyclones bring destructive winds, storm surges, and heavy rainfall that can cause widespread damage.</p>
+                    <div class="disaster-tips">
+                        <h4>Safety Tips:</h4>
+                        <ul>
+                            <li>Board up windows and secure outdoor objects</li>
+                            <li>Follow evacuation orders without delay</li>
+                            <li>Stay away from windows during the storm</li>
+                            <li>Have a battery-powered radio for updates</li>
+                        </ul>
+                    </div>
+                    <div class="disaster-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">160+</span>
+                            <span class="stat-label">km/h winds in severe hurricanes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="disaster-card">
+                <div class="disaster-icon">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <h3>Wildfires</h3>
+                <div class="disaster-content">
+                    <p>Climate change has increased the frequency and intensity of wildfires, threatening communities and ecosystems.</p>
+                    <div class="disaster-tips">
+                        <h4>Safety Tips:</h4>
+                        <ul>
+                            <li>Create defensible space around your home</li>
+                            <li>Have an evacuation plan ready</li>
+                            <li>Keep important documents in fire-resistant containers</li>
+                            <li>Monitor air quality and use masks when needed</li>
+                        </ul>
+                    </div>
+                    <div class="disaster-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">85%</span>
+                            <span class="stat-label">of wildfires are caused by humans</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="disaster-card">
+                <div class="disaster-icon">
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <h3>Earthquakes</h3>
+                <div class="disaster-content">
+                    <p>Sudden earth movements can cause devastating damage to infrastructure and trigger secondary disasters like tsunamis.</p>
+                    <div class="disaster-tips">
+                        <h4>Safety Tips:</h4>
+                        <ul>
+                            <li>Drop, cover, and hold on during shaking</li>
+                            <li>Stay away from windows and exterior walls</li>
+                            <li>If outdoors, move to open areas away from buildings</li>
+                            <li>Be prepared for aftershocks</li>
+                        </ul>
+                    </div>
+                    <div class="disaster-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">500,000+</span>
+                            <span class="stat-label">earthquakes occur worldwide each year</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="disaster-card">
+                <div class="disaster-icon">
+                    <i class="fas fa-smog"></i>
+                </div>
+                <h3>Air Pollution Crisis</h3>
+                <div class="disaster-content">
+                    <p>Extreme air pollution events can create health emergencies affecting millions, particularly in densely populated urban areas.</p>
+                    <div class="disaster-tips">
+                        <h4>Safety Tips:</h4>
+                        <ul>
+                            <li>Use N95 or appropriate respirator masks when outdoors</li>
+                            <li>Create a clean air space in your home with air purifiers</li>
+                            <li>Limit outdoor activities during peak pollution hours</li>
+                            <li>Stay updated with air quality index readings</li>
+                        </ul>
+                    </div>
+                    <div class="disaster-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">7M</span>
+                            <span class="stat-label">premature deaths annually due to air pollution</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="disaster-card">
+                <div class="disaster-icon">
+                    <i class="fas fa-biohazard"></i>
+                </div>
+                <h3>Pandemic Response</h3>
+                <div class="disaster-content">
+                    <p>Disease outbreaks can rapidly spread globally, requiring coordinated community response and clear communications.</p>
+                    <div class="disaster-tips">
+                        <h4>Safety Tips:</h4>
+                        <ul>
+                            <li>Follow public health guidance on protective measures</li>
+                            <li>Maintain emergency supplies for potential lockdowns</li>
+                            <li>Verify information from credible health authorities</li>
+                            <li>Support vulnerable community members safely</li>
+                        </ul>
+                    </div>
+                    <div class="disaster-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">75%</span>
+                            <span class="stat-label">of emerging diseases are zoonotic in origin</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-6 text-center">
+                <a href="#" class="btn btn-outline-dark px-4 py-2">
+                    <i class="fas fa-book-open me-2"></i> Access Full Disaster Preparedness Library
+                </a>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center mt-5">
+            <div class="col-lg-10">
+                <div class="resource-downloads">
+                    <div class="pdf-download-card">
+                        <div class="pdf-icon">
+                            <i class="far fa-file-pdf"></i>
+                        </div>
+                        <div class="pdf-content">
+                            <h4>Comprehensive Disaster Preparedness Guide</h4>
+                            <p>Download our detailed guide covering all types of disasters with actionable checklists, emergency contact templates, and family evacuation planning tools.</p>
+                            <div class="pdf-meta">
+                                <span><i class="fas fa-file-download"></i> 25,000+ downloads</span>
+                                <span><i class="fas fa-file"></i> 48 pages</span>
+                            </div>
+                            <a href="#" class="btn btn-primary mt-3 download-btn">
+                                <i class="fas fa-download me-2"></i> Download PDF (2.8 MB)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section id="faq" class="faq-section py-8">
+    <div class="container">
+        <div class="row justify-content-center mb-6">
+            <div class="col-lg-8 text-center">
+                <div class="section-tag animate-on-scroll">
+                    <span>Common Questions</span>
+                </div>
+                <h2 class="section-title animate-on-scroll">
+                    Frequently Asked <span class="gradient-text">Questions</span>
+                </h2>
+                <p class="section-subtitle animate-on-scroll">
+                    Find answers to the most common questions about THYNK's disaster response platform and how it can help your community.
+                </p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="faq-accordion animate-on-scroll">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <h3>How does THYNK work during network outages?</h3>
+                            <div class="faq-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="faq-answer">
+                            <p>THYNK is designed to function in low-connectivity environments. The mobile app can work offline to collect and store data, which syncs automatically when connectivity is restored. We also support mesh networking capabilities that allow devices to communicate directly with each other without requiring internet infrastructure.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <h3>Can THYNK integrate with existing emergency systems?</h3>
+                            <div class="faq-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Yes, THYNK is built with interoperability in mind. We provide APIs and integration tools that connect with government emergency management systems, 911 dispatch centers, weather services, and other critical infrastructure. Our platform adheres to Common Alerting Protocol (CAP) standards to ensure seamless information exchange.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <h3>How do you ensure data privacy and security?</h3>
+                            <div class="faq-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="faq-answer">
+                            <p>All data is encrypted both in transit and at rest using industry-standard protocols. Personal information is protected according to GDPR and other privacy regulations. We implement strict access controls, regular security audits, and maintain comprehensive data governance policies. During emergencies, only essential information is shared with authorized responders.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <h3>What kind of training do users need?</h3>
+                            <div class="faq-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="faq-answer">
+                            <p>THYNK is designed to be intuitive and user-friendly, requiring minimal training for basic use. We provide free online resources including video tutorials, documentation, and interactive guides. For organizations implementing THYNK at scale, we offer comprehensive training programs and certification courses for administrators and power users.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <h3>Is THYNK available internationally?</h3>
+                            <div class="faq-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="faq-answer">
+                            <p>No, THYNK is currently being developed exclusively for local deployment in Negros Island. We are focusing our efforts on creating a solution tailored to the specific disaster response needs of our local communities before considering any expansion. Our development team is working closely with local government units and emergency response teams to ensure the platform addresses the unique challenges faced in our region.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section py-8">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow">
-                    <div class="card-body p-5 text-center">
-                        <h2 class="mb-3">Ready to make your community safer?</h2>
-                        <p class="lead mb-4">Join THYNK today and be part of the community-based disaster response network.</p>
-                        <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-primary btn-lg px-5">Sign Up Now</a>
+            <div class="col-lg-10">
+                <div class="cta-card animate-on-scroll">
+                    <div class="cta-bg"></div>
+                    <div class="cta-content">
+                        <h2 class="cta-title">Ready to Transform Your Community's Emergency Response?</h2>
+                        <p class="cta-text">Join thousands of communities already using THYNK to coordinate their disaster response efforts and save lives.</p>
+                        
+                        <div class="cta-actions">
+                            <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-glow btn-lg">
+                                <span>Get Started Now</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        
+                    </div>
+                        
+                        <div class="cta-features">
+                            <div class="cta-feature-item">
+                                <div class="cta-feature-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                </div>
+                                <span>Secure & Private</span>
+            </div>
+                            <div class="cta-feature-item">
+                                <div class="cta-feature-icon">
+                                    <i class="fas fa-bolt"></i>
+        </div>
+                                <span>Quick Setup</span>
+    </div>
+                            <div class="cta-feature-item">
+                                <div class="cta-feature-icon">
+                                    <i class="fas fa-headset"></i>
+</div>
+                                <span>24/7 Support</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @section Styles {
     <style>
+        /* Base Variables */
+        :root {
+            --primary: #545454;
+            --primary-dark: #3c3c3c;
+            --primary-light: #6e6e6e;
+            --primary-rgb: 84, 84, 84;
+            
+            --secondary: #E5DFD2;
+            --secondary-dark: #d6cfbf;
+            --secondary-light: #f4f0e5;
+            --secondary-rgb: 229, 223, 210;
+            
+            --accent: #F5F5F5;
+            --accent-rgb: 245, 245, 245;
+            
+            --success: #6a8d73;
+            --warning: #e0a458;
+            --danger: #b56357;
+            --danger-rgb: 181, 99, 87;
+            
+            --dark: #545454;
+            --dark-alt: #696969;
+            --dark-light: #7e7e7e;
+            --light: #F5F5F5;
+            --muted: #a0a0a0;
+            --body-bg: #E5DFD2;
+            --body-color: #545454;
+            --border-color: rgba(84,84,84,0.1);
+            --card-bg: #F5F5F5;
+
+            --theme-transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --shadow-primary: 0 10px 20px -5px rgba(84, 84, 84, 0.15);
+            
+            --font-head: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+        
+        /* Global Styles */
         html {
             scroll-behavior: smooth;
         }
         
-        .hero-section {
-            position: relative;
-            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-            overflow: hidden;
+        body {
+            background-color: var(--body-bg);
+            color: var(--body-color);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+        }
+        
+        .py-8 {
+            padding-top: 6rem;
+            padding-bottom: 6rem;
+        }
+        
+        .mb-6 {
+            margin-bottom: 4rem;
+        }
+        
+        /* Hero Section */
+        .hero-immersive {
             min-height: 100vh;
+            position: relative;
+            background-color: var(--secondary);
+            color: var(--primary);
+            overflow: hidden;
+            z-index: 1;
+            width: 100%;
+        }
+        
+        .parallax-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=1000');
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%) brightness(0.9) opacity(0.15);
+            z-index: -1;
+            transform: scale(1.1);
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: transparent;
+            z-index: -1;
+        }
+
+        .hero-particles {
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2zm60 91c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2zM35 41c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2zm12 60c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2zM12 60c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2z' fill='%23545454' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            z-index: 0;
+            opacity: 0.3;
+        }
+        
+        .hero-content {
+            padding: 2rem 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero-title {
+            font-size: 3.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            font-family: var(--font-head);
+            color: var(--primary);
+        }
+        
+        .thynk-logo {
+            vertical-align: middle;
+            display: inline-block;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s ease;
+        }
+        
+        .thynk-logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            max-width: 600px;
+            color: var(--dark-alt);
+        }
+        
+        /* Typewriter effect */
+        .typewriter {
+            position: relative;
+            border-right: 3px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite alternate;
+            animation-delay: 0.5s;
+            animation-fill-mode: both;
+        }
+        
+        @@keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @@keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: var(--primary); }
+        }
+        
+        /* Floating elements */
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .floating-element {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(245, 245, 245, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            animation: floating-animation var(--duration) ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+        
+        .floating-element:nth-child(1) {
+            top: 20%;
+            left: 10%;
+        }
+        
+        .floating-element:nth-child(2) {
+            top: 50%;
+            right: 20%;
+        }
+        
+        .floating-element:nth-child(3) {
+            bottom: 25%;
+            left: 30%;
+        }
+        
+        @@keyframes floating-animation {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(calc(var(--translate-y) * -1));
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+        
+        /* Floating Navigation */
+        .floating-nav {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 9999; /* Increased z-index */
+            pointer-events: auto; /* Ensure it's clickable */
+        }
+        
+        .nav-indicator {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .nav-indicator span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(84, 84, 84, 0.3);
+            transition: var(--theme-transition);
+            cursor: pointer;
+        }
+        
+        .nav-indicator span.active {
+            background-color: var(--primary);
+            transform: scale(1.2);
+        }
+        
+        /* Badge Pill */
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(84, 84, 84, 0.1);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            margin-right: 0.75rem;
+            position: relative;
+        }
+        
+        .pulse-dot:after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            animation: pulse 2s infinite;
+        }
+        
+        /* Buttons */
+        .btn-glow {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            z-index: 1;
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .btn-glow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(84, 84, 84, 0.2);
+            color: white;
+        }
+        
+        .btn-glow:before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, var(--primary), var(--primary-light), var(--primary), var(--primary-light));
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .btn-glow:hover:before {
+            opacity: 1;
+            animation: glowing 2s linear infinite;
+        }
+        
+        .explore-btn {
+            border: 1px solid rgba(84, 84, 84, 0.2);
+            border-radius: 50px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            background: rgba(245, 245, 245, 0.5);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            color: var(--primary);
+        }
+        
+        .explore-btn:hover {
+            border-color: rgba(84, 84, 84, 0.4);
+            background: rgba(245, 245, 245, 0.7);
+            color: var(--primary-dark);
+        }
+        
+        .explore-btn .btn-icon {
+            display: inline-flex;
+            margin-left: 0.5rem;
+            opacity: 0.7;
+            transition: transform 0.3s ease;
+        }
+        
+        .explore-btn:hover .btn-icon {
+            transform: translateX(4px);
+            opacity: 1;
+        }
+        
+        /* Metrics */
+        .hero-metrics {
+            margin-top: 3rem;
+            display: flex;
+            gap: 2.5rem;
+        }
+        
+        .metric-card {
+            position: relative;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--primary);
+            font-family: var(--font-head);
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-label {
+            color: var(--dark-alt);
+            font-size: 0.9rem;
+        }
+        
+        .counter-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        /* Hero Visual */
+        .hero-visual {
+            position: relative;
+            height: 100%;
+            perspective: 1200px;
+            transform-style: preserve-3d;
+        }
+        
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background-color: rgba(245, 245, 245, 0.7);
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(84, 84, 84, 0.1);
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            transform: rotateY(-12deg) rotateX(5deg);
+            transition: transform 0.5s ease;
+        }
+        
+        .hero-visual:hover .map-container {
+            transform: rotateY(-5deg) rotateX(2deg);
+        }
+        
+        .map-glow {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            top: -25%;
+            left: -25%;
+            background: radial-gradient(ellipse at center, rgba(84, 84, 84, 0.1) 0%, rgba(84, 84, 84, 0) 70%);
+            pointer-events: none;
+            opacity: 0.8;
+            animation: pulse-glow 4s infinite;
+        }
+        
+        .map-visual {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://i.imgur.com/K8e5BxE.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.8;
+            filter: grayscale(80%);
+        }
+        
+        .map-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        .marker-1 {
+            top: 35%;
+            right: 30%;
+        }
+        
+        .marker-2 {
+            bottom: 40%;
+            left: 20%;
+        }
+        
+        .marker-3 {
+            top: 25%;
+            left: 40%;
+        }
+        
+        .marker-pulse {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(84, 84, 84, 0.3);
+            animation: pulse 2s infinite;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .marker-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px var(--primary-dark);
+        }
+        
+        .map-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--dark-alt));
+            opacity: 0.6;
+            z-index: 1;
+        }
+        
+        .connection-1 {
+            width: 30%;
+            top: 38%;
+            right: 35%;
+            transform: rotate(30deg);
+        }
+        
+        .connection-2 {
+            width: 25%;
+            top: 28%;
+            left: 45%;
+            transform: rotate(-30deg);
+        }
+        
+        .map-alert {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: rgba(181, 99, 87, 0.15);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(181, 99, 87, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            max-width: 80%;
+            animation: fade-in 1s ease, slide-up 1s ease;
+        }
+        
+        .alert-icon {
+            background-color: var(--danger);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .alert-content {
+            flex: 1;
+        }
+        
+        .alert-title {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+        
+        .alert-location {
+            font-size: 0.8rem;
+            color: var(--dark-alt);
+        }
+        
+        .geo-shape {
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(60px);
+            opacity: 0.2;
+        }
+        
+        .shape-1 {
+            width: 300px;
+            height: 300px;
+            background-color: rgba(84, 84, 84, 0.15);
+            top: -50px;
+            right: -100px;
+        }
+        
+        .shape-2 {
+            width: 250px;
+            height: 250px;
+            background-color: rgba(229, 223, 210, 0.3);
+            bottom: -100px;
+            left: -50px;
+        }
+        
+        .shape-3 {
+            width: 200px;
+            height: 200px;
+            background-color: rgba(245, 245, 245, 0.3);
+            top: 50%;
+            left: 10%;
+        }
+        
+        /* Scroll Prompt */
+        .scroll-prompt {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--dark-alt);
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+        
+        .mouse-icon {
+            width: 30px;
+            height: 50px;
+            border: 2px solid rgba(84, 84, 84, 0.3);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        
+        .mouse-wheel {
+            width: 4px;
+            height: 10px;
+            background-color: rgba(84, 84, 84, 0.5);
+            border-radius: 2px;
+            margin-top: 8px;
+            animation: mouse-scroll 2s infinite;
+        }
+        
+        /* Hero Divider */
+        .hero-divider {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            color: var(--body-bg);
+            z-index: 2;
+            line-height: 0;
+        }
+        
+        /* Features Section */
+        .features-section {
+            background-color: var(--body-bg);
+            position: relative;
+            z-index: 1; /* Changed from 2 to 1 */
+            overflow: hidden;
+        }
+        
+        .section-tag {
+            display: inline-block;
+            background-color: rgba(84, 84, 84, 0.1);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-family: var(--font-head);
+        }
+        
+        .section-subtitle {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--dark-alt);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .feature-card {
+            background-color: var(--accent);
+            border-radius: 20px;
+            padding: 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .feature-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--dark-alt));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: transparent;
+        }
+        
+        .feature-card:hover:before {
+            transform: scaleX(1);
         }
         
         .feature-icon {
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .feature-card p {
+            color: var(--dark-alt);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .feature-hover-info {
+            height: auto;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover .feature-hover-info {
+            max-height: 200px;
+            opacity: 1;
+        }
+        
+        .feature-hover-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .feature-hover-info li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-alt);
+        }
+        
+        .feature-hover-info li:before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+        
+        /* Animations */
+        .animate-fade {
+            opacity: 0;
+            animation: fade-in 1s ease forwards;
+        }
+        
+        .animate-fade-delay {
+            opacity: 0;
+            animation: fade-in 1s ease 0.3s forwards;
+        }
+        
+        .animate-fade-delay-2 {
+            opacity: 0;
+            animation: fade-in 1s ease 0.6s forwards;
+        }
+        
+        .animate-fade-delay-3 {
+            opacity: 0;
+            animation: fade-in 1s ease 0.9s forwards;
+        }
+        
+        .animate-fade-delay-4 {
+            opacity: 0;
+            animation: fade-in 1s ease 1.2s forwards;
+        }
+        
+        .animate-fade-delay-5 {
+            opacity: 0;
+            animation: fade-in 1s ease 1.5s forwards;
+        }
+        
+        .animate-text {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+        }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .animate-on-scroll.in-view {
+            opacity: 1;
+                transform: translateY(0);
+            }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--dark-alt) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Animation Keyframes */
+        @@keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 1;
+            }
+            70% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+        }
+        
+        @@keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+        
+        @@keyframes pulse-glow {
+            0% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.5; }
+        }
+        
+        @@keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @@keyframes rotation {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(359deg); }
+        }
+        
+        @@keyframes fade-in {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        @@keyframes slide-up {
+            0% { transform: translateY(20px); }
+            100% { transform: translateY(0); }
+        }
+        
+        @@keyframes mouse-scroll {
+            0% { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+            50% { 
+                opacity: 0.8;
+                transform: translateY(8px);
+            }
+            100% { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Animation Classes */
+        .animate-fade {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s forwards;
+        }
+        
+        .animate-fade-delay {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s forwards 0.3s;
+        }
+        
+        .animate-fade-delay-2 {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s forwards 0.6s;
+        }
+        
+        .animate-fade-delay-3 {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s forwards 0.9s;
+        }
+        
+        .animate-fade-delay-4 {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s forwards 1.2s;
+        }
+        
+        .animate-fade-delay-5 {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s forwards 1.5s;
+        }
+        
+        .animate-text {
+            opacity: 0;
+            animation: textReveal 1s forwards 0.2s;
+        }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .animate-on-scroll.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @@keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @@keyframes textReveal {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Timeline Styles for How It Works Section */
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+        
+        .timeline:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background-color: rgba(84, 84, 84, 0.1);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5rem;
+            position: relative;
+        }
+        
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .timeline-number {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            display: inline-flex;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            z-index: 2;
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .timeline-content,
+        .timeline-visual {
+            width: 45%;
+            position: relative;
+        }
+        
+        .timeline-content {
+            padding-right: 3rem;
+            text-align: right;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content {
+            order: 2;
+            padding-right: 0;
+            padding-left: 3rem;
+            text-align: left;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-visual {
+            order: 1;
+        }
+        
+        .timeline-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            margin-left: auto;
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .timeline-item:nth-child(even) .timeline-icon {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        /* Media queries for the process timeline */
+        @@media (max-width: 992px) {
+            .timeline:before {
+                left: 30px;
+            }
+            
+            .timeline-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .timeline-number {
+                left: 30px;
+            }
+            
+            .timeline-content,
+            .timeline-visual,
+            .timeline-item:nth-child(even) .timeline-content,
+            .timeline-item:nth-child(even) .timeline-visual {
+                width: 100%;
+                padding-left: 80px;
+                padding-right: 0;
+                text-align: left;
+                order: 2;
+            }
+            
+            .timeline-visual {
+                margin-top: 2rem;
+            }
+            
+            .timeline-features, 
+            .timeline-item:nth-child(even) .timeline-features {
+                justify-content: flex-start;
+            }
+            
+            .cta-card {
+                padding: 3rem 1.5rem;
+            }
+            
+            .cta-actions {
+                flex-direction: column;
+            }
+            
+            .cta-title {
+                font-size: 2rem;
+            }
+        }
+
+        .timeline-content h3 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .timeline-content p {
+            color: var(--dark-alt);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .timeline-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-features {
+            justify-content: flex-start;
+        }
+        
+        .feature-tag {
+            background-color: rgba(84, 84, 84, 0.1);
+            color: var(--primary);
+            padding: 0.35rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .timeline-item:nth-child(2) .feature-tag {
+            background-color: rgba(229, 223, 210, 0.3);
+            color: var(--primary);
+        }
+        
+        .timeline-item:nth-child(3) .feature-tag {
+            background-color: rgba(245, 245, 245, 0.5);
+            color: var(--primary);
+        }
+        
+        .device-mockup {
+            position: relative;
+            max-width: 300px;
+            margin: 0 auto;
+            border-radius: 30px;
+            padding: 10px;
+            background-color: var(--accent);
+            box-shadow: var(--shadow-lg);
+            transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+            transition: transform 0.3s ease;
+        }
+        
+        .device-mockup:hover {
+            transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+        }
+        
+        .device-screen {
+            border-radius: 20px;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        
+        .device-screen img {
+            display: block;
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            filter: grayscale(30%);
+        }
+        
+        .device-notch {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background-color: var(--accent);
+            border-radius: 0 0 12px 12px;
+            z-index: 10;
+        }
+        
+        .device-laptop {
+            max-width: 400px;
+            border-radius: 10px 10px 0 0;
+            padding: 15px 15px 0;
+            background-color: var(--accent);
+        }
+        
+        .device-laptop:after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: -10%;
+            right: -10%;
+            height: 15px;
+            background-color: var(--primary-light);
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .device-laptop .device-screen {
+            border-radius: 5px;
+        }
+        
+        .device-desktop {
+            max-width: 450px;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: var(--accent);
+        }
+        
+        .device-desktop:before {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30%;
+            height: 30px;
+            background-color: var(--primary-light);
+            border-radius: 5px;
+        }
+        
+        .device-desktop:after {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            left: 40%;
+            right: 40%;
+            height: 10px;
+            background-color: var(--accent);
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .device-desktop .device-screen {
+            border-radius: 5px;
+        }
+
+
+
+
+
+        /* CTA Section */
+        .cta-section {
+            background-color: var(--secondary-light);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-card {
+            background-color: var(--accent);
+            border-radius: 30px;
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .cta-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(84, 84, 84, 0.05), rgba(229, 223, 210, 0.05));
+            z-index: -1;
+        }
+        
+        .cta-content {
+            position: relative;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-family: var(--font-head);
+        }
+        
+        .cta-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--dark-alt);
+            margin-bottom: 2.5rem;
+        }
+        
+        .cta-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+        
+        .cta-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+        }
+        
+        .cta-feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .cta-feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(84, 84, 84, 0.1);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        /* Network Status Handling */
+        .offline-mode .network-dependent {
+            opacity: 0.7;
+            position: relative;
+        }
+        
+        .offline-mode .network-dependent::after {
+            content: 'Offline Mode';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(84, 84, 84, 0.8);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 10;
+        }
+        
+        .offline-mode img:not([src]) {
+            background-color: rgba(229, 223, 210, 0.3);
+            min-height: 100px;
+        }
+        
+        /* Performance Optimizations */
+        img {
+            content-visibility: auto;
+        }
+        
+        .device-screen img,
+        .author-image img {
+            transition: opacity 0.3s ease;
+        }
+        
+        .device-screen img[data-src],
+        .author-image img[data-src] {
+            opacity: 0.3;
+        }
+        
+        .thynk-logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .hero-map-image {
+            max-width: 100%;
+            height: auto;
+            transform: perspective(1000px) rotateY(-12deg) rotateX(5deg);
+            transition: transform 0.5s ease;
+            filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.15));
+            border-radius: 20px;
+        }
+        
+        .hero-visual:hover .hero-map-image {
+            transform: perspective(1000px) rotateY(-5deg) rotateX(2deg);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            max-width: 600px;
+            color: var(--dark-alt);
+        }
+        
+        /* Process Section Styles */
+        .process-section {
+            background-color: var(--body-bg);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .process-cards {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .process-card {
+            width: 100%;
+            background-color: var(--accent);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(84, 84, 84, 0.05);
+            overflow: hidden;
+        }
+        
+        .process-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .process-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--primary-light));
+            border-radius: 3px 0 0 3px;
+        }
+        
+        .process-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .process-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: var(--font-head);
+            margin-right: 1.5rem;
+            position: relative;
+            width: 60px;
+            height: 60px;
+            display: flex;
             align-items: center;
             justify-content: center;
         }
         
-        .stat-card {
+        .process-number:after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px dashed var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: rotation 30s linear infinite;
+        }
+        
+        .process-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .process-content {
+            margin-left: 4.5rem;
+        }
+        
+        .process-content h3 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .process-content p {
+            color: var(--dark-alt);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .process-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .process-visual {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        
+        .process-connector {
+            height: 60px;
+            width: 2px;
+            position: relative;
+            margin: 0.5rem 0;
+        }
+        
+        .connector-line {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to bottom, var(--primary-light), var(--primary));
+            position: relative;
+        }
+        
+        .connector-arrow {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        @@media (min-width: 992px) {
+            .process-card {
+                flex-direction: row;
+                align-items: center;
+                padding: 3rem;
+            }
+            
+            .process-card-header {
+                flex-direction: column;
+                margin-bottom: 0;
+                margin-right: 2rem;
+            }
+            
+            .process-number {
+                margin-right: 0;
+                margin-bottom: 1.5rem;
+                width: 80px;
+                height: 80px;
+                font-size: 3rem;
+            }
+            
+            .process-content {
+                flex: 1;
+                margin-left: 0;
+                margin-right: 2rem;
+            }
+            
+            .process-features {
+                margin-bottom: 0;
+            }
+            
+            .process-visual {
+                width: 40%;
+                margin-top: 0;
+            }
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            max-width: 600px;
+            color: var(--dark-alt);
+        }
+        
+        /* Educational Section Styles */
+        .education-section {
+            background-color: var(--secondary-light);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .disaster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .disaster-card {
+            background-color: var(--accent);
+            border-radius: 20px;
             padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(84, 84, 84, 0.05);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .disaster-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .disaster-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .disaster-card h3 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .disaster-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .disaster-content p {
+            color: var(--dark-alt);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .disaster-tips {
+            margin-bottom: 1.5rem;
+        }
+        
+        .disaster-tips h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .disaster-tips ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .disaster-tips li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark-alt);
+            font-size: 0.95rem;
+        }
+        
+        .disaster-tips li:before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+        
+        .disaster-stats {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(84, 84, 84, 0.1);
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: var(--font-head);
+            line-height: 1.2;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--dark-alt);
+        }
+        
+        /* FAQ Section Styles */
+        .faq-section {
+            background-color: var(--body-bg);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .faq-accordion {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .faq-item {
+            background-color: var(--accent);
+            border-radius: 16px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(84, 84, 84, 0.05);
+        }
+        
+        .faq-question {
+            padding: 1.5rem 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.3s ease;
+        }
+        
+        .faq-question:hover {
+            background-color: rgba(84, 84, 84, 0.03);
+        }
+        
+        .faq-question h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--primary);
+        }
+        
+        .faq-icon {
+            color: var(--primary);
             transition: transform 0.3s ease;
         }
         
-        .stat-card:hover {
-            transform: translateY(-10px);
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
         }
         
-        .cta-section {
-            background-color: #f8f9fa;
+        .faq-answer {
+            padding: 0 2rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.5s ease;
         }
         
-        .scroll-indicator {
-            position: absolute;
-            bottom: 30px;
-            left: 0;
-            right: 0;
-            text-align: center;
+        .faq-item.active .faq-answer {
+            padding: 0 2rem 1.5rem;
+            max-height: 1000px;
         }
         
-        .scroll-indicator a {
-            text-decoration: none;
+        .faq-answer p {
+            color: var(--dark-alt);
+            line-height: 1.6;
+            margin: 0;
         }
         
-        .bounce {
-            animation: bounce 2s infinite;
+        /* PDF Download Styles */
+        .resource-downloads {
+            margin-top: 2rem;
         }
         
-        @@keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
+        .pdf-download-card {
+            background-color: var(--accent);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+            border: 1px solid rgba(84, 84, 84, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .pdf-download-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .pdf-icon {
+            font-size: 3.5rem;
+            color: var(--primary);
+            line-height: 1;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .pdf-icon i {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        
+        .pdf-content {
+            flex: 1;
+        }
+        
+        .pdf-content h4 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .pdf-content p {
+            color: var(--dark-alt);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        
+        .pdf-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--dark-alt);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .pdf-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .download-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        @@media (max-width: 767px) {
+            .pdf-download-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 1rem;
+                padding: 1.5rem;
             }
-            40% {
-                transform: translateY(-20px);
-            }
-            60% {
-                transform: translateY(-10px);
+            
+            .pdf-meta {
+                justify-content: center;
+                flex-wrap: wrap;
             }
         }
     </style>
 }
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate elements when they come into view
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+            
+            document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Parallax effect for hero background
+            const parallaxBg = document.querySelector('.parallax-bg');
+            if (parallaxBg) {
+                window.addEventListener('scroll', function() {
+                    const scrollPosition = window.pageYOffset;
+                    parallaxBg.style.transform = `translateY(${scrollPosition * 0.4}px) scale(1.1)`;
+                });
+            }
+            
+            // Navigation indicator
+            const sections = ['home', 'features', 'process', 'education', 'faq'];
+            const navItems = document.querySelectorAll('.nav-indicator span');
+            
+            // Add additional indicator dots for new sections
+            const navIndicator = document.querySelector('.nav-indicator');
+            if (navIndicator && navItems.length < sections.length) {
+                for (let i = navItems.length; i < sections.length; i++) {
+                    const newDot = document.createElement('span');
+                    newDot.setAttribute('data-section', sections[i]);
+                    navIndicator.appendChild(newDot);
+                }
+            }
+            
+            // Update all navigation dots
+            const updatedNavItems = document.querySelectorAll('.nav-indicator span');
+            updatedNavItems.forEach((item, index) => {
+                item.addEventListener('click', function() {
+                    const section = document.getElementById(sections[index]) || document.querySelector('.' + sections[index] + '-section');
+                    if (section) {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+            
+            // Update navigation on scroll
+            window.addEventListener('scroll', function() {
+                const scrollPosition = window.scrollY;
+                const windowHeight = window.innerHeight;
+                
+                sections.forEach((section, index) => {
+                    const el = document.getElementById(section) || document.querySelector('.' + section + '-section');
+                    if (el) {
+                        const offsetTop = el.offsetTop;
+                        const height = el.offsetHeight;
+                        
+                        if (scrollPosition >= offsetTop - windowHeight/2 && scrollPosition < offsetTop + height - windowHeight/2) {
+                            updatedNavItems.forEach(item => item.classList.remove('active'));
+                            updatedNavItems[index].classList.add('active');
+                        }
+                    }
+                });
+            });
+            
+            // FAQ Toggle Function
+            window.toggleFaq = function(element) {
+                const faqItem = element.closest('.faq-item');
+                if (faqItem.classList.contains('active')) {
+                    faqItem.classList.remove('active');
+                } else {
+                    document.querySelectorAll('.faq-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    faqItem.classList.add('active');
+                }
+            };
+            
+            // Animated counters
+            const counters = document.querySelectorAll('.counter');
+            if (counters.length > 0) {
+                const speed = 200; // The lower the slower
+                
+                counters.forEach(counter => {
+                    const target = +counter.innerText;
+                    const increment = target / speed;
+                    
+                    let count = 0;
+                    const updateCount = () => {
+                        if (count < target) {
+                            count += increment;
+                            counter.innerText = Math.ceil(count);
+                            setTimeout(updateCount, 1);
+                        } else {
+                            counter.innerText = target;
+                        }
+                    };
+                    
+                    // Only start counting when in view
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                updateCount();
+                                observer.unobserve(counter);
+                            }
+                        });
+                    }, { threshold: 0.5 });
+                    
+                    observer.observe(counter);
+                });
+            }
+            
+            // Check network status and handle appropriately
+            function updateNetworkStatus() {
+                if (navigator.onLine) {
+                    console.log('Application is online');
+                    document.documentElement.classList.remove('offline-mode');
+                    loadDeferredImages();
+                } else {
+                    console.log('Application is offline');
+                    document.documentElement.classList.add('offline-mode');
+                }
+            }
+            
+            // Load images that were deferred for network performance
+            function loadDeferredImages() {
+                document.querySelectorAll('img[data-src]').forEach(img => {
+                    img.src = img.getAttribute('data-src');
+                    img.removeAttribute('data-src');
+                });
+            }
+            
+            // Check network status on page load
+            updateNetworkStatus();
+            
+            // Listen for network status changes
+            window.addEventListener('online', updateNetworkStatus);
+            window.addEventListener('offline', updateNetworkStatus);
+            
+            // Typewriter effect for hero text
+            const typewriterText = document.querySelector('.typewriter');
+            if (typewriterText) {
+                const text = typewriterText.textContent;
+                typewriterText.textContent = '';
+                
+                let i = 0;
+                const typeNextChar = () => {
+                    if (i < text.length) {
+                        typewriterText.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(typeNextChar, 100);
+                    }
+                };
+                
+                setTimeout(typeNextChar, 500);
+            }
+        });
+    </script>
+}
+
+</body>
+</html>

@@ -1,45 +1,487 @@
 ﻿@page
 @model THYNK.Areas.Identity.Pages.Account.ConfirmEmailModel
 @{
-    ViewData["Title"] = "Confirm Email";
+    ViewData["Title"] = "Confirm Your Email";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white text-center">
-                <h2>@ViewData["Title"]</h2>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-4">
-                    <p>
-                        A confirmation code has been sent to your email address.
-                        Please check your email and enter the code below to confirm your account.
-                    </p>
+<section class="confirm-email-section position-relative overflow-hidden">
+    <div class="parallax-bg"></div>
+    <div class="hero-overlay"></div>
+    
+    <div class="container position-relative py-5">
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-8 text-center">
+                <div class="section-tag animate-fade text-center mb-2">
+                    <i class="fas fa-envelope-open-text me-2"></i>
+                    <span>Email Verification</span>
                 </div>
+                <h1 class="section-title text-center mb-3 animate-fade-delay">@ViewData["Title"]</h1>
+                <p class="section-subtitle text-center mb-4 animate-fade-delay-2 mx-auto" style="max-width: 700px;">
+                    We've sent a 7-character confirmation code to your email address.
+                    Please enter it below to verify your account.
+                </p>
+            </div>
+        </div>
 
-                <form asp-page-handler="ConfirmEmail" method="post">
-                    <input asp-for="Email" type="hidden" />
-                    
-                    <div class="form-group">
-                        <label asp-for="ConfirmationCode">Confirmation Code</label>
-                        <input asp-for="ConfirmationCode" class="form-control" placeholder="Enter your 7-character code" />
-                        <span asp-validation-for="ConfirmationCode" class="text-danger"></span>
+        <div class="row justify-content-center animate-fade-delay-3">
+            <div class="col-lg-7">
+                <div class="confirm-card">
+                    <div class="confirm-card-body">
+                        <form asp-page-handler="ConfirmEmail" method="post" id="confirmEmailForm">
+                            <input asp-for="Email" type="hidden" />
+                            
+                            <div class="mb-4 text-center">
+                                <label asp-for="ConfirmationCode" class="form-label visually-hidden">Confirmation Code</label>
+                                
+                                <!-- Enhanced verification code input -->
+                                <div class="verification-code-container d-flex justify-content-center gap-2 mb-3">
+                                    <input type="text" class="verification-code-input" maxlength="1" pattern="[0-9A-Za-z]" autocomplete="off" inputmode="text">
+                                    <input type="text" class="verification-code-input" maxlength="1" pattern="[0-9A-Za-z]" autocomplete="off" inputmode="text">
+                                    <input type="text" class="verification-code-input" maxlength="1" pattern="[0-9A-Za-z]" autocomplete="off" inputmode="text">
+                                    <input type="text" class="verification-code-input" maxlength="1" pattern="[0-9A-Za-z]" autocomplete="off" inputmode="text">
+                                    <input type="text" class="verification-code-input" maxlength="1" pattern="[0-9A-Za-z]" autocomplete="off" inputmode="text">
+                                    <input type="text" class="verification-code-input" maxlength="1" pattern="[0-9A-Za-z]" autocomplete="off" inputmode="text">
+                                    <input type="text" class="verification-code-input" maxlength="1" pattern="[0-9A-Za-z]" autocomplete="off" inputmode="text">
+                                </div>
+                                
+                                <!-- Hidden field to store the combined code -->
+                                <input asp-for="ConfirmationCode" type="hidden" id="combinedCode" />
+                                <span asp-validation-for="ConfirmationCode" class="text-danger d-block text-center mb-3"></span>
+                            </div>
+                            
+                            <div class="info-box mb-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="info-icon">
+                                        <i class="fas fa-info-circle"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <p class="mb-0">Can't find the email? Check your spam folder or click "Resend Code" below.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4">
+                                <button type="submit" class="btn btn-primary custom-button">
+                                    <span>Verify Email</span>
+                                    <i class="fas fa-check-circle ms-2"></i>
+                                </button>
+                                
+                                <button type="button" id="resendCodeBtn" class="btn btn-outline-secondary custom-button-outline">
+                                    <span>Resend Code</span>
+                                    <i class="fas fa-redo ms-2"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <p class="timer-text">You can request a new code in <span id="countdown">60</span> seconds</p>
+                            </div>
+                        </form>
                     </div>
-                    
-                    <div class="alert alert-warning mt-3">
-                        <i class="fas fa-info-circle"></i> If you did not receive the code, please check your spam folder.
-                    </div>
-                    
-                    <div class="form-group d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Confirm Email</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+@section Styles {
+    <style>
+        :root {
+            --primary: #545454;
+            --primary-dark: #3c3c3c;
+            --primary-light: #6e6e6e;
+            --primary-rgb: 84, 84, 84;
+            
+            --secondary: #E5DFD2;
+            --secondary-dark: #d6cfbf;
+            --secondary-light: #f4f0e5;
+            --secondary-rgb: 229, 223, 210;
+            
+            --accent: #F5F5F5;
+            --accent-rgb: 245, 245, 245;
+            
+            --success: #6a8d73;
+            --warning: #e0a458;
+            --danger: #b56357;
+            --danger-rgb: 181, 99, 87;
+            
+            --dark: #545454;
+            --dark-alt: #696969;
+            --dark-light: #7e7e7e;
+            --light: #F5F5F5;
+            --muted: #a0a0a0;
+            --body-bg: #E5DFD2;
+            --body-color: #545454;
+            --border-color: rgba(84,84,84,0.1);
+            --card-bg: #F5F5F5;
+        }
+
+        /* Confirm Email Section */
+        .confirm-email-section {
+            min-height: 100vh;
+            position: relative;
+            color: var(--dark-alt);
+            padding: 2rem 0;
+            overflow: hidden;
+        }
+        
+        .parallax-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -10;
+            background-image: url('https://images.pexels.com/photos/3243090/pexels-photo-3243090.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%) brightness(0.9) opacity(0.15);
+            transform: scale(1.1);
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: -5;
+            background: linear-gradient(135deg, rgba(229, 223, 210, 0.9) 0%, rgba(229, 223, 210, 0.85) 100%);
+        }
+        
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background-color: rgba(84, 84, 84, 0.1);
+            color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+            color: var(--primary);
+        }
+        
+        .section-subtitle {
+            font-size: 1.125rem;
+            line-height: 1.625;
+            color: var(--dark-alt);
+        }
+        
+        /* Confirmation Card */
+        .confirm-card {
+            background-color: var(--accent);
+            border-radius: 1.25rem;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            margin: 0 auto;
+        }
+        
+        .confirm-card-body {
+            padding: 2.5rem;
+            background-color: var(--accent);
+        }
+        
+        /* Verification Code Input */
+        .verification-code-container {
+            margin: 2rem auto;
+        }
+        
+        .verification-code-input {
+            width: 3.5rem;
+            height: 4rem;
+            padding: 0.5rem;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background-color: white;
+            transition: all 0.3s ease;
+            margin: 0 0.25rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .verification-code-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(84, 84, 84, 0.15);
+        }
+        
+        .verification-code-input.filled {
+            background-color: var(--secondary-light);
+        }
+        
+        /* Info Box */
+        .info-box {
+            background-color: rgba(229, 223, 210, 0.5);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .info-icon {
+            font-size: 1.5rem;
+            color: var(--warning);
+            margin-right: 1rem;
+        }
+        
+        .info-content {
+            color: var(--dark-alt);
+            font-size: 0.95rem;
+        }
+        
+        /* Button Styles */
+        .custom-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px -5px rgba(84, 84, 84, 0.15);
+        }
+        
+        .custom-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .custom-button-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .custom-button-outline:hover {
+            background-color: rgba(84, 84, 84, 0.05);
+            color: var(--primary-dark);
+        }
+        
+        .timer-text {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        
+        /* Animations */
+        .animate-fade {
+            opacity: 0;
+            animation: fade-in 0.8s ease forwards;
+        }
+        
+        .animate-fade-delay {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.2s forwards;
+        }
+        
+        .animate-fade-delay-2 {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.4s forwards;
+        }
+        
+        .animate-fade-delay-3 {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.6s forwards;
+        }
+        
+        @@keyframes fade-in {
+            from { 
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .confirm-card-body {
+                padding: 1.5rem;
+            }
+            
+            .verification-code-input {
+                width: 2.7rem;
+                height: 3.5rem;
+                font-size: 1.25rem;
+            }
+        }
+        
+        @@media (max-width: 480px) {
+            .verification-code-input {
+                width: 2.2rem;
+                height: 3rem;
+                font-size: 1.1rem;
+                margin: 0 0.125rem;
+            }
+        }
+    </style>
+}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Set focus on first input box on page load
+            $('.verification-code-input:first').focus();
+            
+            // Auto-focus on next input when typing
+            $('.verification-code-input').on('input', function() {
+                $(this).addClass('filled');
+                
+                // Combine all inputs into the hidden field
+                updateCombinedCode();
+                
+                const maxLength = parseInt($(this).attr('maxlength'));
+                if ($(this).val().length >= maxLength) {
+                    const $next = $(this).next('.verification-code-input');
+                    if ($next.length) {
+                        $next.focus();
+                    } else {
+                        // Last input box reached, prepare for form submission
+                        $('#confirmEmailForm').submit();
+                    }
+                }
+            });
+            
+            // Handle backspace to go to previous input
+            $('.verification-code-input').on('keydown', function(e) {
+                if (e.key === 'Backspace' && $(this).val().length === 0) {
+                    const $prev = $(this).prev('.verification-code-input');
+                    if ($prev.length) {
+                        $prev.focus().val('').removeClass('filled');
+                        updateCombinedCode();
+                    }
+                }
+            });
+            
+            // Handle pasting of the complete code
+            $('.verification-code-input').on('paste', function(e) {
+                e.preventDefault();
+                
+                // Get pasted data
+                let pastedData = (e.originalEvent.clipboardData || window.clipboardData).getData('text');
+                pastedData = pastedData.trim().substring(0, 7); // Limit to 7 characters
+                
+                // Distribute pasted data across inputs
+                const inputs = $('.verification-code-input');
+                for (let i = 0; i < pastedData.length && i < inputs.length; i++) {
+                    $(inputs[i]).val(pastedData[i]).addClass('filled');
+                }
+                
+                // Focus on the next empty input or the last one if all filled
+                const nextEmptyIndex = Math.min(pastedData.length, inputs.length - 1);
+                $(inputs[nextEmptyIndex]).focus();
+                
+                // Update the hidden combined code
+                updateCombinedCode();
+            });
+            
+            // Function to combine all inputs into the hidden field
+            function updateCombinedCode() {
+                let code = '';
+                $('.verification-code-input').each(function() {
+                    code += $(this).val();
+                });
+                $('#combinedCode').val(code);
+            }
+            
+            // Countdown timer for resend button
+            let countdown = 90;
+            const countdownEl = $('#countdown');
+            const resendBtn = $('#resendCodeBtn');
+            
+            // Initially disable the resend button
+            resendBtn.prop('disabled', true);
+            
+            // Timer function
+            function updateCountdown() {
+                countdownEl.text(countdown);
+                if (countdown <= 0) {
+                    resendBtn.prop('disabled', false);
+                    $('.timer-text').hide();
+                } else {
+                    countdown--;
+                    setTimeout(updateCountdown, 1000);
+                }
+            }
+            
+            // Start the countdown
+            updateCountdown();
+            
+            // Resend code button click handler
+            $('#resendCodeBtn').click(function() {
+                // Show spinner and disable button
+                $(this).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending...');
+                $(this).prop('disabled', true);
+                
+                // AJAX request to resend code
+                $.ajax({
+                    url: '/Identity/Account/ResendEmailConfirmation',
+                    type: 'POST',
+                    data: { email: $('#Email').val() },
+                    success: function() {
+                        // Reset form and show success message
+                        $('.verification-code-input').val('').removeClass('filled');
+                        $('.verification-code-input:first').focus();
+                        
+                        // Show success alert
+                        const alertHtml = `
+                            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                                <i class="fas fa-check-circle me-2"></i> A new confirmation code has been sent to your email.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                        $('.confirm-card-body').prepend(alertHtml);
+                        
+                        // Reset countdown
+                        countdown = 60;
+                        $('.timer-text').show();
+                        updateCountdown();
+                    },
+                    error: function() {
+                        // Show error message
+                        const alertHtml = `
+                            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i> Failed to resend code. Please try again later.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                        $('.confirm-card-body').prepend(alertHtml);
+                    },
+                    complete: function() {
+                        // Reset button state after request
+                        $('#resendCodeBtn').html('<span>Resend Code</span><i class="fas fa-redo ms-2"></i>');
+                    }
+                });
+            });
+            
+            // Subtle parallax effect
+            const parallaxBg = document.querySelector('.parallax-bg');
+            const section = document.querySelector('.confirm-email-section');
+            
+            if (parallaxBg) {
+                window.addEventListener('scroll', function() {
+                    const scrollPosition = window.pageYOffset;
+                    const sectionTop = section.offsetTop;
+                    const relativeScroll = scrollPosition - sectionTop;
+                    
+                    if (relativeScroll >= 0) {
+                        parallaxBg.style.transform = `scale(1.1) translateY(${relativeScroll * 0.03}px)`;
+                    }
+                });
+            }
+        });
+    </script>
 }

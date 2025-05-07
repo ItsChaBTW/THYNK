@@ -7,48 +7,459 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/THYNK.styles.css" asp-append-version="true" />
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <!-- Mapbox CSS -->
-     @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #545454;
+            --primary-dark: #3c3c3c;
+            --primary-light: #6e6e6e;
+            --primary-rgb: 84, 84, 84;
+            
+            --secondary: #E5DFD2;
+            --secondary-dark: #d6cfbf;
+            --secondary-light: #f4f0e5;
+            --secondary-rgb: 229, 223, 210;
+            
+            --accent: #F5F5F5;
+            --accent-rgb: 245, 245, 245;
+            
+            --theme-transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-primary: 0 10px 20px -5px rgba(84, 84, 84, 0.15);
+            
+            --font-head: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            color: var(--primary);
+        }
+        
+        .navbar {
+            background-color: rgba(245, 245, 245, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1.5rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            transition: var(--theme-transition);
+        }
+        
+        .navbar.shadow {
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.15);
+        }
+        
+        .navbar.scrolled {
+            padding: 0.5rem 1.5rem;
+        }
+        
+        .navbar-brand {
+            font-family: var(--font-head);
+            font-weight: 700;
+            color: var(--primary) !important;
+            margin-right: 2rem;
+        }
+        
+        .navbar-nav {
+            gap: 0.5rem;
+            margin-left: 1rem;
+        }
+        
+        .thynk-logo {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s ease;
+        }
+        
+        .thynk-logo:hover {
+            transform: scale(1.05);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-link,.nav-link.me-2 {
+            color: var(--primary) !important;
+            font-weight: 500;
+            padding: 0.625rem 1rem;
+            position: relative;
+            transition: var(--theme-transition);
+            border-radius: 50px;
+        }
+        
+      
+        
+        .nav-link:after, .nav-link.me-2:after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 1rem;
+            right: 1rem;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-link:hover:after,
+        .nav-link.active:after,
+        .nav-link.me-2:hover:after,
+        .nav-link.me-2.active:after {
+            transform: scaleX(1);
+        }
+        
+        .btn-glow {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white !important;
+            border: none;
+            border-radius: 50px;
+            padding: 0.5rem 1.25rem;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            z-index: 1;
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .btn-glow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(84, 84, 84, 0.2);
+        }
+        
+        @@keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+        
+        main {
+            padding-top: 0 !important;
+            margin-top: 76px; /* Account for fixed navbar height */
+            height: 100vh;
+        }
+        
+       
+        
+        /* Responsive utilities */
+        @@media (max-width: 992px) {
+            .navbar {
+                padding: 0.5rem 1rem;
+            }
+            
+            .nav-link, .nav-link.me-2 {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            main {
+                margin-top: 65px;
+            }
+            
+            .navbar-collapse {
+                background-color: rgba(245, 245, 245, 0.98);
+                border-radius: 0 0 15px 15px;
+                padding: 1rem;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+                margin-top: 0.5rem;
+            }
+            
+            .navbar-nav {
+                gap: 0.25rem;
+                margin-left: 0;
+                margin-bottom: 1rem;
+                text-align: center;
+            }
+            
+            .nav-item {
+                justify-content: center;
+            }
+            
+            .d-flex.align-items-center {
+                flex-direction: column;
+                align-items: center !important;
+                gap: 0.5rem;
+            }
+            
+            .btn-glow {
+                width: 100%;
+                text-align: center;
+                margin-left: 0 !important;
+                margin-top: 0.5rem;
+            }
+        }
+        
+        .navbar-toggler {
+            padding: 0.5rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background-color: rgba(245, 245, 245, 0.8);
+            transition: var(--theme-transition);
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(84, 84, 84, 0.25);
+            outline: none;
+        }
+        
+        .navbar-toggler:hover {
+            background-color: rgba(245, 245, 245, 1);
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(84, 84, 84, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2.5' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+            width: 1.5em;
+            height: 1.5em;
+        }
+        
+        /* Mobile menu enhancements */
+        @@media (max-width: 576px) {
+            .navbar {
+                padding: 0.625rem 1rem;
+            }
+            
+            .navbar-collapse {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+                opacity: 0;
+                transform: translateY(-10px);
+                margin: 0 1rem;
+                border-radius: 12px;
+                background-color: var(--accent);
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+                border: 1px solid rgba(84, 84, 84, 0.1);
+                padding: 1rem;
+                max-height: 80vh;
+                overflow-y: auto;
+                z-index: 1000;
+            }
+            
+            .navbar-collapse.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            
+            .navbar-toggler {
+                margin-right: -0.5rem;
+            }
+            
+            .nav-link, .nav-link.me-2 {
+                padding: 0.75rem 1rem;
+                border-radius: 8px;
+                margin-bottom: 0.25rem;
+                text-align: center;
+            }
+            
+            
+            .navbar-nav {
+                align-items: center;
+            }
+        }
+        
+        /* Ensure floating navigation is always on top */
+        .floating-nav {
+            position: fixed !important;
+            z-index: 9999 !important;
+            pointer-events: auto !important;
+            transform: translateY(-50%) !important;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">THYNK</a>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center flex-row" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="/images/logo.png" class="thynk-logo me-2" width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" rx="20" fill="#545454"/>
+                        <path d="M25 30H75M50 30V70M35 70H65" stroke="#E5DFD2" stroke-width="8" stroke-linecap="round"/>
+                    <span class="fw-bold">THYNK</span>
+
+                    </img>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" href="#features">Features</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#process">How It Works</a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="#education">Education</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#faq">FAQ</a>
+                        </li>
+                     
+
+                      
                     </ul>
-                    <partial name="_LoginPartial" />
+                    <div class="d-flex align-items-center">
+                        <a class="nav-link me-2" asp-area="Identity" asp-page="/Account/Login" data-page="login">Login</a>
+                        <a asp-controller="Home" asp-action="UserTypeSelection" class="btn btn-glow ms-2">
+                            <span>Join Now</span>
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main role="main">
+        @RenderBody()
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - THYNK - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    </main>
+
+    
+ 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add active class to nav item on scroll
+            const navLinks = document.querySelectorAll('.navbar .nav-link');
+            const sections = ['home', 'features', 'process', 'testimonials', 'education', 'faq'];
+            
+            // Set active nav item on page load
+            setActiveNavItem();
+            
+            // Set active nav item on scroll
+            window.addEventListener('scroll', function() {
+                setActiveNavItem();
+            });
+            
+            function setActiveNavItem() {
+                // Get current URL path
+                const currentPath = window.location.pathname;
+                console.log("Current path:", currentPath);
+                
+                // Handle route-based navigation (for Login/Register pages)
+                if (currentPath.includes('Login')) {
+                    console.log("On login page");
+                    clearActiveNavItems();
+                    const loginLink = document.querySelector('.navbar .nav-link[data-page="login"]');
+                    console.log("Login link found:", !!loginLink);
+                    if (loginLink) loginLink.classList.add('active');
+                    return;
+                }
+                
+                if (currentPath.includes('Register')) {
+                    clearActiveNavItems();
+                    // There's no nav-link for register, but if added later it would go here
+                    return;
+                }
+                
+                const scrollPosition = window.scrollY;
+                
+                // Check if we're at the top of the page on homepage
+                if (currentPath === '/' && scrollPosition < 100) {
+                    clearActiveNavItems();
+                    const homeLink = document.querySelector('.navbar .nav-link[href="/"]');
+                    if (homeLink) homeLink.classList.add('active');
+                    return;
+                }
+                
+                // Check each section's position for homepage
+                if (currentPath === '/' || currentPath === '/Home' || currentPath === '/Home/Index') {
+                    sections.forEach(section => {
+                        const el = document.getElementById(section);
+                        if (el) {
+                            const rect = el.getBoundingClientRect();
+                            const offsetTop = rect.top + window.scrollY;
+                            const height = el.offsetHeight;
+                            
+                            if (scrollPosition >= offsetTop - 200 && scrollPosition < offsetTop + height - 200) {
+                                clearActiveNavItems();
+                                
+                                // Find the corresponding nav link and make it active
+                                const currentLink = document.querySelector(`.navbar .nav-link[href="#${section}"]`);
+                                if (currentLink) currentLink.classList.add('active');
+                            }
+                        }
+                    });
+                }
+            }
+            
+            function clearActiveNavItems() {
+                navLinks.forEach(link => link.classList.remove('active'));
+            }
+            
+            // Add smooth scrolling to all nav links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    
+                    if (href.startsWith('#')) {
+                        e.preventDefault();
+                        const targetId = href.substring(1);
+                        const targetElement = document.getElementById(targetId);
+                        
+                        if (targetElement) {
+                            // Close mobile menu when a link is clicked
+                            const navbarToggler = document.querySelector('.navbar-toggler');
+                            const navbarCollapse = document.querySelector('.navbar-collapse');
+                            
+                            if (window.innerWidth < 992 && navbarCollapse.classList.contains('show')) {
+                                navbarToggler.click();
+                            }
+                            
+                            targetElement.scrollIntoView({
+                                behavior: 'smooth'
+                            });
+                        }
+                    }
+                });
+            });
+            
+            // Add shadow to navbar on scroll
+            window.addEventListener('scroll', function() {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 10) {
+                    navbar.classList.add('shadow');
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('shadow');
+                    navbar.classList.remove('scrolled');
+                }
+            });
+            
+            // Ensure smooth mobile menu animation
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            // Make sure Bootstrap's collapse doesn't interfere with our custom animation
+            navbarCollapse.addEventListener('show.bs.collapse', function (e) {
+                // This is triggered before the collapse is shown
+                // We can add our custom animation class here if needed
+                this.classList.add('showing');
+            });
+            
+            navbarCollapse.addEventListener('shown.bs.collapse', function (e) {
+                // This is triggered when the collapse is fully shown
+                this.classList.remove('showing');
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

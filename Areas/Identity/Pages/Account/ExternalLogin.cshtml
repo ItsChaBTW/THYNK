@@ -1,70 +1,197 @@
 ﻿@page
 @model ExternalLoginModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Complete Registration";
 }
 
-<h1>@ViewData["Title"]</h1>
-<h2 id="external-login-title">Associate your @Model.ProviderDisplayName account.</h2>
-<hr />
+<!-- Import Select2 CSS for searchable dropdowns -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-<p id="external-login-description" class="text-info">
-    You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.
-    Please enter your phone number and address information below to complete your registration.
-</p>
+<!-- Style customizations for Select2 -->
+<style>
+    /* Select2 custom styling to match the form's design */
+    .select2-container--default .select2-selection--single {
+        height: 38px;
+        padding: 5px 10px;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(84,84,84,0.1);
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 28px;
+        color: #545454;
+    }
+    
+    .select2-dropdown {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(84,84,84,0.1);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #545454;
+    }
+    
+    .select2-search--dropdown .select2-search__field {
+        padding: 8px;
+        border-radius: 0.25rem;
+    }
+    
+    /* Fix form layout */
+    .form-label {
+        font-weight: 500;
+        color: #545454;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mb-3 {
+        margin-bottom: 1.5rem !important;
+    }
+</style>
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <div class="input-group">
-                    <span class="input-group-text">+63</span>
-                    <input asp-for="Input.PhoneNumber" class="form-control" aria-required="true" placeholder="9123456789" />
-                    <label asp-for="Input.PhoneNumber">Phone Number</label>
+<section class="external-login-section position-relative overflow-hidden" style="margin-top: 4rem;">
+    <div class="parallax-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-particles"></div>
+    
+    <div class="container position-relative py-5">
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-8 text-center">
+                <div class="section-tag animate-float text-center mb-2">
+                    <i class="fas fa-user-plus me-2"></i>
+                    <span>External Authentication</span>
                 </div>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                <h1 class="section-title text-center mb-3 animate-fade-delay">Complete Your Registration</h1>
+                <p class="section-subtitle text-center mb-4 animate-fade-delay-2 mx-auto" style="max-width: 600px;">
+                    You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.
+                    Please provide your contact information below to complete your registration.
+                </p>
             </div>
+        </div>
 
-            <h4 class="mt-4">Address Information</h4>
-            <div class="form-floating mb-3">
-                <select asp-for="Input.ProvinceCode" class="form-select" id="provinceSelect" required>
-                    <option value="">Select Province</option>
-                </select>
-                <label asp-for="Input.ProvinceCode">Province</label>
-                <span asp-validation-for="Input.ProvinceCode" class="text-danger"></span>
+        <div class="row justify-content-center g-0 external-login-card animate-fade-delay-3">
+            <div class="col-md-10 col-lg-8">
+                <div class="external-login-content p-4 p-md-5">
+                    <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="contact-section mb-4">
+                            <div class="section-tag mb-3 contact-tag animate-float">
+                                <i class="fas fa-phone-alt me-2"></i>
+                                <span>Contact Information</span>
+                            </div>
+                            
+                            <div class="mb-4 ps-2">
+                                <label class="form-label">Phone Number</label>
+                                <div class="input-group phone-input-group">
+                                    <span class="input-group-text custom-addon">+63</span>
+                                    <input asp-for="Input.PhoneNumber" class="form-control custom-input" aria-required="true" placeholder="9123456789" />
+                                </div>
+                                <span asp-validation-for="Input.PhoneNumber" class="text-danger mt-1"></span>
+                                <small class="text-muted">Enter your 10-digit phone number without the leading zero</small>
+                            </div>
+                        </div>
+
+                        <div class="address-section mb-4">
+                            <div class="section-tag mb-3 address-tag animate-float">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <span>Address Information</span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Input.ProvinceCode" class="form-label">Province</label>
+                                <select asp-for="Input.ProvinceCode" class="form-select custom-select" id="provinceSelect" required>
+                                    <option value="">Select Province</option>
+                                </select>
+                                <span asp-validation-for="Input.ProvinceCode" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Input.CityMunicipalityCode" class="form-label">City/Municipality</label>
+                                <select asp-for="Input.CityMunicipalityCode" class="form-select custom-select" id="cityMunicipalitySelect" disabled required>
+                                    <option value="">Select City/Municipality</option>
+                                </select>
+                                <span asp-validation-for="Input.CityMunicipalityCode" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Input.BarangayCode" class="form-label">Barangay</label>
+                                <select asp-for="Input.BarangayCode" class="form-select custom-select" id="barangaySelect" disabled required>
+                                    <option value="">Select Barangay</option>
+                                </select>
+                                <span asp-validation-for="Input.BarangayCode" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Hidden fields for names -->
+                        <input type="hidden" asp-for="Input.ProvinceName" id="provinceName" />
+                        <input type="hidden" asp-for="Input.CityMunicipalityName" id="cityMunicipalityName" />
+                        <input type="hidden" asp-for="Input.BarangayName" id="barangayName" />
+
+                        <button type="submit" class="w-100 btn btn-lg btn-primary custom-button mb-3">
+                            <span>Complete Registration</span>
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                        
+                        <div class="text-center mt-4">
+                            <a asp-area="Identity" asp-page="/Account/Login" class="return-link">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Return to Login
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="form-floating mb-3">
-                <select asp-for="Input.CityMunicipalityCode" class="form-select" id="cityMunicipalitySelect" disabled required>
-                    <option value="">Select City/Municipality</option>
-                </select>
-                <label asp-for="Input.CityMunicipalityCode">City/Municipality</label>
-                <span asp-validation-for="Input.CityMunicipalityCode" class="text-danger"></span>
-            </div>
-
-            <div class="form-floating mb-3">
-                <select asp-for="Input.BarangayCode" class="form-select" id="barangaySelect" disabled required>
-                    <option value="">Select Barangay</option>
-                </select>
-                <label asp-for="Input.BarangayCode">Barangay</label>
-                <span asp-validation-for="Input.BarangayCode" class="text-danger"></span>
-            </div>
-
-            <!-- Hidden fields for names -->
-            <input type="hidden" asp-for="Input.ProvinceName" id="provinceName" />
-            <input type="hidden" asp-for="Input.CityMunicipalityName" id="cityMunicipalityName" />
-            <input type="hidden" asp-for="Input.BarangayName" id="barangayName" />
-
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
+        </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <!-- Add Select2 library for searchable dropdowns -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
     <script>
         $(document).ready(function() {
+            // Initialize Select2 for searchable dropdowns
+            $("#provinceSelect").select2({
+                placeholder: "Search and select province",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            $("#cityMunicipalitySelect").select2({
+                placeholder: "Search and select city/municipality",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            $("#barangaySelect").select2({
+                placeholder: "Search and select barangay",
+                allowClear: true,
+                width: '100%'
+            });
+            
+            // Subtle parallax effect
+            const parallaxBg = document.querySelector('.parallax-bg');
+            const section = document.querySelector('.external-login-section');
+            
+            if (parallaxBg) {
+                window.addEventListener('scroll', function() {
+                    const scrollPosition = window.pageYOffset;
+                    const sectionTop = section.offsetTop;
+                    const relativeScroll = scrollPosition - sectionTop;
+                    
+                    if (relativeScroll >= 0) {
+                        parallaxBg.style.transform = `scale(1.1) translateY(${relativeScroll * 0.03}px)`;
+                    }
+                });
+            }
+            
             // Function to fetch provinces
             function fetchProvinces() {
                 $.ajax({
@@ -72,6 +199,11 @@
                     method: 'GET',
                     dataType: 'json',
                     success: function(data) {
+                        // Sort provinces alphabetically
+                        data.sort(function(a, b) {
+                            return a.name.localeCompare(b.name);
+                        });
+                        
                         const select = $('#provinceSelect');
                         select.find('option:not(:first)').remove();
                         data.forEach(function(province) {
@@ -81,9 +213,14 @@
                                 .text(province.name));
                         });
                         select.prop('disabled', false);
+                        // Refresh Select2 after adding options
+                        select.trigger('change');
                     },
-                    error: function() {
-                        setTimeout(fetchProvinces, 1000);
+                    error: function(xhr, status, error) {
+                        console.error('Failed to fetch provinces:', status, error);
+                        setTimeout(function() {
+                            fetchProvinces();
+                        }, 1000);
                     }
                 }).fail(function() {
                     setTimeout(fetchProvinces, 1000);
@@ -114,6 +251,11 @@
                         method: 'GET',
                         dataType: 'json',
                         success: function(data) {
+                            // Sort municipalities alphabetically
+                            data.sort(function(a, b) {
+                                return a.name.localeCompare(b.name);
+                            });
+                            
                             data.forEach(function(municipality) {
                                 cityMunicipalitySelect.append($('<option></option>')
                                     .attr('value', municipality.code)
@@ -122,8 +264,11 @@
                                     .text(municipality.name));
                             });
                         },
-                        error: function() {
-                            setTimeout(fetchMunicipalities, 1000);
+                        error: function(xhr, status, error) {
+                            console.error('Failed to fetch municipalities:', status, error);
+                            setTimeout(function() {
+                                fetchMunicipalities();
+                            }, 1000);
                         }
                     }).fail(function() {
                         setTimeout(fetchMunicipalities, 1000);
@@ -137,6 +282,11 @@
                         method: 'GET',
                         dataType: 'json',
                         success: function(data) {
+                            // Sort cities alphabetically
+                            data.sort(function(a, b) {
+                                return a.name.localeCompare(b.name);
+                            });
+                            
                             data.forEach(function(city) {
                                 cityMunicipalitySelect.append($('<option></option>')
                                     .attr('value', city.code)
@@ -145,9 +295,14 @@
                                     .text(city.name));
                             });
                             cityMunicipalitySelect.prop('disabled', false);
+                            // Refresh Select2 after adding options
+                            cityMunicipalitySelect.trigger('change');
                         },
-                        error: function() {
-                            setTimeout(fetchCities, 1000);
+                        error: function(xhr, status, error) {
+                            console.error('Failed to fetch cities:', status, error);
+                            setTimeout(function() {
+                                fetchCities();
+                            }, 1000);
                         }
                     }).fail(function() {
                         setTimeout(fetchCities, 1000);
@@ -187,6 +342,11 @@
                         method: 'GET',
                         dataType: 'json',
                         success: function(data) {
+                            // Sort barangays alphabetically
+                            data.sort(function(a, b) {
+                                return a.name.localeCompare(b.name);
+                            });
+                            
                             data.forEach(function(barangay) {
                                 barangaySelect.append($('<option></option>')
                                     .attr('value', barangay.code)
@@ -194,9 +354,14 @@
                                     .text(barangay.name));
                             });
                             barangaySelect.prop('disabled', false);
+                            // Refresh Select2 after adding options
+                            barangaySelect.trigger('change');
                         },
-                        error: function() {
-                            setTimeout(fetchBarangays, 1000);
+                        error: function(xhr, status, error) {
+                            console.error('Failed to fetch barangays:', status, error);
+                            setTimeout(function() {
+                                fetchBarangays();
+                            }, 1000);
                         }
                     }).fail(function() {
                         setTimeout(fetchBarangays, 1000);
@@ -216,4 +381,341 @@
             window.alert = function() {};
         });
     </script>
+}
+
+@section Styles {
+    <style>
+        :root {
+            --primary: #545454;
+            --primary-dark: #3c3c3c;
+            --primary-light: #6e6e6e;
+            --primary-rgb: 84, 84, 84;
+            
+            --secondary: #E5DFD2;
+            --secondary-dark: #d6cfbf;
+            --secondary-light: #f4f0e5;
+            --secondary-rgb: 229, 223, 210;
+            
+            --accent: #F5F5F5;
+            --accent-rgb: 245, 245, 245;
+            
+            --success: #6a8d73;
+            --warning: #e0a458;
+            --danger: #b56357;
+            --danger-rgb: 181, 99, 87;
+            
+            --dark: #545454;
+            --dark-alt: #696969;
+            --dark-light: #7e7e7e;
+            --light: #F5F5F5;
+            --muted: #a0a0a0;
+            --body-bg: #E5DFD2;
+            --body-color: #545454;
+            --border-color: rgba(84,84,84,0.1);
+            --card-bg: #F5F5F5;
+            
+            --font-head: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --shadow-primary: 0 10px 20px -5px rgba(84, 84, 84, 0.15);
+        }
+
+        /* External Login Section */
+        .external-login-section {
+            min-height: 100vh;
+            position: relative;
+            color: var(--dark-alt);
+            padding: 2rem 0;
+            overflow: hidden;
+            margin-top: -76px; /* Offset the navbar height */
+        }
+        
+        .external-login-section > .container {
+            padding-top: 76px; /* Add space equal to navbar height */
+        }
+        
+        .parallax-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -10;
+            background-image: url('https://images.pexels.com/photos/7473893/pexels-photo-7473893.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%) brightness(0.9) opacity(0.15);
+            transform: scale(1.1);
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: -5;
+            background: linear-gradient(135deg, rgba(229, 223, 210, 0.9) 0%, rgba(229, 223, 210, 0.85) 100%);
+        }
+        
+        .hero-particles {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2zm60 91c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2zM35 41c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2zm12 60c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2zM12 60c1.105 0 2-0.895 2-2s-0.895-2-2-2-2 0.895-2 2 0.895 2 2 2z' fill='%23545454' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+        
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background-color: rgba(84, 84, 84, 0.1);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .address-tag, .contact-tag {
+            margin-left: 0;
+            display: inline-flex;
+        }
+        
+        .address-section, .contact-section {
+            background-color: rgba(245, 245, 245, 0.5);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .address-section:hover, .contact-section:hover {
+            box-shadow: var(--shadow-md);
+            background-color: rgba(245, 245, 245, 0.7);
+            transform: translateY(-2px);
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+            color: var(--primary);
+            font-family: var(--font-head);
+        }
+        
+        .section-subtitle {
+            font-size: 1.125rem;
+            line-height: 1.625;
+            color: var(--dark-alt);
+        }
+        
+        /* External Login Card */
+        .external-login-card {
+            background-color: var(--accent);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            max-width: 1000px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .external-login-content {
+            background-color: var(--accent);
+            border-radius: 1.25rem;
+        }
+        
+        /* Custom form controls */
+        .custom-input, .custom-select {
+            border-radius: 0.5rem;
+            border-color: var(--border-color);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .custom-input:focus, .custom-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(84, 84, 84, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .custom-addon {
+            border-top-left-radius: 0.5rem;
+            border-bottom-left-radius: 0.5rem;
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        /* Phone Input Styling */
+        .phone-input-group {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .phone-input-group .form-control {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .input-group:focus-within .custom-addon {
+            border-color: var(--primary-dark);
+            background-color: var(--primary-dark);
+        }
+        
+        small.text-muted {
+            font-size: 0.85rem;
+            display: block;
+            margin-top: 0.25rem;
+        }
+        
+        /* Custom button */
+        .custom-button {
+            background-color: var(--secondary-dark);
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-primary);
+            position: relative;
+            overflow: hidden;
+            color: var(--primary);
+        }
+        
+        .custom-button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            color: var(--primary-dark);
+        }
+        
+        .custom-button i {
+            transition: transform 0.3s ease;
+        }
+        
+        .custom-button:hover i {
+            transform: translateX(3px);
+        }
+        
+        /* Return link */
+        .return-link {
+            font-weight: 600;
+            position: relative;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            color: var(--primary);
+            padding: 0 2px;
+            font-size: 0.95rem;
+        }
+        
+        .return-link:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -2px;
+            height: 1px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .return-link:hover {
+            color: var(--primary-dark);
+        }
+        
+        .return-link:hover:before {
+            transform: scaleX(1);
+        }
+        
+        .return-link i {
+            transition: transform 0.3s ease;
+        }
+        
+        .return-link:hover i {
+            transform: translateX(-3px);
+        }
+        
+        /* Animations */
+        .animate-fade {
+            opacity: 0;
+            animation: fade-in 0.8s ease forwards;
+        }
+        
+        .animate-fade-delay {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.2s forwards;
+        }
+        
+        .animate-fade-delay-2 {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.4s forwards;
+        }
+        
+        .animate-fade-delay-3 {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.6s forwards;
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @@keyframes fade-in {
+            from { 
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @@keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 991px) {
+            .external-login-section {
+                margin-top: -65px; /* For smaller navbar on tablets */
+            }
+            
+            .external-login-section > .container {
+                padding-top: 65px; /* For smaller navbar on tablets */
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+        
+        @@media (max-width: 767px) {
+            .external-login-section {
+                padding: 1rem 0;
+            }
+            
+            .section-title {
+                font-size: 1.75rem;
+            }
+            
+            .address-section {
+                padding: 1.25rem;
+            }
+        }
+    </style>
 }

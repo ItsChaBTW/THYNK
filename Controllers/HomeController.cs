@@ -19,24 +19,33 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        if (User.Identity.IsAuthenticated)
+        if (User.Identity != null && User.Identity.IsAuthenticated)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user != null)
+            if (!string.IsNullOrEmpty(userId))
             {
-                // Check UserRole property (1 = LGU)
-                if (user.UserRole == UserRoleType.LGU)
+                var user = await _userManager.FindByIdAsync(userId);
+
+                if (user != null)
                 {
-                    return RedirectToAction("Dashboard", "LGU");
-                }
-                else if (user.UserRole == UserRoleType.Community)
-                {
-                    return RedirectToAction("Dashboard", "Community");
+                    // Check UserRole property (1 = LGU)
+                    if (user.UserRole == UserRoleType.LGU)
+                    {
+                        return RedirectToAction("Dashboard", "LGU");
+                    }
+                    else if (user.UserRole == UserRoleType.Community)
+                    {
+                        return RedirectToAction("Dashboard", "Community");
+                    }
                 }
             }
         }
+        return View();
+    }
+
+    // New action for user type selection
+    public IActionResult UserTypeSelection()
+    {
         return View();
     }
 

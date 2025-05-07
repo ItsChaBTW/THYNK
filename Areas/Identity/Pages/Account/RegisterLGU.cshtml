@@ -4,98 +4,929 @@
     ViewData["Title"] = "Register as LGU/SLU User";
 }
 
-<h1>@ViewData["Title"]</h1>
+<!-- Import Select2 CSS for searchable dropdowns -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-<div class="row">
-    <div class="col-md-6">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" enctype="multipart/form-data">
-            <h2>Create a new LGU/SLU account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            
-            <div class="form-floating mb-3">
-                <input asp-for="Input.FirstName" class="form-control" placeholder="John" />
-                <label asp-for="Input.FirstName">First Name</label>
-                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
-            </div>
-            
-            <div class="form-floating mb-3">
-                <input asp-for="Input.LastName" class="form-control" placeholder="Doe" />
-                <label asp-for="Input.LastName">Last Name</label>
-                <span asp-validation-for="Input.LastName" class="text-danger"></span>
-            </div>
-            
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Position" class="form-control" placeholder="Barangay Captain" />
-                <label asp-for="Input.Position">Position / Designation</label>
-                <span asp-validation-for="Input.Position" class="text-danger"></span>
-            </div>
-            
-            <div class="form-floating mb-3">
-                <input asp-for="Input.OrganizationName" class="form-control" aria-required="true" placeholder="Barangay XYZ" />
-                <label asp-for="Input.OrganizationName">Organization Name *</label>
-                <span asp-validation-for="Input.OrganizationName" class="text-danger"></span>
-            </div>
-            
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email Address *</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            
-            <div class="form-floating mb-3">
-                <div class="input-group">
-                    <span class="input-group-text">+63</span>
-                    <input asp-for="Input.PhoneNumber" class="form-control" placeholder="9123456789" />
-                    <label asp-for="Input.PhoneNumber">Phone Number</label>
+<section class="registration-section position-relative overflow-hidden" style="margin-top: 4rem;">
+    <div class="parallax-bg"></div>
+    <div class="hero-overlay"></div>
+    
+    <div class="container position-relative py-5">
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-10 text-center">
+                <div class="section-tag animate-fade text-center mb-2">
+                    <i class="fas fa-city me-2"></i>
+                    <span>LGU/SLU Registration</span>
                 </div>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                <h1 class="section-title text-center mb-3 animate-fade-delay">@ViewData["Title"]</h1>
+                <p class="section-subtitle text-center mb-4 animate-fade-delay-2 mx-auto" style="max-width: 700px;">
+                    Join our disaster response platform as an official representative to coordinate community efforts
+                </p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center g-0 registration-card animate-fade-delay-3">
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="registration-image h-100">
+                    <img src="https://images.pexels.com/photos/3415148/pexels-photo-3415148.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" class="h-100 w-100 object-fit-cover" />
+                    <div class="image-overlay"></div>
+                    <div class="image-content">
+                        <div class="card-icon">
+                            <i class="fas fa-city"></i>
+                        </div>
+                        <h3 class="card-title">LGU/SLU Registration</h3>
+                        <div class="features-list">
+                            <div class="feature-item">
+                                <i class="fas fa-tasks"></i>
+                                <span>Coordinate emergency response operations</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-broadcast-tower"></i>
+                                <span>Send official alerts to community members</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-hands-helping"></i>
+                                <span>Manage and allocate disaster resources</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Access detailed analytics and reporting</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-users"></i>
+                                <span>Collaborate with other government units</span>
+                            </div>
+                        </div>
+                        <p class="card-description mt-4">Your participation is crucial for creating a coordinated disaster response network.</p>
+                    </div>
+                </div>
             </div>
             
-            <div class="mb-3">
-                <label asp-for="Input.IDDocument" class="form-label">Government ID or Office ID (Optional)</label>
-                <input asp-for="Input.IDDocument" class="form-control" type="file" accept=".jpg,.jpeg,.png,.pdf" />
-                <span asp-validation-for="Input.IDDocument" class="text-danger"></span>
-            </div>
-            
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register as LGU/SLU User</button>
-        </form>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h3 class="mb-0">LGU/SLU Registration</h3>
-            </div>
-            <div class="card-body">
-                <h4>Benefits of registering as an LGU/SLU user:</h4>
-                <ul>
-                    <li>Access to disaster management tools and resources</li>
-                    <li>Ability to verify and respond to community reports</li>
-                    <li>Send official alerts and announcements</li>
-                    <li>Coordinate with other government units</li>
-                    <li>Access to detailed analytics and reporting</li>
-                </ul>
-                <p>By registering as an LGU/SLU user, you'll help make your community safer and more prepared for emergencies.</p>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i><strong>Note:</strong> SLU (Secondary Level Users) represent official government departments or agencies (e.g., BFP, CDRRMC) with the same permissions as LGU users.
+            <div class="col-lg-7">
+                <div class="registration-form-container h-100">
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" enctype="multipart/form-data" class="registration-form">
+                        <h2 class="form-title">Create an account</h2>
+                        <hr class="form-divider" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Input.FirstName" class="form-control custom-input" aria-required="true" placeholder="John" />
+                                    <label asp-for="Input.FirstName">First Name</label>
+                                    <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="Input.LastName" class="form-control custom-input" aria-required="true" placeholder="Doe" />
+                                    <label asp-for="Input.LastName">Last Name</label>
+                                    <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Organization Details</h4>
+                            
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.Position" class="form-control custom-input" aria-required="true" placeholder="Barangay Captain" />
+                                <label asp-for="Input.Position">Position / Designation</label>
+                                <span asp-validation-for="Input.Position" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.OrganizationName" class="form-control custom-input" aria-required="true" placeholder="Barangay XYZ" />
+                                <label asp-for="Input.OrganizationName">Organization Name</label>
+                                <span asp-validation-for="Input.OrganizationName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Contact Information</h4>
+                            
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.Email" class="form-control custom-input" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                                <label asp-for="Input.Email">Email Address</label>
+                                <span asp-validation-for="Input.Email" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="input-group phone-input-group">
+                                    <span class="input-group-text custom-input-text">+63</span>
+                                    <div class="form-floating flex-grow-1">
+                                        <input asp-for="Input.PhoneNumber" class="form-control custom-input" aria-required="true" placeholder="9123456789" />
+                                        <label asp-for="Input.PhoneNumber">Phone Number</label>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Verification</h4>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Input.IDDocument" class="form-label">Government ID or Office ID (Required)</label>
+                                <div class="custom-file-upload">
+                                    <input asp-for="Input.IDDocument" class="form-control custom-input" type="file" accept=".jpg,.jpeg,.png,.pdf" id="idDocument" onchange="previewImage()" />
+                                    <div class="file-upload-text">
+                                        <i class="fas fa-upload me-2"></i>
+                                        <span id="fileNameDisplay">Upload your ID (JPG, PNG, PDF)</span>
+                                    </div>
+                                </div>
+                                <div id="imagePreviewContainer" class="mt-3 d-none">
+                                    <div class="image-preview-wrapper">
+                                        <img id="imagePreview" src="#" alt="ID Preview" class="img-fluid rounded" />
+                                        <button type="button" class="btn-remove-image" onclick="removeImage()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="pdfPreviewContainer" class="mt-3 d-none">
+                                    <div class="pdf-preview-wrapper">
+                                        <i class="far fa-file-pdf pdf-icon"></i>
+                                        <span id="pdfFileName"></span>
+                                        <button type="button" class="btn-remove-pdf" onclick="removeImage()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <span asp-validation-for="Input.IDDocument" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Security</h4>
+                            
+                            <div class="form-floating mb-3 password-field">
+                                <input asp-for="Input.Password" class="form-control custom-input" autocomplete="new-password" aria-required="true" placeholder="password" type="password" id="password" />
+                                <label asp-for="Input.Password">Password</label>
+                                <button type="button" class="password-toggle" id="togglePassword">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                                <div class="password-requirements mt-2">
+                                    <div class="requirement" id="length"><i class="fas fa-circle"></i> At least 8 characters</div>
+                                    <div class="requirement" id="uppercase"><i class="fas fa-circle"></i> At least one uppercase letter</div>
+                                    <div class="requirement" id="lowercase"><i class="fas fa-circle"></i> At least one lowercase letter</div>
+                                    <div class="requirement" id="number"><i class="fas fa-circle"></i> At least one number</div>
+                                    <div class="requirement" id="special"><i class="fas fa-circle"></i> At least one special character</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-floating mb-4 password-field">
+                                <input asp-for="Input.ConfirmPassword" class="form-control custom-input" autocomplete="new-password" aria-required="true" placeholder="password" type="password" id="confirmPassword" />
+                                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                                <button type="button" class="password-toggle" id="toggleConfirmPassword">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary custom-button">
+                            <span>Register</span>
+                            <i class="fas fa-chevron-right ms-2"></i>
+                        </button>
+                        
+                        <div class="text-center mt-4">
+                            <p class="login-text">Already have an account? <a asp-area="Identity" asp-page="/Account/Login" class="login-link">Sign in to your account</a></p>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function() {
+            // Subtle parallax effect
+            const parallaxBg = document.querySelector('.parallax-bg');
+            const section = document.querySelector('.registration-section');
+            
+            if (parallaxBg) {
+                window.addEventListener('scroll', function() {
+                    const scrollPosition = window.pageYOffset;
+                    const sectionTop = section.offsetTop;
+                    const relativeScroll = scrollPosition - sectionTop;
+                    
+                    if (relativeScroll >= 0) {
+                        parallaxBg.style.transform = `scale(1.1) translateY(${relativeScroll * 0.03}px)`;
+                    }
+                });
+            }
+
+            // Password requirements validation
+            const passwordInput = document.getElementById('password');
+            const requirements = {
+                length: document.getElementById('length'),
+                uppercase: document.getElementById('uppercase'),
+                lowercase: document.getElementById('lowercase'),
+                number: document.getElementById('number'),
+                special: document.getElementById('special')
+            };
+
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                
+                // Check length
+                if (password.length >= 8) {
+                    requirements.length.classList.add('valid');
+                    requirements.length.classList.remove('invalid');
+                    requirements.length.querySelector('i').classList.remove('fa-circle');
+                    requirements.length.querySelector('i').classList.add('fa-check-circle');
+                } else {
+                    requirements.length.classList.add('invalid');
+                    requirements.length.classList.remove('valid');
+                    requirements.length.querySelector('i').classList.remove('fa-check-circle');
+                    requirements.length.querySelector('i').classList.add('fa-circle');
+                }
+                
+                // Check uppercase
+                if (/[A-Z]/.test(password)) {
+                    requirements.uppercase.classList.add('valid');
+                    requirements.uppercase.classList.remove('invalid');
+                    requirements.uppercase.querySelector('i').classList.remove('fa-circle');
+                    requirements.uppercase.querySelector('i').classList.add('fa-check-circle');
+                } else {
+                    requirements.uppercase.classList.add('invalid');
+                    requirements.uppercase.classList.remove('valid');
+                    requirements.uppercase.querySelector('i').classList.remove('fa-check-circle');
+                    requirements.uppercase.querySelector('i').classList.add('fa-circle');
+                }
+                
+                // Check lowercase
+                if (/[a-z]/.test(password)) {
+                    requirements.lowercase.classList.add('valid');
+                    requirements.lowercase.classList.remove('invalid');
+                    requirements.lowercase.querySelector('i').classList.remove('fa-circle');
+                    requirements.lowercase.querySelector('i').classList.add('fa-check-circle');
+                } else {
+                    requirements.lowercase.classList.add('invalid');
+                    requirements.lowercase.classList.remove('valid');
+                    requirements.lowercase.querySelector('i').classList.remove('fa-check-circle');
+                    requirements.lowercase.querySelector('i').classList.add('fa-circle');
+                }
+                
+                // Check number
+                if (/\d/.test(password)) {
+                    requirements.number.classList.add('valid');
+                    requirements.number.classList.remove('invalid');
+                    requirements.number.querySelector('i').classList.remove('fa-circle');
+                    requirements.number.querySelector('i').classList.add('fa-check-circle');
+                } else {
+                    requirements.number.classList.add('invalid');
+                    requirements.number.classList.remove('valid');
+                    requirements.number.querySelector('i').classList.remove('fa-check-circle');
+                    requirements.number.querySelector('i').classList.add('fa-circle');
+                }
+                
+                // Check special character
+                if (/[!@@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+                    requirements.special.classList.add('valid');
+                    requirements.special.classList.remove('invalid');
+                    requirements.special.querySelector('i').classList.remove('fa-circle');
+                    requirements.special.querySelector('i').classList.add('fa-check-circle');
+                } else {
+                    requirements.special.classList.add('invalid');
+                    requirements.special.classList.remove('valid');
+                    requirements.special.querySelector('i').classList.remove('fa-check-circle');
+                    requirements.special.querySelector('i').classList.add('fa-circle');
+                }
+            });
+
+            // Password visibility toggle
+            document.getElementById('togglePassword').addEventListener('click', function() {
+                const passwordInput = document.getElementById('password');
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Toggle eye icon
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+
+            document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+                const confirmPasswordInput = document.getElementById('confirmPassword');
+                const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPasswordInput.setAttribute('type', type);
+                
+                // Toggle eye icon
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+        });
+        
+        // Image preview function
+        function previewImage() {
+            const fileInput = document.getElementById('idDocument');
+            const file = fileInput.files[0];
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
+            const imagePreview = document.getElementById('imagePreview');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            const pdfFileName = document.getElementById('pdfFileName');
+            
+            if (file) {
+                fileNameDisplay.textContent = file.name;
+                
+                // Check if the file is an image
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreviewContainer.classList.remove('d-none');
+                        pdfPreviewContainer.classList.add('d-none');
+                    }
+                    
+                    reader.readAsDataURL(file);
+                } 
+                // Check if the file is a PDF
+                else if (file.type === 'application/pdf') {
+                    pdfFileName.textContent = file.name;
+                    pdfPreviewContainer.classList.remove('d-none');
+                    imagePreviewContainer.classList.add('d-none');
+                }
+            }
+        }
+        
+        // Remove image preview
+        function removeImage() {
+            const fileInput = document.getElementById('idDocument');
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const pdfPreviewContainer = document.getElementById('pdfPreviewContainer');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            
+            fileInput.value = '';
+            imagePreviewContainer.classList.add('d-none');
+            pdfPreviewContainer.classList.add('d-none');
+            fileNameDisplay.textContent = 'Upload your ID (JPG, PNG, PDF)';
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        :root {
+            --primary: #545454;
+            --primary-dark: #3c3c3c;
+            --primary-light: #6e6e6e;
+            --primary-rgb: 84, 84, 84;
+            
+            --secondary: #E5DFD2;
+            --secondary-dark: #d6cfbf;
+            --secondary-light: #f4f0e5;
+            --secondary-rgb: 229, 223, 210;
+            
+            --accent: #F5F5F5;
+            --accent-rgb: 245, 245, 245;
+            
+            --success: #6a8d73;
+            --warning: #e0a458;
+            --danger: #b56357;
+            --danger-rgb: 181, 99, 87;
+            
+            --dark: #545454;
+            --dark-alt: #696969;
+            --dark-light: #7e7e7e;
+            --light: #F5F5F5;
+            --muted: #a0a0a0;
+            --body-bg: #E5DFD2;
+            --body-color: #545454;
+            --border-color: rgba(84,84,84,0.1);
+            --card-bg: #F5F5F5;
+            
+            --font-head: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --shadow-primary: 0 10px 20px -5px rgba(84, 84, 84, 0.15);
+        }
+
+        /* Registration Section */
+        .registration-section {
+            min-height: 100vh;
+            position: relative;
+            color: var(--dark-alt);
+            padding: 2rem 0;
+            overflow: hidden;
+            margin-top: -76px; /* Offset the navbar height */
+        }
+        
+        .registration-section > .container {
+            padding-top: 76px; /* Add space equal to navbar height */
+        }
+        
+        .parallax-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -10;
+            background-image: url('https://images.pexels.com/photos/3952248/pexels-photo-3952248.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%) brightness(0.9) opacity(0.15);
+            transform: scale(1.1);
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: -5;
+            background: linear-gradient(135deg, rgba(229, 223, 210, 0.9) 0%, rgba(229, 223, 210, 0.85) 100%);
+        }
+        
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background-color: rgba(84, 84, 84, 0.1);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+            color: var(--primary);
+            font-family: var(--font-head);
+        }
+        
+        .section-subtitle {
+            font-size: 1.125rem;
+            line-height: 1.625;
+            color: var(--dark-alt);
+        }
+        
+        /* Registration Card */
+        .registration-card {
+            background-color: var(--accent);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        /* Image Side */
+        .registration-image {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.25rem 0 0 1.25rem;
+        }
+        
+        .registration-image img {
+            object-position: center;
+        }
+        
+        .image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(84, 84, 84, 0.8), rgba(84, 84, 84, 0.5));
+            z-index: 1;
+        }
+        
+        .image-content {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            padding: 2.5rem;
+            color: var(--light);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            font-family: var(--font-head);
+        }
+        
+        .card-description {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .feature-item i {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            font-size: 0.75rem;
+        }
+        
+        /* Form Side */
+        .registration-form-container {
+            padding: 2.5rem;
+            background-color: var(--accent);
+            border-radius: 0 1.25rem 1.25rem 0;
+        }
+        
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .form-divider {
+            border-color: var(--border-color);
+            margin: 1.5rem 0;
+        }
+        
+        .form-section {
+            margin-top: 1.5rem;
+            padding-top: 0.5rem;
+        }
+        
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            position: relative;
+            padding-left: 0.75rem;
+        }
+        
+        .form-section-title:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 70%;
+            background-color: var(--secondary-dark);
+            border-radius: 2px;
+        }
+        
+        /* Custom Form Controls */
+        .custom-input, .custom-select {
+            border-radius: 0.5rem;
+            border-color: var(--border-color);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-input:focus, .custom-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(84, 84, 84, 0.15);
+        }
+        
+        .phone-input-group {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .custom-input-text {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+        
+        .phone-input-group .form-floating > .form-control {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        /* Custom Button */
+        .custom-button {
+            background-color: var(--secondary-dark);
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-primary);
+            position: relative;
+            overflow: hidden;
+            color: var(--primary);
+        }
+        
+        .custom-button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .custom-button i {
+            transition: transform 0.3s ease;
+        }
+        
+        .custom-button:hover i {
+            transform: translateX(3px);
+        }
+        
+        /* Login Link */
+        .login-text {
+            font-size: 0.95rem;
+            color: var(--dark-alt);
+        }
+        
+        .login-link {
+            font-weight: 600;
+            position: relative;
+            transition: all 0.25s ease;
+            text-decoration: none;
+            color: var(--primary);
+            position: relative;
+            padding: 0 2px;
+        }
+        
+        .login-link:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -2px;
+            height: 1px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .login-link:hover {
+            color: var(--primary-dark);
+        }
+        
+        .login-link:hover:before {
+            transform: scaleX(1);
+        }
+
+        /* Custom file upload styling */
+        .custom-file-upload {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--secondary-dark);
+            background-color: rgba(229, 223, 210, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .custom-file-upload:hover {
+            background-color: rgba(229, 223, 210, 0.2);
+            border-color: var(--secondary);
+        }
+        
+        .custom-file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            background: white;
+            cursor: pointer;
+            display: block;
+            z-index: 2;
+        }
+        
+        .file-upload-text {
+            padding: 0.75rem 1rem;
+            text-align: center;
+            color: var(--dark-alt);
+            font-size: 0.95rem;
+        }
+        
+        /* Image preview styling */
+        .image-preview-wrapper, .pdf-preview-wrapper {
+            position: relative;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        .btn-remove-image, .btn-remove-pdf {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        
+        .btn-remove-image:hover, .btn-remove-pdf:hover {
+            opacity: 1;
+        }
+        
+        .pdf-preview-wrapper {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            gap: 1rem;
+        }
+        
+        .pdf-icon {
+            font-size: 2rem;
+            color: #dc3545;
+        }
+        
+        #pdfFileName {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--dark-alt);
+            word-break: break-all;
+        }
+
+        /* Password requirements styling */
+        .password-requirements {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+            padding-left: 0.5rem;
+        }
+
+        .requirement {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .requirement i {
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .requirement.valid {
+            color: var(--success);
+        }
+
+        .requirement.invalid {
+            color: var(--muted);
+        }
+
+        /* Password toggle button - adjusted positioning */
+        .password-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 58px; /* Match the height of the input */
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            z-index: 5;
+            font-size: 1rem;
+            padding: 0;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+        }
+
+        /* Adjust input padding to make room for the toggle button */
+        .form-floating.password-field .form-control {
+            padding-right: 40px;
+        }
+
+        /* Ensure the password field container has proper positioning */
+        .form-floating.password-field {
+            position: relative;
+        }
+
+        /* Animations */
+        .animate-fade {
+            opacity: 0;
+            animation: fade-in 0.8s ease forwards;
+        }
+        
+        .animate-fade-delay {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.2s forwards;
+        }
+        
+        .animate-fade-delay-2 {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.4s forwards;
+        }
+        
+        .animate-fade-delay-3 {
+            opacity: 0;
+            animation: fade-in 0.8s ease 0.6s forwards;
+        }
+        
+        @@keyframes fade-in {
+            from { 
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 991px) {
+            .registration-section {
+                margin-top: -65px; /* For smaller navbar on tablets */
+            }
+            
+            .registration-section > .container {
+                padding-top: 65px; /* For smaller navbar on tablets */
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .card-title {
+                font-size: 1.5rem;
+            }
+            
+            .registration-form-container {
+                padding: 2rem;
+                border-radius: 0 0 1.25rem 1.25rem;
+            }
+            
+            .registration-image {
+                border-radius: 1.25rem 1.25rem 0 0;
+            }
+            
+            .form-title {
+                font-size: 1.25rem;
+            }
+        }
+        
+        @@media (max-width: 767px) {
+            .registration-section {
+                padding: 1rem 0;
+            }
+            
+            .section-title {
+                font-size: 1.75rem;
+            }
+            
+            .registration-form-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 } 
