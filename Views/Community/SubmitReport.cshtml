@@ -101,9 +101,15 @@
                     <input type="hidden" asp-for="Longitude" id="longitude" />
 
                     <div class="mb-3">
-                        <label class="form-label">Photo (Optional)</label>
-                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" />
-                        <small class="text-muted">Upload a photo of the incident if available.</small>
+                        <label class="form-label">Photo <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required onchange="previewImage(this);" />
+                        <small class="text-muted">Upload a photo of the incident. This is required.</small>
+                        <div id="photoPreview" class="mt-2" style="display: none;">
+                            <img id="preview" src="#" alt="Preview" class="img-fluid rounded" style="max-height: 200px;" />
+                            <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removePhoto()">
+                                <i class="fas fa-times"></i> Remove Photo
+                            </button>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -166,77 +172,63 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        // Initialize the map
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+        // Photo preview functionality
+        function previewImage(input) {
+            const preview = document.getElementById('preview');
+            const previewDiv = document.getElementById('photoPreview');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewDiv.style.display = 'block';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
         
-        let map, marker;
-
-        // Function to initialize map with coordinates
-        function initializeMap(lat, lng) {
-            map = new mapboxgl.Map({
-                container: 'map',
-                style: 'mapbox://styles/mapbox/streets-v11',
-                center: [lng, lat],
-                zoom: 15
-            });
-
-            // Add map controls
-            map.addControl(new mapboxgl.NavigationControl());
+        function removePhoto() {
+            const input = document.getElementById('photo');
+            const preview = document.getElementById('preview');
+            const previewDiv = document.getElementById('photoPreview');
             
-            // Create a marker
-            marker = new mapboxgl.Marker({
-                draggable: true,
-                color: '#E03131'
-            }).setLngLat([lng, lat])
-              .addTo(map);
-
-            // Update coordinates and address when marker is dragged
-            marker.on('dragend', function() {
-                const lngLat = marker.getLngLat();
-                document.getElementById('latitude').value = lngLat.lat;
-                document.getElementById('longitude').value = lngLat.lng;
-                getAddressDetails(lngLat.lat, lngLat.lng);
-            });
-
-            // Add click event to map
-            map.on('click', function(e) {
-                const lngLat = e.lngLat;
-                marker.setLngLat(lngLat);
-                document.getElementById('latitude').value = lngLat.lat;
-                document.getElementById('longitude').value = lngLat.lng;
-                getAddressDetails(lngLat.lat, lngLat.lng);
-            });
-
-            // Set initial coordinates
-            document.getElementById('latitude').value = lat;
-            document.getElementById('longitude').value = lng;
-            
-            // Get address details for current location
-            getAddressDetails(lat, lng);
+            input.value = '';
+            preview.src = '#';
+            previewDiv.style.display = 'none';
         }
 
-        // Try to get user's current location first
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                initializeMap(lat, lng);
-            }, function(error) {
-                console.error('Error getting location:', error);
-                // Fallback to default location if geolocation fails
-                initializeMap(14.5995, 120.9842); // Default to Philippines
-            }, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            });
-        } else {
-            // Fallback to default location if geolocation is not supported
-            initializeMap(14.5995, 120.9842); // Default to Philippines
-        }
+        // Initialize the map
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [120.9842, 14.5995], // Default to Philippines
+            zoom: 12
+        });
 
-        // Detect current location button
+        // Add map controls
+        map.addControl(new mapboxgl.NavigationControl());
+        
+        // Create a marker
+        const marker = new mapboxgl.Marker({
+            draggable: true,
+            color: '#E03131'
+        }).setLngLat([120.9842, 14.5995])
+          .addTo(map);
+
+        // Update coordinates and address when marker is dragged
+        marker.on('dragend', function() {
+            const lngLat = marker.getLngLat();
+            document.getElementById('latitude').value = lngLat.lat;
+            document.getElementById('longitude').value = lngLat.lng;
+            getAddressDetails(lngLat.lat, lngLat.lng);
+        });
+
+        // Detect current location
         document.getElementById('detect-location').addEventListener('click', function() {
+            // Show loading state
             this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
             this.disabled = true;
             
@@ -352,6 +344,55 @@
                     console.error('Error reverse geocoding:', error);
                 });
         }
+        
+        // Add click event to map to allow users to click anywhere and place marker
+        map.on('click', function(e) {
+            const lngLat = e.lngLat;
+            
+            // Update marker position
+            marker.setLngLat(lngLat);
+            
+            // Update form fields
+            document.getElementById('latitude').value = lngLat.lat;
+            document.getElementById('longitude').value = lngLat.lng;
+            
+            // Get address details
+            getAddressDetails(lngLat.lat, lngLat.lng);
+        });
+        
+        // Initialize the map location if coordinates are already set
+        document.addEventListener('DOMContentLoaded', function() {
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
+            
+            if (lat && lng) {
+                map.setCenter([lng, lat]);
+                marker.setLngLat([lng, lat]);
+            } else {
+                // Try to get user's current location on page load
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        
+                        map.setCenter([lng, lat]);
+                        marker.setLngLat([lng, lat]);
+                        
+                        document.getElementById('latitude').value = lat;
+                        document.getElementById('longitude').value = lng;
+                        
+                        getAddressDetails(lat, lng);
+                    }, function(error) {
+                        console.error('Error getting initial location:', error);
+                        // Keep default map location
+                    }, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    });
+                }
+            }
+        });
     </script>
 }
 
