@@ -594,5 +594,8 @@ namespace THYNK.Controllers
         }
 
         #endregion
+
+        // View community feed
+       
     }
 } 

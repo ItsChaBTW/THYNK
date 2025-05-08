@@ -76,10 +76,12 @@ namespace THYNK.Areas.Identity.Pages.Account
         {
             [Required]
             [Display(Name = "First Name")]
+            [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "First Name should only contain letters and spaces")]
             public string FirstName { get; set; }
 
             [Required]
             [Display(Name = "Last Name")]
+            [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Last Name should only contain letters and spaces")]
             public string LastName { get; set; }
 
             /// <summary>
