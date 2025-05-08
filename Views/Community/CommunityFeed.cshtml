@@ -91,6 +91,10 @@
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">@(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</h6>
                                     <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+                                    @if (post.User is LGUUser lguUser)
+                                    {
+                                        <div><small class="text-info">@lguUser.OrganizationName</small></div>
+                                    }
                                 </div>
                                 <div class="post-type">
                                     <span class="badge rounded-pill @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 

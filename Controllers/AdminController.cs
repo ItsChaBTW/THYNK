@@ -432,86 +432,87 @@ namespace THYNK.Controllers
 
         #endregion
 
-        #region Content Moderation
+        #region Community Post Management
 
-        // View pending community posts
-        public async Task<IActionResult> PendingPosts()
+        // Manage all community posts
+        public async Task<IActionResult> ManagePosts(string ModerationStatus, string search)
         {
-            var pendingPosts = await _context.CommunityUpdates
-                .Where(c => c.ModerationStatus == ModerationStatus.Pending)
+            var query = _context.CommunityUpdates
                 .Include(c => c.User)
-                .OrderByDescending(c => c.DatePosted)
-                .ToListAsync();
-                
-            return View(pendingPosts);
-        }
+                .AsQueryable();
 
-        // View post details
-        public async Task<IActionResult> PostDetails(int id)
-        {
-            var post = await _context.CommunityUpdates
-                .Include(c => c.User)
-                .FirstOrDefaultAsync(c => c.Id == id);
-                
-            if (post == null)
+            // Apply moderation status filter
+            if (!string.IsNullOrEmpty(ModerationStatus))
             {
-                return NotFound();
+                if (Enum.TryParse<ModerationStatus>(ModerationStatus, out var status))
+                {
+                    query = query.Where(c => c.ModerationStatus == status);
+                }
             }
-            
-            return View(post);
-        }
 
-        // Approve community post
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ApprovePost(int id)
-        {
-            var post = await _context.CommunityUpdates
-                .FirstOrDefaultAsync(c => c.Id == id);
-                
-            if (post == null)
+            // Apply search filter
+            if (!string.IsNullOrEmpty(search))
             {
-                return NotFound();
-            }
-            
-            post.ModerationStatus = ModerationStatus.Approved;
-            _context.Update(post);
-            await _context.SaveChangesAsync();
-            
-            TempData["SuccessMessage"] = "Community post has been approved successfully.";
-            return RedirectToAction(nameof(PendingPosts));
-        }
-
-        // Reject community post
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RejectPost(int id, string reason)
-        {
-            var post = await _context.CommunityUpdates
-                .Include(c => c.User)
-                .FirstOrDefaultAsync(c => c.Id == id);
-                
-            if (post == null)
-            {
-                return NotFound();
-            }
-            
-            post.ModerationStatus = ModerationStatus.Rejected;
-            _context.Update(post);
-            await _context.SaveChangesAsync();
-            
-            // Send email notification to user
-            if (post.User != null)
-            {
-                await _emailSender.SendEmailAsync(
-                    post.User.Email,
-                    "THYNK - Community Post Status Update",
-                    $"Dear User,<br><br>Your community post has been reviewed and could not be approved for public visibility.<br><br>Reason: {reason}<br><br>Please review our community guidelines for acceptable content.<br><br>Thank you,<br>THYNK Administration Team"
+                search = search.ToLower();
+                query = query.Where(c =>
+                    c.Content.ToLower().Contains(search) ||
+                    c.Location.ToLower().Contains(search) ||
+                    (c.User != null && (
+                        c.User.FirstName.ToLower().Contains(search) ||
+                        c.User.LastName.ToLower().Contains(search) ||
+                        (c.User is LGUUser && ((LGUUser)c.User).OrganizationName.ToLower().Contains(search))
+                    ))
                 );
             }
-            
-            TempData["SuccessMessage"] = "Community post has been rejected successfully.";
-            return RedirectToAction(nameof(PendingPosts));
+
+            // Order by date posted
+            query = query.OrderByDescending(c => c.DatePosted);
+
+            ViewBag.CurrentFilter = ModerationStatus;
+            ViewBag.CurrentSearch = search;
+
+            return View(await query.ToListAsync());
+        }
+
+        // Moderate a post (approve/reject)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ModeratePost(int postId, string action)
+        {
+            var post = await _context.CommunityUpdates
+                .Include(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == postId);
+
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            if (action == "approve")
+            {
+                post.ModerationStatus = ModerationStatus.Approved;
+                TempData["SuccessMessage"] = "Post has been approved successfully.";
+            }
+            else if (action == "reject")
+            {
+                post.ModerationStatus = ModerationStatus.Rejected;
+                TempData["SuccessMessage"] = "Post has been rejected successfully.";
+
+                // Send email notification to user
+                if (post.User != null)
+                {
+                    await _emailSender.SendEmailAsync(
+                        post.User.Email,
+                        "THYNK - Community Post Status Update",
+                        $"Dear User,<br><br>Your community post has been reviewed and could not be approved for public visibility.<br><br>Please review our community guidelines for acceptable content.<br><br>Thank you,<br>THYNK Administration Team"
+                    );
+                }
+            }
+
+            _context.Update(post);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(ManagePosts));
         }
 
         #endregion

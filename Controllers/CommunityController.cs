@@ -173,6 +173,7 @@ namespace THYNK.Controllers
         public async Task<IActionResult> CommunityFeed()
         {
             var updates = await _context.CommunityUpdates
+                .Include(c => c.User)
                 .Where(c => c.ModerationStatus == ModerationStatus.Approved)
                 .OrderByDescending(c => c.DatePosted)
                 .ToListAsync();
