@@ -280,7 +280,7 @@ namespace THYNK.Controllers
                 if (ex.InnerException != null)
                 {
                     TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
-                }
+            }
             return View(update);
             }
         }

@@ -72,14 +72,18 @@
                         <div class="row">
                             <div class="col-md-6">
             <div class="form-floating mb-3">
-                                    <input asp-for="Input.FirstName" class="form-control custom-input" aria-required="true" placeholder="John" />
+                                    <input asp-for="Input.FirstName" class="form-control custom-input" aria-required="true" 
+                                           placeholder="John" pattern="[A-Za-z\s]+" 
+                                           oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" />
                 <label asp-for="Input.FirstName">First Name</label>
                 <span asp-validation-for="Input.FirstName" class="text-danger"></span>
             </div>
                             </div>
                             <div class="col-md-6">
             <div class="form-floating mb-3">
-                                    <input asp-for="Input.LastName" class="form-control custom-input" aria-required="true" placeholder="Doe" />
+                                    <input asp-for="Input.LastName" class="form-control custom-input" aria-required="true" 
+                                           placeholder="Doe" pattern="[A-Za-z\s]+" 
+                                           oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" />
                 <label asp-for="Input.LastName">Last Name</label>
                 <span asp-validation-for="Input.LastName" class="text-danger"></span>
             </div>
@@ -115,7 +119,9 @@
                                 <div class="input-group phone-input-group">
                                     <span class="input-group-text custom-input-text">+63</span>
                                     <div class="form-floating flex-grow-1">
-                                        <input asp-for="Input.PhoneNumber" class="form-control custom-input" aria-required="true" placeholder="9123456789" />
+                                        <input asp-for="Input.PhoneNumber" class="form-control custom-input" aria-required="true" 
+                                               placeholder="9123456789" pattern="[0-9]+" maxlength="10"
+                                               oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                     <label asp-for="Input.PhoneNumber">Phone Number</label>
                                     </div>
                 </div>
@@ -194,7 +200,7 @@
                             <p class="login-text">Already have an account? <a asp-area="Identity" asp-page="/Account/Login" class="login-link">Sign in to your account</a></p>
                         </div>
         </form>
-                </div>
+    </div>
             </div>
         </div>
     </div>

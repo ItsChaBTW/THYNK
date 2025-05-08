@@ -11,7 +11,7 @@ namespace THYNK.Models
         public int Id { get; set; }
 
         [Required]
-        public string UserId { get; set; }
+        public string? UserId { get; set; }
 
         [ForeignKey("UserId")]
         public ApplicationUser User { get; set; }
@@ -43,7 +43,7 @@ namespace THYNK.Models
 
         public DateTime? ResolvedAt { get; set; }
 
-        public string ResolvedById { get; set; }
+        public string? ResolvedById { get; set; }
 
         [ForeignKey("ResolvedById")]
         public ApplicationUser ResolvedBy { get; set; }
