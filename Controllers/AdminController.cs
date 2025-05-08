@@ -434,6 +434,18 @@ namespace THYNK.Controllers
 
         #region Community Post Management
 
+        // View pending posts
+        public async Task<IActionResult> PendingPosts()
+        {
+            var pendingPosts = await _context.CommunityUpdates
+                .Include(c => c.User)
+                .Where(c => c.ModerationStatus == ModerationStatus.Pending)
+                .OrderByDescending(c => c.DatePosted)
+                .ToListAsync();
+
+            return View("ManagePosts", pendingPosts);
+        }
+
         // Manage all community posts
         public async Task<IActionResult> ManagePosts(string ModerationStatus, string search)
         {
