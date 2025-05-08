@@ -6,6 +6,64 @@
 
 <div class="container-fluid px-4">
     <div class="row">
+        <!-- Create Post Card -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
+                        @Html.AntiForgeryToken()
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="avatar-circle me-3">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <textarea class="form-control border-0 bg-light" id="content" name="Content" rows="2" required 
+                                        placeholder="Share your thoughts, updates, or information with the community..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="post-options mb-3">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <select class="form-select bg-light border-0" id="type" name="Type" required>
+                                        <option value="GeneralUpdate">General Update</option>
+                                        <option value="HelpRequest">Help Request</option>
+                                        <option value="StatusUpdate">Status Update</option>
+                                        <option value="ResourceSharing">Resource Sharing</option>
+                                        <option value="Information">Information</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0">
+                                            <i class="fas fa-map-marker-alt text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control bg-light border-0" id="location" name="Location" 
+                                               placeholder="Add location (optional)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-actions d-flex align-items-center justify-content-between">
+                            <div class="d-flex gap-2">
+                                <label class="btn btn-light rounded-pill px-3" for="image">
+                                    <i class="fas fa-image text-primary"></i>
+                                    <span class="ms-1">Photo</span>
+                                </label>
+                                <input type="file" class="d-none" id="image" name="Image" accept="image/*">
+                                <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
+                                <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
+                            </div>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-paper-plane me-2"></i>Post
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Community Feed -->
         <div class="col-12">
             <div class="card">
@@ -121,4 +179,28 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script>
+        // Preview image before upload
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    alert('File size must be less than 5MB');
+                    this.value = '';
+                    return;
+                }
+            }
+        });
+
+        // Optional: Add geolocation support
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('latitude').value = position.coords.latitude;
+                document.getElementById('longitude').value = position.coords.longitude;
+            });
+        }
+    </script>
+} 

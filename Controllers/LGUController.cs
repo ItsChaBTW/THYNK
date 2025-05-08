@@ -7,6 +7,7 @@ using THYNK.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Authentication;
+using System.Text.Json;
 
 namespace THYNK.Controllers
 {
@@ -425,6 +426,86 @@ namespace THYNK.Controllers
             }
                 
             return Json(reports);
+        }
+
+        // Post a community update
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostUpdate(string Content, UpdateType Type, string Location, IFormFile Image, double? Latitude, double? Longitude)
+        {
+            try
+            {
+                _logger.LogInformation($"PostUpdate called with Content: {Content}, Type: {Type}, Location: {Location}");
+
+                if (string.IsNullOrEmpty(Content))
+                {
+                    _logger.LogWarning("PostUpdate failed: Content is empty");
+                    TempData["ErrorMessage"] = "Post content cannot be empty.";
+                    return RedirectToAction(nameof(CommunityFeed));
+                }
+
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                _logger.LogInformation($"User ID: {userId}");
+
+                var user = await _userManager.FindByIdAsync(userId) as LGUUser;
+                if (user == null)
+                {
+                    _logger.LogWarning($"PostUpdate failed: User not found for ID {userId}");
+                    return NotFound();
+                }
+
+                var update = new CommunityUpdate
+                {
+                    UserId = userId,
+                    Content = Content,
+                    Type = Type,
+                    DatePosted = DateTime.Now,
+                    ModerationStatus = ModerationStatus.Approved, // Automatically approve LGU/SLU posts
+                    Location = Location ?? "Not specified",
+                    Latitude = Latitude,
+                    Longitude = Longitude,
+                    ImageUrl = "/images/no-image.png" // Set default image URL
+                };
+
+                _logger.LogInformation($"Created CommunityUpdate object: {JsonSerializer.Serialize(update)}");
+
+                // Handle image upload if provided
+                if (Image != null && Image.Length > 0)
+                {
+                    _logger.LogInformation($"Processing image upload: {Image.FileName}, Size: {Image.Length}");
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "community");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    var uniqueFileName = $"{Guid.NewGuid()}_{Image.FileName}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await Image.CopyToAsync(fileStream);
+                    }
+
+                    update.ImageUrl = $"/uploads/community/{uniqueFileName}";
+                    _logger.LogInformation($"Image saved to: {update.ImageUrl}");
+                }
+
+                _context.CommunityUpdates.Add(update);
+                _logger.LogInformation("Added update to context");
+
+                var saveResult = await _context.SaveChangesAsync();
+                _logger.LogInformation($"SaveChangesAsync result: {saveResult} rows affected");
+
+                TempData["SuccessMessage"] = "Your post has been published successfully.";
+                return RedirectToAction(nameof(CommunityFeed));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in PostUpdate action");
+                TempData["ErrorMessage"] = "An error occurred while saving your post. Please try again.";
+                return RedirectToAction(nameof(CommunityFeed));
+            }
         }
     }
 } 

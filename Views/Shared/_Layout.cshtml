@@ -276,190 +276,66 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom">
-            <div class="container">
-                <a class="navbar-brand d-flex align-items-center flex-row" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="/images/logo.png" class="thynk-logo me-2" width="60" height="60" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="100" height="100" rx="20" fill="#545454"/>
-                        <path d="M25 30H75M50 30V70M35 70H65" stroke="#E5DFD2" stroke-width="8" stroke-linecap="round"/>
-                    <span class="fw-bold">THYNK</span>
-
-                    </img>
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#features">Features</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#process">How It Works</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="#education">Education</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#faq">FAQ</a>
-                        </li>
-                     
-
-                      
-                    </ul>
-                    <div class="d-flex align-items-center">
-                        <a class="nav-link me-2" asp-area="Identity" asp-page="/Account/Login" data-page="login">Login</a>
-                        <a asp-controller="Home" asp-action="UserTypeSelection" class="btn btn-glow ms-2">
-                            <span>Join Now</span>
-                            <i class="fas fa-arrow-right ms-2"></i>
-                        </a>
+    @{
+        var currentArea = ViewContext.RouteData.Values["area"]?.ToString();
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+        var currentPath = Context.Request.Path.Value?.ToLower();
+        var isManagePage = currentPath?.Contains("/identity/account/manage") ?? false;
+        var shouldShowNavbar = !(currentArea?.Equals("Identity", StringComparison.OrdinalIgnoreCase) ?? false) || 
+                             !isManagePage;
+    }
+    
+    @if (shouldShowNavbar)
+    {
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom">
+                <div class="container">
+                    <a class="navbar-brand d-flex align-items-center flex-row" asp-area="" asp-controller="Home" asp-action="Index">
+                        <img src="/images/logo.png" class="thynk-logo me-2" width="60" height="60" alt="THYNK Logo">
+                        <span class="fw-bold">THYNK</span>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#features">Features</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#process">How It Works</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#education">Education</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#faq">FAQ</a>
+                            </li>
+                        </ul>
+                        <div class="d-flex align-items-center">
+                            <a class="nav-link me-2" asp-area="Identity" asp-page="/Account/Login" data-page="login">Login</a>
+                            <a asp-controller="Home" asp-action="UserTypeSelection" class="btn btn-glow ms-2">
+                                <span>Join Now</span>
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </nav>
-    </header>
-    <main role="main">
+            </nav>
+        </header>
+    }
+    <main role="main" class="@(shouldShowNavbar ? "" : "mt-0")">
         @RenderBody()
-
     </main>
 
-    
- 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add active class to nav item on scroll
-            const navLinks = document.querySelectorAll('.navbar .nav-link');
-            const sections = ['home', 'features', 'process', 'testimonials', 'education', 'faq'];
-            
-            // Set active nav item on page load
-            setActiveNavItem();
-            
-            // Set active nav item on scroll
-            window.addEventListener('scroll', function() {
-                setActiveNavItem();
-            });
-            
-            function setActiveNavItem() {
-                // Get current URL path
-                const currentPath = window.location.pathname;
-                console.log("Current path:", currentPath);
-                
-                // Handle route-based navigation (for Login/Register pages)
-                if (currentPath.includes('Login')) {
-                    console.log("On login page");
-                    clearActiveNavItems();
-                    const loginLink = document.querySelector('.navbar .nav-link[data-page="login"]');
-                    console.log("Login link found:", !!loginLink);
-                    if (loginLink) loginLink.classList.add('active');
-                    return;
-                }
-                
-                if (currentPath.includes('Register')) {
-                    clearActiveNavItems();
-                    // There's no nav-link for register, but if added later it would go here
-                    return;
-                }
-                
-                const scrollPosition = window.scrollY;
-                
-                // Check if we're at the top of the page on homepage
-                if (currentPath === '/' && scrollPosition < 100) {
-                    clearActiveNavItems();
-                    const homeLink = document.querySelector('.navbar .nav-link[href="/"]');
-                    if (homeLink) homeLink.classList.add('active');
-                    return;
-                }
-                
-                // Check each section's position for homepage
-                if (currentPath === '/' || currentPath === '/Home' || currentPath === '/Home/Index') {
-                    sections.forEach(section => {
-                        const el = document.getElementById(section);
-                        if (el) {
-                            const rect = el.getBoundingClientRect();
-                            const offsetTop = rect.top + window.scrollY;
-                            const height = el.offsetHeight;
-                            
-                            if (scrollPosition >= offsetTop - 200 && scrollPosition < offsetTop + height - 200) {
-                                clearActiveNavItems();
-                                
-                                // Find the corresponding nav link and make it active
-                                const currentLink = document.querySelector(`.navbar .nav-link[href="#${section}"]`);
-                                if (currentLink) currentLink.classList.add('active');
-                            }
-                        }
-                    });
-                }
-            }
-            
-            function clearActiveNavItems() {
-                navLinks.forEach(link => link.classList.remove('active'));
-            }
-            
-            // Add smooth scrolling to all nav links
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const href = this.getAttribute('href');
-                    
-                    if (href.startsWith('#')) {
-                        e.preventDefault();
-                        const targetId = href.substring(1);
-                        const targetElement = document.getElementById(targetId);
-                        
-                        if (targetElement) {
-                            // Close mobile menu when a link is clicked
-                            const navbarToggler = document.querySelector('.navbar-toggler');
-                            const navbarCollapse = document.querySelector('.navbar-collapse');
-                            
-                            if (window.innerWidth < 992 && navbarCollapse.classList.contains('show')) {
-                                navbarToggler.click();
-                            }
-                            
-                            targetElement.scrollIntoView({
-                                behavior: 'smooth'
-                            });
-                        }
-                    }
-                });
-            });
-            
-            // Add shadow to navbar on scroll
-            window.addEventListener('scroll', function() {
-                const navbar = document.querySelector('.navbar');
-                if (window.scrollY > 10) {
-                    navbar.classList.add('shadow');
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('shadow');
-                    navbar.classList.remove('scrolled');
-                }
-            });
-            
-            // Ensure smooth mobile menu animation
-            const navbarToggler = document.querySelector('.navbar-toggler');
-            const navbarCollapse = document.querySelector('.navbar-collapse');
-            
-            // Make sure Bootstrap's collapse doesn't interfere with our custom animation
-            navbarCollapse.addEventListener('show.bs.collapse', function (e) {
-                // This is triggered before the collapse is shown
-                // We can add our custom animation class here if needed
-                this.classList.add('showing');
-            });
-            
-            navbarCollapse.addEventListener('shown.bs.collapse', function (e) {
-                // This is triggered when the collapse is fully shown
-                this.classList.remove('showing');
-            });
-        });
-    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

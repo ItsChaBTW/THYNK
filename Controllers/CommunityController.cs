@@ -310,14 +310,21 @@ namespace THYNK.Controllers
         }
         
         // View alerts
-        public async Task<IActionResult> Alerts()
+        public async Task<IActionResult> Alerts(string severity = null)
         {
-            var activeAlerts = await _context.Alerts
-                .Where(a => a.IsActive && (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now))
-                .OrderByDescending(a => a.DateIssued)
-                .ToListAsync();
-                
-            return View(activeAlerts);
+            var query = _context.DisasterReports.AsQueryable()
+                .Where(r => r.Status == ReportStatus.Verified);
+
+            if (!string.IsNullOrEmpty(severity))
+            {
+                if (Enum.TryParse<SeverityLevel>(severity, out var severityLevel))
+                {
+                    query = query.Where(r => r.Severity == severityLevel);
+                }
+            }
+
+            var alerts = await query.OrderByDescending(r => r.DateReported).ToListAsync();
+            return View(alerts);
         }
         
         // View incident map
