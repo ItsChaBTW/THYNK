@@ -1,0 +1,200 @@
+@page
+@model THYNK.Areas.Identity.Pages.Account.RegistrationSuccessModel
+@{
+    ViewData["Title"] = "Registration Complete";
+}
+
+<section class="registration-success-section position-relative overflow-hidden">
+    <div class="parallax-bg"></div>
+    <div class="hero-overlay"></div>
+    
+    <div class="container position-relative py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <div class="success-card">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h1 class="success-title">Registration Complete!</h1>
+                    <p class="success-message">@Model.StatusMessage</p>
+                    <p class="redirect-message">You will be redirected to the login page in <span id="countdown">5</span> seconds...</p>
+                    <div class="success-actions">
+                        <a href="~/Identity/Account/Login" class="btn btn-primary custom-button">
+                            <span>Go to Login</span>
+                            <i class="fas fa-sign-in-alt ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .registration-success-section {
+            min-height: 100vh;
+            position: relative;
+            color: var(--dark-alt);
+            padding: 2rem 0;
+            overflow: hidden;
+        }
+        
+        .parallax-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -10;
+            background-image: url('https://images.pexels.com/photos/3243090/pexels-photo-3243090.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%) brightness(0.9) opacity(0.15);
+            transform: scale(1.1);
+        }
+        
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: -5;
+            background: linear-gradient(135deg, rgba(229, 223, 210, 0.9) 0%, rgba(229, 223, 210, 0.85) 100%);
+        }
+        
+        .success-card {
+            background-color: var(--accent);
+            border-radius: 1.25rem;
+            padding: 3rem 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            animation: fade-in 0.8s ease-out;
+        }
+        
+        .success-icon {
+            font-size: 5rem;
+            color: var(--success);
+            margin-bottom: 1.5rem;
+            animation: scale-in 0.5s ease-out 0.3s both;
+        }
+        
+        .success-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .success-message {
+            font-size: 1.125rem;
+            color: var(--dark-alt);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .success-actions {
+            margin-top: 2rem;
+        }
+        
+        .custom-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px -5px rgba(84, 84, 84, 0.15);
+        }
+        
+        .custom-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        @@-webkit-keyframes fade-in {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @@keyframes fade-in {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @@-webkit-keyframes scale-in {
+            from { 
+                transform: scale(0);
+            }
+            to { 
+                transform: scale(1);
+            }
+        }
+        
+        @@keyframes scale-in {
+            from { 
+                transform: scale(0);
+            }
+            to { 
+                transform: scale(1);
+            }
+        }
+        
+        @@media screen and (max-width: 768px) {
+            .success-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .success-title {
+                font-size: 2rem;
+            }
+            
+            .success-icon {
+                font-size: 4rem;
+            }
+        }
+        
+        .redirect-message {
+            color: var(--muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        #countdown {
+            font-weight: 600;
+            color: var(--primary);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let countdown = 5;
+            const countdownEl = $('#countdown');
+            
+            const timer = setInterval(function() {
+                countdown--;
+                countdownEl.text(countdown);
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    window.location.href = '/Identity/Account/Login';
+                }
+            }, 1000);
+        });
+    </script>
+}

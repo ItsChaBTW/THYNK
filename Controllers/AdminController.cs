@@ -169,14 +169,20 @@ namespace THYNK.Controllers
         }
 
         // Manage users
-        public async Task<IActionResult> ManageUsers(string search = "", string role = "")
+        public async Task<IActionResult> ManageUsers(string search = "", string role = "", string status = "", string sortBy = "date", string sortOrder = "desc")
         {
             IQueryable<ApplicationUser> query = _context.Users;
 
             // Apply search filter if provided
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(u => u.Email.Contains(search));
+                search = search.ToLower();
+                query = query.Where(u => 
+                    u.Email.ToLower().Contains(search) ||
+                    u.FirstName.ToLower().Contains(search) ||
+                    u.LastName.ToLower().Contains(search) ||
+                    (u is LGUUser && ((LGUUser)u).OrganizationName.ToLower().Contains(search))
+                );
             }
 
             // Apply role filter if provided
@@ -186,11 +192,64 @@ namespace THYNK.Controllers
                 {
                     query = query.OfType<LGUUser>();
                 }
-                else
+                else if (role == "Admin")
                 {
-                    query = query.Where(u => u.UserRole.ToString() == role);
+                    query = query.Where(u => u.UserRole == UserRoleType.Admin);
+                }
+                else if (role == "Community")
+                {
+                    query = query.Where(u => u.UserRole == UserRoleType.Community);
                 }
             }
+
+            // Apply status filter
+            if (!string.IsNullOrEmpty(status))
+            {
+                switch (status.ToLower())
+                {
+                    case "active":
+                        query = query.Where(u => u.LockoutEnd == null || u.LockoutEnd < DateTimeOffset.Now);
+                        break;
+                    case "deactivated":
+                        query = query.Where(u => u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.Now);
+                        break;
+                    case "pending":
+                        query = query.OfType<LGUUser>().Where(u => !u.IsApproved);
+                        break;
+                }
+            }
+
+            // Apply sorting
+            switch (sortBy.ToLower())
+            {
+                case "name":
+                    query = sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.FirstName).ThenBy(u => u.LastName)
+                        : query.OrderByDescending(u => u.FirstName).ThenByDescending(u => u.LastName);
+                    break;
+                case "email":
+                    query = sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.Email)
+                        : query.OrderByDescending(u => u.Email);
+                    break;
+                case "role":
+                    query = sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.UserRole)
+                        : query.OrderByDescending(u => u.UserRole);
+                    break;
+                default: // date
+                    query = sortOrder.ToLower() == "asc" 
+                        ? query.OrderBy(u => u.DateCreated)
+                        : query.OrderByDescending(u => u.DateCreated);
+                    break;
+            }
+
+            // Store current filters in ViewBag for the view
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentRole = role;
+            ViewBag.CurrentStatus = status;
+            ViewBag.CurrentSortBy = sortBy;
+            ViewBag.CurrentSortOrder = sortOrder;
 
             var users = await query.ToListAsync();
             return View(users);
