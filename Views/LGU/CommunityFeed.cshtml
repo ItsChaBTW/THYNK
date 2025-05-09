@@ -6,6 +6,80 @@
 
 <div class="container-fluid px-4">
     <div class="row">
+        <!-- Create Post Card -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
+                        @Html.AntiForgeryToken()
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="avatar-circle me-3">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <textarea class="form-control border-0 bg-light" id="content" name="Content" rows="2" required 
+                                        placeholder="Share your thoughts, updates, or information with the community..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="post-options mb-3">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <select class="form-select bg-light border-0" id="type" name="Type" required>
+                                        <option value="GeneralUpdate">General Update</option>
+                                        <option value="HelpRequest">Help Request</option>
+                                        <option value="StatusUpdate">Status Update</option>
+                                        <option value="ResourceSharing">Resource Sharing</option>
+                                        <option value="Information">Information</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-0">
+                                            <i class="fas fa-map-marker-alt text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control bg-light border-0" id="location" name="Location" 
+                                               placeholder="Add location (optional)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-actions d-flex align-items-center justify-content-between">
+                            <div class="d-flex gap-2">
+                                <label class="btn btn-light rounded-pill px-3" for="image">
+                                    <i class="fas fa-image text-primary"></i>
+                                    <span class="ms-1">Photo</span>
+                                </label>
+                                <input type="file" class="d-none" id="image" name="Image" accept="image/*">
+                                <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
+                                <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
+                            </div>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4" onclick="return confirmPost()">
+                                <i class="fas fa-paper-plane me-2"></i>Post
+                            </button>
+                        </div>
+
+                        <!-- Custom Alert -->
+                        <div id="formAlert" class="alert alert-warning mt-3 d-none" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <span id="alertMessage"></span>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="mt-3 d-none">
+                            <div class="position-relative d-inline-block">
+                                <img id="preview" class="img-fluid rounded" style="max-height: 200px;">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="removeImage()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Community Feed -->
         <div class="col-12">
             <div class="card">
@@ -15,9 +89,19 @@
                             <h5 class="m-0">Community Feed</h5>
                             <small>View and moderate community updates</small>
                         </div>
-                        <a href="@Url.Action("Dashboard", "LGU")" class="btn btn-light btn-sm">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                        </a>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm bg-light" id="postFilter">
+                                <option value="all">All Posts</option>
+                                <option value="HelpRequest">Help Requests</option>
+                                <option value="StatusUpdate">Status Updates</option>
+                                <option value="ResourceSharing">Resources</option>
+                                <option value="Information">Information</option>
+                                <option value="GeneralUpdate">General Updates</option>
+                            </select>
+                            <a href="@Url.Action("Dashboard", "LGU")" class="btn btn-light btn-sm">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -121,4 +205,99 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script>
+        // Preview image before upload
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    showAlert('File size must be less than 5MB');
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('d-none');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove image preview
+        function removeImage() {
+            document.getElementById('image').value = '';
+            document.getElementById('imagePreview').classList.add('d-none');
+            document.getElementById('preview').src = '';
+        }
+
+        // Show alert message
+        function showAlert(message) {
+            const alertDiv = document.getElementById('formAlert');
+            const alertMessage = document.getElementById('alertMessage');
+            alertMessage.textContent = message;
+            alertDiv.classList.remove('d-none');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                alertDiv.classList.add('d-none');
+            }, 5000);
+        }
+
+        // Confirm post submission
+        function confirmPost() {
+            const content = document.getElementById('content').value.trim();
+            if (!content) {
+                showAlert('Please enter some content for your post.');
+                return false;
+            }
+
+            const confirmMessage = 'Are you sure you want to post this update?';
+            if (!confirm(confirmMessage)) {
+                showAlert('Post cancelled.');
+                return false;
+            }
+            return true;
+        }
+
+        // Optional: Add geolocation support
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('latitude').value = position.coords.latitude;
+                document.getElementById('longitude').value = position.coords.longitude;
+            });
+        }
+
+        // Post filtering functionality
+        document.getElementById('postFilter').addEventListener('change', function() {
+            const selectedType = this.value;
+            const posts = document.querySelectorAll('.card.mb-3');
+            
+            posts.forEach(post => {
+                const postType = post.querySelector('.badge').textContent.trim();
+                if (selectedType === 'all' || postType === selectedType) {
+                    post.style.display = 'block';
+                } else {
+                    post.style.display = 'none';
+                }
+            });
+
+            // Show empty state if no posts are visible
+            const visiblePosts = document.querySelectorAll('.card.mb-3[style="display: block"]');
+            const emptyState = document.querySelector('.text-center.py-4');
+            if (emptyState) {
+                if (visiblePosts.length === 0) {
+                    emptyState.style.display = 'block';
+                    emptyState.querySelector('p').textContent = `No ${selectedType === 'all' ? '' : selectedType} posts available.`;
+                } else {
+                    emptyState.style.display = 'none';
+                }
+            }
+        });
+    </script>
+} 

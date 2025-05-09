@@ -59,7 +59,7 @@ namespace THYNK.Models
         public string ImageUrl { get; set; } = string.Empty;
 
         // Additional details
-        public required string AdditionalInfo { get; set; } = string.Empty;
+        public string? AdditionalInfo { get; set; }
         
         // Assignment information
         public string? AssignedToId { get; set; }

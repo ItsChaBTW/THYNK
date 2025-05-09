@@ -587,6 +587,87 @@
         .validation-summary-errors li:last-child {
             margin-bottom: 0;
         }
+
+        /* User dropdown styles */
+        .user-dropdown-container {
+            position: relative;
+        }
+        
+        .user-dropdown-trigger {
+            cursor: pointer;
+            position: relative;
+            padding: 2px 4px;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+        
+        .user-dropdown-trigger:hover {
+            background-color: var(--secondary-light);
+        }
+        
+        .user-dropdown-trigger::after {
+            content: "\f107";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            margin-left: 5px;
+            font-size: 0.85em;
+            opacity: 0.7;
+            transition: transform 0.2s ease;
+        }
+        
+        .user-dropdown-container:hover .user-dropdown-trigger::after {
+            transform: rotate(180deg);
+        }
+        
+        .user-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 180px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            overflow: hidden;
+            margin-top: 5px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .user-dropdown-container:hover .user-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-dropdown-content {
+            padding: 5px 0;
+        }
+        
+        .user-dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            color: var(--primary);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .user-dropdown-item:hover {
+            background-color: var(--secondary-light);
+            color: var(--primary-dark);
+        }
+        
+        .user-dropdown-item i {
+            width: 20px;
+            text-align: center;
+            margin-right: 8px;
+            font-size: 0.9em;
+        }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -613,11 +694,27 @@
                 <div class="flex items-center space-x-3">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <div class="hidden md:flex items-center border-l border-gray-200 pl-3">
+                        <div class="hidden md:flex items-center border-l border-gray-200 pl-3 user-dropdown-container">
                             <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center mr-2 shadow-sm">
                                 @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
                             </div>
-                            <span class="text-primary text-sm">@User.Identity.Name</span>
+                            <span class="text-primary text-sm cursor-pointer user-dropdown-trigger">@User.Identity.Name</span>
+                            
+                            <!-- Dropdown Menu -->
+                            <div class="user-dropdown-menu">
+                                <div class="user-dropdown-content">
+                                    <a href="/Identity/Account/Manage" class="user-dropdown-item">
+                                        <i class="fas fa-user-cog me-2"></i>Manage Account
+                                    </a>
+                                    <form class="w-full" action="/Identity/Account/Logout" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
+                                        <button type="submit" class="user-dropdown-item w-full text-left">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     }
                     <a href="@Url.Action("Alerts", "Community")" class="header-alert-btn relative p-2 text-primary">

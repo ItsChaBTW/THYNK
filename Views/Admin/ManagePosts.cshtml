@@ -1,0 +1,177 @@
+@model IEnumerable<THYNK.Models.CommunityUpdate>
+@{
+    ViewData["Title"] = "Manage Posts";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="row g-4">
+        <!-- Filters -->
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <select name="ModerationStatus" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Status</option>
+                                <option value="Pending" selected="@(ViewBag.CurrentFilter == "Pending")">Pending</option>
+                                <option value="Approved" selected="@(ViewBag.CurrentFilter == "Approved")">Approved</option>
+                                <option value="Rejected" selected="@(ViewBag.CurrentFilter == "Rejected")">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control" placeholder="Search posts..." value="@ViewBag.CurrentSearch">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Posts List -->
+        <div class="col-12">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var post in Model)
+                {
+                    <div class="card shadow-sm border-0 mb-4 post-card">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-circle me-3">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">@(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</h6>
+                                    <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+                                    @if (post.User is LGUUser lguUser)
+                                    {
+                                        <div><small class="text-info">@lguUser.OrganizationName</small></div>
+                                    }
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <div class="post-type">
+                                        <span class="badge rounded-pill @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 
+                                                                        post.Type == UpdateType.StatusUpdate ? "bg-info" : 
+                                                                        post.Type == UpdateType.ResourceSharing ? "bg-success" : 
+                                                                        post.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
+                                            @post.Type
+                                        </span>
+                                    </div>
+                                    <div class="post-status">
+                                        <span class="badge rounded-pill @(post.ModerationStatus == ModerationStatus.Approved ? "bg-success" : 
+                                                                        post.ModerationStatus == ModerationStatus.Rejected ? "bg-danger" : "bg-warning")">
+                                            @post.ModerationStatus
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="post-content mb-3">
+                                <p class="card-text mb-0">@post.Content</p>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(post.ImageUrl))
+                            {
+                                <div class="post-image mb-3">
+                                    <img src="@post.ImageUrl" class="img-fluid rounded" alt="Post image">
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
+                            {
+                                <div class="post-location mb-3">
+                                    <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
+                                       target="_blank" class="text-decoration-none">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                        <span class="text-muted">@post.Location</span>
+                                        <i class="fas fa-external-link-alt ms-1 text-muted small"></i>
+                                    </a>
+                                </div>
+                            }
+
+                            @if (post.ModerationStatus == ModerationStatus.Pending)
+                            {
+                                <div class="post-actions d-flex align-items-center gap-3">
+                                    <form asp-action="ModeratePost" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="postId" value="@post.Id" />
+                                        <input type="hidden" name="action" value="approve" />
+                                        <button type="submit" class="btn btn-success btn-sm rounded-pill">
+                                            <i class="fas fa-check me-1"></i>Approve
+                                        </button>
+                                    </form>
+                                    <form asp-action="ModeratePost" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="postId" value="@post.Id" />
+                                        <input type="hidden" name="action" value="reject" />
+                                        <button type="submit" class="btn btn-danger btn-sm rounded-pill">
+                                            <i class="fas fa-times me-1"></i>Reject
+                                        </button>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5 empty-state">
+                    <div class="empty-state-icon mb-3">
+                        <i class="fas fa-comments text-muted fa-4x"></i>
+                    </div>
+                    <h5 class="text-muted mb-2">No Posts Found</h5>
+                    <p class="text-muted mb-0">Try adjusting your filters or search criteria.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+        }
+
+        .post-card {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .post-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .post-image img {
+            max-height: 400px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .post-type .badge,
+        .post-status .badge {
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+
+        .post-location a:hover {
+            color: #dc3545 !important;
+        }
+
+        .empty-state {
+            background-color: #f8f9fa;
+            border-radius: 1rem;
+        }
+    </style>
+} 

@@ -4,223 +4,301 @@
     Layout = "_CommunityLayout";
 }
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card dashboard-card">
-            <div class="card-header bg-danger text-white">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-danger">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div>
-                        <h5 class="m-0">Incident Details</h5>
-                        <small>@Model.Title</small>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between mb-3">
-                        <div>
-                            <h5>@Model.Title</h5>
-                            <p class="text-muted mb-0">
-                                <i class="fas fa-calendar-alt me-1"></i> Reported on @Model.DateReported.ToString("MMMM dd, yyyy hh:mm tt")
-                            </p>
+<div class="container-fluid px-lg-4 py-3">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Main Incident Card -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-3">
+                    <div class="d-flex align-items-center">
+                        @{
+                            var headerColor = Model.Status == ReportStatus.Pending ? "warning" :
+                                             Model.Status == ReportStatus.Verified ? "info" :
+                                             Model.Status == ReportStatus.InProgress ? "primary" :
+                                             Model.Status == ReportStatus.Resolved ? "success" : "danger";
+                                             
+                            var statusIcon = Model.Status == ReportStatus.Pending ? "clock" :
+                                            Model.Status == ReportStatus.Verified ? "check-square" :
+                                            Model.Status == ReportStatus.InProgress ? "tools" :
+                                            Model.Status == ReportStatus.Resolved ? "check-circle" : "times-circle";
+                        }
+                        <div class="card-icon bg-@headerColor text-white me-3">
+                            <i class="fas fa-@statusIcon"></i>
                         </div>
                         <div>
-                            @switch (Model.Severity)
+                            <h5 class="fw-bold m-0">@Model.Title</h5>
+                            <span class="badge bg-@headerColor mt-1">
+                                @(Model.Status == ReportStatus.InProgress ? "In Progress" : Model.Status.ToString())
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        @switch (Model.Severity)
+                        {
+                            case SeverityLevel.Low:
+                                <span class="badge bg-success">Low Severity</span>
+                                break;
+                            case SeverityLevel.Medium:
+                                <span class="badge bg-warning text-dark">Medium Severity</span>
+                                break;
+                            case SeverityLevel.High:
+                                <span class="badge bg-danger">High Severity</span>
+                                break;
+                            case SeverityLevel.Critical:
+                                <span class="badge bg-dark">Critical Severity</span>
+                                break;
+                        }
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Key Information Section -->
+                    <div class="d-flex justify-content-between mb-4">
+                        <div class="incident-meta">
+                            <p class="text-muted mb-1 fs-7">
+                                <i class="fas fa-calendar-alt me-1"></i> Reported on @Model.DateReported.ToString("MMM dd, yyyy")
+                            </p>
+                            <p class="text-muted mb-0 fs-7">
+                                <i class="fas fa-clock me-1"></i> @Model.DateReported.ToString("hh:mm tt")
+                            </p>
+                        </div>
+                        <div class="incident-type">
+                            @switch (Model.Type)
                             {
-                                case SeverityLevel.Low:
-                                    <span class="badge bg-success">Low Severity</span>
+                                case DisasterType.Earthquake:
+                                    <div class="type-badge bg-light-danger text-danger">
+                                        <i class="fas fa-house-damage me-2"></i>Earthquake
+                                    </div>
                                     break;
-                                case SeverityLevel.Medium:
-                                    <span class="badge bg-warning text-dark">Medium Severity</span>
+                                case DisasterType.Flood:
+                                    <div class="type-badge bg-light-primary text-primary">
+                                        <i class="fas fa-water me-2"></i>Flood
+                                    </div>
                                     break;
-                                case SeverityLevel.High:
-                                    <span class="badge bg-danger">High Severity</span>
+                                case DisasterType.Fire:
+                                    <div class="type-badge bg-light-warning text-warning">
+                                        <i class="fas fa-fire me-2"></i>Fire
+                                    </div>
                                     break;
-                                case SeverityLevel.Critical:
-                                    <span class="badge bg-dark">Critical Severity</span>
+                                case DisasterType.Landslide:
+                                    <div class="type-badge bg-light-secondary text-secondary">
+                                        <i class="fas fa-mountain me-2"></i>Landslide
+                                    </div>
                                     break;
-                            }
-                            <br />
-                            @switch (Model.Status)
-                            {
-                                case ReportStatus.Pending:
-                                    <span class="badge bg-warning text-dark mt-1">Pending</span>
+                                case DisasterType.Storm:
+                                    <div class="type-badge bg-light-info text-info">
+                                        <i class="fas fa-cloud-showers-heavy me-2"></i>Storm
+                                    </div>
                                     break;
-                                case ReportStatus.Verified:
-                                    <span class="badge bg-info text-dark mt-1">Verified</span>
+                                case DisasterType.Accident:
+                                    <div class="type-badge bg-light-dark text-dark">
+                                        <i class="fas fa-car-crash me-2"></i>Accident
+                                    </div>
                                     break;
-                                case ReportStatus.InProgress:
-                                    <span class="badge bg-primary mt-1">In Progress</span>
-                                    break;
-                                case ReportStatus.Resolved:
-                                    <span class="badge bg-success mt-1">Resolved</span>
-                                    break;
-                                case ReportStatus.Declined:
-                                    <span class="badge bg-danger mt-1">Declined</span>
+                                default:
+                                    <div class="type-badge bg-light-secondary text-secondary">
+                                        <i class="fas fa-exclamation-circle me-2"></i>Other
+                                    </div>
                                     break;
                             }
                         </div>
                     </div>
                     
-                    <div class="alert alert-primary d-flex align-items-center">
-                        <div class="me-3">
-                            @switch (Model.Type)
+                    <!-- Description Section -->
+                    <div class="content-section mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-align-left me-2"></i>Description
+                        </h6>
+                        <div class="section-content">
+                            <p class="mb-0">@Model.Description</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Location Details Section -->
+                    <div class="content-section mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-map-marker-alt me-2"></i>Location Details
+                        </h6>
+                        <div class="section-content">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="location-item">
+                                        <span class="fw-bold d-block fs-7">Full Address</span>
+                                        <span>@Model.Location</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="location-item">
+                                        <span class="fw-bold d-block fs-7">Coordinates</span>
+                                        <span class="small">@Model.Latitude.ToString("F6"), @Model.Longitude.ToString("F6")</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="location-item">
+                                        <span class="fw-bold d-block fs-7">Purok/Street</span>
+                                        <span>@(String.IsNullOrEmpty(Model.Purok) || Model.Purok == "Unknown" ? "Not specified" : Model.Purok)</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="location-item">
+                                        <span class="fw-bold d-block fs-7">Barangay</span>
+                                        <span>@(String.IsNullOrEmpty(Model.Barangay) || Model.Barangay == "Unknown" ? "Not specified" : Model.Barangay)</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="location-item">
+                                        <span class="fw-bold d-block fs-7">City/Municipality</span>
+                                        <span>@(String.IsNullOrEmpty(Model.City) || Model.City == "Unknown" ? "Not specified" : Model.City)</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="location-item">
+                                        <span class="fw-bold d-block fs-7">Country</span>
+                                        <span>@Model.Country</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Incident Image (moved here) -->
+                            @if (!String.IsNullOrEmpty(Model.ImageUrl) && Model.ImageUrl != "/images/default-report.jpg")
                             {
-                                case DisasterType.Earthquake:
-                                    <i class="fas fa-house-damage fa-2x text-danger"></i>
-                                    break;
-                                case DisasterType.Flood:
-                                    <i class="fas fa-water fa-2x text-primary"></i>
-                                    break;
-                                case DisasterType.Fire:
-                                    <i class="fas fa-fire fa-2x text-warning"></i>
-                                    break;
-                                case DisasterType.Landslide:
-                                    <i class="fas fa-mountain fa-2x text-secondary"></i>
-                                    break;
-                                case DisasterType.Storm:
-                                    <i class="fas fa-cloud-showers-heavy fa-2x text-info"></i>
-                                    break;
-                                case DisasterType.Accident:
-                                    <i class="fas fa-car-crash fa-2x text-dark"></i>
-                                    break;
-                                default:
-                                    <i class="fas fa-exclamation-circle fa-2x text-secondary"></i>
-                                    break;
+                                <div class="mt-3 incident-image-container">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-image text-primary me-2"></i>
+                                        <h6 class="section-subtitle mb-0">Incident Photo</h6>
+                                        <span class="ms-auto text-primary fs-7">
+                                            <i class="fas fa-search-plus me-1"></i>Click to enlarge
+                                        </span>
+                                    </div>
+                                    <div class="incident-image">
+                                        <a href="@Model.ImageUrl" data-lightbox="incident-image" data-title="@Model.Title">
+                                            <img src="@Model.ImageUrl" alt="Incident Photo" class="img-fluid rounded" />
+                                            <div class="image-overlay">
+                                                <i class="fas fa-search-plus"></i>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
                             }
+
+                            <!-- Map inside location section -->
+                            <div class="mt-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-map-marked-alt text-primary me-2"></i>
+                                    <h6 class="section-subtitle mb-0">Map View</h6>
+                                </div>
+                                <div id="map" class="map-preview rounded"></div>
+                            </div>
                         </div>
+                    </div>
+                    
+                    <!-- Additional Information Section -->
+                    @if (!String.IsNullOrEmpty(Model.AdditionalInfo))
+                    {
+                        <div class="content-section mb-4">
+                            <h6 class="section-title">
+                                <i class="fas fa-info-circle me-2"></i>Additional Information
+                            </h6>
+                            <div class="section-content">
+                                <p class="mb-0">@Model.AdditionalInfo</p>
+                            </div>
+                        </div>
+                    }
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-wrap gap-2 justify-content-between mt-4">
+                        <a asp-action="MyReports" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to My Reports
+                        </a>
                         <div>
-                            <h6 class="mb-0">@Model.Type</h6>
-                            <small>Incident type</small>
+                            <a asp-action="IncidentMap" class="btn btn-info text-white">
+                                <i class="fas fa-map-marked-alt me-1"></i>View on Map
+                            </a>
                         </div>
                     </div>
-                </div>
-                
-                <div class="mb-4">
-                    <h6 class="text-primary mb-3">Description</h6>
-                    <p>@Model.Description</p>
-                </div>
-                
-                <div class="mb-4">
-                    <h6 class="text-primary mb-3">Location Details</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Full Address</label>
-                                <p>@Model.Location</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Coordinates</label>
-                                <p>Latitude: @Model.Latitude.ToString("F6")<br>Longitude: @Model.Longitude.ToString("F6")</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Purok/Street</label>
-                                <p>@(String.IsNullOrEmpty(Model.Purok) || Model.Purok == "Unknown" ? "Not specified" : Model.Purok)</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Barangay</label>
-                                <p>@(String.IsNullOrEmpty(Model.Barangay) || Model.Barangay == "Unknown" ? "Not specified" : Model.Barangay)</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">City/Municipality</label>
-                                <p>@(String.IsNullOrEmpty(Model.City) || Model.City == "Unknown" ? "Not specified" : Model.City)</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Country</label>
-                                <p>@Model.Country</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                @if (!String.IsNullOrEmpty(Model.AdditionalInfo))
-                {
-                    <div class="mb-4">
-                        <h6 class="text-primary mb-3">Additional Information</h6>
-                        <p>@Model.AdditionalInfo</p>
-                    </div>
-                }
-                
-                <div class="d-flex justify-content-between mt-4">
-                    <a asp-action="Dashboard" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                    </a>
-                    <a asp-action="IncidentMap" class="btn btn-primary">
-                        <i class="fas fa-map-marked-alt me-2"></i>View on Map
-                    </a>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card dashboard-card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="m-0"><i class="fas fa-map-marked-alt me-2"></i>Location Map</h5>
-            </div>
-            <div class="card-body p-0">
-                <div id="map" class="map-preview" style="height: 300px;"></div>
-            </div>
-        </div>
         
-        @if (!String.IsNullOrEmpty(Model.ImageUrl) && Model.ImageUrl != "/images/default-report.jpg")
-        {
-            <div class="card dashboard-card mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="m-0"><i class="fas fa-image me-2"></i>Image</h5>
+        <div class="col-lg-4">
+            <!-- Status Timeline -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header py-3 bg-white border-bottom">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="fas fa-history me-2 text-primary"></i>Status Timeline
+                    </h6>
                 </div>
-                <div class="card-body p-0">
-                    <img src="@Model.ImageUrl" alt="Incident Photo" class="img-fluid w-100" />
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-0 fw-bold fs-7">Report Submitted</h6>
+                                <small class="text-muted">@Model.DateReported.ToString("MMM dd, yyyy hh:mm tt")</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker @(Model.Status != ReportStatus.Pending ? "bg-success" : "bg-secondary")"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-0 fw-bold fs-7">Verification</h6>
+                                <small class="text-muted">@(Model.Status != ReportStatus.Pending ? "Verified" : "Pending verification")</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker @(Model.Status == ReportStatus.InProgress || Model.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-0 fw-bold fs-7">Response In Progress</h6>
+                                <small class="text-muted">@(Model.Status == ReportStatus.InProgress ? "Currently responding" : (Model.Status == ReportStatus.Resolved ? "Completed" : "Not started"))</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker @(Model.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")"></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-0 fw-bold fs-7">Resolution</h6>
+                                <small class="text-muted">@(Model.Status == ReportStatus.Resolved ? "Incident resolved" : "Pending resolution")</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        }
-        
-        <div class="card dashboard-card">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="m-0"><i class="fas fa-info-circle me-2"></i>Status Information</h5>
-            </div>
-            <div class="card-body">
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-marker @(true ? "bg-success" : "bg-secondary")"></div>
-                        <div class="timeline-content">
-                            <h6 class="mb-0">Report Submitted</h6>
-                            <small>@Model.DateReported.ToString("MMM dd, yyyy hh:mm tt")</small>
+            
+            <!-- Quick Response Card -->
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header py-3 bg-white border-bottom">
+                    <h6 class="mb-0 fw-bold">
+                        <i class="fas fa-phone-alt me-2 text-primary"></i>Emergency Contacts
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="emergency-contacts">
+                        <div class="contact-item mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-ambulance text-danger me-2"></i>
+                                <h6 class="mb-0 fs-7 fw-bold">Medical Emergency</h6>
+                            </div>
+                            <a href="tel:911" class="btn btn-sm btn-outline-danger w-100">
+                                <i class="fas fa-phone-alt me-1"></i> 911
+                            </a>
                         </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-marker @(Model.Status != ReportStatus.Pending ? "bg-success" : "bg-secondary")"></div>
-                        <div class="timeline-content">
-                            <h6 class="mb-0">Verification</h6>
-                            <small>@(Model.Status != ReportStatus.Pending ? "Verified" : "Pending verification")</small>
+                        
+                        <div class="contact-item mb-3">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-fire-extinguisher text-warning me-2"></i>
+                                <h6 class="mb-0 fs-7 fw-bold">Fire Department</h6>
+                            </div>
+                            <a href="tel:911" class="btn btn-sm btn-outline-warning w-100">
+                                <i class="fas fa-phone-alt me-1"></i> 911
+                            </a>
                         </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-marker @(Model.Status == ReportStatus.InProgress || Model.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")"></div>
-                        <div class="timeline-content">
-                            <h6 class="mb-0">Response In Progress</h6>
-                            <small>@(Model.Status == ReportStatus.InProgress ? "Currently responding" : (Model.Status == ReportStatus.Resolved ? "Completed" : "Not started"))</small>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-marker @(Model.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")"></div>
-                        <div class="timeline-content">
-                            <h6 class="mb-0">Resolution</h6>
-                            <small>@(Model.Status == ReportStatus.Resolved ? "Incident resolved" : "Pending resolution")</small>
+                        
+                        <div class="contact-item">
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-shield-alt text-primary me-2"></i>
+                                <h6 class="mb-0 fs-7 fw-bold">Local Disaster Office</h6>
+                            </div>
+                            <a href="tel:123456789" class="btn btn-sm btn-outline-primary w-100">
+                                <i class="fas fa-phone-alt me-1"></i> Local Hotline
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -230,9 +308,50 @@
 </div>
 
 @section Scripts {
+    <!-- Lightbox2 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    
     <script>
+        // Lightbox configuration
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true,
+            'fadeDuration': 200,
+            'imageFadeDuration': 200,
+            'positionFromTop': 50,
+            'alwaysShowNavOnTouchDevices': true,
+            'showImageNumberLabel': false
+        });
+        
+        // Add custom close button to lightbox
+        $(document).on('click', '.lb-container', function(e) {
+            if ($(e.target).hasClass('lb-container')) {
+                lightbox.end();
+            }
+        });
+        
+        // Create and append custom close button after lightbox is opened
+        lightbox.option({
+            'albumLabel': '',
+            'onOpen': function() {
+                setTimeout(function() {
+                    if (!$('.lb-custom-close').length) {
+                        const closeBtn = $('<div class="lb-custom-close"><i class="fas fa-times"></i></div>');
+                        $('.lb-container').append(closeBtn);
+                        
+                        // Add click event to close lightbox
+                        $('.lb-custom-close').on('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            lightbox.end();
+                        });
+                    }
+                }, 100);
+            }
+        });
+    
         // Initialize the map
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v11',
@@ -241,11 +360,22 @@
         });
 
         // Add map controls
-        map.addControl(new mapboxgl.NavigationControl());
+        map.addControl(new mapboxgl.NavigationControl(), 'top-right');
         
-        // Add a marker
+        // Add a marker based on incident type
+        const markerColor = 
+            @switch(Model.Type) {
+                case DisasterType.Earthquake: @Html.Raw("'#dc3545'"); break;
+                case DisasterType.Flood: @Html.Raw("'#0d6efd'"); break;
+                case DisasterType.Fire: @Html.Raw("'#fd7e14'"); break;
+                case DisasterType.Landslide: @Html.Raw("'#6c757d'"); break;
+                case DisasterType.Storm: @Html.Raw("'#0dcaf0'"); break;
+                case DisasterType.Accident: @Html.Raw("'#212529'"); break;
+                default: @Html.Raw("'#6c757d'"); break;
+            };
+            
         const marker = new mapboxgl.Marker({
-            color: '#E03131'
+            color: markerColor
         }).setLngLat([@Model.Longitude, @Model.Latitude])
           .addTo(map);
           
@@ -254,26 +384,97 @@
             offset: 25,
             closeButton: false
         }).setLngLat([@Model.Longitude, @Model.Latitude])
-          .setHTML('<strong>@Model.Title</strong><br><span class="text-muted">@Model.Type</span>')
+          .setHTML(`
+            <div class="map-popup">
+                <strong>${'@Model.Title'}</strong>
+                <br>
+                <span class="text-muted">${'@Model.Type'}</span>
+            </div>
+          `)
           .addTo(map);
     </script>
 }
 
 @section Styles {
+    <!-- Lightbox2 CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+    
     <style>
-        .map-preview {
-            width: 100%;
-            border-radius: 0 0 5px 5px;
+        :root {
+            --primary-color: #0d6efd;
+            --primary-light: rgba(13, 110, 253, 0.1);
+            --secondary-color: #6c757d;
+            --secondary-light: rgba(108, 117, 125, 0.1);
+            --success-color: #198754;
+            --success-light: rgba(25, 135, 84, 0.1);
+            --info-color: #0dcaf0;
+            --info-light: rgba(13, 202, 240, 0.1);
+            --warning-color: #ffc107;
+            --warning-light: rgba(255, 193, 7, 0.1);
+            --danger-color: #dc3545;
+            --danger-light: rgba(220, 53, 69, 0.1);
+            --dark-color: #212529;
+            --dark-light: rgba(33, 37, 41, 0.1);
+            --light-color: #f8f9fa;
+            --border-color: #e9ecef;
+        }
+
+        /* Font size utility */
+        .fs-7 {
+            font-size: 0.85rem;
         }
         
+        /* Content sections styling */
+        .content-section {
+            background-color: var(--light-color);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+        
+        .section-title {
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--dark-color);
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .section-subtitle {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--dark-color);
+        }
+        
+        .section-content {
+            color: var(--dark-color);
+        }
+        
+        /* Map styling */
+        .map-preview {
+            width: 100%;
+            height: 200px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .map-popup {
+            padding: 2px 0;
+        }
+        
+        /* Timeline styling */
         .timeline {
             position: relative;
             padding-left: 25px;
+            margin: 0;
         }
         
         .timeline-item {
             position: relative;
-            padding-bottom: 25px;
+            padding-bottom: 20px;
         }
         
         .timeline-item:last-child {
@@ -284,21 +485,178 @@
             position: absolute;
             left: -25px;
             top: 4px;
-            width: 15px;
-            height: 15px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             border: 2px solid white;
-            box-shadow: 0 0 4px rgba(0,0,0,0.2);
+            box-shadow: 0 0 3px rgba(0,0,0,0.2);
         }
         
         .timeline:before {
             content: '';
             position: absolute;
-            left: -17.5px;
+            left: -18px;
             top: 10px;
             bottom: 10px;
             width: 1px;
-            background-color: #dee2e6;
+            background-color: var(--border-color);
+        }
+        
+        /* Card icon */
+        .card-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+        }
+        
+        /* Type badge styling */
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        /* Light background colors for badges */
+        .bg-light-primary { background-color: var(--primary-light); color: var(--primary-color); }
+        .bg-light-secondary { background-color: var(--secondary-light); color: var(--secondary-color); }
+        .bg-light-success { background-color: var(--success-light); color: var(--success-color); }
+        .bg-light-danger { background-color: var(--danger-light); color: var(--danger-color); }
+        .bg-light-warning { background-color: var(--warning-light); color: var(--warning-color); }
+        .bg-light-info { background-color: var(--info-light); color: var(--info-color); }
+        .bg-light-dark { background-color: var(--dark-light); color: var(--dark-color); }
+        
+        /* Location item styling */
+        .location-item {
+            margin-bottom: 0;
+        }
+        
+        /* Incident image styling */
+        .incident-image-container {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+        
+        .incident-image {
+            max-width: 100%;
+            max-height: 250px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .incident-image:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .incident-image img {
+            object-fit: cover;
+            width: 100%;
+            max-height: 250px;
+        }
+        
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .incident-image:hover .image-overlay {
+            opacity: 1;
+        }
+        
+        /* Card enhancements */
+        .card {
+            transition: all 0.2s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 767.98px) {
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .action-buttons .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .content-section {
+                padding: 1rem;
+            }
+        }
+        
+        /* Lightbox customizations */
+        .lb-dataContainer {
+            padding-top: 10px;
+        }
+        
+        .lb-data .lb-caption {
+            font-weight: 600;
+        }
+        
+        /* Custom close button for lightbox */
+        .lb-custom-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 9999;
+            transition: all 0.2s ease;
+        }
+        
+        .lb-custom-close:hover {
+            background-color: rgba(220, 53, 69, 0.9);
+            transform: scale(1.1);
+        }
+        
+        /* Hide default close button */
+        .lb-data .lb-close {
+            display: none;
+        }
+        
+        /* Make the lightbox container take full available space */
+        .lb-outerContainer {
+            max-width: 90vw !important;
+            max-height: 80vh !important;
+        }
+        
+        .lb-image {
+            max-width: 90vw !important;
+            max-height: 80vh !important;
         }
     </style>
 } 

@@ -1,0 +1,317 @@
+@model IEnumerable<THYNK.Models.DisasterReport>
+@{
+    ViewData["Title"] = "My Reports";
+    Layout = "_CommunityLayout";
+}
+
+<div class="card admin-card mb-4 border-0 shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex align-items-center">
+            <div class="card-icon bg-white text-primary">
+                <i class="fas fa-history"></i>
+            </div>
+            <div>
+                <h5 class="m-0">My Report History</h5>
+                <small>View all reports you have submitted</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Enhanced Search and Filter Section -->
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-8">
+                <div class="search-filter-group d-flex flex-wrap gap-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" id="live-search" class="form-control border-start-0" 
+                               placeholder="Search reports by title, location..." 
+                               value="@ViewBag.CurrentSearch">
+                        <button class="btn btn-outline-secondary border-start-0" type="button" id="clear-search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <select id="status-filter" class="form-select" style="width: auto;">
+                        <option value="">All Status</option>
+                        <option value="Pending" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Pending)">Pending</option>
+                        <option value="Verified" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Verified)">Verified</option>
+                        <option value="InProgress" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.InProgress)">In Progress</option>
+                        <option value="Resolved" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Resolved)">Resolved</option>
+                        <option value="Declined" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Declined)">Declined</option>
+                    </select>
+                    <span class="badge bg-secondary align-self-center px-2 py-1" id="result-counter">
+                        <span id="result-count">@Model.Count()</span> results
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="@Url.Action("SubmitReport", "Community")" class="btn btn-success">
+                    <i class="fas fa-plus-circle me-2"></i>New Report
+                </a>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info d-flex align-items-center">
+                <i class="fas fa-info-circle me-3 fs-4"></i>
+                <div>
+                    <p class="mb-1">You haven't submitted any reports yet.</p>
+                    <a href="@Url.Action("SubmitReport", "Community")" class="alert-link">Submit your first report</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover" id="reports-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Date Reported</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var report in Model)
+                        {
+                            <tr class="report-row" 
+                                data-title="@report.Title.ToLower()" 
+                                data-location="@report.Location.ToLower()" 
+                                data-status="@report.Status">
+                                <td>
+                                    <span class="fw-medium">@report.Title</span>
+                                </td>
+                                <td>
+                                    @{
+                                        var typeColor = report.Type == THYNK.Models.DisasterType.Earthquake ? "danger" :
+                                                         report.Type == THYNK.Models.DisasterType.Flood ? "primary" :
+                                                         report.Type == THYNK.Models.DisasterType.Fire ? "warning" :
+                                                         report.Type == THYNK.Models.DisasterType.Landslide ? "secondary" :
+                                                         report.Type == THYNK.Models.DisasterType.Storm ? "info" :
+                                                         report.Type == THYNK.Models.DisasterType.Accident ? "orange" : "secondary";
+                                    }
+                                    <span class="badge bg-@typeColor">@report.Type</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                                        <span>@report.Location</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="far fa-calendar-alt text-muted me-2"></i>
+                                        <span>@report.DateReported.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @{
+                                        var statusColor = report.Status == THYNK.Models.ReportStatus.Pending ? "warning" : 
+                                                         report.Status == THYNK.Models.ReportStatus.Verified ? "info" : 
+                                                         report.Status == THYNK.Models.ReportStatus.InProgress ? "primary" : 
+                                                         report.Status == THYNK.Models.ReportStatus.Resolved ? "success" : "danger";
+                                        
+                                        var statusIcon = report.Status == THYNK.Models.ReportStatus.Pending ? "clock" : 
+                                                        report.Status == THYNK.Models.ReportStatus.Verified ? "check-square" : 
+                                                        report.Status == THYNK.Models.ReportStatus.InProgress ? "tools" : 
+                                                        report.Status == THYNK.Models.ReportStatus.Resolved ? "check-circle" : "times-circle";
+                                    }
+                                    <div class="d-flex align-items-center">
+                                        <span class="status-icon text-@statusColor me-2">
+                                            <i class="fas fa-@statusIcon"></i>
+                                        </span>
+                                        <span class="badge bg-@statusColor">
+                                            @(report.Status == THYNK.Models.ReportStatus.InProgress ? "In Progress" : report.Status.ToString())
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="@Url.Action("ReportDetails", "Community", new { id = report.Id })" 
+                                       class="btn btn-sm btn-info text-white">
+                                        <i class="fas fa-eye me-1"></i><span class="d-none d-lg-inline">View</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- No results message -->
+            <div id="no-results-message" class="alert alert-warning d-none">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                No reports match your search criteria.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Live search functionality
+        $(document).ready(function() {
+            // Function to filter the table rows
+            function filterReports() {
+                const searchTerm = $('#live-search').val().toLowerCase().trim();
+                const statusFilter = $('#status-filter').val();
+                let visibleCount = 0;
+                
+                // Highlight matching text
+                const highlightText = (text, term) => {
+                    if (term === '') return text;
+                    const regex = new RegExp(`(${term})`, 'gi');
+                    return text.replace(regex, '<span class="highlight">$1</span>');
+                };
+                
+                $('.report-row').each(function() {
+                    const title = $(this).data('title');
+                    const location = $(this).data('location');
+                    const status = $(this).data('status');
+                    const $titleElement = $(this).find('td:first-child span');
+                    const $locationElement = $(this).find('td:nth-child(3) span');
+                    
+                    // Check if row matches both search term and status filter
+                    const matchesSearch = searchTerm === '' || 
+                                         title.includes(searchTerm) || 
+                                         location.includes(searchTerm);
+                                         
+                    const matchesStatus = statusFilter === '' || status === statusFilter;
+                    
+                    if (matchesSearch && matchesStatus) {
+                        $(this).removeClass('d-none');
+                        
+                        // Reset and apply highlight if search term exists
+                        if (searchTerm !== '') {
+                            $titleElement.html(highlightText(title, searchTerm));
+                            $locationElement.html(highlightText(location, searchTerm));
+                        } else {
+                            // Reset to original text if no search term
+                            $titleElement.text(title);
+                            $locationElement.text(location);
+                        }
+                        
+                        visibleCount++;
+                    } else {
+                        $(this).addClass('d-none');
+                    }
+                });
+                
+                // Show/hide no results message
+                if (visibleCount === 0) {
+                    $('#no-results-message').removeClass('d-none');
+                } else {
+                    $('#no-results-message').addClass('d-none');
+                }
+                
+                // Update counter
+                $('#result-count').text(visibleCount);
+            }
+            
+            // Attach event listeners
+            $('#live-search').on('input', filterReports);
+            $('#status-filter').on('change', filterReports);
+            
+            // Clear search button
+            $('#clear-search').on('click', function() {
+                $('#live-search').val('');
+                filterReports();
+            });
+            
+            // Initialize on page load
+            filterReports();
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* Status icon styling */
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            font-size: 0.9rem;
+        }
+        
+        /* Table enhancements */
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .table thead th {
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .table tbody tr {
+            transition: background-color 0.15s ease;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Search box styling */
+        #live-search:focus {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+        
+        .search-filter-group {
+            flex-wrap: wrap;
+        }
+        
+        /* Custom badge color */
+        .bg-orange {
+            background-color: #fd7e14;
+            color: white;
+        }
+        
+        /* Search result highlight */
+        .highlight {
+            background-color: #fff3cd;
+            padding: 0 2px;
+            border-radius: 2px;
+            font-weight: bold;
+            color: #212529;
+        }
+        
+        /* Clear button styling */
+        #clear-search {
+            cursor: pointer;
+            background: transparent;
+            color: #6c757d;
+        }
+        
+        #clear-search:hover {
+            color: #dc3545;
+        }
+        
+        /* Results counter */
+        #result-counter {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 767.98px) {
+            .search-filter-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .search-filter-group .input-group,
+            .search-filter-group select {
+                width: 100% !important;
+            }
+        }
+    </style>
+} 

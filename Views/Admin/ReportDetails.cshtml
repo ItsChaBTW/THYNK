@@ -93,6 +93,24 @@
                                 <p class="mb-0">@Model.DateReported.ToString("MMM dd, yyyy HH:mm")</p>
                             </div>
                         </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <h6 class="text-muted mb-2">Purok/Street</h6>
+                                <p class="mb-0">@(String.IsNullOrEmpty(Model.Purok) || Model.Purok == "Unknown" ? "Not specified" : Model.Purok)</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 class="text-muted mb-2">Barangay</h6>
+                                <p class="mb-0">@(String.IsNullOrEmpty(Model.Barangay) || Model.Barangay == "Unknown" ? "Not specified" : Model.Barangay)</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 class="text-muted mb-2">City/Municipality</h6>
+                                <p class="mb-0">@(String.IsNullOrEmpty(Model.City) || Model.City == "Unknown" ? "Not specified" : Model.City)</p>
+                            </div>
+                            <div class="col-md-3">
+                                <h6 class="text-muted mb-2">Country</h6>
+                                <p class="mb-0">@Model.Country</p>
+                            </div>
+                        </div>
                         @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
                         {
                             <div class="row mb-3">
@@ -119,6 +137,15 @@
             </div>
 
             <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="m-0"><i class="fas fa-map-marked-alt me-2"></i>Location Map</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="map" class="map-preview" style="height: 300px;"></div>
+                    </div>
+                </div>
+
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="m-0">Reporter Information</h5>
@@ -248,8 +275,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="reason" class="form-label">Reason for declining:</label>
-                            <textarea id="reason" name="reason" class="form-control" rows="3" required 
-                                      placeholder="Please provide a clear reason for declining this report..."></textarea>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -315,4 +341,65 @@
             </div>
         </div>
     </div>
+}
+
+@section Scripts {
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <script>
+        // Initialize the map
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [@Model.Longitude, @Model.Latitude],
+            zoom: 15
+        });
+
+        // Add map controls
+        map.addControl(new mapboxgl.NavigationControl());
+        
+        // Get marker color based on severity
+        function getSeverityColor(severity) {
+            switch(severity) {
+                case 'Low':
+                    return '#0D6EFD'; // Bootstrap primary blue
+                case 'Medium':
+                    return '#FFC107'; // Bootstrap warning yellow
+                case 'High':
+                    return '#DC3545'; // Bootstrap danger red
+                case 'Critical':
+                    return '#212529'; // Bootstrap dark
+                default:
+                    return '#6C757D'; // Bootstrap secondary gray
+            }
+        }
+
+        // Create popup content
+        const popup = new mapboxgl.Popup({ offset: 25 })
+            .setHTML(`
+                <div class="p-2">
+                    <h6 class="mb-1">@Model.Title</h6>
+                    <p class="mb-1 small text-muted">@Model.Type</p>
+                    <p class="mb-0 small">
+                        <span class="badge @(Model.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
+                                          Model.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
+                                          Model.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                            @Model.Severity
+                        </span>
+                    </p>
+                </div>
+            `);
+        
+        // Add a marker with popup
+        const marker = new mapboxgl.Marker({
+            color: getSeverityColor('@Model.Severity')
+        })
+        .setLngLat([@Model.Longitude, @Model.Latitude])
+        .setPopup(popup)
+        .addTo(map);
+
+        // Show popup by default
+        popup.addTo(map);
+    </script>
 } 

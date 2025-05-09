@@ -4,8 +4,6 @@
     Layout = "_CommunityLayout";
 }
 
-<!-- Remove the notification element -->
-
 <div class="container-fluid px-4 py-4">
     <div class="row g-4">
         <!-- Main Form Section -->
@@ -13,7 +11,7 @@
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center mb-4">
-                        <div class="report-icon bg-danger-soft text-danger rounded-circle p-3 me-3">
+                        <div class="report-icon bg-danger bg-opacity-10 text-danger rounded-circle p-3 me-3">
                             <i class="fas fa-exclamation-triangle fa-lg"></i>
                         </div>
                         <div>
@@ -22,23 +20,24 @@
                         </div>
                     </div>
 
-                    <!-- Notification Area -->
-                    <div id="notification-area" class="mb-4 d-none">
-                        <div class="alert alert-light-soft border-start border-2 ps-3 d-flex align-items-center">
-                            <i class="fas fa-info-circle text-primary me-3"></i>
-                            <span id="notification-message"></span>
-                        </div>
-                    </div>
-
-                    <!-- Progress Steps -->
+                    <!-- Form Progress Bar -->
                     <div class="form-progress mb-4">
                         <div class="progress" style="height: 4px;">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: 0%;" id="form-progress-bar"></div>
+                            <div id="form-progress-bar" class="progress-bar bg-success" style="width: 0%"></div>
                         </div>
                         <div class="d-flex justify-content-between mt-2">
-                            <span class="progress-step active" data-step="1">Basic Info</span>
-                            <span class="progress-step" data-step="2">Location</span>
-                            <span class="progress-step" data-step="3">Details</span>
+                            <div class="progress-step" data-step="1">
+                                <div class="step-circle">1</div>
+                                <div class="step-label small">Basic Info</div>
+                            </div>
+                            <div class="progress-step" data-step="2">
+                                <div class="step-circle">2</div>
+                                <div class="step-label small">Location</div>
+                            </div>
+                            <div class="progress-step" data-step="3">
+                                <div class="step-circle">3</div>
+                                <div class="step-label small">Additional Details</div>
+                            </div>
                         </div>
                     </div>
 
@@ -46,10 +45,10 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <!-- Step 1: Basic Information -->
-                        <div class="form-step-content" id="step1">
+                        <div id="step1">
                             <div class="mb-4">
                                 <label asp-for="Title" class="form-label small text-muted">Title</label>
-                                <input asp-for="Title" class="form-control form-control-lg bg-light-soft border-0" 
+                                <input asp-for="Title" class="form-control form-control-lg bg-light border-0" 
                                        placeholder="Brief title of the incident" required />
                                 <span asp-validation-for="Title" class="text-danger"></span>
                             </div>
@@ -57,7 +56,7 @@
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label asp-for="Type" class="form-label small text-muted">Incident Type</label>
-                                    <select asp-for="Type" class="form-select bg-light-soft border-0" required>
+                                    <select asp-for="Type" class="form-select bg-light border-0" required>
                                         @foreach (var type in Enum.GetValues(typeof(DisasterType)))
                                         {
                                             <option value="@type">@type</option>
@@ -67,7 +66,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label asp-for="Severity" class="form-label small text-muted">Severity Level</label>
-                                    <select asp-for="Severity" class="form-select bg-light-soft border-0" required>
+                                    <select asp-for="Severity" class="form-select bg-light border-0" required>
                                         @foreach (var severity in Enum.GetValues(typeof(SeverityLevel)))
                                         {
                                             <option value="@severity">@severity</option>
@@ -79,46 +78,58 @@
 
                             <div class="mb-4">
                                 <label asp-for="Description" class="form-label small text-muted">Description</label>
-                                <textarea asp-for="Description" class="form-control bg-light-soft border-0" rows="4" 
+                                <textarea asp-for="Description" class="form-control bg-light border-0" rows="4" 
                                           placeholder="Detailed description of what happened" required></textarea>
                                 <span asp-validation-for="Description" class="text-danger"></span>
                             </div>
 
                             <div class="d-flex justify-content-end">
-                                <button type="button" class="btn btn-primary-gradient rounded-pill px-4 next-step" data-step="1">
-                                    Next <i class="fas fa-arrow-right ms-1"></i>
+                                <button type="button" class="btn rounded-pill px-4 next-step step-1-btn" data-step="1">
+                                    Next - Set Location <i class="fas fa-map-marker-alt ms-2"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Step 2: Location Information -->
-                        <div class="form-step-content d-none" id="step2">
+                        <!-- Step 2: Location Details -->
+                        <div id="step2" class="d-none">
                             <div class="mb-4">
                                 <label class="form-label small text-muted">Location</label>
-                                <div class="alert alert-light border-0 bg-info-soft mb-3">
-                                    <i class="fas fa-info-circle text-primary me-2"></i>
-                                    Use the map to pin the exact location or click "Detect" to use your current location.
+                                <div class="alert alert-light border mb-3 user-friendly-alert">
+                                    <div class="d-flex">
+                                        <i class="fas fa-info-circle text-primary me-3 mt-1"></i>
+                                        <div>
+                                            <p class="mb-0">To mark the incident location:</p>
+                                            <ul class="mb-0 ps-3 mt-1">
+                                                <li>Click "Detect" to use your current location, or</li>
+                                                <li>Click anywhere on the map to place a marker</li>
+                                                <li>Drag the red marker to adjust the exact position</li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="input-group mb-3">
-                                    <input asp-for="Location" id="location" class="form-control bg-light-soft border-0" 
+                                    <input asp-for="Location" id="location" class="form-control bg-light border-0" 
                                            placeholder="Complete address" required />
-                                    <button type="button" class="btn btn-primary-gradient rounded-end" id="detect-location">
+                                    <button type="button" class="btn btn-primary rounded-end" id="detect-location">
                                         <i class="fas fa-map-marker-alt me-1"></i> Detect
                                     </button>
                                 </div>
                                 <span asp-validation-for="Location" class="text-danger"></span>
+                                
+                                <!-- Display map inside step 2 -->
+                                <div id="map" class="map-preview rounded-3 mb-4 mt-3"></div>
                             </div>
 
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label asp-for="Purok" class="form-label small text-muted">Purok/Street</label>
-                                    <input asp-for="Purok" id="purok" class="form-control bg-light-soft border-0" 
+                                    <input asp-for="Purok" id="purok" class="form-control bg-light border-0" 
                                            placeholder="Purok or Street number" />
                                     <span asp-validation-for="Purok" class="text-danger"></span>
                                 </div>
                                 <div class="col-md-6">
                                     <label asp-for="Barangay" class="form-label small text-muted">Barangay</label>
-                                    <input asp-for="Barangay" id="barangay" class="form-control bg-light-soft border-0" 
+                                    <input asp-for="Barangay" id="barangay" class="form-control bg-light border-0" 
                                            placeholder="Barangay name" />
                                     <span asp-validation-for="Barangay" class="text-danger"></span>
                                 </div>
@@ -127,13 +138,13 @@
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label asp-for="City" class="form-label small text-muted">City/Municipality</label>
-                                    <input asp-for="City" id="city" class="form-control bg-light-soft border-0" 
+                                    <input asp-for="City" id="city" class="form-control bg-light border-0" 
                                            placeholder="City or Municipality" />
                                     <span asp-validation-for="City" class="text-danger"></span>
                                 </div>
                                 <div class="col-md-6">
                                     <label asp-for="Country" class="form-label small text-muted">Country</label>
-                                    <input asp-for="Country" id="country" class="form-control bg-light-soft border-0" 
+                                    <input asp-for="Country" id="country" class="form-control bg-light border-0" 
                                            placeholder="Country" value="Philippines" />
                                     <span asp-validation-for="Country" class="text-danger"></span>
                                 </div>
@@ -144,48 +155,54 @@
                             <input type="hidden" asp-for="Longitude" id="longitude" />
 
                             <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-light-gradient rounded-pill px-4 prev-step">
-                                    <i class="fas fa-arrow-left me-1"></i> Back
+                                <button type="button" class="btn btn-light rounded-pill px-4 prev-step">
+                                    <i class="fas fa-arrow-left me-2"></i> Back
                                 </button>
-                                <button type="button" class="btn btn-primary-gradient rounded-pill px-4 next-step" data-step="2">
-                                    Next <i class="fas fa-arrow-right ms-1"></i>
+                                <button type="button" class="btn rounded-pill px-4 next-step step-2-btn" data-step="2">
+                                    Next - Additional Details <i class="fas fa-file-alt ms-2"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Step 3: Additional Details -->
-                        <div class="form-step-content d-none" id="step3">
+                        <!-- Step 3: Additional Information -->
+                        <div id="step3" class="d-none">
                             <div class="mb-4">
-                                <label class="form-label small text-muted">Photo (Optional)</label>
-                                <div class="photo-upload-area bg-light-soft rounded p-3 text-center mb-3">
-                                    <div class="preview-area mb-3 d-none">
-                                        <img id="photo-preview" class="img-fluid rounded mb-2" style="max-height: 200px;">
-                                    </div>
-                                    <div class="upload-prompt">
-                                        <i class="fas fa-camera text-muted mb-2 fa-2x upload-icon"></i>
-                                        <p class="text-muted mb-2 upload-text">Upload a photo of the incident</p>
-                                        <div class="input-group">
-                                            <input type="file" class="form-control bg-light-soft border-0" id="photo" name="photo" 
-                                                   accept="image/*" />
-                                            <button type="button" class="btn btn-light-gradient border-0" id="clear-photo">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
+                                <label class="form-label small text-muted">Photo <span class="text-danger">*</span> <small>(Required)</small></label>
+                                <div class="input-group">
+                                    <input type="file" class="form-control bg-light border-0" id="photo" name="photo" 
+                                           accept="image/*" required />
+                                    <button type="button" class="btn btn-light border-0" id="clear-photo">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Upload a clear photo of the incident (required for verification).</small>
+                                
+                                <!-- Photo preview -->
+                                <div id="photoPreview" class="mt-3 d-none">
+                                    <img src="#" class="img-fluid rounded mx-auto d-block" style="max-height: 200px; object-fit: contain;">
+                                    <p class="text-center text-muted small mt-2">Image successfully uploaded</p>
+                                </div>
+                                
+                                <!-- Missing image alert - shown when trying to submit without an image -->
+                                <div class="alert alert-danger mt-3 d-none" id="missingImageAlert">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <div>Please upload an image to complete your report</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mb-4">
                                 <label asp-for="AdditionalInfo" class="form-label small text-muted">Additional Information (Optional)</label>
-                                <textarea asp-for="AdditionalInfo" class="form-control bg-light-soft border-0" rows="3" 
+                                <textarea asp-for="AdditionalInfo" class="form-control bg-light border-0" rows="3" 
                                           placeholder="Any other details you'd like to share"></textarea>
                             </div>
 
                             <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-light-gradient rounded-pill px-4 prev-step">
+                                <button type="button" class="btn btn-light rounded-pill px-4 prev-step">
                                     <i class="fas fa-arrow-left me-1"></i> Back
                                 </button>
-                                <button type="button" id="submit-report-btn" class="btn btn-success-gradient rounded-pill px-4">
+                                <button type="submit" id="submit-report-btn" class="btn btn-success rounded-pill px-4" disabled>
                                     <i class="fas fa-paper-plane me-1"></i>Submit Report
                                 </button>
                             </div>
@@ -197,27 +214,11 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Map Preview -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="map-icon bg-primary-soft text-primary rounded-circle p-3 me-3">
-                            <i class="fas fa-map-marked-alt fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Pin Location</h6>
-                            <p class="text-muted small mb-0">Drag the marker to set the exact location</p>
-                        </div>
-                    </div>
-                    <div id="map" class="map-preview rounded-3"></div>
-                </div>
-            </div>
-            
             <!-- Guidelines -->
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="guidelines-icon bg-info-soft text-info rounded-circle p-3 me-3">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="guidelines-icon bg-info bg-opacity-10 text-info rounded-circle p-3 me-3">
                             <i class="fas fa-info-circle fa-lg"></i>
                         </div>
                         <div>
@@ -226,31 +227,37 @@
                         </div>
                     </div>
                     <div class="guidelines-content">
-                        <div class="d-flex mb-3">
-                            <div class="guideline-icon bg-success-soft text-success rounded-circle p-2 me-3">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Be Accurate</h6>
-                                <p class="text-muted small mb-0">Provide precise details about the incident</p>
-                            </div>
-                        </div>
-                        <div class="d-flex mb-3">
-                            <div class="guideline-icon bg-warning-soft text-warning rounded-circle p-2 me-3">
-                                <i class="fas fa-exclamation"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Stay Safe</h6>
-                                <p class="text-muted small mb-0">Do not put yourself in danger to report</p>
+                        <div class="guideline-item mb-3">
+                            <div class="d-flex">
+                                <div class="guideline-icon bg-success bg-opacity-10 text-success">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="guideline-text">
+                                    <h6 class="mb-1">Be Accurate</h6>
+                                    <p class="text-muted small mb-0">Provide precise details about the incident</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="d-flex">
-                            <div class="guideline-icon bg-info-soft text-info rounded-circle p-2 me-3">
-                                <i class="fas fa-camera"></i>
+                        <div class="guideline-item mb-3">
+                            <div class="d-flex">
+                                <div class="guideline-icon bg-warning bg-opacity-10 text-warning">
+                                    <i class="fas fa-exclamation"></i>
+                                </div>
+                                <div class="guideline-text">
+                                    <h6 class="mb-1">Stay Safe</h6>
+                                    <p class="text-muted small mb-0">Do not put yourself in danger to report</p>
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="mb-1">Include Photos</h6>
-                                <p class="text-muted small mb-0">Add clear images if safely possible</p>
+                        </div>
+                        <div class="guideline-item">
+                            <div class="d-flex">
+                                <div class="guideline-icon bg-info bg-opacity-10 text-info">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div class="guideline-text">
+                                    <h6 class="mb-1">Include Photos</h6>
+                                    <p class="text-muted small mb-0">Add clear images if safely possible</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -260,29 +267,72 @@
     </div>
 </div>
 
+<!-- Report Verification Modal -->
+<div class="modal fade" id="reportVerificationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-body p-0">
+                <div class="text-center p-4">
+                    <div class="verification-icon bg-success bg-opacity-10 mx-auto mb-4 rounded-circle">
+                        <i class="fas fa-check-circle fa-3x text-success"></i>
+                    </div>
+                    <h4 class="mb-3">Report Submitted Successfully!</h4>
+                    <p class="mb-4">Your incident report has been submitted and will be verified shortly by our team. Thank you for contributing to community safety!</p>
+                    
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="verification-status">
+                            <div class="d-flex align-items-center">
+                                <div class="verification-stage active">
+                                    <i class="fas fa-paper-plane"></i>
+                                </div>
+                                <div class="verification-line"></div>
+                                <div class="verification-stage active">
+                                    <i class="fas fa-inbox"></i>
+                                </div>
+                                <div class="verification-line"></div>
+                                <div class="verification-stage">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </div>
+                                <div class="verification-line"></div>
+                                <div class="verification-stage">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <span class="small text-muted">Submitted</span>
+                                <span class="small text-muted">Received</span>
+                                <span class="small text-muted">Verified</span>
+                                <span class="small text-muted">Published</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-light border text-start mb-4">
+                        <div class="d-flex">
+                            <i class="fas fa-info-circle text-primary me-2 mt-1"></i>
+                            <div>
+                                <p class="mb-0 small">Your report will be processed within 30 minutes. You'll receive a notification once it's verified and published on the community map.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="/Community/CommunityFeed" class="btn btn-success px-4 py-2">
+                        Continue to Community Feed
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Styles {
     <style>
-        :root {
-            --primary-color: #4361ee;
-            --danger-color: #ef476f;
-            --light-bg: #f5f7fa;
-            --dark-text: #2b2d42;
-            --card-bg: #ffffff;
-            --muted-text: #6c757d;
-        }
-        
-        body {
-            color: var(--dark-text);
-        }
-        
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 0.75rem;
-        }
-        
+        /* Existing styles */
         .map-preview {
             height: 300px;
             border-radius: 0.5rem;
+            width: 100%;
+            border: 1px solid #ddd;
         }
 
         .report-icon,
@@ -296,264 +346,377 @@
         }
 
         .guideline-icon {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            margin-left: -1.5rem;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .guideline-item {
+            border-left: 2px solid #f5f7fa;
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+            position: relative;
         }
         
-        /* Softer background colors */
-        .bg-light-soft {
-            background-color: var(--light-bg);
+        .guideline-item:last-child {
+            border-left: 2px solid transparent;
         }
         
-        .bg-primary-soft {
-            background-color: rgba(67, 97, 238, 0.1);
+        .guideline-text {
+            padding-top: 0.25rem;
         }
         
-        .bg-danger-soft {
-            background-color: rgba(239, 71, 111, 0.1);
+        .guidelines-content {
+            position: relative;
+            padding-top: 0.5rem;
         }
-        
-        .bg-success-soft {
-            background-color: rgba(64, 191, 125, 0.1);
-        }
-        
-        .bg-warning-soft {
-            background-color: rgba(255, 209, 102, 0.1);
-        }
-        
-        .bg-info-soft {
-            background-color: rgba(103, 180, 204, 0.1);
+
+        /* Form controls improved styling */
+        .form-control,
+        .form-select,
+        .form-control-lg,
+        input.bg-light,
+        select.bg-light,
+        textarea.bg-light {
+            background-color: #f5f7fa !important;
+            border: 1px solid #e9ecef !important;
+            color: #495057;
         }
 
         .form-control:focus,
         .form-select:focus {
-            box-shadow: none;
+            box-shadow: 0 0 0 0.15rem rgba(79, 111, 255, 0.15);
             border-color: #dee2e6;
         }
 
         .form-control,
         .form-select {
             transition: all 0.2s ease-in-out;
-            background-color: rgba(245, 247, 250, 0.8) !important;
-            border: 1px solid rgba(84, 84, 84, 0.1) !important;
+            font-size: 0.95rem;
+        }
+
+        .form-control-lg {
+            font-size: 1rem;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
         }
 
         .form-control:hover,
         .form-select:hover {
-            background-color: rgba(245, 247, 250, 1) !important;
-            border-color: rgba(84, 84, 84, 0.2) !important;
+            background-color: #f1f3f5 !important;
+        }
+        
+        /* Labels and text consistency */
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            letter-spacing: 0.01rem;
+        }
+        
+        small.text-muted, 
+        .small {
+            color: #6c757d !important;
+            font-size: 0.85rem;
+        }
+        
+        /* Card styling adjustments */
+        .card {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05) !important;
+            border-radius: 12px;
+            background-color: #ffffff;
+        }
+        
+        .card-body {
+            padding: 1.75rem !important;
         }
 
-        .form-control:focus,
-        .form-select:focus {
-            background-color: #ffffff !important;
-            border-color: var(--primary-color) !important;
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        /* Heading and title styles */
+        h5.mb-1, h6.mb-1 {
+            font-weight: 600;
+            color: #343a40;
+        }
+        
+        .text-muted {
+            color: #6c757d !important;
         }
 
         .alert-light {
             background-color: #f8f9fa;
-            border-color: #e9ecef;
+        }
+        
+        .mapboxgl-marker {
+            cursor: pointer;
+        }
+        
+        .mapboxgl-ctrl-group {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
 
+        /* New styles for multi-step form */
+        .form-progress {
+            position: relative;
+            padding: 0 10px;
+            margin-bottom: 2rem;
+        }
+
+        .progress {
+            background-color: #e9ecef;
+            height: 5px !important;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            margin-bottom: 6px;
+        }
+
+        .step-label {
+            margin-top: 3px;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .progress-step.active .step-circle {
+            background-color: #4f6fff;
+            color: white;
+            border-color: #4f6fff;
+            transform: scale(1.1);
+            box-shadow: 0 0 0 4px rgba(79, 111, 255, 0.2);
+        }
+
+        .progress-step.active .step-label {
+            color: #4f6fff;
+            font-weight: 600;
+        }
+
+        .progress-step.completed .step-circle {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.2);
+        }
+
+        /* Animation for form steps */
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #step1, #step2, #step3 {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Button style for multi-step form */
         .btn {
-            transition: all 0.2s ease-in-out;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1.25rem;
+            letter-spacing: 0.01rem;
+            border: none;
         }
 
         .btn:hover {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-
+        
         .btn-light {
-            background-color: #f8f9fa;
-            border-color: #e9ecef;
+            background-color: #f1f3f5;
+            color: #495057;
         }
-
+        
         .btn-light:hover {
             background-color: #e9ecef;
-            border-color: #dee2e6;
         }
         
-        /* Progress steps */
-        .form-progress {
-            position: relative;
-        }
-        
-        .progress-step {
-            font-size: 0.8rem;
-            color: var(--muted-text);
-            font-weight: 500;
-            position: relative;
-        }
-        
-        .progress-step::before {
-            content: '';
-            position: absolute;
-            top: -16px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #dee2e6;
-            z-index: 1;
-        }
-        
-        .progress-step.active {
-            color: var(--primary-color);
-        }
-        
-        .progress-step.active::before {
-            background-color: var(--primary-color);
-        }
-        
-        .progress-step.completed::before {
-            background-color: var(--primary-color);
-        }
-        
-        /* Photo upload area */
-        .photo-upload-area {
-            background-color: rgba(245, 247, 250, 0.8) !important;
-            border: 2px dashed rgba(84, 84, 84, 0.2) !important;
-        }
-        
-        .photo-upload-area:hover {
-            background-color: rgba(245, 247, 250, 1) !important;
-            border-color: var(--primary-color) !important;
-        }
-        
-        .corner-label {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary-color);
-            padding: 4px 10px;
-            border-radius: 50px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        @@media (max-width: 992px) {
-            .container-fluid {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            
-            .card-body {
-                padding: 1.25rem !important;
-            }
-        }
-
-        /* Button gradients */
-        .btn-primary-gradient {
-            background: linear-gradient(135deg, var(--primary-color), #6283fb);
+        .step-1-btn {
+            background-color: #6a8d73; /* Green color for step 1 */
             color: white;
-            border: none;
-            box-shadow: 0 2px 5px rgba(67, 97, 238, 0.3);
-        }
-
-        .btn-primary-gradient:hover {
-            background: linear-gradient(135deg, #536ee8, #7b95f9);
-            box-shadow: 0 4px 8px rgba(67, 97, 238, 0.4);
-        }
-
-        .btn-light-gradient {
-            background: linear-gradient(135deg, #f8f9fa, #eaecef);
-            color: var(--dark-text);
-            border: none;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-light-gradient:hover {
-            background: linear-gradient(135deg, #eaecef, #dee2e6);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-        }
-
-        .btn-success-gradient {
-            background: linear-gradient(135deg, #40bf7d, #29a267);
-            color: white;
-            border: none;
-            box-shadow: 0 2px 5px rgba(64, 191, 125, 0.3);
-        }
-
-        .btn-success-gradient:hover {
-            background: linear-gradient(135deg, #35a56d, #218858);
-            box-shadow: 0 4px 8px rgba(64, 191, 125, 0.4);
-        }
-
-        /* Is invalid styling - more subtle */
-        .is-invalid {
-            border-color: rgba(239, 71, 111, 0.5) !important;
-            background-color: rgba(239, 71, 111, 0.01) !important;
-        }
-
-        /* Ensure form validation shows immediately */
-        .form-control:invalid:focus, 
-        .form-select:invalid:focus {
-            box-shadow: 0 0 0 0.15rem rgba(239, 71, 111, 0.1);
-        }
-
-        /* Error shake animation - more subtle */
-        @@keyframes shake {
-            0% { transform: translateX(0); }
-            20% { transform: translateX(-3px); }
-            40% { transform: translateX(3px); }
-            60% { transform: translateX(-3px); }
-            80% { transform: translateX(3px); }
-            100% { transform: translateX(0); }
-        }
-
-        .shake-animation {
-            animation: none;
         }
         
-        /* New alert styles */
-        .alert-light-soft {
-            background-color: rgba(248, 249, 250, 0.7);
-            color: var(--dark-text);
-            border-radius: 6px;
-            border-color: var(--primary-color);
-            padding: 10px 16px;
+        .step-1-btn:hover {
+            background-color: #5c7a64;
         }
-
-        .fade-out {
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        
+        .step-2-btn {
+            background-color: #4f6fff; /* Blue color for step 2 */
+            color: white;
         }
-
-        /* Minimalist validation styling */
+        
+        .step-2-btn:hover {
+            background-color: #3a5be0;
+        }
+        
+        /* For form validation feedback */
         .field-required {
             position: relative;
         }
-
-        .field-required input,
-        .field-required select,
-        .field-required textarea {
-            background-color: rgba(245, 247, 250, 0.9) !important;
-            border-color: rgba(84, 84, 84, 0.15) !important;
+        
+        .field-required::after {
+            content: "Required";
+            position: absolute;
+            top: -8px;
+            right: 10px;
+            background-color: #dc3545;
+            color: white;
+            font-size: 10px;
+            padding: 0 5px;
+            border-radius: 3px;
+            animation: fadeIn 0.3s ease;
         }
-
-        .field-required input:focus,
-        .field-required select:focus,
-        .field-required textarea:focus {
-            background-color: #ffffff !important;
-            border-color: var(--primary-color) !important;
-        }
-
-        /* Remove all validation messages */
-        .validation-message {
-            display: none;
-        }
-
-        /* Map validation styling */
+        
         .map-required {
-            box-shadow: 0 0 0 2px rgba(84, 84, 84, 0.1) !important;
+            border: 2px solid #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+        
+        /* Animation for button shake on validation error */
+        @@keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .shake-animation {
+            animation: shake 0.3s ease;
+        }
+        
+        /* Styling for user-friendly alerts */
+        .user-friendly-alert {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4f6fff !important;
+            border-radius: 8px;
+        }
+        
+        .user-friendly-alert ul {
+            list-style-type: none;
+        }
+        
+        .user-friendly-alert ul li {
+            position: relative;
+            padding-left: 8px;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .user-friendly-alert ul li:before {
+            content: "•";
+            position: absolute;
+            left: -8px;
+            color: #4f6fff;
+        }
+        
+        /* Enhanced image preview */
+        #photoPreview {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
             transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        
+        #photoPreview img {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 3px solid white;
+            max-width: 90%;
         }
 
-        .map-required:focus-within {
-            box-shadow: 0 0 0 2px var(--primary-color) !important;
+        /* Verification modal styles */
+        .verification-icon {
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @@keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(40, 167, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+        
+        .verification-status {
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .verification-stage {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .verification-stage.active {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+        
+        .verification-line {
+            flex-grow: 1;
+            height: 3px;
+            background-color: #f0f0f0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .verification-stage.active + .verification-line {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        
+        #reportVerificationModal .modal-content {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
     </style>
 }
@@ -561,12 +724,12 @@
 @section Scripts {
     <script>
         // Initialize the map
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v11',
-            center: [120.9842, 14.5995],
-            zoom: 9
+            center: [120.9842, 14.5995], // Default to Philippines
+            zoom: 12
         });
 
         // Add navigation controls
@@ -579,168 +742,177 @@
         .setLngLat([120.9842, 14.5995])
         .addTo(map);
 
-        // Update coordinates when marker is dragged
+        // Update coordinates and address when marker is dragged
         marker.on('dragend', function() {
             const lngLat = marker.getLngLat();
             document.getElementById('latitude').value = lngLat.lat;
             document.getElementById('longitude').value = lngLat.lng;
-            
-            // Reverse geocode to get address
-            fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxgl.accessToken}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.features && data.features.length > 0) {
-                        const place = data.features[0];
-                        document.getElementById('location').value = place.place_name;
-                        
-                        // Extract address components
-                        const context = place.context || [];
-                        let barangayFound = false;
-                        let purokFound = false;
-                        
-                        // Try to find detailed address components
-                        if (place.text) {
-                            document.getElementById('purok').value = place.text;
-                            purokFound = true;
-                        }
-                        
-                        context.forEach(item => {
-                            if (item.id.startsWith('neighborhood') || item.id.startsWith('locality')) {
-                                document.getElementById('barangay').value = item.text;
-                                barangayFound = true;
-                            } else if (item.id.startsWith('place')) {
-                                document.getElementById('city').value = item.text;
-                            }
-                        });
-                        
-                        // If barangay not found, try to extract it from the address
-                        if (!barangayFound) {
-                            // Look for address parts with "Barangay" or typical Filipino naming patterns
-                            const addressParts = place.place_name.split(',');
-                            for (let i = 0; i < addressParts.length; i++) {
-                                const part = addressParts[i].trim();
-                                if (part.includes('Barangay') || part.includes('Brgy.')) {
-                                    document.getElementById('barangay').value = part;
-                                    barangayFound = true;
-                                    break;
-                                }
-                            }
-                            
-                            // If still not found, use a placeholder based on location
-                            if (!barangayFound) {
-                                const roundedLat = Math.round(lngLat.lat * 1000) / 1000;
-                                const roundedLng = Math.round(lngLat.lng * 1000) / 1000;
-                                document.getElementById('barangay').value = `Area near ${roundedLat}, ${roundedLng}`;
-                            }
-                        }
-                        
-                        // If purok not found, create a default value
-                        if (!purokFound) {
-                            const city = document.getElementById('city').value;
-                            document.getElementById('purok').value = `Street in ${city || 'local area'}`;
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error reverse geocoding:', error);
-                    // Set default values if geocoding fails
-                    const roundedLat = Math.round(lngLat.lat * 1000) / 1000;
-                    const roundedLng = Math.round(lngLat.lng * 1000) / 1000;
-                    document.getElementById('purok').value = `Location ${roundedLat}, ${roundedLng}`;
-                    document.getElementById('barangay').value = `Area ${roundedLat}, ${roundedLng}`;
-                });
+            getAddressDetails(lngLat.lat, lngLat.lng);
         });
 
         // Detect current location
         document.getElementById('detect-location').addEventListener('click', function() {
+            // Show loading state
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting...';
+            this.disabled = true;
+            
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    const lngLat = {
-                        lng: position.coords.longitude,
-                        lat: position.coords.latitude
-                    };
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
                     
-                    marker.setLngLat(lngLat);
+                    // Update form fields
+                    document.getElementById('latitude').value = lat;
+                    document.getElementById('longitude').value = lng;
+                    
+                    // Update map
                     map.flyTo({
-                        center: lngLat,
-                        zoom: 15
+                        center: [lng, lat],
+                        zoom: 15,
+                        essential: true
                     });
                     
-                    // Trigger dragend event to update form
-                    marker.fire('dragend');
-                }, function(error) {
-                    console.error("Error getting location:", error);
-                    alert('Could not detect your location. Please enter details manually or pin on the map.');
+                    marker.setLngLat([lng, lat]);
                     
-                    // Set default values if geolocation fails
-                    document.getElementById('purok').value = "Please enter Purok/Street";
-                    document.getElementById('barangay').value = "Please enter Barangay";
+                    // Get address details
+                    getAddressDetails(lat, lng);
+                    
+                    // Reset button
+                    document.getElementById('detect-location').innerHTML = '<i class="fas fa-map-marker-alt me-1"></i> Detect';
+                    document.getElementById('detect-location').disabled = false;
+                    
+                }, function(error) {
+                    console.error('Error getting location:', error);
+                    alert('Could not get your location. Please enter it manually or pin on the map.');
+                    
+                    // Reset button
+                    document.getElementById('detect-location').innerHTML = '<i class="fas fa-map-marker-alt me-1"></i> Detect';
+                    document.getElementById('detect-location').disabled = false;
                 }, {
                     enableHighAccuracy: true,
                     timeout: 10000,
                     maximumAge: 0
                 });
             } else {
-                alert('Geolocation is not supported by your browser');
+                alert('Geolocation is not supported by your browser. Please enter your location manually.');
                 
-                // Set default values if geolocation is not supported
-                document.getElementById('purok').value = "Please enter Purok/Street";
-                document.getElementById('barangay').value = "Please enter Barangay";
+                // Reset button
+                document.getElementById('detect-location').innerHTML = '<i class="fas fa-map-marker-alt me-1"></i> Detect';
+                document.getElementById('detect-location').disabled = false;
             }
         });
-
-        // Preview photo when selected
-        document.getElementById('photo').addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('photo-preview').src = e.target.result;
-                    document.querySelector('.preview-area').classList.remove('d-none');
-                    
-                    // Hide upload icon and text when photo is added
-                    document.querySelector('.upload-icon').classList.add('d-none');
-                    document.querySelector('.upload-text').classList.add('d-none');
-                    
-                    // Add a smaller photo label in the corner
-                    const photoUploadArea = document.querySelector('.photo-upload-area');
-                    if (!document.querySelector('.corner-label')) {
-                        const cornerLabel = document.createElement('div');
-                        cornerLabel.className = 'corner-label';
-                        cornerLabel.innerHTML = '<i class="fas fa-camera me-1"></i> Photo Added';
-                        photoUploadArea.appendChild(cornerLabel);
+        
+        // Function to extract address components from MapBox geocoding response
+        function getAddressDetails(lat, lng) {
+            fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&types=address,neighborhood,locality,place,region,country`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features && data.features.length > 0) {
+                        // Set full address
+                        document.getElementById('location').value = data.features[0].place_name;
+                        
+                        // Parse address components
+                        let street = '';
+                        let neighborhood = '';
+                        let locality = '';
+                        let region = '';
+                        let country = 'Philippines';
+                        
+                        // Extract address components from features
+                        data.features.forEach(feature => {
+                            if (feature.place_type.includes('address')) {
+                                street = feature.text || '';
+                            }
+                            if (feature.place_type.includes('neighborhood')) {
+                                neighborhood = feature.text || '';
+                            }
+                            if (feature.place_type.includes('locality')) {
+                                locality = feature.text || '';
+                            }
+                            if (feature.place_type.includes('place')) {
+                                region = feature.text || '';
+                            }
+                            if (feature.place_type.includes('country')) {
+                                country = feature.text || 'Philippines';
+                            }
+                        });
+                        
+                        // Try to extract more detailed info from the context
+                        if (data.features[0].context) {
+                            data.features[0].context.forEach(context => {
+                                const id = context.id.split('.')[0];
+                                
+                                if (id === 'neighborhood' && !neighborhood) {
+                                    neighborhood = context.text;
+                                }
+                                if (id === 'locality' && !locality) {
+                                    locality = context.text;
+                                }
+                                if (id === 'place' && !region) {
+                                    region = context.text;
+                                }
+                                if (id === 'country') {
+                                    country = context.text;
+                                }
+                            });
+                        }
+                        
+                        // Populate form fields
+                        document.getElementById('purok').value = street || neighborhood || '';
+                        document.getElementById('barangay').value = neighborhood || locality || '';
+                        document.getElementById('city').value = locality || region || '';
+                        document.getElementById('country').value = country;
                     }
-                }
-                reader.readAsDataURL(file);
-            }
+                })
+                .catch(error => {
+                    console.error('Error reverse geocoding:', error);
+                });
+        }
+        
+        // Add click event to map to allow users to click anywhere and place marker
+        map.on('click', function(e) {
+            const lngLat = e.lngLat;
+            
+            // Update marker position
+            marker.setLngLat(lngLat);
+            
+            // Update form fields
+            document.getElementById('latitude').value = lngLat.lat;
+            document.getElementById('longitude').value = lngLat.lng;
+            
+            // Get address details
+            getAddressDetails(lngLat.lat, lngLat.lng);
         });
 
         // Clear photo input
         document.getElementById('clear-photo').addEventListener('click', function() {
             document.getElementById('photo').value = '';
-            document.getElementById('photo-preview').src = '';
-            document.querySelector('.preview-area').classList.add('d-none');
+            document.getElementById('photoPreview').classList.add('d-none');
             
-            // Show upload icon and text again
-            document.querySelector('.upload-icon').classList.remove('d-none');
-            document.querySelector('.upload-text').classList.remove('d-none');
-            
-            // Remove corner label if exists
-            const cornerLabel = document.querySelector('.corner-label');
-            if (cornerLabel) {
-                cornerLabel.parentNode.removeChild(cornerLabel);
+            // Disable the submit button when photo is cleared
+            document.getElementById('submit-report-btn').disabled = true;
+        });
+
+        // Photo preview
+        document.getElementById('photo').addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('photoPreview');
+                    preview.querySelector('img').src = e.target.result;
+                    preview.classList.remove('d-none');
+                    
+                    // Enable the submit button once image is uploaded
+                    document.getElementById('submit-report-btn').disabled = false;
+                    
+                    // Hide the missing image alert if it was shown
+                    document.getElementById('missingImageAlert').classList.add('d-none');
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        // Auto-resize textarea
-        const textareas = document.querySelectorAll('textarea');
-        textareas.forEach(textarea => {
-            textarea.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
-        });
-        
         // Form step navigation
         let currentStep = 1;
         const totalSteps = 3;
@@ -759,8 +931,7 @@
             fieldIds.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (field && !field.value.trim()) {
-                    const fieldContainer = field.parentElement;
-                    fieldContainer.classList.add('field-required');
+                    field.closest('.mb-4').classList.add('field-required');
                     
                     if (!emptyFieldFound) {
                         firstEmptyField = field;
@@ -793,43 +964,7 @@
             }
         }
 
-        // Replace the existing submit validation
-        document.getElementById('submit-report-btn').addEventListener('click', function() {
-            const form = document.getElementById('report-form');
-            
-            // Required field IDs
-            const requiredFields = [
-                'Title', 
-                'Description', 
-                'location', 
-                'purok', 
-                'barangay', 
-                'city'
-            ];
-            
-            // Check required fields
-            const fieldsValid = handleRequiredFields(requiredFields);
-            
-            // Check map coordinates
-            const mapValid = validateMapLocation();
-            
-            // If everything is valid, submit the form
-            if (fieldsValid && mapValid) {
-                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
-                this.disabled = true;
-                form.submit();
-            } else {
-                // Just prevent submission without showing errors
-                // Scroll to the first invalid field or map
-                if (!fieldsValid) {
-                    // First invalid field already got focus
-                } else if (!mapValid) {
-                    document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }
-        });
-
-        // Modify the next step button validation
+        // Next step buttons
         document.querySelectorAll('.next-step').forEach(button => {
             button.addEventListener('click', function() {
                 const stepNumber = parseInt(this.getAttribute('data-step'));
@@ -864,6 +999,13 @@
                     document.getElementById(`step${currentStep}`).classList.remove('d-none');
                     document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
                     updateProgressBar();
+                    
+                    // If this is step 2 appearing, trigger map resize to fix rendering issues
+                    if (currentStep === 2) {
+                        setTimeout(() => {
+                            map.resize();
+                        }, 100);
+                    }
                 } else {
                     // Subtle animation feedback on button
                     this.classList.add('shake-animation');
@@ -891,6 +1033,13 @@
                 
                 // Update progress bar
                 updateProgressBar();
+                
+                // If going back to step 2, trigger map resize
+                if (currentStep === 2) {
+                    setTimeout(() => {
+                        map.resize();
+                    }, 100);
+                }
             });
         });
         
@@ -901,7 +1050,51 @@
             progressBar.style.width = `${progress}%`;
         }
         
+        // Submit button handling
+        document.getElementById('submit-report-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // First check if an image is uploaded
+            const photoInput = document.getElementById('photo');
+            if (!photoInput.files || !photoInput.files[0]) {
+                // Show the missing image alert
+                document.getElementById('missingImageAlert').classList.remove('d-none');
+                
+                // Scroll to the photo section
+                photoInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Add shake animation to the photo input
+                photoInput.closest('.mb-4').classList.add('shake-animation');
+                setTimeout(() => {
+                    photoInput.closest('.mb-4').classList.remove('shake-animation');
+                }, 500);
+                
+                return;
+            }
+            
+            // Validate all fields in step 3
+            let isValid = true;
+            
+            // If valid, show loading state and submit
+            if (isValid) {
+                // Show loading state
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
+                this.disabled = true;
+                
+                // Simulate form submission (remove this in production and use the actual form submission)
+                setTimeout(() => {
+                    // First show the verification modal
+                    $('#reportVerificationModal').modal('show');
+                    
+                    // Then submit the form after a short delay
+                    setTimeout(() => {
+                        document.getElementById('report-form').submit();
+                    }, 2000);
+                }, 1500);
+            }
+        });
+        
         // Initialize first step
         document.querySelector(`.progress-step[data-step="1"]`).classList.add('active');
     </script>
-} 
+}

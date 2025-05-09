@@ -3,194 +3,493 @@
     Layout = "_LGULayout";
 }
 
-<div class="container-fluid px-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="m-0">Incident Map</h5>
-                            <small>View and track incidents in your area</small>
-                        </div>
-                        <a href="@Url.Action("Dashboard", "LGU")" class="btn btn-light btn-sm">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                        </a>
+<div class="row">
+    <div class="col-md-9">
+        <div class="card dashboard-card">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-primary">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <div>
+                        <h5 class="m-0">Incident Map</h5>
+                        <small>View all reported incidents on the map</small>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div id="map" style="height: 600px;"></div>
+            </div>
+            <div class="card-body p-0">
+                <div id="map" class="map-container"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="m-0"><i class="fas fa-filter me-2"></i>Date Filter</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Date Range</label>
+                    <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text">From</span>
+                        <input type="date" id="filter-date-from" class="form-control form-control-sm">
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">To</span>
+                        <input type="date" id="filter-date-to" class="form-control form-control-sm">
+                    </div>
+                </div>
+                <button id="apply-filters" class="btn btn-primary btn-sm w-100">Apply Date Filter</button>
+                <button id="reset-filters" class="btn btn-outline-secondary btn-sm w-100 mt-2">Reset Filter</button>
+            </div>
+        </div>
+
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <h5 class="m-0"><i class="fas fa-info-circle me-2"></i>Legend</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <h6 class="mb-2">Incident Types</h6>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-danger me-2"></i>
+                        <small>Earthquake</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-primary me-2"></i>
+                        <small>Flood</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-warning me-2"></i>
+                        <small>Fire</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-secondary me-2"></i>
+                        <small>Landslide</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-purple me-2"></i>
+                        <small>Storm</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-orange me-2"></i>
+                        <small>Accident</small>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="mb-2">Status</h6>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-primary me-2"></i>
+                        <small>In Progress</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fas fa-circle text-success me-2"></i>
+                        <small>Resolved</small>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-@section Styles {
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossorigin="" />
-    <style>
-        .custom-popup .leaflet-popup-content {
-            margin: 15px;
-            max-width: 300px;
-        }
-        .severity-marker {
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 0 5px rgba(0,0,0,0.3);
-            width: 20px !important;
-            height: 20px !important;
-            margin-left: -10px !important;
-            margin-top: -10px !important;
-        }
-        .severity-low { background-color: #28a745; }
-        .severity-medium { background-color: #ffc107; }
-        .severity-high { background-color: #dc3545; }
-    </style>
-}
+<div class="modal fade" id="incident-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title">Incident Report Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="m-0">Report Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Title</h6>
+                                        <p class="mb-0" id="modal-title-text"></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Status</h6>
+                                        <span id="modal-status" class="badge"></span>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Type</h6>
+                                        <span id="modal-type" class="badge bg-secondary"></span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Severity</h6>
+                                        <span id="modal-severity" class="badge"></span>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <h6 class="text-muted mb-2">Description</h6>
+                                        <p class="mb-0" id="modal-description"></p>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Location</h6>
+                                        <p class="mb-0" id="modal-location"></p>
+                                        <p class="small text-muted mb-0" id="modal-detailed-location"></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Date Reported</h6>
+                                        <p class="mb-0" id="modal-date"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="m-0">Reporter Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Name</h6>
+                                    <p class="mb-0" id="modal-reporter-name"></p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Email</h6>
+                                    <p class="mb-0" id="modal-reporter-email"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="m-0">Assigned To</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Organization</h6>
+                                    <p class="mb-0" id="modal-org-name"></p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Name</h6>
+                                    <p class="mb-0" id="modal-assigned-name"></p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Assigned Date</h6>
+                                    <p class="mb-0" id="modal-assigned-date"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a id="view-details-link" href="#" class="btn btn-primary">
+                    <i class="fas fa-file-alt me-2"></i>View Full Details
+                </a>
+                <a href="/LGU/ManageReports" class="btn btn-secondary">
+                    <i class="fas fa-list me-2"></i>View Reports
+                </a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
     <script>
-        let map;
+        // Initialize the map
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/streets-v11',
+            center: [120.9842, 14.5995], // Default to Philippines
+            zoom: 9
+        });
+
+        // Add map controls
+        map.addControl(new mapboxgl.NavigationControl());
+        map.addControl(new mapboxgl.FullscreenControl());
+        map.addControl(new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true
+        }));
+
+        // Store the markers and incidents
         let markers = [];
-        let markerLayer;
+        let incidents = [];
 
-        function initMap() {
-            console.log('Initializing map...'); // Debug log
+        // Get the incident modal
+        const incidentModal = new bootstrap.Modal(document.getElementById('incident-modal'));
+
+        // Load incidents when map is ready
+        map.on('load', function() {
+            loadIncidents();
             
-            try {
-                // Initialize the map centered on the Philippines
-                map = L.map('map').setView([12.8797, 121.7740], 6);
-                console.log('Map initialized successfully'); // Debug log
+            // Set up event listeners for filters
+            document.getElementById('apply-filters').addEventListener('click', applyFilters);
+            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+        });
 
-                // Add OpenStreetMap tiles
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
-                console.log('Tile layer added successfully'); // Debug log
+        // Load incidents from the API
+        function loadIncidents() {
+            fetch('@Url.Action("GetMapData", "LGU")')
+                .then(response => response.json())
+                .then(data => {
+                    incidents = data;
+                    renderMarkers(incidents);
+                })
+                .catch(error => console.error('Error loading incidents:', error));
+        }
 
-                // Create a layer group for markers
-                markerLayer = L.layerGroup().addTo(map);
-                console.log('Marker layer created successfully'); // Debug log
+        // Render markers on the map
+        function renderMarkers(data) {
+            // Remove existing markers
+            for (let marker of markers) {
+                marker.remove();
+            }
+            markers = [];
 
-                // Load incident data
-                loadIncidents();
-            } catch (error) {
-                console.error('Error initializing map:', error);
+            // Create bounds object to fit all markers
+            const bounds = new mapboxgl.LngLatBounds();
+
+            // Add new markers
+            for (let incident of data) {
+                // Set marker color based on incident type
+                let markerColor;
+                switch(incident.type) {
+                    case 'Earthquake': markerColor = '#dc3545'; break; // Red
+                    case 'Flood': markerColor = '#0d6efd'; break; // Blue
+                    case 'Fire': markerColor = '#ffc107'; break; // Yellow
+                    case 'Landslide': markerColor = '#6c757d'; break; // Gray
+                    case 'Storm': markerColor = '#6610f2'; break; // Purple
+                    case 'Accident': markerColor = '#fd7e14'; break; // Orange
+                    default: markerColor = '#343a40'; // Dark gray
+                }
+
+                // Create custom HTML element for marker
+                const el = document.createElement('div');
+                el.className = 'incident-marker';
+                el.style.backgroundColor = markerColor;
+                el.style.width = '20px';
+                el.style.height = '20px';
+                el.style.borderRadius = '50%';
+                el.style.border = '2px solid white';
+                el.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.3)';
+                
+                // Create marker
+                const marker = new mapboxgl.Marker(el)
+                    .setLngLat([incident.longitude, incident.latitude])
+                    .addTo(map);
+                
+                // Extend bounds to include this marker
+                bounds.extend([incident.longitude, incident.latitude]);
+                
+                // Add popup information
+                const popup = new mapboxgl.Popup({
+                    offset: 25,
+                    closeButton: false
+                }).setHTML(`
+                    <strong>${incident.title}</strong><br>
+                    <span class="text-muted small">${incident.type}</span><br>
+                    <span class="badge ${incident.status === 'InProgress' ? 'bg-primary' : 'bg-success'}">${incident.status}</span><br>
+                    ${incident.assignedTo ? 
+                        `<span class="text-primary small">Handled by: ${incident.assignedTo.organization}</span>` : 
+                        ''}
+                `);
+                
+                marker.setPopup(popup);
+                
+                // Show popup on hover
+                marker.getElement().addEventListener('mouseenter', () => marker.togglePopup());
+                marker.getElement().addEventListener('mouseleave', () => marker.togglePopup());
+                
+                // Add click event
+                marker.getElement().addEventListener('click', () => showIncidentDetails(incident));
+                
+                markers.push(marker);
+            }
+
+            // Fit map to bounds if we have markers
+            if (data.length > 0) {
+                // Add padding to the bounds
+                const padding = { top: 50, bottom: 50, left: 50, right: 50 };
+                map.fitBounds(bounds, { padding: padding, maxZoom: 15 });
             }
         }
 
-        function loadIncidents() {
-            console.log('Loading incidents...'); // Debug log
+        // Show incident details in modal
+        function showIncidentDetails(incident) {
+            // Set report information
+            document.getElementById('modal-title').textContent = 'Incident Report Details';
+            document.getElementById('modal-title-text').textContent = incident.title;
+            document.getElementById('modal-description').textContent = incident.description;
+            document.getElementById('modal-location').textContent = incident.location;
+            document.getElementById('modal-date').textContent = new Date(incident.dateReported).toLocaleString();
             
-            fetch('/LGU/GetMapData')
-                .then(response => {
-                    console.log('Response status:', response.status); // Debug log
-                    return response.json();
-                })
-                .then(reports => {
-                    console.log('Received reports:', reports); // Debug log
-
-                    // Clear existing markers
-                    markerLayer.clearLayers();
-                    markers = [];
-
-                    if (!Array.isArray(reports)) {
-                        console.error('Reports is not an array:', reports);
-                        return;
-                    }
-
-                    reports.forEach(report => {
-                        console.log('Processing report:', report); // Debug log
-                        
-                        // Check if coordinates are valid numbers
-                        const lat = parseFloat(report.Latitude);
-                        const lng = parseFloat(report.Longitude);
-                        
-                        if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-                            console.log('Creating marker for report:', report.Id, 'at', lat, lng); // Debug log
-                            
-                            // Create custom marker icon
-                            const severityClass = getSeverityClass(report.Severity);
-                            const marker = L.divIcon({
-                                className: `severity-marker ${severityClass}`,
-                                iconSize: [20, 20]
-                            });
-
-                            // Create popup content
-                            const content = `
-                                <div class="custom-popup">
-                                    <h6 class="mb-1">${report.Title}</h6>
-                                    <p class="mb-1"><strong>Type:</strong> ${report.Type}</p>
-                                    <p class="mb-1"><strong>Severity:</strong> ${report.Severity}</p>
-                                    <p class="mb-1"><strong>Status:</strong> ${report.Status}</p>
-                                    <p class="mb-1"><strong>Location:</strong> ${report.Location || 'Not specified'}</p>
-                                    <p class="mb-1"><strong>Date:</strong> ${new Date(report.DateReported).toLocaleString()}</p>
-                                    ${report.AssignedTo ? `
-                                        <p class="mb-1"><strong>Assigned To:</strong> ${report.AssignedTo.Name}</p>
-                                        <p class="mb-0"><strong>Organization:</strong> ${report.AssignedTo.Organization}</p>
-                                    ` : ''}
-                                    <div class="mt-2">
-                                        <a href="/LGU/ReportDetails/${report.Id}" class="btn btn-sm btn-primary">
-                                            View Details
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
-
-                            try {
-                                // Create marker and add to map
-                                const mapMarker = L.marker([lat, lng], { icon: marker })
-                                    .bindPopup(content)
-                                    .addTo(markerLayer);
-
-                                markers.push(mapMarker);
-                                console.log('Marker created successfully for report:', report.Id); // Debug log
-                            } catch (error) {
-                                console.error('Error creating marker for report:', report.Id, error);
-                            }
-                        } else {
-                            console.log('Skipping report:', report.Id, 'due to invalid coordinates:', lat, lng); // Debug log
-                        }
-                    });
-
-                    // If we have markers, fit the map to show all of them
-                    if (markers.length > 0) {
-                        try {
-                            const group = new L.featureGroup(markers);
-                            map.fitBounds(group.getBounds().pad(0.1));
-                            console.log('Map bounds adjusted to show all markers'); // Debug log
-                        } catch (error) {
-                            console.error('Error adjusting map bounds:', error);
-                        }
-                    } else {
-                        console.log('No markers were created'); // Debug log
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading incidents:', error);
-                    alert('Error loading incident data. Please try again later.');
-                });
+            // Set detailed location
+            let detailedLocation = '';
+            if (incident.barangay && incident.barangay !== 'Unknown') {
+                detailedLocation += `Barangay ${incident.barangay}, `;
+            }
+            if (incident.city && incident.city !== 'Unknown') {
+                detailedLocation += incident.city;
+            }
+            document.getElementById('modal-detailed-location').textContent = detailedLocation;
+            
+            // Set type and severity
+            document.getElementById('modal-type').textContent = incident.type;
+            
+            // Set severity badge
+            const severityBadge = document.getElementById('modal-severity');
+            severityBadge.textContent = incident.severity;
+            switch(incident.severity) {
+                case 'Low': 
+                    severityBadge.className = 'badge bg-success'; 
+                    break;
+                case 'Medium': 
+                    severityBadge.className = 'badge bg-warning text-dark'; 
+                    break;
+                case 'High': 
+                    severityBadge.className = 'badge bg-danger'; 
+                    break;
+                case 'Critical': 
+                    severityBadge.className = 'badge bg-dark'; 
+                    break;
+                default: 
+                    severityBadge.className = 'badge bg-secondary';
+            }
+            
+            // Set status badge
+            const statusBadge = document.getElementById('modal-status');
+            statusBadge.textContent = incident.status;
+            switch(incident.status) {
+                case 'Pending': 
+                    statusBadge.className = 'badge bg-warning text-dark'; 
+                    break;
+                case 'Verified': 
+                    statusBadge.className = 'badge bg-info text-dark'; 
+                    break;
+                case 'InProgress': 
+                    statusBadge.className = 'badge bg-primary'; 
+                    break;
+                case 'Resolved': 
+                    statusBadge.className = 'badge bg-success'; 
+                    break;
+                case 'Declined': 
+                    statusBadge.className = 'badge bg-danger'; 
+                    break;
+                default: 
+                    statusBadge.className = 'badge bg-secondary';
+            }
+            
+            // Set assigned organization information
+            if (incident.assignedTo) {
+                document.getElementById('modal-org-name').textContent = incident.assignedTo.organization;
+                document.getElementById('modal-assigned-name').textContent = incident.assignedTo.name;
+                document.getElementById('modal-assigned-date').textContent = new Date(incident.dateReported).toLocaleString();
+            } else {
+                document.getElementById('modal-org-name').textContent = 'Not assigned';
+                document.getElementById('modal-assigned-name').textContent = 'Not assigned';
+                document.getElementById('modal-assigned-date').textContent = 'Not assigned';
+            }
+            
+            // Set reporter information (if available)
+            if (incident.user) {
+                document.getElementById('modal-reporter-name').textContent = `${incident.user.firstName} ${incident.user.lastName}`;
+                document.getElementById('modal-reporter-email').textContent = incident.user.email;
+            } else {
+                document.getElementById('modal-reporter-name').textContent = 'Not available';
+                document.getElementById('modal-reporter-email').textContent = 'Not available';
+            }
+            
+            // Set the View Full Details link
+            document.getElementById('view-details-link').href = `/LGU/ReportDetails/${incident.id}`;
+            
+            incidentModal.show();
         }
 
-        function getSeverityClass(severity) {
-            const classes = {
-                'Low': 'severity-low',
-                'Medium': 'severity-medium',
-                'High': 'severity-high'
-            };
-            return classes[severity] || classes['Low'];
+        // Apply filters
+        function applyFilters() {
+            const dateFromFilter = document.getElementById('filter-date-from').value;
+            const dateToFilter = document.getElementById('filter-date-to').value;
+            
+            let filteredIncidents = [...incidents];
+            
+            // Filter by date range
+            if (dateFromFilter) {
+                const fromDate = new Date(dateFromFilter);
+                filteredIncidents = filteredIncidents.filter(incident => 
+                    new Date(incident.dateReported) >= fromDate
+                );
+            }
+            
+            if (dateToFilter) {
+                const toDate = new Date(dateToFilter);
+                toDate.setHours(23, 59, 59); // Set to end of day
+                filteredIncidents = filteredIncidents.filter(incident => 
+                    new Date(incident.dateReported) <= toDate
+                );
+            }
+            
+            // Render filtered markers
+            renderMarkers(filteredIncidents);
+            
+            // Show count of filtered incidents
+            const count = filteredIncidents.length;
+            const total = incidents.length;
+            alert(`Showing ${count} of ${total} incidents`);
         }
 
-        // Initialize the map when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing map...'); // Debug log
-            initMap();
-        });
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            renderMarkers(incidents);
+        }
     </script>
+}
+
+@section Styles {
+    <style>
+        .map-container {
+            height: 75vh;
+            min-height: 500px;
+        }
+        .mapboxgl-popup {
+            max-width: 300px;
+        }
+        .incident-marker {
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+        }
+        .incident-marker:hover {
+            transform: scale(1.2);
+        }
+        .text-purple {
+            color: #6610f2;
+        }
+        .text-orange {
+            color: #fd7e14;
+        }
+        .modal-lg {
+            max-width: 900px;
+        }
+        .card {
+            border: 1px solid rgba(0,0,0,.125);
+            border-radius: 0.25rem;
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            padding: 0.75rem 1.25rem;
+        }
+    </style>
 } 

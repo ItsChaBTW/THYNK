@@ -58,6 +58,15 @@ namespace THYNK.Controllers
             {
                 ModelState.AddModelError("Location", "Location is required");
             }
+
+            // Validate photo is provided
+            if (photo == null || photo.Length == 0)
+            {
+                ModelState.AddModelError("Photo", "A photo of the incident is required");
+            }
+            
+            // Remove any validation errors for AdditionalInfo since it's optional
+            ModelState.Remove("AdditionalInfo");
             
             // Debug: Add validation state information to TempData
             if (!ModelState.IsValid)
@@ -86,10 +95,8 @@ namespace THYNK.Controllers
                 report.DateReported = DateTime.Now;
                 report.Status = ReportStatus.Pending;
                 
-                // Handle photo upload if provided
-                if (photo != null && photo.Length > 0)
-                {
-                    try
+                // Handle photo upload
+                try
                 {
                     // Create folder if it doesn't exist
                     string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "reports");
@@ -110,18 +117,11 @@ namespace THYNK.Controllers
                     
                     // Set ImageUrl property
                     report.ImageUrl = "/uploads/reports/" + uniqueFileName;
-                    }
-                    catch (Exception ex)
-                    {
-                        // If image upload fails, set default image and continue
-                        report.ImageUrl = "/images/default-report.jpg";
-                        TempData["WarningMessage"] = "Photo upload failed, but report will still be submitted: " + ex.Message;
-                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Set default image if no photo provided
-                    report.ImageUrl = "/images/default-report.jpg";
+                    TempData["ErrorMessage"] = "Error uploading photo: " + ex.Message;
+                    return View(report);
                 }
                 
                 // Debug: Check if coordinates are set
@@ -137,8 +137,8 @@ namespace THYNK.Controllers
                 report.City = string.IsNullOrEmpty(report.City) ? "Unknown" : report.City;
                 report.Country = string.IsNullOrEmpty(report.Country) ? "Philippines" : report.Country;
                 
-                // Set empty AdditionalInfo to an empty string rather than null
-                report.AdditionalInfo = report.AdditionalInfo ?? string.Empty;
+                // Set AdditionalInfo to null if empty
+                report.AdditionalInfo = string.IsNullOrWhiteSpace(report.AdditionalInfo) ? null : report.AdditionalInfo;
                 
                 // Debug: Add the report object explicitly
                 _context.DisasterReports.Add(report);
@@ -148,9 +148,9 @@ namespace THYNK.Controllers
                 
                 if (recordsAffected > 0)
                 {
-                TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
-                return RedirectToAction(nameof(Dashboard));
-            }
+                    TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
+                    return RedirectToAction(nameof(Dashboard));
+                }
                 else
                 {
                     TempData["ErrorMessage"] = "No records were affected when saving to database.";
@@ -164,8 +164,8 @@ namespace THYNK.Controllers
                 if (ex.InnerException != null)
                 {
                     TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
-            }
-            return View(report);
+                }
+                return View(report);
             }
         }
         
@@ -173,6 +173,7 @@ namespace THYNK.Controllers
         public async Task<IActionResult> CommunityFeed()
         {
             var updates = await _context.CommunityUpdates
+                .Include(c => c.User)
                 .Where(c => c.ModerationStatus == ModerationStatus.Approved)
                 .OrderByDescending(c => c.DatePosted)
                 .ToListAsync();
@@ -280,7 +281,7 @@ namespace THYNK.Controllers
                 if (ex.InnerException != null)
                 {
                     TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
-                }
+            }
             return View(update);
             }
         }
@@ -310,14 +311,21 @@ namespace THYNK.Controllers
         }
         
         // View alerts
-        public async Task<IActionResult> Alerts()
+        public async Task<IActionResult> Alerts(string severity = null)
         {
-            var activeAlerts = await _context.Alerts
-                .Where(a => a.IsActive && (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now))
-                .OrderByDescending(a => a.DateIssued)
-                .ToListAsync();
-                
-            return View(activeAlerts);
+            var query = _context.DisasterReports.AsQueryable()
+                .Where(r => r.Status == ReportStatus.Verified);
+
+            if (!string.IsNullOrEmpty(severity))
+            {
+                if (Enum.TryParse<SeverityLevel>(severity, out var severityLevel))
+                {
+                    query = query.Where(r => r.Severity == severityLevel);
+                }
+            }
+
+            var alerts = await query.OrderByDescending(r => r.DateReported).ToListAsync();
+            return View(alerts);
         }
         
         // View incident map

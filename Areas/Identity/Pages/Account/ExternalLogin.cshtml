@@ -89,7 +89,9 @@
                                 <label class="form-label">Phone Number</label>
                                 <div class="input-group phone-input-group">
                                     <span class="input-group-text custom-addon">+63</span>
-                                    <input asp-for="Input.PhoneNumber" class="form-control custom-input" aria-required="true" placeholder="9123456789" />
+                                    <input asp-for="Input.PhoneNumber" class="form-control custom-input" aria-required="true" placeholder="9123456789" 
+                                           pattern="[0-9]*" inputmode="numeric" maxlength="10" 
+                                           onkeypress="return event.charCode >= 48 && event.charCode <= 57" />
                                 </div>
                                 <span asp-validation-for="Input.PhoneNumber" class="text-danger mt-1"></span>
                                 <small class="text-muted">Enter your 10-digit phone number without the leading zero</small>
