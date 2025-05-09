@@ -6,169 +6,292 @@
 
 <div class="container-fluid px-4 py-4">
     <div class="row g-4">
-        <!-- Create Post Card -->
+        <!-- Create Post Card - Trigger for Modal -->
         <div class="col-12">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 create-post-card">
                 <div class="card-body p-4">
-                    <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
-                        @Html.AntiForgeryToken()
-                        <div class="d-flex align-items-center mb-4">
-                            <div class="avatar-circle me-3">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <textarea class="form-control border-0 bg-light" id="content" name="Content" rows="2" required 
-                                        placeholder="Share your thoughts, updates, or information with the community..."></textarea>
+                    <div class="d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                        <div class="avatar-circle me-3">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="form-control-static border-0 bg-subtle post-placeholder">
+                                Share your thoughts, updates, or information with the community...
                             </div>
                         </div>
-                        
-                        <div class="post-options mb-3">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <select class="form-select bg-light border-0" id="type" name="Type" required>
-                                        <option value="GeneralUpdate">General Update</option>
-                                        <option value="HelpRequest">Help Request</option>
-                                        <option value="StatusUpdate">Status Update</option>
-                                        <option value="ResourceSharing">Resource Sharing</option>
-                                        <option value="Information">Information</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-0">
-                                            <i class="fas fa-map-marker-alt text-muted"></i>
-                                        </span>
-                                        <input type="text" class="form-control bg-light border-0" id="location" name="Location" 
-                                               placeholder="Add location (optional)">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="post-actions d-flex align-items-center justify-content-between">
-                            <div class="d-flex gap-2">
-                                <label class="btn btn-light rounded-pill px-3" for="image">
-                                    <i class="fas fa-image text-primary"></i>
-                                    <span class="ms-1">Photo</span>
-                                </label>
-                                <input type="file" class="d-none" id="image" name="Image" accept="image/*">
-                                <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
-                                <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
-                            </div>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4">
-                                <i class="fas fa-paper-plane me-2"></i>Post
-                            </button>
-                        </div>
-                    </form>
+                    </div>
+                    
+                    <div class="post-shortcuts mt-3 d-flex gap-2">
+                        <button type="button" class="btn btn-subtle rounded-pill btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                            <i class="fas fa-pen me-1"></i> Write Post
+                        </button>
+                        <button type="button" class="btn btn-subtle rounded-pill btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="HelpRequest">
+                            <i class="fas fa-hands-helping me-1 text-danger"></i> Help Request
+                        </button>
+                        <button type="button" class="btn btn-subtle rounded-pill btn-sm" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="ResourceSharing">
+                            <i class="fas fa-share-alt me-1 text-success"></i> Share Resource
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Feed Posts -->
         <div class="col-12">
-            <div class="feed-header d-flex justify-content-between align-items-center mb-4">
-                <h5 class="m-0">Community Updates</h5>
-                <div class="feed-filters">
-                    <select class="form-select form-select-sm bg-light border-0">
-                        <option value="all">All Posts</option>
-                        <option value="help">Help Requests</option>
-                        <option value="updates">Status Updates</option>
-                        <option value="resources">Resources</option>
-                    </select>
+            <div class="feed-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+                <h5 class="m-0 fw-bold  w-50">Community Updates</h5>
+                <div class="feed-controls d-flex flex-row align-items-center gap-2 w-100 w-md-auto justify-content-md-end">
+                    <div class="search-container flex-grow-1 flex-md-grow-0">
+                        <div class="input-group">
+                            <span class="input-group-text bg-subtle border-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control form-control-sm border-0 bg-subtle" 
+                                   id="post-search" placeholder="Search posts...">
+                        </div>
+                    </div>
+                    <div class="feed-filters d-flex align-items-center">
+                        <label class="me-2 text-secondary small d-none d-sm-inline">Filter:</label>
+                        <select class="form-select form-select-sm border-0 bg-subtle" id="post-filter">
+                            <option value="all">All Posts</option>
+                            <option value="HelpRequest">Help Requests</option>
+                            <option value="StatusUpdate">Status Updates</option>
+                            <option value="ResourceSharing">Resources</option>
+                            <option value="Information">Information</option>
+                            <option value="GeneralUpdate">General Updates</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            @if (Model != null && Model.Any())
-            {
-                foreach (var post in Model)
+            <!-- Post Container -->
+            <div id="posts-container">
+                @if (Model != null && Model.Any())
                 {
-                    <div class="card shadow-sm border-0 mb-4 post-card">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="avatar-circle me-3">
-                                    <i class="fas fa-user"></i>
+                    foreach (var post in Model)
+                    {
+                        <div class="card shadow-sm border-0 mb-4 post-card" data-post-type="@post.Type">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="avatar-circle me-3">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 fw-bold">@(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</h6>
+                                        <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+                                    </div>
+                                    <div class="post-type">
+                                        <span class="badge rounded-pill @(post.Type == UpdateType.HelpRequest ? "bg-danger-soft" : 
+                                                                        post.Type == UpdateType.StatusUpdate ? "bg-info-soft" : 
+                                                                        post.Type == UpdateType.ResourceSharing ? "bg-success-soft" : 
+                                                                        post.Type == UpdateType.Information ? "bg-primary-soft" : "bg-secondary-soft")">
+                                            @post.Type.ToString().Replace("Update", "").Replace("Sharing", "")
+                                        </span>
+                                    </div>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">@(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</h6>
-                                    <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+
+                                <div class="post-content mb-3">
+                                    <p class="card-text mb-0">@post.Content</p>
                                 </div>
-                                <div class="post-type">
-                                    <span class="badge rounded-pill @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 
-                                                                    post.Type == UpdateType.StatusUpdate ? "bg-info" : 
-                                                                    post.Type == UpdateType.ResourceSharing ? "bg-success" : 
-                                                                    post.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
-                                        @post.Type
-                                    </span>
+
+                                @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                {
+                                    <div class="post-image mb-3">
+                                        <img src="@post.ImageUrl" class="img-fluid rounded" alt="Post image">
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
+                                {
+                                    <div class="post-location mb-3">
+                                        <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
+                                           target="_blank" class="text-decoration-none">
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            <span class="text-muted">@post.Location</span>
+                                            <i class="fas fa-external-link-alt ms-1 text-muted small"></i>
+                                        </a>
+                                    </div>
+                                }
+
+                                <div class="post-actions d-flex align-items-center gap-3">
+                                    <button class="btn btn-subtle btn-sm rounded-pill">
+                                        <i class="far fa-heart me-1"></i>Like
+                                    </button>
+                                    <button class="btn btn-subtle btn-sm rounded-pill">
+                                        <i class="far fa-comment me-1"></i>Comment
+                                    </button>
+                                    <button class="btn btn-subtle btn-sm rounded-pill">
+                                        <i class="far fa-share-square me-1"></i>Share
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-5 empty-state">
+                        <div class="empty-state-icon mb-3">
+                            <i class="fas fa-comments text-muted fa-4x"></i>
+                        </div>
+                        <h5 class="text-muted mb-2">No Posts Yet</h5>
+                        <p class="text-muted mb-0">Be the first to share something with the community!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
-                            <div class="post-content mb-3">
-                                <p class="card-text mb-0">@post.Content</p>
-                            </div>
-
-                            @if (!string.IsNullOrEmpty(post.ImageUrl))
-                            {
-                                <div class="post-image mb-3">
-                                    <img src="@post.ImageUrl" class="img-fluid rounded" alt="Post image">
-                                </div>
-                            }
-
-                            @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
-                            {
-                                <div class="post-location mb-3">
-                                    <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
-                                       target="_blank" class="text-decoration-none">
-                                        <i class="fas fa-map-marker-alt text-danger me-1"></i>
-                                        <span class="text-muted">@post.Location</span>
-                                        <i class="fas fa-external-link-alt ms-1 text-muted small"></i>
-                                    </a>
-                                </div>
-                            }
-
-                            <div class="post-actions d-flex align-items-center gap-3">
-                                <button class="btn btn-light btn-sm rounded-pill">
-                                    <i class="far fa-heart me-1"></i>Like
-                                </button>
-                                <button class="btn btn-light btn-sm rounded-pill">
-                                    <i class="far fa-comment me-1"></i>Comment
-                                </button>
-                                <button class="btn btn-light btn-sm rounded-pill">
-                                    <i class="far fa-share-square me-1"></i>Share
-                                </button>
+<!-- Create Post Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
+                <div class="modal-body">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">What's on your mind?</label>
+                        <textarea class="form-control" id="content" name="Content" rows="4" required 
+                                placeholder="Share your thoughts, updates, or information with the community..."></textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="type" class="form-label">Post Type</label>
+                            <select class="form-select" id="type" name="Type" required>
+                                <option value="GeneralUpdate">General Update</option>
+                                <option value="HelpRequest">Help Request</option>
+                                <option value="StatusUpdate">Status Update</option>
+                                <option value="ResourceSharing">Resource Sharing</option>
+                                <option value="Information">Information</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="location" class="form-label">Location (optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-map-marker-alt text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control" id="location" name="Location" 
+                                       placeholder="Add location">
                             </div>
                         </div>
                     </div>
-                }
-            }
-            else
-            {
-                <div class="text-center py-5 empty-state">
-                    <div class="empty-state-icon mb-3">
-                        <i class="fas fa-comments text-muted fa-4x"></i>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Add Image (optional)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-image text-primary"></i>
+                            </span>
+                            <input type="file" class="form-control" id="image" name="Image" accept="image/*">
+                        </div>
+                        <div id="imagePreview" class="mt-2 d-none">
+                            <img src="#" alt="Preview" class="img-thumbnail" style="max-height: 200px">
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-1" id="removeImage">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
                     </div>
-                    <h5 class="text-muted mb-2">No Posts Yet</h5>
-                    <p class="text-muted mb-0">Be the first to share something with the community!</p>
+                    
+                    <!-- Hidden fields -->
+                    <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
+                    <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
                 </div>
-            }
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Post
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Styles {
     <style>
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #f1f3f5;
+            --bg-subtle: #f5f5f5;
+            --text-primary: #333;
+            --text-secondary: #6c757d;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        
+        /* Softer background colors */
+        .bg-light, .bg-white {
+            background-color: var(--bg-subtle) !important;
+        }
+        
+        .bg-subtle {
+            background-color: var(--bg-subtle);
+        }
+        
+        .btn-subtle {
+            background-color: var(--bg-subtle);
+            border-color: #eaeaea;
+            color: var(--text-secondary);
+        }
+        
+        .btn-subtle:hover {
+            background-color: #eaeaea;
+            color: var(--text-primary);
+        }
+        
+        /* Softer badge colors */
+        .bg-danger-soft {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        
+        .bg-info-soft {
+            background-color: #d1e7f3;
+            color: #055181;
+        }
+        
+        .bg-success-soft {
+            background-color: #d4edda;
+            color: #146c43;
+        }
+        
+        .bg-primary-soft {
+            background-color: #d1e0fb;
+            color: #0848a6;
+        }
+        
+        .bg-secondary-soft {
+            background-color: #e2e3e5;
+            color: #41464b;
+        }
+
         .avatar-circle {
             width: 40px;
             height: 40px;
-            background-color: #e9ecef;
+            background-color: #e2e3e5;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .post-card {
             transition: transform 0.2s ease-in-out;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03) !important;
         }
 
         .post-card:hover {
@@ -179,77 +302,555 @@
             max-height: 400px;
             object-fit: cover;
             width: 100%;
+            border-radius: 8px;
         }
 
         .create-post-form .form-control,
         .create-post-form .form-select {
             transition: all 0.2s ease-in-out;
+            border-color: #eaeaea;
         }
 
         .create-post-form .form-control:focus,
         .create-post-form .form-select:focus {
             box-shadow: none;
-            background-color: #fff;
+            border-color: #ced4da;
         }
 
         .post-actions .btn {
             transition: all 0.2s ease-in-out;
+            font-size: 0.85rem;
         }
 
         .post-actions .btn:hover {
-            background-color: #e9ecef;
+            background-color: #eaeaea;
         }
 
         .empty-state {
-            background-color: #f8f9fa;
+            background-color: var(--bg-subtle);
             border-radius: 1rem;
         }
 
         .feed-header {
             padding: 1rem;
             background-color: #fff;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .feed-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .search-container {
+            min-width: 120px;
+            max-width: 250px;
+        }
+        
+        @@media (min-width: 768px) {
+            .search-container {
+                width: 200px;
+                flex-grow: 0;
+            }
+            
+            .feed-controls {
+                gap: 16px;
+            }
+        }
+        
+        .search-container .input-group {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .search-container .form-control,
+        .search-container .input-group-text {
+            height: 34px;
+        }
+        
+        .search-container .form-control {
+            border-left: none;
+            padding-right: 15px;
+        }
+        
+        .search-container .form-control:focus {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+        
+        .search-container .input-group-text {
+            border-right: none;
+            background-color: var(--bg-subtle);
+            padding-left: 15px;
+        }
+        
+        .search-highlight {
+            background-color: rgba(255, 230, 0, 0.3);
+            border-radius: 2px;
+            padding: 0 2px;
         }
 
         .post-type .badge {
             font-weight: 500;
             padding: 0.5rem 1rem;
         }
-
+        
         .post-location a:hover {
             color: #dc3545 !important;
+        }
+        
+        .create-post-card {
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+        
+        .post-placeholder {
+            padding: 0.75rem 1rem;
+            color: #939393;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        
+        .post-shortcuts {
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding-top: 12px;
+        }
+        
+        .form-control-static {
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+            background-color: #ffffff;
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background-color: #f9f9f9;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid rgba(0,0,0,0.05);
+            background-color: #f9f9f9;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        /* Approval notification styling */
+        .alert-success {
+            background-color: #e1f5ea;
+            color: #146c43;
+            border-color: #c5e9d8;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #146c43;
+        }
+        
+        /* Add animation for notifications but make it subtle */
+        .notification-indicator {
+            position: relative;
+            display: block;
+        }
+        
+        .notification-indicator::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: #dc3545;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        
+        /* Responsive adjustments for smaller screens */
+        @@media (max-width: 992px) {
+            .container-fluid {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+            
+            .row {
+                margin-left: -8px !important;
+                margin-right: -8px !important;
+            }
+            
+            .col-12 {
+                padding-left: 8px !important;
+                padding-right: 8px !important;
+            }
+            
+            .card-body {
+                padding: 16px !important;
+            }
+            
+            .post-card {
+                margin-bottom: 12px !important;
+            }
+            
+            .feed-header {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+            
+            .post-content {
+                margin-bottom: 12px !important;
+            }
+            
+            .post-actions {
+                gap: 8px !important;
+            }
+            
+            .post-type .badge {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            .modal-body {
+                padding: 16px;
+            }
+            
+            .modal-header, .modal-footer {
+                padding: 12px 16px;
+            }
+            
+            .search-container {
+                min-width: 100px;
+                max-width: none;
+                width: auto;
+            }
+            
+            .feed-filters {
+                width: auto;
+            }
+        }
+        
+        @@media (max-width: 768px) {
+            .container-fluid {
+                padding-left: 8px !important;
+                padding-right: 8px !important;
+                padding-top: 8px !important;
+                padding-bottom: 8px !important;
+            }
+            
+            .post-shortcuts {
+                flex-wrap: wrap;
+            }
+            
+            .card-body {
+                padding: 12px !important;
+            }
+            
+            .post-actions {
+                flex-wrap: wrap;
+            }
+            
+            .post-actions .btn {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .avatar-circle {
+                width: 32px;
+                height: 32px;
+            }
+            
+            h6.mb-0.fw-bold {
+                font-size: 0.9rem;
+            }
+            
+            .post-image img {
+                max-height: 250px;
+            }
+            
+            .form-label {
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .mb-3 {
+                margin-bottom: 0.75rem !important;
+            }
+            
+            .row.mb-3 {
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .feed-controls {
+                width: 100%;
+                justify-content: space-between;
+                gap: 8px;
+            }
+            
+            .search-container {
+                flex-grow: 1;
+            }
+            
+            .feed-filters select {
+                width: auto;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .post-shortcuts .btn {
+                padding: 0.2rem 0.5rem;
+                font-size: 0.7rem;
+            }
+            
+            .feed-filters {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+            
+            .feed-filters label {
+                margin-bottom: 4px;
+            }
+            
+            .feed-header {
+                padding: 10px;
+            }
+            
+            .feed-header h5 {
+                margin-bottom: 8px !important;
+            }
+            
+            .post-type {
+                margin-top: 4px;
+            }
+            
+            .d-flex.align-items-center.mb-3 {
+                flex-wrap: wrap;
+            }
+            
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            
+            .toast {
+                max-width: 90%;
+                margin-right: 5%;
+            }
+            
+            .feed-controls {
+                flex-direction: row;
+                align-items: center !important;
+                width: 100%;
+                margin-top: 8px;
+            }
+            
+            .search-container {
+                flex-grow: 1;
+                margin-bottom: 0;
+            }
+            
+            .feed-filters {
+                width: auto;
+            }
+            
+            .feed-filters select {
+                max-width: 110px;
+            }
         }
     </style>
 }
 
 @section Scripts {
     <script>
-        // Preview image before upload
-        document.getElementById('image').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > 5 * 1024 * 1024) { // 5MB
-                    alert('File size must be less than 5MB');
-                    this.value = '';
+        $(document).ready(function() {
+            // Preview image before upload
+            document.getElementById('image').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) { // 5MB
+                        alert('File size must be less than 5MB');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Show image preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#imagePreview img').attr('src', e.target.result);
+                        $('#imagePreview').removeClass('d-none');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Remove image preview
+            $('#removeImage').click(function() {
+                $('#image').val('');
+                $('#imagePreview').addClass('d-none');
+            });
+
+            // Geolocation support
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                });
+            }
+
+            // Set post type when click on different shortcut buttons
+            $('[data-post-type]').click(function() {
+                const postType = $(this).data('post-type');
+                $('#type').val(postType);
+            });
+            
+            // Search functionality
+            $('#post-search').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase().trim();
+                
+                // Clear previous highlights
+                $('.search-highlight').each(function() {
+                    const $this = $(this);
+                    $this.replaceWith($this.text());
+                });
+                
+                if (searchTerm === '') {
+                    // If search is empty, restore original filter state
+                    $('#post-filter').trigger('change');
                     return;
                 }
-            }
-        });
-
-        // Geolocation support
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                document.getElementById('latitude').value = position.coords.latitude;
-                document.getElementById('longitude').value = position.coords.longitude;
+                
+                // Hide the empty state message
+                $('.empty-state, .empty-state-filtered').hide();
+                
+                // Get current filter
+                const currentFilter = $('#post-filter').val();
+                let hasVisiblePosts = false;
+                
+                // For each post card
+                $('.post-card').each(function() {
+                    const $card = $(this);
+                    const postContent = $card.find('.post-content').text().toLowerCase();
+                    const postUser = $card.find('h6.mb-0.fw-bold').text().toLowerCase();
+                    const postType = $card.data('post-type').toLowerCase();
+                    
+                    // Check if post matches search and filter
+                    const matchesSearch = postContent.includes(searchTerm) || 
+                                         postUser.includes(searchTerm) || 
+                                         postType.includes(searchTerm);
+                    
+                    const matchesFilter = currentFilter === 'all' || $card.data('post-type') === currentFilter;
+                    
+                    if (matchesSearch && matchesFilter) {
+                        $card.show();
+                        hasVisiblePosts = true;
+                        
+                        // Highlight matching text
+                        const $content = $card.find('.post-content');
+                        const originalContent = $content.html();
+                        
+                        if (postContent.includes(searchTerm)) {
+                            const regex = new RegExp('(' + searchTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'gi');
+                            const newContent = originalContent.replace(regex, '<span class="search-highlight">$1</span>');
+                            $content.html(newContent);
+                        }
+                    } else {
+                        $card.hide();
+                    }
+                });
+                
+                // Show empty state if no posts match
+                if (!hasVisiblePosts) {
+                    // Remove any existing search empty state
+                    $('.empty-state-search').remove();
+                    
+                    $('#posts-container').append(`
+                        <div class="text-center py-5 empty-state empty-state-search">
+                            <div class="empty-state-icon mb-3">
+                                <i class="fas fa-search text-muted fa-4x"></i>
+                            </div>
+                            <h5 class="text-muted mb-2">No Results Found</h5>
+                            <p class="text-muted mb-0">Try a different search term or filter</p>
+                        </div>
+                    `);
+                }
             });
-        }
-
-        // Auto-resize textarea
-        const textarea = document.getElementById('content');
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+            
+            // Filter posts
+            $('#post-filter').change(function() {
+                const filterValue = $(this).val();
+                
+                // Check if search is active
+                const searchTerm = $('#post-search').val().trim();
+                if (searchTerm !== '') {
+                    // If search is active, trigger search again with new filter
+                    $('#post-search').trigger('input');
+                    return;
+                }
+                
+                // Remove any existing empty state message first
+                $('.empty-state-filtered, .empty-state-search').remove();
+                
+                if (filterValue === 'all') {
+                    $('.post-card').show();
+                    
+                    // If there are no posts at all, show the original empty state
+                    if ($('.post-card').length === 0) {
+                        $('.empty-state').show();
+                    } else {
+                        $('.empty-state').hide();
+                    }
+                } else {
+                    $('.post-card').hide();
+                    $('.empty-state').hide();
+                    $(`.post-card[data-post-type="${filterValue}"]`).show();
+                    
+                    // Show empty state if no posts visible for this filter
+                    if ($(`.post-card[data-post-type="${filterValue}"]:visible`).length === 0) {
+                        // Format the filter value for display (CamelCase to spaced words)
+                        const formattedFilter = filterValue
+                            .replace(/([A-Z])/g, ' $1')
+                            .replace(/^./, function(str) { return str.toUpperCase(); });
+                            
+                        $('#posts-container').append(`
+                            <div class="text-center py-5 empty-state empty-state-filtered">
+                                <div class="empty-state-icon mb-3">
+                                    <i class="fas fa-filter text-muted fa-4x"></i>
+                                </div>
+                                <h5 class="text-muted mb-2">No ${formattedFilter} Posts</h5>
+                                <p class="text-muted mb-0">Try selecting a different filter</p>
+                            </div>
+                        `);
+                    }
+                }
+            });
+            
+            // Add success notification toast when post is created
+            if (window.location.search.includes('success=true')) {
+                const toastHtml = `
+                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header bg-success-soft">
+                                <i class="fas fa-check-circle me-2 text-success"></i>
+                                <strong class="me-auto">Success</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                Your post has been successfully published.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('body').append(toastHtml);
+                
+                // Auto hide after 5 seconds
+                setTimeout(function() {
+                    $('.toast').toast('hide');
+                }, 5000);
+            }
         });
     </script>
 } 

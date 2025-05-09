@@ -176,7 +176,7 @@ namespace THYNK.Controllers
             // Add response log entry (if we had a ResponseLog table)
             // Instead we can store in the AdditionalInfo field for now as JSON
             var currentUser = await _userManager.GetUserAsync(User);
-            string responderName = $"{currentUser.FirstName} {currentUser.LastName}";
+            string responderName = $"{currentUser?.FirstName ?? "Unknown"} {currentUser?.LastName ?? "User"}";
             string responseNote = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] Status updated to {report.Status} by {responderName}. Notes: {notes}";
             
             // Append to existing info with a separator
@@ -221,7 +221,7 @@ namespace THYNK.Controllers
             {
                 alert.DateIssued = DateTime.UtcNow;
                 alert.IsActive = true;
-                alert.IssuedByUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                alert.IssuedByUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
 
                 _context.Alerts.Add(alert);
                 await _context.SaveChangesAsync();
@@ -378,6 +378,13 @@ namespace THYNK.Controllers
         public async Task<JsonResult> GetMapData()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            // Check if userId is null before calling FindByIdAsync
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new List<object>());
+            }
+            
             var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
             
             if (currentUser == null)

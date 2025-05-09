@@ -12,117 +12,799 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <!-- Mapbox CSS -->
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#545454',
+                        primaryDark: '#3c3c3c',
+                        primaryLight: '#6e6e6e',
+                        secondary: '#E5DFD2',
+                        secondaryDark: '#d6cfbf',
+                        secondaryLight: '#f4f0e5',
+                        accent: '#F5F5F5',
+                        danger: '#b56357',
+                        success: '#6a8d73',
+                        warning: '#e0a458'
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        :root {
+            --primary: #545454;
+            --primary-dark: #3c3c3c;
+            --primary-light: #6e6e6e;
+            --primary-rgb: 84, 84, 84;
+            
+            --secondary: #E5DFD2;
+            --secondary-dark: #d6cfbf;
+            --secondary-light: #f4f0e5;
+            --secondary-rgb: 229, 223, 210;
+            
+            --accent: #F5F5F5;
+            --accent-rgb: 245, 245, 245;
+            
+            --success: #6a8d73;
+            --warning: #e0a458;
+            --danger: #b56357;
+            --danger-rgb: 181, 99, 87;
+            
+            --dark: #545454;
+            --dark-alt: #696969;
+            --dark-light: #7e7e7e;
+            --light: #F5F5F5;
+            --muted: #a0a0a0;
+            
+            --body-bg: #E5DFD2;
+            --body-color: #545454;
+        }
+        
+        body {
+            @@apply bg-secondary text-primary font-sans;
+        }
+        
+        .sidebar {
+            @@apply fixed top-0 left-0 h-screen text-white shadow-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col;
+            background-color: var(--primary-dark);
+            z-index: 50;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .sidebar-content {
+            @@apply flex flex-col h-full;
+            position: relative;
+        }
+        
+        .sidebar-nav {
+            @@apply overflow-y-auto px-4 py-1;
+            position: absolute;
+            top: 140px;
+            bottom: 100px;
+            left: 0;
+            right: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(110, 110, 110, 0.3) transparent;
+            scroll-behavior: smooth;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-track {
+            @@apply bg-transparent;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            @@apply bg-primaryLight/30 rounded-full;
+        }
+        
+        /* Only show scrollbar when hovering over the navigation area */
+        .sidebar-nav:hover::-webkit-scrollbar-thumb {
+            @@apply bg-primaryLight/50;
+        }
+        
+        .sidebar-collapsed {
+            width: 0;
+        }
+        
+        .sidebar-expanded {
+            @@apply w-64;
+        }
+        
+        .nav-item {
+            @@apply flex items-center py-2 px-4 transition-colors duration-200 w-full;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin-bottom: 2px;
+            color: var(--accent);
+        }
+        
+        .nav-item:hover {
+            background-color: var(--primary);
+            transform: translateX(3px);
+            color: #f4f0e5 !important;
+
+        }
+        
+        .nav-item.active {
+            background-color: var(--primary);
+            position: relative;
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--secondary), var(--secondary-dark));
+            border-radius: 0 2px 2px 0;
+        }
+        
+        .nav-icon {
+            @@apply text-lg mr-3 flex items-center justify-center w-8;
+            color: var(--accent);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-text {
+            @@apply text-sm font-medium;
+        }
+        
+        .hamburger {
+            @@apply fixed top-4 left-4 flex flex-col justify-center items-center w-10 h-10 text-white rounded-md shadow-md transition-all duration-200 focus:outline-none;
+            background-color: var(--primary-dark);
+            z-index: 60;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hamburger:hover {
+            background-color: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .hamburger-line {
+            @@apply w-6 h-0.5 bg-white my-0.5 transition-all duration-300;
+        }
+        
+        .hamburger.active .hamburger-line:nth-child(1) {
+            @@apply transform rotate-45 translate-y-1.5;
+        }
+        
+        .hamburger.active .hamburger-line:nth-child(2) {
+            @@apply opacity-0;
+        }
+        
+        .hamburger.active .hamburger-line:nth-child(3) {
+            @@apply transform -rotate-45 -translate-y-1.5;
+        }
+        
+        .overlay {
+            @@apply fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 40;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .main-content {
+            @@apply transition-all duration-300 ease-in-out;
+            z-index: 10;
+            background-color:#FAF7F0;
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            @@apply bg-secondary;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            @@apply bg-primary rounded-full;
+        }
+
+        /* Alert transitions */
+        .alert-enter {
+            @@apply transform translate-y-[-20px] opacity-0;
+        }
+        
+        .alert-enter-active {
+            @@apply transform translate-y-0 opacity-100 transition-all duration-300;
+        }
+        
+        .alert-exit {
+            @@apply transform translate-y-0 opacity-100;
+        }
+        
+        .alert-exit-active {
+            @@apply transform translate-y-[-20px] opacity-0 transition-all duration-300;
+        }
+        
+        /* User profile dropdown */
+        .profile-section {
+            @@apply pt-2 px-4 pb-3;
+            border-top: 1px solid rgba(245, 245, 245, 0.1);
+            background-color: var(--primary-dark);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .profile-info {
+            @@apply flex items-center space-x-2 mb-2;
+        }
+        
+        .profile-avatar {
+            @@apply w-8 h-8 rounded-full bg-accent text-primary flex items-center justify-center font-bold text-sm flex-shrink-0;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-actions {
+            @@apply flex flex-col space-y-2 w-full;
+        }
+        
+        .profile-link {
+            @@apply flex items-center py-1 px-3 text-sm rounded transition-colors w-full;
+            transition: all 0.3s ease;
+            color: var(--accent);
+        }
+        
+        .profile-link:hover {
+            transform: translateX(3px);
+            background-color: var(--primary);
+            color: #f4f0e5;
+        }
+        
+        .profile-link i {
+            @@apply mr-2;
+        }
+        
+        /* Responsive adjustments for sidebar */
+        /* For medium height screens */
+        .sidebar-nav-medium {
+            top: 105px;
+            bottom: 95px;
+        }
+        
+        /* For small height screens */
+        .sidebar-nav-small {
+            top: 95px;
+            bottom: 90px;
+        }
+        
+        .sidebar-nav .space-y-1 > a + a {
+            margin-top: 2px;
+        }
+        
+        /* Header Bar */
+        header {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+            background: linear-gradient(to right, #ffffff 0%, #fafafa 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .header-title-container {
+            position: relative;
+        }
+        
+        .header-alert-btn {
+            background-color: rgba(245, 245, 245, 0.8);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            backdrop-filter: blur(4px);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border-radius: 100%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-alert-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            background-color: rgba(201, 201, 201, 0.9);
+            color: #f4f0e5;
+            box-shadow: 0 4px 12px rgba(179, 179, 179, 0.1);
+            border-radius: 100%;
+        }
+        
+        .header-alert-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 3px rgba(167, 167, 167, 0.05);
+            border-radius: 100%;
+
+        }
+        /* Notifications */
+        .bg-green-100 {
+            background-color: rgba(106, 141, 115, 0.15);
+            border-color: var(--success);
+        }
+        
+        .text-green-700 {
+            color: var(--success);
+        }
+        
+        .bg-yellow-100 {
+            background-color: rgba(224, 164, 88, 0.15);
+            border-color: var(--warning);
+        }
+        
+        .text-yellow-700 {
+            color: var(--warning);
+        }
+        
+        .bg-red-100 {
+            background-color: rgba(181, 99, 87, 0.15);
+            border-color: var(--danger);
+        }
+        
+        .text-red-700 {
+            color: var(--danger);
+        }
+        
+        [role="alert"] {
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        [role="alert"]:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--accent);
+            border-color: rgba(84, 84, 84, 0.1);
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.03);
+        }
+        
+        footer a {
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        footer a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
+        /* Animations and UI Effects */
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Styling for headings and typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-head, 'Poppins', sans-serif);
+        }
+        
+        /* Custom scrollbar improvements */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(229, 223, 210, 0.3);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(84, 84, 84, 0.3);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(84, 84, 84, 0.5);
+        }
+        
+        /* Button Enhancement */
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            border-radius: 50px;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(84, 84, 84, 0.2);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(84, 84, 84, 0.3);
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary);
+            color: var(--primary);
+            border-radius: 50px;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(84, 84, 84, 0.2);
+        }
+        
+        /* Form controls */
+        .form-control {
+            border-radius: 12px;
+            border-color: rgba(84, 84, 84, 0.1);
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(84, 84, 84, 0.1);
+            border-color: var(--primary);
+        }
+        
+        /* Badge styling */
+        .badge {
+            padding: 0.35em 0.65em;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.75em;
+        }
+        
+        .badge-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .badge-secondary {
+            background-color: var(--secondary);
+            color: var(--primary);
+        }
+        
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .badge-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* Form Validation Styling */
+        .form-control.is-invalid,
+        .form-select.is-invalid,
+        .form-control:invalid,
+        .form-select:invalid {
+            border-color: rgba(84, 84, 84, 0.2) !important;
+            background-color: rgba(84, 84, 84, 0.02) !important;
+            transition: all 0.3s ease;
+        }
+
+        .form-control.is-invalid:focus,
+        .form-select.is-invalid:focus,
+        .form-control:invalid:focus,
+        .form-select:invalid:focus {
+            border-color: var(--primary) !important;
+            background-color: white !important;
+            box-shadow: none;
+        }
+
+        /* Remove default validation icons */
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            background-image: none !important;
+            padding-right: 0.75rem !important;
+        }
+
+        /* Validation message styling */
+        .invalid-feedback {
+            font-size: 0.75rem;
+            color: var(--primary);
+            opacity: 0.8;
+            margin-top: 0.25rem;
+            font-weight: 400;
+        }
+
+        /* Map validation styling */
+        .map-required {
+            box-shadow: 0 0 0 2px rgba(84, 84, 84, 0.1) !important;
+            transition: all 0.3s ease;
+        }
+
+        .map-required:focus-within {
+            box-shadow: 0 0 0 2px var(--primary) !important;
+        }
+
+        /* Required field indicator */
+        .required-field::after {
+            content: '*';
+            color: var(--primary);
+            opacity: 0.5;
+            margin-left: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        /* Validation alert styling */
+        .validation-summary-errors {
+            background-color: rgba(84, 84, 84, 0.02);
+            border-left: 2px solid var(--primary);
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: var(--primary);
+        }
+
+        .validation-summary-errors ul {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+
+        .validation-summary-errors li {
+            margin-bottom: 0.25rem;
+        }
+
+        .validation-summary-errors li:last-child {
+            margin-bottom: 0;
+        }
+    </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
-    <div class="d-flex" id="wrapper">
-        <!-- Sidebar -->
-        <div class="bg-dark text-white" id="sidebar-wrapper">
-            <div class="sidebar-heading text-center py-4">
-                <h3 class="m-0">THYNK</h3>
-                <small>Community Portal</small>
-            </div>
-            <div class="list-group list-group-flush my-3">
-                <a href="@Url.Action("CommunityFeed", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" || ViewContext.RouteData.Values["Action"].ToString() == "PostUpdate" ? "active" : "")">
-                    <i class="fas fa-users me-2"></i>Community Feed
-                </a>
-                <a href="@Url.Action("SubmitReport", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "SubmitReport" ? "active" : "")">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Report Incident
-                </a>
-                <a href="@Url.Action("EducationalResources", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "EducationalResources" || ViewContext.RouteData.Values["Action"].ToString() == "ResourceDetails" ? "active" : "")">
-                    <i class="fas fa-book me-2"></i>Educational Resources
-                </a>
-                <a href="@Url.Action("Alerts", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
-                    <i class="fas fa-bell me-2"></i>Alerts
-                </a>
-                <a href="@Url.Action("IncidentMap", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
-                    <i class="fas fa-map-marked-alt me-2"></i>Incident Map
-                </a>
-                <a href="@Url.Action("MyReports", "Community")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "MyReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
-                    <i class="fas fa-clipboard-list me-2"></i>My Reports
-                </a>
-                <a href="@Url.Action("Index", "Support")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
-                    <i class="fas fa-question-circle me-2"></i>Support & FAQs
-                </a>
+<body class="bg-secondary">
+    <!-- Hamburger Menu Button -->
+    <button id="hamburger" class="hamburger">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Header Bar -->
+    <header class="fixed top-0 left-0 right-0 shadow-md z-20">
+        <div class="container mx-auto relative z-10">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="ml-12 flex items-center">
+                    <div class="relative flex items-center header-title-container">
+                        <h2 class="text-primary text-xl font-semibold relative z-10">@ViewData["Title"]</h2>
+                        <div class="ml-2 h-6 w-1 bg-primary rounded-full opacity-30"></div>
+                        <span class="ml-2 text-sm text-primary opacity-70 font-medium">THYNK Community</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="hidden md:flex items-center border-l border-gray-200 pl-3">
+                            <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center mr-2 shadow-sm">
+                                @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
+                            </div>
+                            <span class="text-primary text-sm">@User.Identity.Name</span>
+                        </div>
+                    }
+                    <a href="@Url.Action("Alerts", "Community")" class="header-alert-btn relative p-2 text-primary">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                </div>
             </div>
         </div>
-        <!-- Page Content -->
-        <div id="page-content-wrapper">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light py-3 px-4">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-align-left text-dark fs-4 me-3" id="menu-toggle"></i>
-                    <h2 class="m-0">@ViewData["Title"]</h2>
+    </header>
+    
+    <!-- Overlay for mobile -->
+    <div id="overlay" class="overlay"></div>
+    
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar sidebar-collapsed">
+        <div class="sidebar-content">
+            <!-- Fixed Header -->
+            <div class="pt-12 px-4">
+                <div class="text-center mb-3">
+                    <h3 class="font-bold text-xl">THYNK</h3>
+                    <p class="text-xs opacity-80">Community Portal</p>
                 </div>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item dropdown">
-                            <partial name="_LoginPartial" />
-                        </li>
-                    </ul>
+                <hr class="border-primaryLight/30 my-2" />
+            </div>
+            
+            <!-- Scrollable Navigation Area -->
+            <div class="sidebar-nav">
+                <div class="space-y-1">
+                    <a href="@Url.Action("CommunityFeed", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" || ViewContext.RouteData.Values["Action"].ToString() == "PostUpdate" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span class="nav-text">Community Feed</span>
+                    </a>
+                    
+                    <a href="@Url.Action("SubmitReport", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "SubmitReport" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="nav-text">Report Incident</span>
+                    </a>
+                    
+                    <a href="@Url.Action("EducationalResources", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "EducationalResources" || ViewContext.RouteData.Values["Action"].ToString() == "ResourceDetails" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-book"></i></span>
+                        <span class="nav-text">Educational Resources</span>
+                    </a>
+                    
+                    <a href="@Url.Action("Alerts", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-bell"></i></span>
+                        <span class="nav-text">Alerts</span>
+                    </a>
+                    
+                    <a href="@Url.Action("IncidentMap", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
+                        <span class="nav-text">Incident Map</span>
+                    </a>
+                    
+                    <a href="@Url.Action("MyReports", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "MyReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
+                        <span class="nav-text">My Reports</span>
+                    </a>
+                    
+                    <a href="@Url.Action("Index", "Support")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="nav-text">Support & FAQs</span>
+                    </a>
                 </div>
-            </nav>
+            </div>
+            
+            <!-- User Profile Section -->
+            <div class="profile-section">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-medium truncate">@User.Identity.Name</p>
+                            <p class="text-xs text-gray-300">Community User</p>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        @if (User.Identity != null)
+                        {
+                            <a href="/Identity/Account/Manage" class="profile-link w-full">
+                                <i class="fas fa-user-cog"></i> Manage Account
+                            </a>
+                            <form class="form-inline w-full" action="/Identity/Account/Logout" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
+                                <button type="submit" class="profile-link w-full text-left">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
+                            </form>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="profile-actions">
+                        <a class="profile-link" href="/Identity/Account/Login">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                        <a class="profile-link" href="/Identity/Account/Register">
+                            <i class="fas fa-user-plus"></i> Register
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300">
 
-            <div class="container-fluid px-4">
-                <!-- Add notification messages -->
+       
+        <div class="max-w-7xl mx-auto">
+            <!-- Notifications -->
+            <div id="notifications" class="space-y-3 mb-6">
                 @if (TempData["SuccessMessage"] != null)
                 {
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md" role="alert">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <p>@TempData["SuccessMessage"]</p>
+                        </div>
+                        <button type="button" class="float-right text-green-700" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 }
                 
                 @if (TempData["WarningMessage"] != null)
                 {
-                    <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i> @TempData["WarningMessage"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow-md" role="alert">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <p>@TempData["WarningMessage"]</p>
+                        </div>
+                        <button type="button" class="float-right text-yellow-700" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 }
                 
                 @if (TempData["ErrorMessage"] != null)
                 {
-                    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                        <i class="fas fa-times-circle me-2"></i> @TempData["ErrorMessage"]
-                        @if (TempData["InnerErrorMessage"] != null)
-                        {
-                            <div class="mt-2 small">@TempData["InnerErrorMessage"]</div>
-                        }
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md" role="alert">
+                        <div class="flex items-center">
+                            <i class="fas fa-times-circle mr-2"></i>
+                            <p>
+                                @TempData["ErrorMessage"]
+                                @if (TempData["InnerErrorMessage"] != null)
+                                {
+                                    <span class="block mt-2 text-sm">@TempData["InnerErrorMessage"]</span>
+                                }
+                            </p>
+                        </div>
+                        <button type="button" class="float-right text-red-700" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 }
                 
                 <!-- Show validation errors if any -->
                 @if (ViewBag.ValidationErrors != null)
                 {
-                    <div class="alert alert-danger mt-3">
-                        <i class="fas fa-times-circle me-2"></i> <strong>Validation Errors:</strong>
-                        <ul class="mb-0 mt-2">
-                            @foreach (var error in ViewBag.ValidationErrors)
-                            {
-                                <li>@error.Key: @string.Join(", ", error.Errors)</li>
-                            }
-                        </ul>
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md">
+                        <div class="flex items-start">
+                            <i class="fas fa-times-circle mt-1 mr-2"></i>
+                            <div>
+                                <strong>Validation Errors:</strong>
+                                <ul class="mt-2 list-disc pl-5">
+                                    @foreach (var error in ViewBag.ValidationErrors)
+                                    {
+                                        <li>@error.Key: @string.Join(", ", error.Errors)</li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 }
-                
-                <div class="row my-4">
-                    <div class="col">
-                        @RenderBody()
-                    </div>
-                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="bg-white rounded-lg shadow-md p-3 md:p-3 p-0">
+                @RenderBody()
             </div>
         </div>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - THYNK - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    </main>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -130,11 +812,113 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
-        // Toggle sidebar
-        $("#menu-toggle").click(function(e) {
-            e.preventDefault();
-            $("#wrapper").toggleClass("toggled");
+        // Sidebar toggle
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mainContent = document.getElementById('main-content');
+        const sidebarNav = document.querySelector('.sidebar-nav');
+        
+        // Add entrance animations to content elements
+        function addEntranceAnimations() {
+            const contentElements = document.querySelectorAll('.bg-white > *');
+            contentElements.forEach((el, index) => {
+                el.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`;
+                el.style.opacity = '0';
+            });
+            
+            // Add pulse effect to active sidebar item
+            const activeNavItem = document.querySelector('.nav-item.active .nav-icon');
+            if (activeNavItem) {
+                activeNavItem.style.animation = 'pulse 2s infinite';
+            }
+        }
+        
+        // Responsive sidebar height adjustments
+        function adjustSidebarHeight() {
+            const windowHeight = window.innerHeight;
+            
+            if (windowHeight <= 480) {
+                sidebarNav.classList.add('sidebar-nav-small');
+                sidebarNav.classList.remove('sidebar-nav-medium');
+            } else if (windowHeight <= 580) {
+                sidebarNav.classList.add('sidebar-nav-medium');
+                sidebarNav.classList.remove('sidebar-nav-small');
+            } else {
+                sidebarNav.classList.remove('sidebar-nav-medium');
+                sidebarNav.classList.remove('sidebar-nav-small');
+            }
+        }
+        
+        // Call once on load
+        adjustSidebarHeight();
+        addEntranceAnimations();
+        
+        // Update on resize
+        window.addEventListener('resize', adjustSidebarHeight);
+        
+        // Check for saved state in localStorage
+        const sidebarState = localStorage.getItem('sidebarState') || 'collapsed';
+        
+        if (sidebarState === 'expanded') {
+            sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+            hamburger.classList.add('active');
+            overlay.classList.add('active');
+            
+            // Only adjust margin on larger screens
+            if (window.innerWidth >= 768) {
+                mainContent.classList.add('md:ml-64');
+            }
+        }
+        
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            
+            if (sidebar.classList.contains('sidebar-collapsed')) {
+                sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+                overlay.classList.add('active');
+                
+                // Only adjust margin on larger screens
+                if (window.innerWidth >= 768) {
+                    mainContent.classList.add('md:ml-64');
+                }
+                
+                localStorage.setItem('sidebarState', 'expanded');
+            } else {
+                sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+                overlay.classList.remove('active');
+                mainContent.classList.remove('md:ml-64');
+                localStorage.setItem('sidebarState', 'collapsed');
+            }
         });
+        
+        // Close sidebar when clicking overlay
+        overlay.addEventListener('click', () => {
+            sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+            hamburger.classList.remove('active');
+            overlay.classList.remove('active');
+            mainContent.classList.remove('md:ml-64');
+            localStorage.setItem('sidebarState', 'collapsed');
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth < 768 && sidebar.classList.contains('sidebar-expanded')) {
+                // Remove margin on smaller screens but keep sidebar open
+                mainContent.classList.remove('md:ml-64');
+            } else if (window.innerWidth >= 768 && sidebar.classList.contains('sidebar-expanded')) {
+                // Add margin on larger screens when sidebar is open
+                mainContent.classList.add('md:ml-64');
+            }
+        });
+        
+        // Close alert messages after 5 seconds
+        setTimeout(() => {
+            document.querySelectorAll('[role="alert"]').forEach(alert => {
+                alert.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
