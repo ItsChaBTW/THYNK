@@ -47,6 +47,22 @@
                                 <!-- Hidden field to store the combined code -->
                                 <input asp-for="ConfirmationCode" type="hidden" id="combinedCode" />
                                 <span asp-validation-for="ConfirmationCode" class="text-danger d-block text-center mb-3"></span>
+                                
+                                <!-- Error message display -->
+                                @if (!ModelState.IsValid)
+                                {
+                                    <div class="alert alert-danger mt-3" role="alert">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <div>
+                                                @foreach (var modelError in ModelState.Values.SelectMany(v => v.Errors))
+                                                {
+                                                    <p class="mb-0">@modelError.ErrorMessage</p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             
                             <div class="info-box mb-4">
@@ -398,19 +414,21 @@
             }
             
             // Countdown timer for resend button
-            let countdown = 90;
+            let countdown = 60;
             const countdownEl = $('#countdown');
             const resendBtn = $('#resendCodeBtn');
+            const timerText = $('.timer-text');
             
             // Initially disable the resend button
             resendBtn.prop('disabled', true);
+            timerText.show();
             
             // Timer function
             function updateCountdown() {
                 countdownEl.text(countdown);
                 if (countdown <= 0) {
                     resendBtn.prop('disabled', false);
-                    $('.timer-text').hide();
+                    timerText.hide();
                 } else {
                     countdown--;
                     setTimeout(updateCountdown, 1000);
@@ -426,35 +444,57 @@
                 $(this).html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending...');
                 $(this).prop('disabled', true);
                 
+                // Get the anti-forgery token
+                const token = $('input[name="__RequestVerificationToken"]').val();
+                
                 // AJAX request to resend code
                 $.ajax({
-                    url: '/Identity/Account/ResendEmailConfirmation',
+                    url: '@Url.Page("ConfirmEmail", "ResendCode")',
                     type: 'POST',
-                    data: { email: $('#Email').val() },
-                    success: function() {
-                        // Reset form and show success message
-                        $('.verification-code-input').val('').removeClass('filled');
-                        $('.verification-code-input:first').focus();
-                        
-                        // Show success alert
-                        const alertHtml = `
-                            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                                <i class="fas fa-check-circle me-2"></i> A new confirmation code has been sent to your email.
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        `;
-                        $('.confirm-card-body').prepend(alertHtml);
-                        
-                        // Reset countdown
-                        countdown = 60;
-                        $('.timer-text').show();
-                        updateCountdown();
+                    data: { 
+                        email: $('#Email').val(),
+                        __RequestVerificationToken: token
                     },
-                    error: function() {
-                        // Show error message
+                    success: function(response) {
+                        if (response.success) {
+                            // Reset form and show success message
+                            $('.verification-code-input').val('').removeClass('filled');
+                            $('.verification-code-input:first').focus();
+                            
+                            // Show success alert
+                            const alertHtml = `
+                                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                                    <i class="fas fa-check-circle me-2"></i> ${response.message}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            `;
+                            $('.confirm-card-body').prepend(alertHtml);
+                            
+                            // Reset countdown
+                            countdown = 60;
+                            timerText.show();
+                            updateCountdown();
+                        } else {
+                            // Show error message
+                            const alertHtml = `
+                                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i> ${response.message || 'Failed to resend code. Please try again.'}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            `;
+                            $('.confirm-card-body').prepend(alertHtml);
+                        }
+                    },
+                    error: function(xhr) {
+                        // Show error message with more details
+                        let errorMessage = 'Failed to resend code. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        
                         const alertHtml = `
                             <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i> Failed to resend code. Please try again later.
+                                <i class="fas fa-exclamation-circle me-2"></i> ${errorMessage}
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         `;

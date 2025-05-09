@@ -19,18 +19,39 @@
     </div>
     <div class="card-body">
         <div class="row mb-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <form method="get" class="d-flex">
-                    <input type="text" name="search" class="form-control me-2" placeholder="Search by name or email" value="@Context.Request.Query["search"]" />
-                    <button type="submit" class="btn btn-primary">Search</button>
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by name, email, or organization" value="@ViewBag.CurrentSearch" />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </form>
             </div>
-            <div class="col-md-6 text-end">
-                <div class="btn-group">
-                    <a href="@Url.Action("ManageUsers", new { role = "" })" class="btn @(Context.Request.Query["role"] == "" ? "btn-primary" : "btn-outline-primary")">All</a>
-                    <a href="@Url.Action("ManageUsers", new { role = "Admin" })" class="btn @(Context.Request.Query["role"] == "Admin" ? "btn-primary" : "btn-outline-primary")">Admins</a>
-                    <a href="@Url.Action("ManageUsers", new { role = "LGU" })" class="btn @(Context.Request.Query["role"] == "LGU" ? "btn-primary" : "btn-outline-primary")">LGUs</a>
-                    <a href="@Url.Action("ManageUsers", new { role = "Community" })" class="btn @(Context.Request.Query["role"] == "Community" ? "btn-primary" : "btn-outline-primary")">Community</a>
+            <div class="col-md-8">
+                <div class="d-flex justify-content-end gap-2">
+                    <!-- Role Filter -->
+                    <div class="btn-group">
+                        <a href="@Url.Action("ManageUsers", new { role = "", status = ViewBag.CurrentStatus, sortBy = ViewBag.CurrentSortBy, sortOrder = ViewBag.CurrentSortOrder, search = ViewBag.CurrentSearch })" 
+                           class="btn @(ViewBag.CurrentRole == "" ? "btn-primary" : "btn-outline-primary")">All</a>
+                        <a href="@Url.Action("ManageUsers", new { role = "Admin", status = ViewBag.CurrentStatus, sortBy = ViewBag.CurrentSortBy, sortOrder = ViewBag.CurrentSortOrder, search = ViewBag.CurrentSearch })" 
+                           class="btn @(ViewBag.CurrentRole == "Admin" ? "btn-primary" : "btn-outline-primary")">Admins</a>
+                        <a href="@Url.Action("ManageUsers", new { role = "LGU", status = ViewBag.CurrentStatus, sortBy = ViewBag.CurrentSortBy, sortOrder = ViewBag.CurrentSortOrder, search = ViewBag.CurrentSearch })" 
+                           class="btn @(ViewBag.CurrentRole == "LGU" ? "btn-primary" : "btn-outline-primary")">LGUs</a>
+                        <a href="@Url.Action("ManageUsers", new { role = "Community", status = ViewBag.CurrentStatus, sortBy = ViewBag.CurrentSortBy, sortOrder = ViewBag.CurrentSortOrder, search = ViewBag.CurrentSearch })" 
+                           class="btn @(ViewBag.CurrentRole == "Community" ? "btn-primary" : "btn-outline-primary")">Community</a>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="btn-group">
+                        <a href="@Url.Action("ManageUsers", new { status = "", role = ViewBag.CurrentRole, sortBy = ViewBag.CurrentSortBy, sortOrder = ViewBag.CurrentSortOrder, search = ViewBag.CurrentSearch })" 
+                           class="btn @(ViewBag.CurrentStatus == "" ? "btn-primary" : "btn-outline-primary")">All Status</a>
+                        <a href="@Url.Action("ManageUsers", new { status = "active", role = ViewBag.CurrentRole, sortBy = ViewBag.CurrentSortBy, sortOrder = ViewBag.CurrentSortOrder, search = ViewBag.CurrentSearch })" 
+                           class="btn @(ViewBag.CurrentStatus == "active" ? "btn-primary" : "btn-outline-primary")">Active</a>
+                        <a href="@Url.Action("ManageUsers", new { status = "deactivated", role = ViewBag.CurrentRole, sortBy = ViewBag.CurrentSortBy, sortOrder = ViewBag.CurrentSortOrder, search = ViewBag.CurrentSearch })" 
+                           class="btn @(ViewBag.CurrentStatus == "deactivated" ? "btn-primary" : "btn-outline-primary")">Deactivated</a>
+                        <a href="@Url.Action("ManageUsers", new { status = "pending", role = ViewBag.CurrentRole, sortBy = ViewBag.CurrentSortBy, sortOrder = ViewBag.CurrentSortOrder, search = ViewBag.CurrentSearch })" 
+                           class="btn @(ViewBag.CurrentStatus == "pending" ? "btn-primary" : "btn-outline-primary")">Pending</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -39,12 +60,68 @@
             <table class="table table-hover admin-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
+                        <th>
+                            <a href="@Url.Action("ManageUsers", new { 
+                                sortBy = "name", 
+                                sortOrder = ViewBag.CurrentSortBy == "name" && ViewBag.CurrentSortOrder == "asc" ? "desc" : "asc",
+                                role = ViewBag.CurrentRole,
+                                status = ViewBag.CurrentStatus,
+                                search = ViewBag.CurrentSearch
+                            })" class="text-decoration-none text-dark">
+                                Name
+                                @if (ViewBag.CurrentSortBy == "name")
+                                {
+                                    <i class="fas fa-sort-@(ViewBag.CurrentSortOrder == "asc" ? "up" : "down")"></i>
+                                }
+                            </a>
+                        </th>
+                        <th>
+                            <a href="@Url.Action("ManageUsers", new { 
+                                sortBy = "email", 
+                                sortOrder = ViewBag.CurrentSortBy == "email" && ViewBag.CurrentSortOrder == "asc" ? "desc" : "asc",
+                                role = ViewBag.CurrentRole,
+                                status = ViewBag.CurrentStatus,
+                                search = ViewBag.CurrentSearch
+                            })" class="text-decoration-none text-dark">
+                                Email
+                                @if (ViewBag.CurrentSortBy == "email")
+                                {
+                                    <i class="fas fa-sort-@(ViewBag.CurrentSortOrder == "asc" ? "up" : "down")"></i>
+                                }
+                            </a>
+                        </th>
+                        <th>
+                            <a href="@Url.Action("ManageUsers", new { 
+                                sortBy = "role", 
+                                sortOrder = ViewBag.CurrentSortBy == "role" && ViewBag.CurrentSortOrder == "asc" ? "desc" : "asc",
+                                role = ViewBag.CurrentRole,
+                                status = ViewBag.CurrentStatus,
+                                search = ViewBag.CurrentSearch
+                            })" class="text-decoration-none text-dark">
+                                Role
+                                @if (ViewBag.CurrentSortBy == "role")
+                                {
+                                    <i class="fas fa-sort-@(ViewBag.CurrentSortOrder == "asc" ? "up" : "down")"></i>
+                                }
+                            </a>
+                        </th>
                         <th>Organization</th>
                         <th>Status</th>
-                        <th>Registered</th>
+                        <th>
+                            <a href="@Url.Action("ManageUsers", new { 
+                                sortBy = "date", 
+                                sortOrder = ViewBag.CurrentSortBy == "date" && ViewBag.CurrentSortOrder == "asc" ? "desc" : "asc",
+                                role = ViewBag.CurrentRole,
+                                status = ViewBag.CurrentStatus,
+                                search = ViewBag.CurrentSearch
+                            })" class="text-decoration-none text-dark">
+                                Registered
+                                @if (ViewBag.CurrentSortBy == "date")
+                                {
+                                    <i class="fas fa-sort-@(ViewBag.CurrentSortOrder == "asc" ? "up" : "down")"></i>
+                                }
+                            </a>
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -96,69 +173,17 @@
                                 <div class="btn-group">
                                     @if (isLocked)
                                     {
-                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#reactivateModal@(user.Id)">
+                                        <button type="button" class="btn btn-sm btn-success reactivate-btn" data-user-id="@user.Id" data-user-name="@user.FirstName @user.LastName">
                                             <i class="fas fa-user-check"></i> Reactivate
                                         </button>
                                     }
-                                    else if (user.UserRole != THYNK.Models.UserRoleType.Admin || (user.UserRole == THYNK.Models.UserRoleType.Admin && user.Id != User.FindFirstValue(ClaimTypes.NameIdentifier)))
+                                    @if (!isLocked && (user.UserRole != THYNK.Models.UserRoleType.Admin || (user.UserRole == THYNK.Models.UserRoleType.Admin && user.Id != User.FindFirstValue(ClaimTypes.NameIdentifier))))
                                     {
-                                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deactivateModal@(user.Id)">
+                                        <button type="button" class="btn btn-sm btn-danger deactivate-btn" data-user-id="@user.Id" data-user-name="@user.FirstName @user.LastName">
                                             <i class="fas fa-user-slash"></i> Deactivate
                                         </button>
                                     }
                                 </div>
-
-                                <!-- Deactivate Modal -->
-                                @if (!isLocked && (user.UserRole != THYNK.Models.UserRoleType.Admin || (user.UserRole == THYNK.Models.UserRoleType.Admin && user.Id != User.FindFirstValue(ClaimTypes.NameIdentifier))))
-                                {
-                                    <div class="modal fade" id="deactivateModal@(user.Id)" tabindex="-1" aria-labelledby="deactivateModalLabel@(user.Id)" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="deactivateModalLabel@(user.Id)">Deactivate User</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <p>Are you sure you want to deactivate the account for <strong>@user.FirstName @user.LastName</strong>?</p>
-                                                    <p>The user will no longer be able to access the system.</p>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <form asp-action="DeactivateUser" asp-route-id="@user.Id" method="post">
-                                                        @Html.AntiForgeryToken()
-                                                        <button type="submit" class="btn btn-danger">Deactivate User</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-
-                                <!-- Reactivate Modal -->
-                                @if (isLocked)
-                                {
-                                    <div class="modal fade" id="reactivateModal@(user.Id)" tabindex="-1" aria-labelledby="reactivateModalLabel@(user.Id)" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="reactivateModalLabel@(user.Id)">Reactivate User</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <p>Are you sure you want to reactivate the account for <strong>@user.FirstName @user.LastName</strong>?</p>
-                                                    <p>The user will be able to access the system again.</p>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <form asp-action="ReactivateUser" asp-route-id="@user.Id" method="post">
-                                                        @Html.AntiForgeryToken()
-                                                        <button type="submit" class="btn btn-success">Reactivate User</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
                             </td>
                         </tr>
                     }
@@ -178,7 +203,331 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Add any JavaScript functionality here
+            // Handle deactivate button click
+            $('.deactivate-btn').on('click', function(e) {
+                e.preventDefault();
+                const userId = $(this).data('user-id');
+                const userName = $(this).data('user-name');
+                
+                // Create modal HTML
+                const modalHtml = `
+                    <div class="modal fade" id="deactivateModal${userId}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Deactivate User</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to deactivate the account for <strong>${userName}</strong>?</p>
+                                    <p>The user will no longer be able to access the system.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <form id="deactivateForm${userId}" action="/Admin/DeactivateUser/${userId}" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger">Deactivate User</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Remove any existing modal
+                $('#deactivateModal' + userId).remove();
+                
+                // Add new modal to body
+                $('body').append(modalHtml);
+                
+                // Initialize and show modal
+                const modal = new bootstrap.Modal(document.getElementById('deactivateModal' + userId), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                
+                modal.show();
+
+                // Handle form submission
+                $('#deactivateForm' + userId).on('submit', function(e) {
+                    e.preventDefault();
+                    const form = $(this);
+                    const submitBtn = form.find('button[type="submit"]');
+                    
+                    // Disable button and show loading state
+                    submitBtn.prop('disabled', true);
+                    submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+
+                    // Get the anti-forgery token
+                    const token = $('input[name="__RequestVerificationToken"]').val();
+
+                    // Submit form via AJAX
+                    $.ajax({
+                        url: form.attr('action'),
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: token
+                        },
+                        headers: {
+                            'RequestVerificationToken': token
+                        },
+                        success: function(response) {
+                            // Close modal
+                            modal.hide();
+                            // Reload page to show updated status
+                            window.location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Deactivation error:', {
+                                status: status,
+                                error: error,
+                                response: xhr.responseText
+                            });
+                            
+                            // Re-enable button
+                            submitBtn.prop('disabled', false);
+                            submitBtn.html('Deactivate User');
+                            
+                            // Show error message
+                            let errorMessage = 'An error occurred while deactivating the user. ';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage += xhr.responseJSON.message;
+                            } else {
+                                errorMessage += 'Please try again.';
+                            }
+                            alert(errorMessage);
+                        }
+                    });
+                });
+
+                // Clean up modal on hidden
+                $('#deactivateModal' + userId).on('hidden.bs.modal', function() {
+                    $(this).remove();
+                });
+            });
+
+            // Handle reactivate button click
+            $('.reactivate-btn').on('click', function(e) {
+                e.preventDefault();
+                const userId = $(this).data('user-id');
+                const userName = $(this).data('user-name');
+                
+                // Create modal HTML
+                const modalHtml = `
+                    <div class="modal fade" id="reactivateModal${userId}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Reactivate User</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to reactivate the account for <strong>${userName}</strong>?</p>
+                                    <p>The user will be able to access the system again.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <form id="reactivateForm${userId}" action="/Admin/ReactivateUser/${userId}" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-success">Reactivate User</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Remove any existing modal
+                $('#reactivateModal' + userId).remove();
+                
+                // Add new modal to body
+                $('body').append(modalHtml);
+                
+                // Initialize and show modal
+                const modal = new bootstrap.Modal(document.getElementById('reactivateModal' + userId), {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                
+                modal.show();
+
+                // Handle form submission
+                $('#reactivateForm' + userId).on('submit', function(e) {
+                    e.preventDefault();
+                    const form = $(this);
+                    const submitBtn = form.find('button[type="submit"]');
+                    
+                    // Disable button and show loading state
+                    submitBtn.prop('disabled', true);
+                    submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+
+                    // Get the anti-forgery token
+                    const token = $('input[name="__RequestVerificationToken"]').val();
+
+                    // Submit form via AJAX
+                    $.ajax({
+                        url: form.attr('action'),
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: token
+                        },
+                        headers: {
+                            'RequestVerificationToken': token
+                        },
+                        success: function(response) {
+                            // Close modal
+                            modal.hide();
+                            // Reload page to show updated status
+                            window.location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Reactivation error:', {
+                                status: status,
+                                error: error,
+                                response: xhr.responseText
+                            });
+                            
+                            // Re-enable button
+                            submitBtn.prop('disabled', false);
+                            submitBtn.html('Reactivate User');
+                            
+                            // Show error message
+                            let errorMessage = 'An error occurred while reactivating the user. ';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage += xhr.responseJSON.message;
+                            } else {
+                                errorMessage += 'Please try again.';
+                            }
+                            alert(errorMessage);
+                        }
+                    });
+                });
+
+                // Clean up modal on hidden
+                $('#reactivateModal' + userId).on('hidden.bs.modal', function() {
+                    $(this).remove();
+                });
+            });
         });
     </script>
-} 
+}
+
+<style>
+    /* Modal base styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1050;
+        overflow-x: hidden;
+        overflow-y: auto;
+        outline: 0;
+    }
+
+    /* Modal backdrop */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1040;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000;
+    }
+
+    .modal-backdrop.show {
+        opacity: 0.5;
+    }
+
+    /* Modal dialog */
+    .modal-dialog {
+        position: relative;
+        width: auto;
+        margin: 1.75rem auto;
+        pointer-events: none;
+    }
+
+    .modal.fade .modal-dialog {
+        transition: transform .3s ease-out;
+        transform: translate(0, -50px);
+    }
+
+    .modal.show .modal-dialog {
+        transform: none;
+    }
+
+    /* Modal content */
+    .modal-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        pointer-events: auto;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 0.3rem;
+        outline: 0;
+    }
+
+    /* Modal header */
+    .modal-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        border-top-left-radius: calc(0.3rem - 1px);
+        border-top-right-radius: calc(0.3rem - 1px);
+    }
+
+    /* Modal body */
+    .modal-body {
+        position: relative;
+        flex: 1 1 auto;
+        padding: 1rem;
+    }
+
+    /* Modal footer */
+    .modal-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0.75rem;
+        border-top: 1px solid #dee2e6;
+        border-bottom-right-radius: calc(0.3rem - 1px);
+        border-bottom-left-radius: calc(0.3rem - 1px);
+    }
+
+    .modal-footer > * {
+        margin: 0.25rem;
+    }
+
+    /* Prevent body scrolling when modal is open */
+    body.modal-open {
+        overflow: hidden;
+        padding-right: 17px;
+    }
+
+    /* Fix for modal animation */
+    .modal.fade {
+        transition: opacity .15s linear;
+    }
+
+    .modal.fade:not(.show) {
+        opacity: 0;
+    }
+
+    .modal.show {
+        opacity: 1;
+    }
+
+    /* Ensure modal is always on top */
+    .modal.show {
+        display: block !important;
+    }
+</style> 
