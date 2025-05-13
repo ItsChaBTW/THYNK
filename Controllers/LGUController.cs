@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Authentication;
 using System.Text.Json;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace THYNK.Controllers
 {
@@ -192,6 +194,7 @@ namespace THYNK.Controllers
             {
                 // We would have a ResolutionDate field, but for now we'll just use AdditionalInfo
                 report.AdditionalInfo += $"\n\nResolved on: {DateTime.Now:yyyy-MM-dd HH:mm}";
+                report.ResolvedAt = DateTime.Now;
             }
             
             _context.Update(report);
@@ -360,19 +363,282 @@ namespace THYNK.Controllers
             return View();
         }
 
-        // User profile
-        public async Task<IActionResult> Profile()
+        // Profile management page
+        public IActionResult Profile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id == userId);
-                
-            if (user == null)
+            var currentUser = _userManager.FindByIdAsync(userId).Result as LGUUser;
+            
+            if (currentUser == null)
             {
                 return NotFound();
             }
             
-            return View(user);
+            // Get or initialize notification preferences
+            var notificationPreferences = _context.NotificationPreferences
+                .FirstOrDefaultAsync(np => np.UserId == userId).Result;
+                
+            if (notificationPreferences == null)
+            {
+                notificationPreferences = new NotificationPreferences
+                {
+                    UserId = userId,
+                    EmailEnabled = true,
+                    SmsEnabled = false,
+                    ReportUpdatesEnabled = true,
+                    CommunityActivityEnabled = true
+                };
+                
+                _context.NotificationPreferences.Add(notificationPreferences);
+                _context.SaveChangesAsync().Wait();
+            }
+            
+            // Pass notification preferences to the view
+            currentUser.NotificationPreferences = notificationPreferences;
+            
+            // Get available jurisdiction areas
+            ViewBag.AvailableAreas = _context.Users
+                .Where(u => !string.IsNullOrEmpty(u.CityMunicipalityName))
+                .Select(u => u.CityMunicipalityName)
+                .Distinct()
+                .ToListAsync().Result;
+            
+            return View(currentUser);
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(LGUUser model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Update user fields
+                    currentUser.FirstName = model.FirstName;
+                    currentUser.LastName = model.LastName;
+                    currentUser.Position = model.Position;
+                    currentUser.Department = model.Department;
+                    currentUser.Email = model.Email;
+                    currentUser.PhoneNumber = model.PhoneNumber;
+                    currentUser.Bio = model.Bio;
+                    
+                    // Update jurisdiction area if provided
+                    if (!string.IsNullOrEmpty(model.JurisdictionArea))
+                    {
+                        currentUser.CityMunicipalityName = model.JurisdictionArea;
+                    }
+                    
+                    // Save changes
+                    await _userManager.UpdateAsync(currentUser);
+                    
+                    TempData["SuccessMessage"] = "Profile information updated successfully.";
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error updating profile: {ex.Message}");
+                    ModelState.AddModelError("", "An error occurred while updating your profile.");
+                }
+            }
+            
+            return RedirectToAction(nameof(Profile));
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdatePassword(string CurrentPassword, string NewPassword, string ConfirmPassword)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId);
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            if (string.IsNullOrEmpty(CurrentPassword) || string.IsNullOrEmpty(NewPassword) || string.IsNullOrEmpty(ConfirmPassword))
+            {
+                TempData["ErrorMessage"] = "All password fields are required.";
+                return RedirectToAction(nameof(Profile));
+            }
+            
+            if (NewPassword != ConfirmPassword)
+            {
+                TempData["ErrorMessage"] = "New password and confirmation password do not match.";
+                return RedirectToAction(nameof(Profile));
+            }
+            
+            var passwordCheck = await _userManager.CheckPasswordAsync(currentUser, CurrentPassword);
+            if (!passwordCheck)
+            {
+                TempData["ErrorMessage"] = "Current password is incorrect.";
+                return RedirectToAction(nameof(Profile));
+            }
+            
+            // Change password
+            var result = await _userManager.ChangePasswordAsync(currentUser, CurrentPassword, NewPassword);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Password updated successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to update password: " + string.Join(", ", result.Errors.Select(e => e.Description));
+            }
+            
+            return RedirectToAction(nameof(Profile));
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateNotifications(bool EmailNotifications, bool SmsNotifications, bool ReportUpdates, bool CommunityActivity)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            // Get existing notification preferences
+            var preferences = await _context.NotificationPreferences
+                .FirstOrDefaultAsync(np => np.UserId == userId);
+                
+            if (preferences == null)
+            {
+                // Create new notification preferences if they don't exist
+                preferences = new NotificationPreferences
+                {
+                    UserId = userId,
+                    EmailEnabled = EmailNotifications,
+                    SmsEnabled = SmsNotifications,
+                    ReportUpdatesEnabled = ReportUpdates,
+                    CommunityActivityEnabled = CommunityActivity
+                };
+                
+                _context.NotificationPreferences.Add(preferences);
+            }
+            else
+            {
+                // Update existing preferences
+                preferences.EmailEnabled = EmailNotifications;
+                preferences.SmsEnabled = SmsNotifications;
+                preferences.ReportUpdatesEnabled = ReportUpdates;
+                preferences.CommunityActivityEnabled = CommunityActivity;
+                
+                _context.NotificationPreferences.Update(preferences);
+            }
+            
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Notification preferences updated successfully.";
+            
+            return RedirectToAction(nameof(Profile));
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfilePhoto(IFormFile ProfilePhoto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId);
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            if (ProfilePhoto != null && ProfilePhoto.Length > 0)
+            {
+                // Check file size (max 2MB)
+                if (ProfilePhoto.Length > 2 * 1024 * 1024)
+                {
+                    TempData["ErrorMessage"] = "Profile photo must be less than 2MB.";
+                    return RedirectToAction(nameof(Profile));
+                }
+                
+                // Check file type
+                var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif" };
+                if (!allowedTypes.Contains(ProfilePhoto.ContentType.ToLower()))
+                {
+                    TempData["ErrorMessage"] = "Only JPEG, PNG, and GIF images are allowed.";
+                    return RedirectToAction(nameof(Profile));
+                }
+                
+                try
+                {
+                    // Create directory if it doesn't exist
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile-photos");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                    
+                    // Generate unique filename
+                    var uniqueFileName = $"{userId}_{DateTime.Now.Ticks}{Path.GetExtension(ProfilePhoto.FileName)}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    
+                    // Save the file
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await ProfilePhoto.CopyToAsync(fileStream);
+                    }
+                    
+                    // Update user's profile photo URL
+                    currentUser.ProfilePhotoUrl = $"/uploads/profile-photos/{uniqueFileName}";
+                    await _userManager.UpdateAsync(currentUser);
+                    
+                    TempData["SuccessMessage"] = "Profile photo updated successfully.";
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error updating profile photo: {ex.Message}");
+                    TempData["ErrorMessage"] = "An error occurred while updating your profile photo.";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Please select a profile photo to upload.";
+            }
+            
+            return RedirectToAction(nameof(Profile));
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            return View();
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmDeleteAccount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId);
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            // Sign the user out
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+            
+            // Attempt to delete the user
+            var result = await _userManager.DeleteAsync(currentUser);
+            
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Failed to delete account: " + string.Join(", ", result.Errors.Select(e => e.Description));
+                return RedirectToAction(nameof(Profile));
+            }
         }
 
         // API endpoint to get map data
@@ -514,6 +780,357 @@ namespace THYNK.Controllers
                 TempData["ErrorMessage"] = "An error occurred while saving your post. Please try again.";
                 return RedirectToAction(nameof(CommunityFeed));
             }
+        }
+
+        // Analytics dashboard
+        public async Task<IActionResult> Analytics()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            // Get total reports count
+            var totalReports = await _context.DisasterReports
+                .Where(r => r.AssignedToId == userId || 
+                           (r.AssignedTo.OrganizationName == currentUser.OrganizationName))
+                .CountAsync();
+                
+            // Get resolved reports count
+            var resolvedReports = await _context.DisasterReports
+                .Where(r => (r.AssignedToId == userId || 
+                           (r.AssignedTo.OrganizationName == currentUser.OrganizationName)) &&
+                           r.Status == ReportStatus.Resolved)
+                .CountAsync();
+                
+            // Calculate average response time (in hours)
+            var reportsWithResolution = await _context.DisasterReports
+                .Where(r => (r.AssignedToId == userId || 
+                           (r.AssignedTo.OrganizationName == currentUser.OrganizationName)) &&
+                           r.Status == ReportStatus.Resolved &&
+                           r.ResolvedAt.HasValue &&
+                           r.AssignedAt.HasValue)
+                .ToListAsync();
+                
+            double avgResponseTime = 0;
+            if (reportsWithResolution.Count > 0)
+            {
+                avgResponseTime = reportsWithResolution
+                    .Average(r => (r.ResolvedAt.Value - r.AssignedAt.Value).TotalHours);
+            }
+            
+            // Calculate community engagement (percentage of reports with comments)
+            var communityEngagement = 0;
+            // Implementation would depend on how comments are tracked in your system
+            
+            // Get geographic data for the map (in Negros Occidental area)
+            var geoData = await _context.DisasterReports
+                .Where(r => r.AssignedToId == userId || 
+                           (r.AssignedTo.OrganizationName == currentUser.OrganizationName))
+                .Where(r => r.Latitude != 0 && r.Longitude != 0)
+                // Focus on Negros Occidental by filtering based on coordinates
+                .Where(r => r.Longitude >= 122.27 && r.Longitude <= 123.55 && 
+                           r.Latitude >= 9.85 && r.Latitude <= 11.05)
+                .Select(r => new {
+                    r.Id,
+                    r.Title,
+                    r.Type,
+                    r.Status,
+                    r.Severity,
+                    r.Latitude,
+                    r.Longitude,
+                    r.Location,
+                    r.Barangay,
+                    r.City,
+                    ReportDate = r.DateReported,
+                    IsResolved = r.Status == ReportStatus.Resolved
+                })
+                .ToListAsync();
+            
+            _logger.LogInformation($"Retrieved {geoData.Count} geographic data points for Negros Occidental");
+            
+            // Calculate district-based counts (for Negros Occidental)
+            // Simplified approach - in real implementation you'd have proper district mapping
+            var northDistrictCount = geoData.Count(r => 
+                r.City?.ToLower().Contains("sagay") == true || 
+                r.City?.ToLower().Contains("cadiz") == true || 
+                r.City?.ToLower().Contains("escalante") == true ||
+                r.City?.ToLower().Contains("san carlos") == true);
+                
+            var centralDistrictCount = geoData.Count(r => 
+                r.City?.ToLower().Contains("bacolod") == true ||
+                r.City?.ToLower().Contains("talisay") == true ||
+                r.City?.ToLower().Contains("silay") == true);
+                
+            var southDistrictCount = geoData.Count(r => 
+                r.City?.ToLower().Contains("himamaylan") == true ||
+                r.City?.ToLower().Contains("kabankalan") == true ||
+                r.City?.ToLower().Contains("sipalay") == true);
+            
+            ViewBag.TotalReports = totalReports;
+            ViewBag.ResolvedReports = resolvedReports;
+            ViewBag.AverageResponseTime = $"{avgResponseTime:F1}h";
+            ViewBag.CommunityEngagement = $"{communityEngagement}%";
+            ViewBag.GeoData = geoData;
+            ViewBag.NorthDistrictCount = northDistrictCount;
+            ViewBag.CentralDistrictCount = centralDistrictCount;
+            ViewBag.SouthDistrictCount = southDistrictCount;
+            
+            return View();
+        }
+        
+        // Chat Support for LGU
+        public async Task<IActionResult> ChatSupport(int? chatId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            // Extract LGU jurisdiction details from the current user
+            string lgaName = currentUser.OrganizationName;
+            
+            // Get chats that match this LGU's jurisdiction
+            var activeChats = await _context.ChatSessions
+                .Include(c => c.User)
+                .Include(c => c.Messages)
+                .Where(c => c.Status != ChatStatus.Closed)
+                .Where(c => 
+                    // Already assigned to this specific LGU user
+                    c.AssignedToId == userId ||
+                    // OR not assigned yet AND matches LGU jurisdiction
+                    (c.AssignedToId == null && 
+                     (
+                         // Match based on user's location (city/municipality)
+                         (c.User != null && 
+                          ((c.User.CityMunicipalityName != null && c.User.CityMunicipalityName.Contains(currentUser.CityMunicipalityName ?? "")) ||
+                           (c.User.BarangayName != null && c.User.BarangayName.Contains(currentUser.BarangayName ?? "")))
+                         ) ||
+                         // OR match based on chat category (can contain LGU name or area)
+                         (c.Category != null && c.Category.Contains(lgaName)) ||
+                         // OR match based on chat title (can mention area name)
+                         (c.Title != null && (
+                             c.Title.Contains(currentUser.CityMunicipalityName ?? "") || 
+                             c.Title.Contains(currentUser.BarangayName ?? "") ||
+                             c.Title.Contains(lgaName)
+                         ))
+                     )
+                    )
+                )
+                .OrderByDescending(c => c.StartTime)
+                .ToListAsync();
+                
+            ViewBag.ActiveChats = activeChats;
+            
+            // If a specific chat is selected, get its details
+            if (chatId.HasValue)
+            {
+                var selectedChat = await _context.ChatSessions
+                    .Include(c => c.User)
+                    .Include(c => c.Messages.OrderBy(m => m.Timestamp))
+                    .FirstOrDefaultAsync(c => c.Id == chatId.Value);
+                    
+                if (selectedChat != null)
+                {
+                    // Verify this chat belongs to this LGU's jurisdiction before allowing access
+                    bool isAssignedToThisUser = selectedChat.AssignedToId == userId;
+                    bool matchesJurisdiction = false;
+                    
+                    if (selectedChat.User != null)
+                    {
+                        matchesJurisdiction = 
+                            (selectedChat.User.CityMunicipalityName != null && selectedChat.User.CityMunicipalityName.Contains(currentUser.CityMunicipalityName ?? "")) ||
+                            (selectedChat.User.BarangayName != null && selectedChat.User.BarangayName.Contains(currentUser.BarangayName ?? ""));
+                    }
+                    
+                    bool matchesCategory = selectedChat.Category != null && selectedChat.Category.Contains(lgaName);
+                    bool matchesTitle = selectedChat.Title != null && (
+                        selectedChat.Title.Contains(currentUser.CityMunicipalityName ?? "") || 
+                        selectedChat.Title.Contains(currentUser.BarangayName ?? "") ||
+                        selectedChat.Title.Contains(lgaName)
+                    );
+                    
+                    if (isAssignedToThisUser || matchesJurisdiction || matchesCategory || matchesTitle)
+                    {
+                        // Auto-assign this chat to the current LGU user if not already assigned
+                        if (string.IsNullOrEmpty(selectedChat.AssignedToId))
+                        {
+                            selectedChat.AssignedToId = userId;
+                            await _context.SaveChangesAsync();
+                            
+                            // Add system message indicating assignment
+                            var assignmentMessage = new ChatMessage
+                            {
+                                ChatSessionId = selectedChat.Id,
+                                SenderId = null,  // System message
+                                Content = $"Chat assigned to {currentUser.FirstName} {currentUser.LastName} ({currentUser.OrganizationName}).",
+                                Timestamp = DateTime.Now
+                            };
+                            
+                            _context.ChatMessages.Add(assignmentMessage);
+                            await _context.SaveChangesAsync();
+                        }
+                        
+                        ViewBag.SelectedChat = selectedChat;
+                        ViewBag.SelectedChatId = selectedChat.Id;
+                    }
+                    else
+                    {
+                        // This chat doesn't belong to this LGU's jurisdiction
+                        TempData["ErrorMessage"] = "You don't have access to this chat as it's not in your jurisdiction.";
+                    }
+                }
+            }
+            
+            return View();
+        }
+        
+        // Send message in chat for LGU
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendMessage(int sessionId, string message)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            var session = await _context.ChatSessions
+                .FirstOrDefaultAsync(c => c.Id == sessionId);
+                
+            if (session == null)
+            {
+                return NotFound();
+            }
+            
+            if (session.Status == ChatStatus.Closed)
+            {
+                TempData["ErrorMessage"] = "This chat session has been closed.";
+                return RedirectToAction(nameof(ChatSupport), new { chatId = sessionId });
+            }
+            
+            // Verify this LGU user has jurisdiction over this chat
+            bool hasJurisdiction = session.AssignedToId == userId;
+            
+            if (!hasJurisdiction)
+            {
+                // Check if chat matches jurisdiction based on location
+                var chatUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == session.UserId);
+                if (chatUser != null)
+                {
+                    hasJurisdiction = 
+                        (chatUser.CityMunicipalityName != null && 
+                         chatUser.CityMunicipalityName.Contains(currentUser.CityMunicipalityName ?? "")) ||
+                        (chatUser.BarangayName != null && 
+                         chatUser.BarangayName.Contains(currentUser.BarangayName ?? ""));
+                }
+                
+                // Also check title and category
+                hasJurisdiction = hasJurisdiction || 
+                    (session.Category != null && session.Category.Contains(currentUser.OrganizationName)) ||
+                    (session.Title != null && (
+                        session.Title.Contains(currentUser.CityMunicipalityName ?? "") || 
+                        session.Title.Contains(currentUser.BarangayName ?? "") ||
+                        session.Title.Contains(currentUser.OrganizationName)
+                    ));
+            }
+            
+            if (!hasJurisdiction)
+            {
+                TempData["ErrorMessage"] = "You don't have access to this chat as it's not in your jurisdiction.";
+                return RedirectToAction(nameof(ChatSupport));
+            }
+            
+            // Add the message
+            var chatMessage = new ChatMessage
+            {
+                ChatSessionId = sessionId,
+                SenderId = userId,
+                Content = message,
+                Timestamp = DateTime.Now
+            };
+            
+            _context.ChatMessages.Add(chatMessage);
+            await _context.SaveChangesAsync();
+            
+            // Always ensure this chat is assigned to the current LGU
+            if (string.IsNullOrEmpty(session.AssignedToId))
+            {
+                session.AssignedToId = userId;
+                await _context.SaveChangesAsync();
+                
+                // Add system message indicating assignment
+                var assignmentMessage = new ChatMessage
+                {
+                    ChatSessionId = sessionId,
+                    SenderId = null,  // System message
+                    Content = $"Chat assigned to {currentUser.FirstName} {currentUser.LastName} ({currentUser.OrganizationName}).",
+                    Timestamp = DateTime.Now
+                };
+                
+                _context.ChatMessages.Add(assignmentMessage);
+                await _context.SaveChangesAsync();
+            }
+            
+            return RedirectToAction(nameof(ChatSupport), new { chatId = sessionId });
+        }
+        
+        // Close chat for LGU
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CloseChat(int sessionId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            var session = await _context.ChatSessions
+                .FirstOrDefaultAsync(c => c.Id == sessionId);
+                
+            if (session == null)
+            {
+                return NotFound();
+            }
+            
+            // Verify this LGU user has jurisdiction over this chat
+            bool hasJurisdiction = session.AssignedToId == userId;
+            
+            if (!hasJurisdiction)
+            {
+                TempData["ErrorMessage"] = "You don't have access to this chat as it's not in your jurisdiction.";
+                return RedirectToAction(nameof(ChatSupport));
+            }
+            
+            // Close the session
+            session.Status = ChatStatus.Closed;
+            session.EndTime = DateTime.Now;
+            
+            // Add system message indicating session closure
+            var closureMessage = new ChatMessage
+            {
+                ChatSessionId = sessionId,
+                SenderId = null,
+                Content = $"Chat session closed by {currentUser.FirstName} {currentUser.LastName} from {currentUser.OrganizationName}.",
+                Timestamp = DateTime.Now
+            };
+            
+            _context.ChatMessages.Add(closureMessage);
+            await _context.SaveChangesAsync();
+            
+            return RedirectToAction(nameof(ChatSupport));
         }
     }
 } 
