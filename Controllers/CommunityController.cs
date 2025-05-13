@@ -336,11 +336,32 @@ namespace THYNK.Controllers
         
         // API endpoint to get map data
         [HttpGet]
-        public async Task<JsonResult> GetMapData()
+        public async Task<JsonResult> GetMapData(int? status, DateTime? dateFrom, DateTime? dateTo)
         {
-            var reports = await _context.DisasterReports
+            var query = _context.DisasterReports
                 .Include(r => r.AssignedTo)
-                .Where(r => r.Status == ReportStatus.InProgress || r.Status == ReportStatus.Resolved) // Show both in-progress and resolved
+                .AsQueryable();
+
+            // Only show In Progress and Resolved by default if no status filter
+            if (status.HasValue)
+            {
+                query = query.Where(r => (int)r.Status == status.Value);
+            }
+            else
+            {
+                query = query.Where(r => r.Status == ReportStatus.InProgress || r.Status == ReportStatus.Resolved);
+            }
+
+            if (dateFrom.HasValue)
+            {
+                query = query.Where(r => r.DateReported >= dateFrom.Value);
+            }
+            if (dateTo.HasValue)
+            {
+                query = query.Where(r => r.DateReported <= dateTo.Value);
+            }
+
+            var reports = await query
                 .Select(r => new {
                     r.Id,
                     r.Title,
@@ -360,7 +381,7 @@ namespace THYNK.Controllers
                     } : null
                 })
                 .ToListAsync();
-                
+
             return Json(reports);
         }
         

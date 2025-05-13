@@ -314,6 +314,12 @@ namespace THYNK.Controllers
                 .OrderByDescending(r => r.DateReported)
                 .ToListAsync();
                 
+            // Get available LGU/SLU users for assignment
+            ViewBag.AvailableUsers = await _context.Users
+                .OfType<LGUUser>()
+                .Where(u => u.IsApproved)
+                .ToListAsync();
+                
             ViewBag.CurrentFilter = status;
             return View(reports);
         }
@@ -359,7 +365,7 @@ namespace THYNK.Controllers
                 if (report.Status != ReportStatus.Pending)
                 {
                     TempData["ErrorMessage"] = "Only pending reports can be verified.";
-                    return RedirectToAction(nameof(ReportDetails), new { id = id });
+                    return RedirectToAction(nameof(IncidentReports));
                 }
                 
                 report.Status = ReportStatus.Verified;
@@ -384,13 +390,13 @@ namespace THYNK.Controllers
                 }
                 
                 TempData["SuccessMessage"] = "Report has been verified successfully.";
-                return RedirectToAction(nameof(ReportDetails), new { id = id });
+                return RedirectToAction(nameof(IncidentReports));
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error verifying report: {ex.Message}");
                 TempData["ErrorMessage"] = "An error occurred while verifying the report.";
-                return RedirectToAction(nameof(ReportDetails), new { id = id });
+                return RedirectToAction(nameof(IncidentReports));
             }
         }
 
