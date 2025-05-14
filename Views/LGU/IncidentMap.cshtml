@@ -3,88 +3,591 @@
     Layout = "_LGULayout";
 }
 
-<div class="row">
-    <div class="col-md-9">
-        <div class="card dashboard-card">
-            <div class="card-header bg-primary text-white">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-primary">
-                        <i class="fas fa-map-marked-alt"></i>
-                    </div>
-                    <div>
-                        <h5 class="m-0">Incident Map</h5>
-                        <small>View all reported incidents on the map</small>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body p-0">
-                <div id="map" class="map-container"></div>
-            </div>
+<style>
+    /* Enhanced Minimalist Incident Map Styles */
+    .map-container-wrapper {
+        padding: 1.5rem 0;
+    }
+    
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+    
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(to right, #1ABC9C, rgba(26, 188, 156, 0.1));
+    }
+    
+    .page-title {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin: 0;
+        letter-spacing: 0.01em;
+    }
+    
+    .page-subtitle {
+        font-size: 0.8rem;
+        color: var(--dark-alt);
+        margin-top: 0.25rem;
+        max-width: 600px;
+    }
+    
+    .map-card {
+        border-radius: 0.4rem;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        background-color: #fff;
+        margin-bottom: 1.25rem;
+        border: none;
+        transition: all 0.3s ease;
+        height: calc(100vh - 170px);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .map-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .map-card-header {
+        background-color: white;
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+    
+    .map-card-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 40px;
+        height: 2px;
+        background: #1ABC9C;
+    }
+    
+    .map-card-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .map-card-title i {
+        margin-right: 0.6rem;
+        color: #1ABC9C;
+        font-size: 1rem;
+    }
+    
+    .map-card-body {
+        padding: 0;
+        flex: 1;
+        position: relative;
+    }
+    
+    .map-container {
+        height: 100%;
+        width: 100%;
+        position: relative;
+    }
+    
+    .filter-card {
+        border-radius: 0.4rem;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        background-color: #fff;
+        margin-bottom: 1.25rem;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .filter-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+    
+    .filter-card-header {
+        background-color: white;
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+    
+    .filter-card-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 40px;
+        height: 2px;
+        background: #1ABC9C;
+    }
+    
+    .filter-card-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .filter-card-title i {
+        margin-right: 0.6rem;
+        color: #1ABC9C;
+        font-size: 1rem;
+    }
+    
+    .filter-card-body {
+        padding: 1.1rem 1.25rem;
+    }
+    
+    .filter-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #1ABC9C;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        position: relative;
+        display: inline-block;
+        padding-bottom: 0.25rem;
+    }
+    
+    .filter-label::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 20px;
+        height: 2px;
+        background-color: rgba(26, 188, 156, 0.3);
+    }
+    
+    .date-input-group {
+        position: relative;
+        margin-bottom: 0.75rem;
+    }
+    
+    .date-input-group:last-child {
+        margin-bottom: 1rem;
+    }
+    
+    .date-input-label {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.7rem;
+        color: var(--dark-alt);
+        background: white;
+        padding: 0 0.25rem;
+        z-index: 2;
+    }
+    
+    .date-input {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 0.25rem;
+        font-size: 0.8rem;
+        color: var(--dark);
+        transition: all 0.3s ease;
+    }
+    
+    .date-input:focus {
+        outline: none;
+        border-color: #1ABC9C;
+        box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.1);
+    }
+    
+    .btn-filter {
+        width: 100%;
+        padding: 0.6rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 0.25rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-filter i {
+        margin-right: 0.5rem;
+    }
+    
+    .btn-apply {
+        background-color: #1ABC9C;
+        color: white;
+        border: none;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-apply:hover {
+        background-color: #16a085;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(26, 188, 156, 0.3);
+    }
+    
+    .btn-reset {
+        background-color: transparent;
+        color: var(--dark-alt);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-reset:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--dark);
+    }
+    
+    .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 0.75rem;
+        position: relative;
+    }
+    
+    .legend-color::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        border-radius: 50%;
+        background-color: inherit;
+        opacity: 0.3;
+        z-index: 0;
+    }
+    
+    .legend-section {
+        margin-bottom: 1.25rem;
+    }
+    
+    .legend-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .legend-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--dark-alt);
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Incident Modal Styles */
+    .modal-container {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+    
+    .modal-header {
+        background-color: #fff;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+    
+    .modal-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(to right, #1ABC9C, rgba(26, 188, 156, 0.1));
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin: 0;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .info-card {
+        border-radius: 0.4rem;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        background-color: #fff;
+        margin-bottom: 1.25rem;
+        border: none;
+    }
+    
+    .info-card-header {
+        background-color: white;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+    
+    .info-card-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 30px;
+        height: 2px;
+        background: #1ABC9C;
+    }
+    
+    .info-card-title {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin: 0;
+    }
+    
+    .info-card-body {
+        padding: 1rem 1.25rem;
+    }
+    
+    .info-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #1ABC9C;
+        margin-bottom: 0.35rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        position: relative;
+        display: inline-block;
+        padding-bottom: 0.25rem;
+    }
+    
+    .info-label::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 20px;
+        height: 2px;
+        background-color: rgba(26, 188, 156, 0.3);
+    }
+    
+    .info-value {
+        font-size: 0.85rem;
+        color: var(--dark);
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        font-weight: 400;
+    }
+    
+    .info-value:last-child {
+        margin-bottom: 0;
+    }
+    
+    .info-group {
+        margin-bottom: 0.8rem;
+    }
+    
+    .info-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .badge {
+        font-weight: 400;
+        padding: 0.3em 0.6em;
+        font-size: 0.7rem;
+        border-radius: 3px;
+        letter-spacing: 0.02em;
+    }
+    
+    .severity-badge {
+        border-radius: 50px;
+        padding: 0.35em 0.7em;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: rgba(0, 0, 0, 0.01);
+    }
+    
+    .action-btn {
+        padding: 0.6rem 1rem;
+        border-radius: 0.25rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+    
+    .action-btn i {
+        margin-right: 0.5rem;
+    }
+    
+    .action-btn.btn-view {
+        background-color: #1ABC9C;
+        color: white;
+        border: none;
+    }
+    
+    .action-btn.btn-view:hover {
+        background-color: #16a085;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(26, 188, 156, 0.3);
+    }
+    
+    .action-btn.btn-reports {
+        background-color: rgba(0, 0, 0, 0.06);
+        color: var(--dark);
+        border: none;
+    }
+    
+    .action-btn.btn-reports:hover {
+        background-color: rgba(0, 0, 0, 0.09);
+        transform: translateY(-2px);
+    }
+    
+    .action-btn.btn-close {
+        background-color: transparent;
+        color: var(--dark-alt);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn.btn-close:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    /* Animation */
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-in {
+        animation: fadeIn 0.4s ease forwards;
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .map-card {
+            height: 400px;
+        }
+    }
+</style>
+
+<div class="map-container-wrapper">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Incident Map</h1>
+            <p class="page-subtitle">View all reported incidents across the community on an interactive map</p>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card dashboard-card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="m-0"><i class="fas fa-filter me-2"></i>Date Filter</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Date Range</label>
-                    <div class="input-group input-group-sm mb-2">
-                        <span class="input-group-text">From</span>
-                        <input type="date" id="filter-date-from" class="form-control form-control-sm">
-                    </div>
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">To</span>
-                        <input type="date" id="filter-date-to" class="form-control form-control-sm">
-                    </div>
+    
+    <div class="row">
+        <div class="col-md-9">
+            <div class="map-card animate-in">
+                <div class="map-card-header">
+                    <h5 class="map-card-title"><i class="fas fa-map-marked-alt"></i>Interactive Incident Map</h5>
                 </div>
-                <button id="apply-filters" class="btn btn-primary btn-sm w-100">Apply Date Filter</button>
-                <button id="reset-filters" class="btn btn-outline-secondary btn-sm w-100 mt-2">Reset Filter</button>
+                <div class="map-card-body">
+                    <div id="map" class="map-container"></div>
+                </div>
             </div>
         </div>
-
-        <div class="card dashboard-card">
-            <div class="card-header bg-info text-white">
-                <h5 class="m-0"><i class="fas fa-info-circle me-2"></i>Legend</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-2">
-                    <h6 class="mb-2">Incident Types</h6>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="fas fa-circle text-danger me-2"></i>
-                        <small>Earthquake</small>
-                    </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="fas fa-circle text-primary me-2"></i>
-                        <small>Flood</small>
-                    </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="fas fa-circle text-warning me-2"></i>
-                        <small>Fire</small>
-                    </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="fas fa-circle text-secondary me-2"></i>
-                        <small>Landslide</small>
-                    </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="fas fa-circle text-purple me-2"></i>
-                        <small>Storm</small>
-                    </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="fas fa-circle text-orange me-2"></i>
-                        <small>Accident</small>
-                    </div>
+        
+        <div class="col-md-3">
+            <div class="filter-card animate-in" style="animation-delay: 0.1s;">
+                <div class="filter-card-header">
+                    <h5 class="filter-card-title"><i class="fas fa-filter"></i>Date Filter</h5>
                 </div>
-                <div>
-                    <h6 class="mb-2">Status</h6>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="fas fa-circle text-primary me-2"></i>
-                        <small>In Progress</small>
+                <div class="filter-card-body">
+                    <div>
+                        <div class="filter-label">Date Range</div>
+                        <div class="date-input-group">
+                            <input type="date" id="filter-date-from" class="date-input" placeholder="From date">
+                        </div>
+                        <div class="date-input-group">
+                            <input type="date" id="filter-date-to" class="date-input" placeholder="To date">
+                        </div>
                     </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="fas fa-circle text-success me-2"></i>
-                        <small>Resolved</small>
+                    <button id="apply-filters" class="btn-filter btn-apply">
+                        <i class="fas fa-check"></i>Apply Filter
+                    </button>
+                    <button id="reset-filters" class="btn-filter btn-reset">
+                        <i class="fas fa-undo"></i>Reset Filter
+                    </button>
+                </div>
+            </div>
+
+            <div class="filter-card animate-in" style="animation-delay: 0.2s;">
+                <div class="filter-card-header">
+                    <h5 class="filter-card-title"><i class="fas fa-info-circle"></i>Map Legend</h5>
+                </div>
+                <div class="filter-card-body">
+                    <div class="legend-section">
+                        <div class="legend-title">Incident Types</div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #DC3545;"></div>
+                            <span>Earthquake</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #0D6EFD;"></div>
+                            <span>Flood</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #FFC107;"></div>
+                            <span>Fire</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #6C757D;"></div>
+                            <span>Landslide</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #6610F2;"></div>
+                            <span>Storm</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #FD7E14;"></div>
+                            <span>Accident</span>
+                        </div>
+                    </div>
+                    
+                    <div class="legend-section">
+                        <div class="legend-title">Status</div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #0D6EFD;"></div>
+                            <span>In Progress</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #198754;"></div>
+                            <span>Resolved</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -92,9 +595,10 @@
     </div>
 </div>
 
+<!-- Enhanced Incident Modal -->
 <div class="modal fade" id="incident-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+        <div class="modal-content modal-container">
             <div class="modal-header">
                 <h5 class="modal-title" id="modal-title">Incident Report Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -102,46 +606,66 @@
             <div class="modal-body" id="modal-body">
                 <div class="row">
                     <div class="col-md-8">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="m-0">Report Information</h5>
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <h5 class="info-card-title">Report Information</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="row mb-3">
+                            <div class="info-card-body">
+                                <div class="row">
                                     <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">Title</h6>
-                                        <p class="mb-0" id="modal-title-text"></p>
+                                        <div class="info-group">
+                                            <div class="info-label">Title</div>
+                                            <div class="info-value" id="modal-title-text"></div>
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">Status</h6>
-                                        <span id="modal-status" class="badge"></span>
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">Type</h6>
-                                        <span id="modal-type" class="badge bg-secondary"></span>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">Severity</h6>
-                                        <span id="modal-severity" class="badge"></span>
+                                        <div class="info-group">
+                                            <div class="info-label">Status</div>
+                                            <div class="info-value">
+                                                <span id="modal-status" class="badge"></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row mb-3">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-group">
+                                            <div class="info-label">Type</div>
+                                            <div class="info-value">
+                                                <span id="modal-type" class="badge bg-secondary"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-group">
+                                            <div class="info-label">Severity</div>
+                                            <div class="info-value">
+                                                <span id="modal-severity" class="badge severity-badge"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="col-12">
-                                        <h6 class="text-muted mb-2">Description</h6>
-                                        <p class="mb-0" id="modal-description"></p>
+                                        <div class="info-group">
+                                            <div class="info-label">Description</div>
+                                            <div class="info-value" id="modal-description"></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row mb-3">
+                                <div class="row">
                                     <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">Location</h6>
-                                        <p class="mb-0" id="modal-location"></p>
-                                        <p class="small text-muted mb-0" id="modal-detailed-location"></p>
+                                        <div class="info-group">
+                                            <div class="info-label">Location</div>
+                                            <div class="info-value" id="modal-location"></div>
+                                            <div class="info-value small text-muted" id="modal-detailed-location"></div>
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">Date Reported</h6>
-                                        <p class="mb-0" id="modal-date"></p>
+                                        <div class="info-group">
+                                            <div class="info-label">Date Reported</div>
+                                            <div class="info-value" id="modal-date"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -149,38 +673,41 @@
                     </div>
 
                     <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h5 class="m-0">Reporter Information</h5>
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <h5 class="info-card-title">Reporter Information</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Name</h6>
-                                    <p class="mb-0" id="modal-reporter-name"></p>
+                            <div class="info-card-body">
+                                <div class="info-group">
+                                    <div class="info-label">Name</div>
+                                    <div class="info-value" id="modal-reporter-name"></div>
                                 </div>
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Email</h6>
-                                    <p class="mb-0" id="modal-reporter-email"></p>
+                                
+                                <div class="info-group">
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value" id="modal-reporter-email"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="m-0">Assigned To</h5>
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <h5 class="info-card-title">Assigned To</h5>
                             </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Organization</h6>
-                                    <p class="mb-0" id="modal-org-name"></p>
+                            <div class="info-card-body">
+                                <div class="info-group">
+                                    <div class="info-label">Organization</div>
+                                    <div class="info-value" id="modal-org-name"></div>
                                 </div>
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Name</h6>
-                                    <p class="mb-0" id="modal-assigned-name"></p>
+                                
+                                <div class="info-group">
+                                    <div class="info-label">Name</div>
+                                    <div class="info-value" id="modal-assigned-name"></div>
                                 </div>
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Assigned Date</h6>
-                                    <p class="mb-0" id="modal-assigned-date"></p>
+                                
+                                <div class="info-group">
+                                    <div class="info-label">Assigned Date</div>
+                                    <div class="info-value" id="modal-assigned-date"></div>
                                 </div>
                             </div>
                         </div>
@@ -188,19 +715,21 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <a id="view-details-link" href="#" class="btn btn-primary">
-                    <i class="fas fa-file-alt me-2"></i>View Full Details
+                <a id="view-details-link" href="#" class="action-btn btn-view">
+                    <i class="fas fa-file-alt"></i>View Full Details
                 </a>
-                <a href="/LGU/ManageReports" class="btn btn-secondary">
-                    <i class="fas fa-list me-2"></i>View Reports
+                <a href="@Url.Action("ManageReports", "LGU")" class="action-btn btn-reports">
+                    <i class="fas fa-list"></i>View All Reports
                 </a>
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="action-btn btn-close" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <script>
         // Initialize the map
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
@@ -454,42 +983,4 @@
             renderMarkers(incidents);
         }
     </script>
-}
-
-@section Styles {
-    <style>
-        .map-container {
-            height: 75vh;
-            min-height: 500px;
-        }
-        .mapboxgl-popup {
-            max-width: 300px;
-        }
-        .incident-marker {
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s ease;
-        }
-        .incident-marker:hover {
-            transform: scale(1.2);
-        }
-        .text-purple {
-            color: #6610f2;
-        }
-        .text-orange {
-            color: #fd7e14;
-        }
-        .modal-lg {
-            max-width: 900px;
-        }
-        .card {
-            border: 1px solid rgba(0,0,0,.125);
-            border-radius: 0.25rem;
-        }
-        .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 1px solid rgba(0,0,0,.125);
-            padding: 0.75rem 1.25rem;
-        }
-    </style>
 } 

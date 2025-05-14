@@ -4,204 +4,932 @@
     Layout = "_LGULayout";
 }
 
-<div class="container-fluid px-4">
-    <div class="row">
-        <!-- Create Post Card -->
-        <div class="col-12 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
-                        @Html.AntiForgeryToken()
-                        <div class="d-flex align-items-center mb-4">
-                            <div class="avatar-circle me-3">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <textarea class="form-control border-0 bg-light" id="content" name="Content" rows="2" required 
-                                        placeholder="Share your thoughts, updates, or information with the community..."></textarea>
-                            </div>
-                        </div>
-                        
-                        <div class="post-options mb-3">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <select class="form-select bg-light border-0" id="type" name="Type" required>
-                                        <option value="GeneralUpdate">General Update</option>
-                                        <option value="HelpRequest">Help Request</option>
-                                        <option value="StatusUpdate">Status Update</option>
-                                        <option value="ResourceSharing">Resource Sharing</option>
-                                        <option value="Information">Information</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-0">
-                                            <i class="fas fa-map-marker-alt text-muted"></i>
-                                        </span>
-                                        <input type="text" class="form-control bg-light border-0" id="location" name="Location" 
-                                               placeholder="Add location (optional)">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+<style>
+    /* Enhanced Minimalist Community Feed Styles */
+    body {
+        background-color: #f5f7fa;
+    }
+    
+    .feed-container {
+        height: calc(100vh - 80px);
+        padding: 1.5rem 0;
+        overflow-y: auto;
+        background-color: #eef0f5;
+    }
+    
+    .container-fluid {
+        max-width: 1440px;
+    }
+    
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+        background-color: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(to right, #1ABC9C, rgba(26, 188, 156, 0.1));
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+    
+    .page-subtitle {
+        font-size: 0.9rem;
+        color: #777;
+        margin: 0.25rem 0 0;
+    }
+    
+    .create-post-btn {
+        background: linear-gradient(45deg, #1ABC9C, #16a085);
+        border: none;
+        border-radius: 50px;
+        padding: 0.6rem 1.35rem;
+        font-weight: 500;
+        color: white;
+        letter-spacing: 0.02em;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(26, 188, 156, 0.3);
+    }
+    
+    .create-post-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(26, 188, 156, 0.4);
+        background: linear-gradient(45deg, #16a085, #1ABC9C);
+    }
+    
+    .create-post-btn:active {
+        transform: translateY(-1px);
+    }
+    
+    .create-post-card, .feed-card {
+        background-color: #fff;
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        transition: all 0.2s ease;
+    }
+    
+    .create-post-card:hover, .feed-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .feed-card {
+        background-color: #fff;
+        border: none;
+        border-radius: 0.75rem;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .feed-card:hover {
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+    
+    .feed-card-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        background-color: #ffffff;
+    }
+    
+    .feed-card-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #333;
+        margin: 0;
+    }
+    
+    .feed-card-title i {
+        margin-right: 0.5rem;
+        color: #1ABC9C;
+    }
+    
+    .feed-filter-container {
+        max-width: 700px;
+    }
+    
+    .feed-filter {
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 50px;
+        padding: 0.4rem 1rem;
+        font-size: 0.875rem;
+        background-color: white;
+        width: 150px;
+    }
+    
+    .feed-filter:focus {
+        border-color: #1ABC9C;
+        box-shadow: 0 0 0 0.2rem rgba(26, 188, 156, 0.15);
+    }
+    
+    .post-textarea {
+        border: 1px solid rgba(0,0,0,0.1);
+        padding: 0.75rem;
+        border-radius: 0.35rem;
+        resize: none;
+        transition: all 0.2s ease;
+        font-size: 0.95rem;
+    }
+    
+    .post-textarea:focus {
+        border-color: #1ABC9C;
+        box-shadow: 0 0 0 0.25rem rgba(26, 188, 156, 0.2);
+    }
+    
+    .post-shortcuts {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        padding: 0 1.5rem;
+    }
+    
+    .post-shortcut-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .post-shortcut-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        filter: brightness(105%);
+    }
+    
+    .post-shortcut-btn:active {
+        transform: translateY(0);
+    }
+    
+    .post-shortcut-btn i {
+        font-size: 0.9rem;
+    }
+    
+    .btn-general {
+        background: linear-gradient(45deg, #6c757d, #495057);
+    }
+    
+    .btn-help {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+    }
+    
+    .btn-status {
+        background: linear-gradient(45deg, #3498db, #2980b9);
+    }
+    
+    .btn-resource {
+        background: linear-gradient(45deg, #2ecc71, #27ae60);
+    }
+    
+    .btn-info {
+        background: linear-gradient(45deg, #3498db, #2980b9);
+        border: none;
+        color: white;
+    }
+    
+    .btn-info:hover {
+        background: linear-gradient(45deg, #2980b9, #3498db);
+        color: #f1f3f5;
+    }
+    
+    .avatar-circle {
+        width: 42px;
+        height: 42px;
+        background-color: #f0f2f5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+    }
+    
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 0.85rem;
+        font-size: 0.875rem;
+        border-radius: 0.35rem;
+        cursor: pointer;
+        transition: all 0.15s ease-in-out;
+    }
+    
+    .action-btn i {
+        margin-right: 0.35rem;
+    }
+    
+    .post-item {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+        background-color: #ffffff;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    
+    .post-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .post-author-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .post-author-name {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+    
+    .post-date {
+        font-size: 0.75rem;
+        color: #777;
+        background-color: rgba(240, 242, 245, 0.5);
+        padding: 0.25rem 0.5rem;
+        border-radius: 50px;
+        display: inline-block;
+    }
+    
+    .post-status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+    
+    .post-badge {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 0.3rem 0.6rem;
+        border-radius: 50px;
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .post-badge i {
+        margin-right: 0.25rem;
+    }
+    
+    .post-content {
+        margin: 1rem 0;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: #444;
+        white-space: pre-line;
+    }
+    
+    .post-image {
+        margin: 0.75rem 0;
+        border-radius: 0.35rem;
+        overflow: hidden;
+    }
+    
+    .post-image img {
+        border-radius: 0.35rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+        object-fit: cover;
+    }
+    
+    .post-image img:hover {
+        opacity: 0.95;
+        cursor: pointer;
+    }
+    
+    .post-location {
+        margin: 0.75rem 0;
+        font-size: 0.85rem;
+        color: #666;
+    }
+    
+    .post-location a {
+        color: #1ABC9C;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .post-location a:hover {
+        text-decoration: underline;
+    }
+    
+    .post-author {
+        font-size: 0.8rem;
+        color: #888;
+        text-align: right;
+    }
+    
+    .moderation-controls {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        justify-content: flex-end;
+    }
+    
+    .control-btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 50px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        min-width: 100px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+    
+    .control-btn i {
+        margin-right: 0.35rem;
+    }
+    
+    .btn-approve {
+        background: linear-gradient(45deg, #2ecc71, #27ae60);
+        color: white;
+    }
+    
+    .btn-approve:hover {
+        background: linear-gradient(45deg, #27ae60, #2ecc71);
+        box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .btn-reject {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        color: white;
+    }
+    
+    .btn-reject:hover {
+        background: linear-gradient(45deg, #c0392b, #e74c3c);
+        box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .modal-content {
+        border: none;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        position: relative;
+        padding: 1.5rem;
+        background: linear-gradient(to right, #f8f9fa, #f1f3f5);
+    }
+    
+    .modal-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100px;
+        height: 3px;
+        background: linear-gradient(to right, #1ABC9C, rgba(26, 188, 156, 0));
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #333;
+        margin: 0;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .modal-footer {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        background: linear-gradient(to right, #f8f9fa, #f1f3f5);
+        justify-content: space-between;
+    }
+    
+    .btn {
+        border-radius: 50px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+    
+    .btn i {
+        margin-right: 0.4rem;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+    }
+    
+    .btn:active {
+        transform: translateY(-1px);
+    }
+    
+    .btn-light {
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        color: #495057;
+        border: none;
+    }
+    
+    .btn-light:hover {
+        background: linear-gradient(45deg, #e9ecef, #f8f9fa);
+        color: #212529;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, #3498db, #2980b9);
+        border: none;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #2980b9, #3498db);
+    }
+    
+    .btn-success {
+        background: linear-gradient(45deg, #2ecc71, #27ae60);
+        border: none;
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(45deg, #27ae60, #2ecc71);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        border: none;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(45deg, #c0392b, #e74c3c);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(45deg, #6c757d, #495057);
+        border: none;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(45deg, #495057, #6c757d);
+    }
+    
+    .btn-outline-secondary {
+        border: 1px solid #ced4da;
+        color: #6c757d;
+        background: transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #f8f9fa;
+        border-color: #adb5bd;
+        color: #495057;
+    }
+    
+    /* Form controls enhancement */
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        padding: 0.6rem 1rem;
+        transition: all 0.3s ease;
+        border: 1px solid #dee2e6;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #1ABC9C;
+        box-shadow: 0 0 0 0.25rem rgba(26, 188, 156, 0.25);
+    }
+    
+    .input-group {
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        color: #1ABC9C;
+    }
+    
+    /* Animation */
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-in {
+        animation: fadeIn 0.4s ease forwards;
+    }
+    
+    /* Card body content area */
+    .card-body {
+        background-color: #f7f9fc;
+        padding: 1.5rem !important;
+        border-radius: 0 0 0.75rem 0.75rem;
+    }
+    
+    /* Empty state improvements */
+    .text-center.py-5 {
+        background-color: white;
+        border-radius: 0.75rem;
+        padding: 2.5rem !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    
+    .empty-filter-state {
+        background-color: white;
+        border-radius: 0.75rem;
+        padding: 2rem !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        margin-top: 1rem;
+    }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .feed-container {
+            padding: 1rem 0;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .feed-filter-container {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .feed-filter {
+            max-width: none;
+        }
+        
+        .post-shortcuts {
+            flex-wrap: wrap;
+        }
+    }
+    
+    /* Back button enhancement */
+    .btn-light.btn-sm {
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        border: none;
+        color: #495057;
+        border-radius: 50px;
+        padding: 0.4rem 0.85rem;
+        font-size: 0.875rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .btn-light.btn-sm:hover {
+        background: linear-gradient(45deg, #e9ecef, #dee2e6);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+    
+    /* Image viewer modal enhancement */
+    #imageViewerModal .modal-content {
+        background-color: rgba(0, 0, 0, 0.9);
+        border-radius: 0.75rem;
+    }
+    
+    #fullSizeImage {
+        max-height: 80vh;
+        border-radius: 0.5rem;
+    }
+    
+    .post-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+</style>
 
-                        <div class="post-actions d-flex align-items-center justify-content-between">
-                            <div class="d-flex gap-2">
-                                <label class="btn btn-light rounded-pill px-3" for="image">
-                                    <i class="fas fa-image text-primary"></i>
-                                    <span class="ms-1">Photo</span>
-                                </label>
-                                <input type="file" class="d-none" id="image" name="Image" accept="image/*">
-                                <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
-                                <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
-                            </div>
-                            <button type="submit" class="btn btn-primary rounded-pill px-4" onclick="return confirmPost()">
-                                <i class="fas fa-paper-plane me-2"></i>Post
-                            </button>
-                        </div>
-
-                        <!-- Custom Alert -->
-                        <div id="formAlert" class="alert alert-warning mt-3 d-none" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <span id="alertMessage"></span>
-                        </div>
-
-                        <!-- Image Preview -->
-                        <div id="imagePreview" class="mt-3 d-none">
-                            <div class="position-relative d-inline-block">
-                                <img id="preview" class="img-fluid rounded" style="max-height: 200px;">
-                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="removeImage()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+<div class="feed-container">
+    <div class="container-fluid px-4">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Community Feed</h1>
+                <p class="page-subtitle">Manage and monitor community updates and discussions</p>
             </div>
+            <button type="button" class="btn create-post-btn" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                <i class="fas fa-plus-circle me-2"></i>Create New Post
+            </button>
         </div>
-
-        <!-- Community Feed -->
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="m-0">Community Feed</h5>
-                            <small>View and moderate community updates</small>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <select class="form-select form-select-sm bg-light" id="postFilter">
-                                <option value="all">All Posts</option>
-                                <option value="HelpRequest">Help Requests</option>
-                                <option value="StatusUpdate">Status Updates</option>
-                                <option value="ResourceSharing">Resources</option>
-                                <option value="Information">Information</option>
-                                <option value="GeneralUpdate">General Updates</option>
-                            </select>
-                            <a href="@Url.Action("Dashboard", "LGU")" class="btn btn-light btn-sm">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                            </a>
+        
+        <!-- Post Type Shortcuts -->
+        <div class="post-shortcuts mb-4 animate-in">
+            <button type="button" class="post-shortcut-btn btn-general" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="GeneralUpdate">
+                <i class="fas fa-pen"></i>
+                <span>General</span>
+            </button>
+            <button type="button" class="post-shortcut-btn btn-help" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="HelpRequest">
+                <i class="fas fa-hands-helping"></i>
+                <span>Help Request</span>
+            </button>
+            <button type="button" class="post-shortcut-btn btn-status" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="StatusUpdate">
+                <i class="fas fa-chart-line"></i>
+                <span>Status</span>
+            </button>
+            <button type="button" class="post-shortcut-btn btn-resource" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="ResourceSharing">
+                <i class="fas fa-share-alt"></i>
+                <span>Resource</span>
+            </button>
+            <button type="button" class="post-shortcut-btn btn-info" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="Information">
+                <i class="fas fa-info-circle"></i>
+                <span>Info</span>
+            </button>
+        </div>
+        
+        <div class="row">
+            <!-- Community Feed -->
+            <div class="col-12 animate-in" style="animation-delay: 0.1s;">
+                <div class="feed-card">
+                    <div class="feed-card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="feed-card-title"><i class="fas fa-stream"></i>Community Updates</h5>
+                            <div class="feed-filter-container d-flex gap-2">
+                                <select class="form-select feed-filter" id="postFilter">
+                                    <option value="all">All Posts</option>
+                                    <option value="HelpRequest">Help Requests</option>
+                                    <option value="StatusUpdate">Status Updates</option>
+                                    <option value="ResourceSharing">Resources</option>
+                                    <option value="Information">Information</option>
+                                    <option value="GeneralUpdate">General Updates</option>
+                                </select>
+                                <a href="@Url.Action("Dashboard", "LGU")" class="btn btn-light btn-m" >
+                                    <i class="fas fa-arrow-left me-1"></i>Back
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body">
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var post in Model)
+                    <div class="card-body">
+                        @if (Model != null && Model.Any())
                         {
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div>
-                                            <h6 class="mb-0">
-                                                <span class="badge @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 
-                                                                    post.Type == UpdateType.StatusUpdate ? "bg-info" : 
-                                                                    post.Type == UpdateType.ResourceSharing ? "bg-success" : 
-                                                                    post.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
+                            <div class="post-container">
+                                @foreach (var post in Model)
+                                {
+                                    <div class="post-item post-@post.Type.ToString().ToLower() animate-in" style="animation-delay: 0.2s;">
+                                        <div class="post-header">
+                                            <div class="post-author-info">
+                                                <div class="post-author-name">
+                                                    @(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")
+                                                </div>
+                                                <span class="post-date">
+                                                    <i class="far fa-clock me-1"></i>@post.DatePosted.ToString("MMM dd, yyyy HH:mm")
+                                                </span>
+                                            </div>
+                                            <div class="post-status">
+                                                <span class="post-badge @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 
+                                                                        post.Type == UpdateType.StatusUpdate ? "bg-info" : 
+                                                                        post.Type == UpdateType.ResourceSharing ? "bg-success" : 
+                                                                        post.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
+                                                    <i class="fas @(post.Type == UpdateType.HelpRequest ? "fa-hands-helping" : 
+                                                                post.Type == UpdateType.StatusUpdate ? "fa-chart-line" : 
+                                                                post.Type == UpdateType.ResourceSharing ? "fa-share-alt" : 
+                                                                post.Type == UpdateType.Information ? "fa-info-circle" : "fa-pen")"></i>
                                                     @post.Type
                                                 </span>
                                                 @if (post.ModerationStatus == ModerationStatus.Pending)
                                                 {
-                                                    <span class="badge bg-warning ms-2">Pending Review</span>
+                                                    <span class="post-badge bg-warning">
+                                                        <i class="fas fa-clock"></i>Pending Review
+                                                    </span>
                                                 }
-                                            </h6>
-                                        </div>
-                                        <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
-                                    </div>
-                                    <p class="card-text">@post.Content</p>
-                                    @if (!string.IsNullOrEmpty(post.ImageUrl))
-                                    {
-                                        <img src="@post.ImageUrl" class="img-fluid rounded mb-2" alt="Post image">
-                                    }
-                                    @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
-                                    {
-                                        <p class="text-muted mb-0">
-                                            <i class="fas fa-map-marker-alt me-1"></i>@post.Location
-                                            @if (post.Latitude.HasValue && post.Longitude.HasValue)
-                                            {
-                                                <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
-                                                   target="_blank" class="ms-2">
-                                                    <i class="fas fa-external-link-alt"></i> View on Map
-                                                </a>
-                                            }
-                                        </p>
-                                    }
-                                    <div class="mt-2">
-                                        <small class="text-muted">Posted by @(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</small>
-                                    </div>
-                                    @if (post.ModerationStatus == ModerationStatus.Pending)
-                                    {
-                                        <div class="mt-3">
-                                            <form asp-action="ModeratePost" asp-route-id="@post.Id" method="post" class="d-inline">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="action" value="approve" />
-                                                <button type="submit" class="btn btn-success btn-sm">
-                                                    <i class="fas fa-check me-1"></i>Approve
-                                                </button>
-                                            </form>
-                                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal@(post.Id)">
-                                                <i class="fas fa-times me-1"></i>Reject
-                                            </button>
-                                        </div>
-
-                                        <!-- Reject Modal -->
-                                        <div class="modal fade" id="rejectModal@(post.Id)" tabindex="-1" aria-labelledby="rejectModalLabel@(post.Id)" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="rejectModalLabel@(post.Id)">Reject Post</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <form asp-action="ModeratePost" asp-route-id="@post.Id" method="post">
-                                                        @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="action" value="reject" />
-                                                        <div class="modal-body">
-                                                            <div class="mb-3">
-                                                                <label for="rejectionReason" class="form-label">Reason for rejection:</label>
-                                                                <textarea id="rejectionReason" name="rejectionReason" class="form-control" rows="3" required></textarea>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                            <button type="submit" class="btn btn-danger">Reject Post</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
                                             </div>
                                         </div>
-                                    }
-                                </div>
+                                        
+                                        <div class="post-content">@post.Content</div>
+                                        
+                                        @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                        {
+                                            <div class="post-image">
+                                                <img src="@post.ImageUrl" class="img-fluid" alt="Post image" onclick="openImageViewer('@post.ImageUrl')">
+                                            </div>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
+                                        {
+                                            <div class="post-location">
+                                                <i class="fas fa-map-marker-alt text-danger me-1"></i>@post.Location
+                                                @if (post.Latitude.HasValue && post.Longitude.HasValue)
+                                                {
+                                                    <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
+                                                    target="_blank" class="ms-2">
+                                                        <i class="fas fa-external-link-alt"></i> View on Map
+                                                    </a>
+                                                }
+                                            </div>
+                                        }
+                                        
+                                        @if (post.ModerationStatus == ModerationStatus.Pending)
+                                        {
+                                            <div class="moderation-controls">
+                                                <form asp-action="ModeratePost" asp-route-id="@post.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="action" value="approve" />
+                                                    <button type="submit" class="control-btn btn-approve">
+                                                        <i class="fas fa-check me-1"></i>Approve
+                                                    </button>
+                                                </form>
+                                                <button type="button" class="control-btn btn-reject ms-2" data-bs-toggle="modal" data-bs-target="#rejectModal@(post.Id)">
+                                                    <i class="fas fa-times me-1"></i>Reject
+                                                </button>
+                                            </div>
+
+                                            <!-- Reject Modal -->
+                                            <div class="modal fade" id="rejectModal@(post.Id)" tabindex="-1" aria-labelledby="rejectModalLabel@(post.Id)" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="rejectModalLabel@(post.Id)">Reject Post</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form asp-action="ModeratePost" asp-route-id="@post.Id" method="post">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="action" value="reject" />
+                                                            <div class="modal-body">
+                                                                <div class="mb-3">
+                                                                    <label for="rejectionReason" class="form-label">Reason for rejection:</label>
+                                                                    <textarea id="rejectionReason" name="rejectionReason" class="form-control" rows="3" required></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-danger">Reject Post</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
                             </div>
                         }
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="fas fa-comments text-muted fa-4x mb-3"></i>
-                            <p>No community updates available.</p>
-                        </div>
-                    }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-comment-slash fa-3x text-muted"></i>
+                                </div>
+                                <h4 class="text-muted">No community updates yet</h4>
+                                <p class="text-muted">Create a new post to start the conversation!</p>
+                                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                                    <i class="fas fa-plus-circle me-2"></i>Create First Post
+                                </button>
+                            </div>
+                        }
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Viewer Modal -->
+<div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img src="" id="fullSizeImage" class="img-fluid" alt="Full size image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Post Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPostModalLabel">Create New Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control post-textarea" id="content" name="Content" rows="4" required 
+                                placeholder="Share your thoughts, updates, or information with the community..."></textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="type" class="form-label">Post Type</label>
+                            <select class="form-select" id="type" name="Type" required>
+                                <option value="GeneralUpdate">General Update</option>
+                                <option value="HelpRequest">Help Request</option>
+                                <option value="StatusUpdate">Status Update</option>
+                                <option value="ResourceSharing">Resource Sharing</option>
+                                <option value="Information">Information</option>
+                            </select>
+                            <div class="form-text">Select the type that best describes your post</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="location" class="form-label">Location (Optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </span>
+                                <input type="text" class="form-control" id="location" name="Location" 
+                                       placeholder="Add location">
+                                <button type="button" class="btn btn-outline-secondary" id="detectLocation">
+                                    <i class="fas fa-crosshairs"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Add a specific location for your post</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Add Image (Optional)</label>
+                        <input type="file" class="form-control" id="image" name="Image" accept="image/*">
+                        <div class="form-text">Upload an image to include with your post (max 5MB)</div>
+                    </div>
+                    
+                    <!-- Hidden geocoordinates -->
+                    <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
+                    <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
+                    
+                    <!-- Image Preview -->
+                    <div id="imagePreview" class="mt-3 d-none">
+                        <div class="position-relative d-inline-block">
+                            <img id="preview" class="img-fluid rounded" style="max-height: 200px;">
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="removeImage()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Alert for validation -->
+                    <div id="formAlert" class="alert alert-warning mt-3 d-none" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span id="alertMessage"></span>
+                    </div>
+                    
+                    <div class="modal-footer border-top-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submitPostBtn" onclick="return confirmPost()">
+                            <i class="fas fa-paper-plane me-1"></i>Post
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -209,6 +937,18 @@
 
 @section Scripts {
     <script>
+        // Initialize the functionality when the document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial button style based on default post type
+            updateSubmitButtonStyle(document.getElementById('type').value);
+            
+            // Tooltips initialization
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
         // Preview image before upload
         document.getElementById('image').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -256,48 +996,166 @@
                 showAlert('Please enter some content for your post.');
                 return false;
             }
-
-            const confirmMessage = 'Are you sure you want to post this update?';
-            if (!confirm(confirmMessage)) {
-                showAlert('Post cancelled.');
-                return false;
-            }
             return true;
         }
 
-        // Optional: Add geolocation support
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                document.getElementById('latitude').value = position.coords.latitude;
-                document.getElementById('longitude').value = position.coords.longitude;
-            });
+        // Update submit button style based on post type
+        document.getElementById('type').addEventListener('change', function() {
+            updateSubmitButtonStyle(this.value);
+        });
+        
+        function updateSubmitButtonStyle(postType) {
+            const submitBtn = document.getElementById('submitPostBtn');
+            
+            // Reset all classes first
+            submitBtn.className = 'btn';
+            
+            // Apply appropriate style based on post type
+            switch(postType) {
+                case 'HelpRequest':
+                    submitBtn.classList.add('btn-danger');
+                    submitBtn.innerHTML = '<i class="fas fa-hands-helping me-1"></i>Post Help Request';
+                    break;
+                case 'StatusUpdate':
+                    submitBtn.classList.add('btn-info');
+                    submitBtn.innerHTML = '<i class="fas fa-chart-line me-1"></i>Post Status Update';
+                    break;
+                case 'ResourceSharing':
+                    submitBtn.classList.add('btn-success');
+                    submitBtn.innerHTML = '<i class="fas fa-share-alt me-1"></i>Share Resource';
+                    break;
+                case 'Information':
+                    submitBtn.classList.add('btn-primary');
+                    submitBtn.innerHTML = '<i class="fas fa-info-circle me-1"></i>Post Information';
+                    break;
+                default:
+                    submitBtn.classList.add('btn-secondary');
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Post Update';
+            }
         }
+
+        // Detect location
+        document.getElementById('detectLocation').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                    
+                    // Get location name using reverse geocoding
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('location').value = data.display_name;
+                            document.getElementById('detectLocation').innerHTML = '<i class="fas fa-check"></i>';
+                            setTimeout(() => {
+                                document.getElementById('detectLocation').innerHTML = '<i class="fas fa-crosshairs"></i>';
+                            }, 2000);
+                        })
+                        .catch(error => {
+                            console.error('Error getting location name:', error);
+                            document.getElementById('detectLocation').innerHTML = '<i class="fas fa-crosshairs"></i>';
+                        });
+                }, function(error) {
+                    console.error('Error getting location:', error);
+                    showAlert('Unable to detect your location. Please enter it manually.');
+                    document.getElementById('detectLocation').innerHTML = '<i class="fas fa-crosshairs"></i>';
+                });
+            } else {
+                showAlert('Geolocation is not supported by your browser');
+            }
+        });
 
         // Post filtering functionality
         document.getElementById('postFilter').addEventListener('change', function() {
             const selectedType = this.value;
-            const posts = document.querySelectorAll('.card.mb-3');
+            const posts = document.querySelectorAll('.post-item');
+            let visibleCount = 0;
             
             posts.forEach(post => {
-                const postType = post.querySelector('.badge').textContent.trim();
-                if (selectedType === 'all' || postType === selectedType) {
+                if (selectedType === 'all') {
                     post.style.display = 'block';
+                    visibleCount++;
                 } else {
-                    post.style.display = 'none';
+                    const postBadge = post.querySelector('.post-badge');
+                    if (postBadge && postBadge.textContent.trim() === selectedType) {
+                        post.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        post.style.display = 'none';
+                    }
                 }
             });
-
-            // Show empty state if no posts are visible
-            const visiblePosts = document.querySelectorAll('.card.mb-3[style="display: block"]');
-            const emptyState = document.querySelector('.text-center.py-4');
-            if (emptyState) {
-                if (visiblePosts.length === 0) {
-                    emptyState.style.display = 'block';
-                    emptyState.querySelector('p').textContent = `No ${selectedType === 'all' ? '' : selectedType} posts available.`;
-                } else {
-                    emptyState.style.display = 'none';
+            
+            // Show/hide empty state based on filter results
+            const emptyState = document.querySelector('.empty-filter-state');
+            if (visibleCount === 0 && posts.length > 0) {
+                if (!emptyState) {
+                    const cardBody = document.querySelector('.feed-card .card-body');
+                    const emptyStateHtml = `
+                        <div class="text-center py-4 empty-filter-state">
+                            <i class="fas fa-filter fa-2x text-muted mb-3"></i>
+                            <h5 class="text-muted">No ${selectedType} posts found</h5>
+                            <p class="text-muted">Try selecting a different filter or create a new post.</p>
+                        </div>
+                    `;
+                    // Insert after all posts
+                    cardBody.insertAdjacentHTML('beforeend', emptyStateHtml);
                 }
+            } else if (emptyState) {
+                emptyState.remove();
             }
         });
+        
+        // Initialize modal triggers for post type shortcuts
+        document.querySelectorAll('[data-post-type]').forEach(button => {
+            button.addEventListener('click', function() {
+                const postType = this.getAttribute('data-post-type');
+                document.getElementById('type').value = postType;
+                // Trigger change event to update button style
+                document.getElementById('type').dispatchEvent(new Event('change'));
+            });
+        });
+        
+        // Image viewer functionality
+        function openImageViewer(imageUrl) {
+            document.getElementById('fullSizeImage').src = imageUrl;
+            new bootstrap.Modal(document.getElementById('imageViewerModal')).show();
+        }
+        
+        // Create post button styling
+        const createPostBtn = document.querySelector('.create-post-btn');
+        if (createPostBtn) {
+            createPostBtn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 4px 8px rgba(26, 188, 156, 0.4)';
+            });
+            
+            createPostBtn.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '0 2px 5px rgba(26, 188, 156, 0.3)';
+            });
+        }
+        
+        // Post items hover effect
+        document.querySelectorAll('.post-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px)';
+                this.style.boxShadow = '0 5px 15px rgba(0,0,0,0.05)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+        
+        // Create post modal animation
+        const createPostModal = document.getElementById('createPostModal');
+        if (createPostModal) {
+            createPostModal.addEventListener('shown.bs.modal', function() {
+                document.getElementById('content').focus();
+            });
+        }
     </script>
 } 

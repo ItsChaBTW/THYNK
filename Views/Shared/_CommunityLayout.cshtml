@@ -26,6 +26,12 @@
                         secondaryDark: '#d6cfbf',
                         secondaryLight: '#f4f0e5',
                         accent: '#F5F5F5',
+                        sidebarBg: '#2C3E50',
+                        sidebarLight: '#34495E',
+                        sidebarAccent: '#3498DB',
+                        sidebarText: '#ECF0F1',
+                        sidebarHover: '#1ABC9C',
+                        sidebarHoverLight: '#2CD3AF',
                         danger: '#b56357',
                         success: '#6a8d73',
                         warning: '#e0a458'
@@ -49,6 +55,13 @@
             --accent: #F5F5F5;
             --accent-rgb: 245, 245, 245;
             
+            --sidebar-bg: #2C3E50;
+            --sidebar-light: #34495E;
+            --sidebar-accent: #3498DB;
+            --sidebar-text: #ECF0F1;
+            --sidebar-hover: #1ABC9C;
+            --sidebar-hover-light: #2CD3AF;
+            
             --success: #6a8d73;
             --warning: #e0a458;
             --danger: #b56357;
@@ -70,7 +83,7 @@
         
         .sidebar {
             @@apply fixed top-0 left-0 h-screen text-white shadow-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col;
-            background-color: var(--primary-dark);
+            background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-light) 100%);
             z-index: 50;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
@@ -84,7 +97,7 @@
             @@apply overflow-y-auto px-4 py-1;
             position: absolute;
             top: 140px;
-            bottom: 100px;
+            bottom: 120px;
             left: 0;
             right: 0;
             scrollbar-width: thin;
@@ -101,12 +114,13 @@
         }
         
         .sidebar-nav::-webkit-scrollbar-thumb {
-            @@apply bg-primaryLight/30 rounded-full;
+            @@apply rounded-full;
+            background-color: rgba(236, 240, 241, 0.3);
         }
         
         /* Only show scrollbar when hovering over the navigation area */
         .sidebar-nav:hover::-webkit-scrollbar-thumb {
-            @@apply bg-primaryLight/50;
+            background-color: rgba(236, 240, 241, 0.5);
         }
         
         .sidebar-collapsed {
@@ -122,18 +136,17 @@
             transition: all 0.3s ease;
             border-radius: 8px;
             margin-bottom: 2px;
-            color: var(--accent);
+            color: var(--sidebar-text);
         }
         
         .nav-item:hover {
-            background-color: var(--primary);
+            background-color: var(--sidebar-hover-light);
             transform: translateX(3px);
-            color: #f4f0e5 !important;
-
+            color: white !important;
         }
         
         .nav-item.active {
-            background-color: var(--primary);
+            background-color: var(--sidebar-hover);
             position: relative;
         }
         
@@ -144,18 +157,19 @@
             top: 0;
             bottom: 0;
             width: 3px;
-            background: linear-gradient(180deg, var(--secondary), var(--secondary-dark));
+            background: white;
             border-radius: 0 2px 2px 0;
         }
         
         .nav-icon {
             @@apply text-lg mr-3 flex items-center justify-center w-8;
-            color: var(--accent);
+            color: var(--sidebar-text);
             transition: all 0.3s ease;
         }
         
         .nav-item:hover .nav-icon {
             transform: scale(1.1);
+            color: white;
         }
         
         .nav-text {
@@ -164,13 +178,13 @@
         
         .hamburger {
             @@apply fixed top-4 left-4 flex flex-col justify-center items-center w-10 h-10 text-white rounded-md shadow-md transition-all duration-200 focus:outline-none;
-            background-color: var(--primary-dark);
+            background-color: var(--sidebar-bg);
             z-index: 60;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         
         .hamburger:hover {
-            background-color: var(--primary);
+            background-color: var(--sidebar-light);
             transform: scale(1.05);
         }
         
@@ -241,8 +255,8 @@
         /* User profile dropdown */
         .profile-section {
             @@apply pt-2 px-4 pb-3;
-            border-top: 1px solid rgba(245, 245, 245, 0.1);
-            background-color: var(--primary-dark);
+            border-top: 1px solid var(--sidebar-light);
+            background: var(--sidebar-bg);
             position: absolute;
             bottom: 0;
             left: 0;
@@ -255,7 +269,9 @@
         }
         
         .profile-avatar {
-            @@apply w-8 h-8 rounded-full bg-accent text-primary flex items-center justify-center font-bold text-sm flex-shrink-0;
+            @@apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0;
+            background-color:#1ABC9C;
+            color: white;
             transition: all 0.3s ease;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
@@ -267,13 +283,13 @@
         .profile-link {
             @@apply flex items-center py-1 px-3 text-sm rounded transition-colors w-full;
             transition: all 0.3s ease;
-            color: var(--accent);
+            color: var(--sidebar-text);
         }
         
         .profile-link:hover {
             transform: translateX(3px);
-            background-color: var(--primary);
-            color: #f4f0e5;
+            background-color: var(--sidebar-hover);
+            color: white;
         }
         
         .profile-link i {
@@ -673,7 +689,7 @@
 </head>
 <body class="bg-secondary">
     <!-- Hamburger Menu Button -->
-    <button id="hamburger" class="hamburger">
+    <button id="hamburger" class="hamburger md:hidden">
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
@@ -683,7 +699,7 @@
     <header class="fixed top-0 left-0 right-0 shadow-md z-20">
         <div class="container mx-auto relative z-10">
             <div class="flex items-center justify-between px-4 py-3">
-                <div class="ml-12 flex items-center">
+                <div class="md:ml-64 ml-12 flex items-center transition-all duration-300">
                     <div class="relative flex items-center header-title-container">
                         <h2 class="text-primary text-xl font-semibold relative z-10">@ViewData["Title"]</h2>
                         <div class="ml-2 h-6 w-1 bg-primary rounded-full opacity-30"></div>
@@ -695,7 +711,7 @@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <div class="hidden md:flex items-center border-l border-gray-200 pl-3 user-dropdown-container">
-                            <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center mr-2 shadow-sm">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2 shadow-sm" style="background-color: #1ABC9C; color: white;">
                                 @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
                             </div>
                             <span class="text-primary text-sm cursor-pointer user-dropdown-trigger">@User.Identity.Name</span>
@@ -706,13 +722,9 @@
                                     <a href="/Identity/Account/Manage" class="user-dropdown-item">
                                         <i class="fas fa-user-cog me-2"></i>Manage Account
                                     </a>
-                                    <form class="w-full" action="/Identity/Account/Logout" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
-                                        <button type="submit" class="user-dropdown-item w-full text-left">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                        </button>
-                                    </form>
+                                    <button type="button" data-logout-trigger class="user-dropdown-item w-full text-left">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -734,10 +746,10 @@
             <!-- Fixed Header -->
             <div class="pt-12 px-4">
                 <div class="text-center mb-3">
-                    <h3 class="font-bold text-xl">THYNK</h3>
-                    <p class="text-xs opacity-80">Community Portal</p>
+                    <h3 class="font-bold text-xl text-white">THYNK</h3>
+                    <p class="text-xs opacity-80 text-white">Community Portal</p>
                 </div>
-                <hr class="border-primaryLight/30 my-2" />
+                <hr class="border-sidebar-light my-2" />
             </div>
             
             <!-- Scrollable Navigation Area -->
@@ -789,8 +801,8 @@
                             @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
                         </div>
                         <div class="overflow-hidden">
-                            <p class="text-sm font-medium truncate">@User.Identity.Name</p>
-                            <p class="text-xs text-gray-300">Community User</p>
+                            <p class="text-sm font-medium truncate text-white">@User.Identity.Name</p>
+                            <p class="text-xs text-white opacity-70">Community User</p>
                         </div>
                     </div>
                     <div class="profile-actions">
@@ -799,13 +811,9 @@
                             <a href="/Identity/Account/Manage" class="profile-link w-full">
                                 <i class="fas fa-user-cog"></i> Manage Account
                             </a>
-                            <form class="form-inline w-full" action="/Identity/Account/Logout" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
-                                <button type="submit" class="profile-link w-full text-left">
-                                    <i class="fas fa-sign-out-alt"></i> Logout
-                                </button>
-                            </form>
+                            <button type="button" data-logout-trigger class="profile-link w-full text-left">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </button>
                         }
                     </div>
                 }
@@ -825,7 +833,7 @@
     </nav>
     
     <!-- Main Content -->
-    <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300">
+    <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64">
 
        
         <div class="max-w-7xl mx-auto">
@@ -923,12 +931,6 @@
                 el.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`;
                 el.style.opacity = '0';
             });
-            
-            // Add pulse effect to active sidebar item
-            const activeNavItem = document.querySelector('.nav-item.active .nav-icon');
-            if (activeNavItem) {
-                activeNavItem.style.animation = 'pulse 2s infinite';
-            }
         }
         
         // Responsive sidebar height adjustments
@@ -947,26 +949,42 @@
             }
         }
         
+        // Handle responsive sidebar behavior
+        function handleSidebarResponsiveness() {
+            if (window.innerWidth >= 768) {
+                // Desktop: Always show sidebar and adjust main content
+                sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+                mainContent.classList.add('md:ml-64');
+                overlay.classList.remove('active');
+            } else {
+                // Mobile: Check saved state
+                const sidebarState = localStorage.getItem('sidebarState') || 'collapsed';
+                
+                if (sidebarState === 'expanded') {
+                    sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+                    hamburger.classList.add('active');
+                    overlay.classList.add('active');
+                } else {
+                    sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+                    hamburger.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
+                
+                // Always remove margin adjustment on mobile
+                mainContent.classList.remove('md:ml-64');
+            }
+        }
+        
         // Call once on load
         adjustSidebarHeight();
         addEntranceAnimations();
+        handleSidebarResponsiveness();
         
         // Update on resize
-        window.addEventListener('resize', adjustSidebarHeight);
-        
-        // Check for saved state in localStorage
-        const sidebarState = localStorage.getItem('sidebarState') || 'collapsed';
-        
-        if (sidebarState === 'expanded') {
-            sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-            hamburger.classList.add('active');
-            overlay.classList.add('active');
-            
-            // Only adjust margin on larger screens
-            if (window.innerWidth >= 768) {
-                mainContent.classList.add('md:ml-64');
-            }
-        }
+        window.addEventListener('resize', () => {
+            adjustSidebarHeight();
+            handleSidebarResponsiveness();
+        });
         
         hamburger.addEventListener('click', () => {
             hamburger.classList.toggle('active');
@@ -984,7 +1002,12 @@
             } else {
                 sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
                 overlay.classList.remove('active');
-                mainContent.classList.remove('md:ml-64');
+                
+                // Only adjust margin on mobile
+                if (window.innerWidth < 768) {
+                    mainContent.classList.remove('md:ml-64');
+                }
+                
                 localStorage.setItem('sidebarState', 'collapsed');
             }
         });
@@ -994,19 +1017,12 @@
             sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
             hamburger.classList.remove('active');
             overlay.classList.remove('active');
-            mainContent.classList.remove('md:ml-64');
-            localStorage.setItem('sidebarState', 'collapsed');
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth < 768 && sidebar.classList.contains('sidebar-expanded')) {
-                // Remove margin on smaller screens but keep sidebar open
+            
+            if (window.innerWidth < 768) {
                 mainContent.classList.remove('md:ml-64');
-            } else if (window.innerWidth >= 768 && sidebar.classList.contains('sidebar-expanded')) {
-                // Add margin on larger screens when sidebar is open
-                mainContent.classList.add('md:ml-64');
             }
+            
+            localStorage.setItem('sidebarState', 'collapsed');
         });
         
         // Close alert messages after 5 seconds
@@ -1018,5 +1034,60 @@
         }, 5000);
     </script>
     @await RenderSectionAsync("Scripts", required: false)
+    
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-lg shadow-lg border-0">
+                <div class="modal-header border-bottom border-gray-100">
+                    <h5 class="modal-title font-medium" style="color: var(--sidebar-bg);" id="logoutConfirmModalLabel">
+                        Confirm Logout
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="text-dark-alt mb-0">Are you sure you want to log out of your account?</p>
+                </div>
+                <div class="modal-footer border-top border-gray-100">
+                    <button type="button" class="btn rounded-pill px-4 text-white" style="background-color: var(--success);" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" id="confirmLogoutBtn" class="btn rounded-pill px-4 text-white" style="background-color: var(--danger);">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Logout Form (Hidden) -->
+    <form id="logoutForm" class="d-none" action="/Identity/Account/Logout" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
+    </form>
+    
+    <script>
+        // Logout confirmation handling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all logout buttons
+            const logoutBtns = document.querySelectorAll('[data-logout-trigger]');
+            const logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmModal'));
+            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+            const logoutForm = document.getElementById('logoutForm');
+            
+            // Add click event to all logout buttons
+            logoutBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logoutModal.show();
+                });
+            });
+            
+            // Confirm logout button event
+            confirmLogoutBtn.addEventListener('click', function() {
+                logoutForm.submit();
+            });
+        });
+    </script>
 </body>
 </html> 
