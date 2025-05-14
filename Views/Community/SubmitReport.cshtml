@@ -1077,20 +1077,17 @@
             
             // If valid, show loading state and submit
             if (isValid) {
-                // Show loading state
-                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
+                // Disable the submit button to prevent double submission
                 this.disabled = true;
                 
-                // Simulate form submission (remove this in production and use the actual form submission)
-                setTimeout(() => {
-                    // First show the verification modal
-                    $('#reportVerificationModal').modal('show');
-                    
-                    // Then submit the form after a short delay
-                    setTimeout(() => {
-                        document.getElementById('report-form').submit();
-                    }, 2000);
-                }, 1500);
+                // Show loading state
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
+                
+                // Submit the form immediately
+                document.getElementById('report-form').submit();
+                
+                // Show the verification modal after form submission
+                $('#reportVerificationModal').modal('show');
             }
         });
         
