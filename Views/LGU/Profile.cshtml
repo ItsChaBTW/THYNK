@@ -1,0 +1,520 @@
+@model THYNK.Models.LGUUser
+@{
+    ViewData["Title"] = "LGU Profile";
+    Layout = "_LGULayout";
+}
+
+@if (Model == null)
+{
+    <div class="alert alert-danger">
+        User information could not be loaded. Please try again later.
+    </div>
+    return;
+}
+
+<div class="bg-gray-100 -mx-4 -my-4 sm:-mx-6 sm:-my-6 min-h-screen p-4 md:p-8">
+    <!-- Clean Profile Header Card -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
+        <div class="flex flex-col md:flex-row">
+            <!-- Left Side: Clean Photo and Basic Info -->
+            <div class="w-full md:w-1/3 bg-slate-800 p-8 flex flex-col items-center text-center">
+                <form asp-action="UpdateProfilePhoto" asp-controller="LGU" method="post" enctype="multipart/form-data" id="sidebar-photo-form">
+                    @Html.AntiForgeryToken()
+                    <div class="relative mb-6">
+                        <div class="w-28 h-28 mx-auto rounded-full overflow-hidden bg-slate-700 border-4 border-slate-700">
+                            @if (Model != null && !string.IsNullOrEmpty(Model.ProfilePhotoUrl))
+                            {
+                                <img src="@Model.ProfilePhotoUrl" alt="Profile Photo" class="w-full h-full object-cover" id="profile-image-preview">
+                            }
+                            else
+                            {
+                                <div class="w-full h-full flex items-center justify-center text-white text-4xl" id="profile-image-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            }
+                        </div>
+                        <label for="SidebarProfilePhotoUpload" class="absolute bottom-0 right-1/3 w-8 h-8 bg-amber-500 shadow-sm text-slate-900 rounded-full flex items-center justify-center cursor-pointer border-2 border-slate-800 hover:bg-amber-400 transition-all">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input id="SidebarProfilePhotoUpload" name="ProfilePhoto" type="file" accept="image/jpeg,image/png,image/gif" class="hidden" onchange="document.getElementById('sidebar-photo-form').submit();">
+                    </div>
+                </form>
+                
+                <h2 class="text-xl font-bold text-white mb-1">@(Model?.FirstName ?? "") @(Model?.LastName ?? "")</h2>
+                <p class="text-amber-400 font-medium mb-3">@(Model?.Position ?? "Position not set")</p>
+                
+                <div class="flex items-center justify-center mb-4 text-white/70 text-sm">
+                    <i class="fas fa-building mr-2"></i>
+                    <span>@(Model?.OrganizationName ?? "Organization not set")</span>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model?.CityMunicipalityName))
+                {
+                    <div class="text-white/70 text-sm mb-6">
+                        <i class="fas fa-map-marker-alt mr-1"></i> @Model.CityMunicipalityName
+                    </div>
+                }
+                
+                <div class="grid grid-cols-2 gap-3 w-full mt-auto">
+                    <div class="text-center p-3 bg-slate-700/50 rounded-lg">
+                        <p class="text-xs text-white/50 uppercase tracking-wide mb-1">Member Since</p>
+                        <p class="text-white text-sm">@(Model != null ? Model.DateCreated.ToString("MMM yyyy") : "-")</p>
+                    </div>
+                    <div class="text-center p-3 bg-slate-700/50 rounded-lg">
+                        <p class="text-xs text-white/50 uppercase tracking-wide mb-1">Last Login</p>
+                        <p class="text-white text-sm">@(Model?.LastLoginDate.HasValue == true ? Model.LastLoginDate.Value.ToString("MMM d, yyyy") : "-")</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Side: Clean Info Cards and Actions -->
+            <div class="flex-grow p-8">
+                <h2 class="text-2xl font-bold text-slate-800 mb-6">My Profile</h2>
+                
+                <!-- Clean Info Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <!-- Email Card -->
+                    <div class="bg-blue-50 rounded-lg border border-blue-100 p-4 flex items-start">
+                        <div class="shrink-0 mr-3 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-blue-600 mb-1">Email</p>
+                            <p class="text-sm text-slate-700 truncate">@(Model?.Email ?? "Not set")</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Phone Card -->
+                    <div class="bg-green-50 rounded-lg border border-green-100 p-4 flex items-start">
+                        <div class="shrink-0 mr-3 h-10 w-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-green-600 mb-1">Phone</p>
+                            <p class="text-sm text-slate-700">@(Model?.PhoneNumber ?? "Not set")</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Jurisdiction Card -->
+                    <div class="bg-amber-50 rounded-lg border border-amber-100 p-4 flex items-start">
+                        <div class="shrink-0 mr-3 h-10 w-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                            <i class="fas fa-map"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-amber-600 mb-1">Jurisdiction</p>
+                            <p class="text-sm text-slate-700">@(Model?.JurisdictionArea ?? "Not set")</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Clean Action Buttons -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <button type="button" class="flex items-center px-4 py-2.5 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition-colors" id="edit-profile-btn">
+                        <i class="fas fa-user-edit mr-2"></i> Edit Profile
+                    </button>
+                    <button type="button" class="flex items-center px-4 py-2.5 bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-gray-50 transition-colors" id="change-password-btn">
+                        <i class="fas fa-key mr-2"></i> Change Password
+                    </button>
+                    <button type="button" class="flex items-center px-4 py-2.5 bg-white text-slate-700 border border-slate-300 rounded-md hover:bg-gray-50 transition-colors" id="notification-settings-btn">
+                        <i class="fas fa-bell mr-2"></i> Notification Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Content sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column -->
+        <div class="lg:col-span-2">
+            <!-- Section: Edit Profile (Default Visible) -->
+            <div id="edit-profile-section" class="section-content">
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                        <i class="fas fa-user-edit text-amber-500 mr-2"></i> Edit Profile Information
+                    </h3>
+                    
+                    <form asp-action="UpdateProfile" asp-controller="LGU" method="post" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="FirstName" class="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+                                <input type="text" id="FirstName" name="FirstName" value="@Model.FirstName" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label for="LastName" class="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+                                <input type="text" id="LastName" name="LastName" value="@Model.LastName" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="Position" class="block text-sm font-medium text-slate-700 mb-1">Position/Title</label>
+                                <input type="text" id="Position" name="Position" value="@Model.Position" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label for="Department" class="block text-sm font-medium text-slate-700 mb-1">Department</label>
+                                <input type="text" id="Department" name="Department" value="@Model.Department" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="Email" class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                            <input type="email" id="Email" name="Email" value="@Model.Email" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                        
+                        <div>
+                            <label for="PhoneNumber" class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                            <input type="tel" id="PhoneNumber" name="PhoneNumber" value="@Model.PhoneNumber" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                        
+                        <div>
+                            <label for="JurisdictionArea" class="block text-sm font-medium text-slate-700 mb-1">Area of Jurisdiction</label>
+                            <select id="JurisdictionArea" name="JurisdictionArea" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                                <option value="">Select Area</option>
+                                @foreach (var area in ViewBag.AvailableAreas ?? new List<string>())
+                                {
+                                    if (Model.JurisdictionArea == area)
+                                    {
+                                        <option value="@area" selected>@area</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@area">@area</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="Bio" class="block text-sm font-medium text-slate-700 mb-1">Brief Bio</label>
+                            <textarea id="Bio" name="Bio" rows="3" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">@Model.Bio</textarea>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                <i class="fas fa-save mr-2"></i> Save Information
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Section: Change Password (Initially Hidden) -->
+            <div id="change-password-section" class="section-content hidden">
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                        <i class="fas fa-key text-amber-500 mr-2"></i> Change Password
+                    </h3>
+                    
+                    <form asp-action="UpdatePassword" asp-controller="LGU" method="post" class="space-y-6">
+                        <div>
+                            <label for="CurrentPassword" class="block text-sm font-medium text-slate-700 mb-1">Current Password</label>
+                            <input type="password" id="CurrentPassword" name="CurrentPassword" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                        
+                        <div>
+                            <label for="NewPassword" class="block text-sm font-medium text-slate-700 mb-1">New Password</label>
+                            <input type="password" id="NewPassword" name="NewPassword" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                            <p class="text-sm text-gray-500 mt-1">Password should be at least 8 characters long and include numbers and special characters.</p>
+                        </div>
+                        
+                        <div>
+                            <label for="ConfirmPassword" class="block text-sm font-medium text-slate-700 mb-1">Confirm New Password</label>
+                            <input type="password" id="ConfirmPassword" name="ConfirmPassword" class="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                <i class="fas fa-shield-alt mr-2"></i> Update Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Section: Notification Settings (Initially Hidden) -->
+            <div id="notification-settings-section" class="section-content hidden">
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                        <i class="fas fa-bell text-amber-500 mr-2"></i> Notification Settings
+                    </h3>
+                    
+                    <form asp-action="UpdateNotifications" asp-controller="LGU" method="post" class="space-y-6">
+                        <div class="space-y-5">
+                            <!-- Email Notifications -->
+                            <div class="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h4 class="text-base font-medium text-slate-800">Email Notifications</h4>
+                                        <p class="text-sm text-slate-500">Receive email notifications for important events, alerts, and updates.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="EmailNotifications" value="true" class="sr-only peer" @(Model.NotificationPreferences?.EmailEnabled == true ? "checked" : "")>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                </label>
+                            </div>
+                            
+                            <!-- SMS Notifications -->
+                            <div class="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-600">
+                                            <i class="fas fa-sms"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h4 class="text-base font-medium text-slate-800">SMS Notifications</h4>
+                                        <p class="text-sm text-slate-500">Receive text message alerts for critical emergencies and urgent updates.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="SmsNotifications" value="true" class="sr-only peer" @(Model.NotificationPreferences?.SmsEnabled == true ? "checked" : "")>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                </label>
+                            </div>
+                            
+                            <!-- Report Updates -->
+                            <div class="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-100 text-yellow-600">
+                                            <i class="fas fa-clipboard-check"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h4 class="text-base font-medium text-slate-800">Report Updates</h4>
+                                        <p class="text-sm text-slate-500">Receive notifications when disaster reports change status or require attention.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="ReportUpdates" value="true" class="sr-only peer" @(Model.NotificationPreferences?.ReportUpdatesEnabled == true ? "checked" : "")>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                </label>
+                            </div>
+                            
+                            <!-- Community Activity -->
+                            <div class="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-gray-50 transition-colors">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 text-purple-600">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h4 class="text-base font-medium text-slate-800">Community Activity</h4>
+                                        <p class="text-sm text-slate-500">Receive updates for new community posts, questions, and engagement.</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="CommunityActivity" value="true" class="sr-only peer" @(Model.NotificationPreferences?.CommunityActivityEnabled == true ? "checked" : "")>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                <i class="fas fa-save mr-2"></i> Save Notification Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="lg:col-span-1">
+            <!-- Account Information Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <i class="fas fa-id-card text-amber-500 mr-2"></i> Account Information
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="p-4 rounded-lg bg-slate-50">
+                        <p class="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">Username</p>
+                        <p class="text-sm font-medium text-slate-800">@(Model?.UserName ?? "Not set")</p>
+                    </div>
+                    
+                    <div class="p-4 rounded-lg bg-slate-50">
+                        <p class="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">Account Type</p>
+                        <div class="flex items-center">
+                            <span class="inline-flex items-center justify-center px-2.5 py-0.5 text-xs font-medium rounded-full bg-slate-700 text-white mr-2">LGU</span>
+                            <span class="text-sm font-medium text-slate-800">Administrator</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 rounded-lg bg-slate-50">
+                        <p class="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">Account ID</p>
+                        <p class="text-sm font-medium text-slate-800">@(Model?.Id ?? "Not available")</p>
+                    </div>
+                </div>
+                
+                <!-- Photo Upload Section -->
+                <div class="mt-8">
+                    <h4 class="text-base font-medium text-slate-700 mb-4">Update Profile Photo</h4>
+                    <form asp-action="UpdateProfilePhoto" asp-controller="LGU" method="post" enctype="multipart/form-data" id="photo-form">
+                        @Html.AntiForgeryToken()
+                        <div class="space-y-4">
+                            <label class="block text-sm font-medium text-slate-700">Select a new photo</label>
+                            <label class="flex items-center justify-center w-full h-20 px-4 transition bg-white border-2 border-slate-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-amber-500 focus:outline-none">
+                                <span class="flex items-center space-x-2">
+                                    <i class="fas fa-cloud-upload-alt text-slate-500"></i>
+                                    <span class="font-medium text-slate-600">Drop files to Attach, or browse</span>
+                                </span>
+                                <input type="file" accept="image/jpeg,image/png,image/gif" name="ProfilePhoto" id="ProfilePhotoUpload" class="hidden">
+                            </label>
+                            <div class="text-xs text-gray-500 mb-2" id="selected-file-info">No file selected</div>
+                            <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                                <i class="fas fa-save mr-2"></i> Update Photo
+                            </button>
+                            <p class="text-xs text-slate-500 text-center">Max file size: 2MB. Supported formats: JPG, PNG, GIF</p>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Status Messages -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="mt-4 p-3 bg-green-100 text-green-700 rounded-md">
+                        <i class="fas fa-check-circle mr-2"></i> @TempData["SuccessMessage"]
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
+                        <i class="fas fa-exclamation-circle mr-2"></i> @TempData["ErrorMessage"]
+                    </div>
+                }
+                
+                <!-- Danger Zone -->
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h4 class="text-base font-medium text-red-600 mb-4 flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i> Danger Zone
+                    </h4>
+                    <p class="text-sm text-slate-600 mb-4">The following actions are irreversible. Please proceed with caution.</p>
+                    
+                    <a href="@Url.Action("DeleteAccount", "LGU")" 
+                        class="w-full inline-flex justify-center items-center px-4 py-2 border border-red-600 text-sm font-medium rounded-md shadow-sm text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+                        <i class="fas fa-trash-alt mr-2"></i> Delete Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Action buttons
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+        const changePasswordBtn = document.getElementById('change-password-btn');
+        const notificationSettingsBtn = document.getElementById('notification-settings-btn');
+        
+        // Content sections
+        const editProfileSection = document.getElementById('edit-profile-section');
+        const changePasswordSection = document.getElementById('change-password-section');
+        const notificationSettingsSection = document.getElementById('notification-settings-section');
+        
+        // Function to show a section and hide others
+        function showSection(section) {
+            // Hide all sections
+            [editProfileSection, changePasswordSection, notificationSettingsSection].forEach(s => {
+                s.classList.add('hidden');
+            });
+            
+            // Show the selected section
+            section.classList.remove('hidden');
+            
+            // Update active state on buttons
+            [editProfileBtn, changePasswordBtn, notificationSettingsBtn].forEach(btn => {
+                btn.classList.remove('bg-slate-700', 'text-white');
+                btn.classList.add('bg-white', 'text-slate-700');
+            });
+        }
+        
+        // Event listeners for action buttons
+        editProfileBtn.addEventListener('click', function() {
+            showSection(editProfileSection);
+            this.classList.remove('bg-white', 'text-slate-700');
+            this.classList.add('bg-slate-700', 'text-white');
+        });
+        
+        changePasswordBtn.addEventListener('click', function() {
+            showSection(changePasswordSection);
+            this.classList.remove('bg-white', 'text-slate-700');
+            this.classList.add('bg-slate-700', 'text-white');
+        });
+        
+        notificationSettingsBtn.addEventListener('click', function() {
+            showSection(notificationSettingsSection);
+            this.classList.remove('bg-white', 'text-slate-700');
+            this.classList.add('bg-slate-700', 'text-white');
+        });
+        
+        // File upload preview
+        const fileInput = document.getElementById('ProfilePhotoUpload');
+        const sidebarFileInput = document.getElementById('SidebarProfilePhotoUpload');
+        const fileInfoDisplay = document.getElementById('selected-file-info');
+        
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                
+                // Display file info
+                if (fileInfoDisplay) {
+                    const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+                    fileInfoDisplay.textContent = `Selected: ${file.name} (${fileSize})`;
+                    fileInfoDisplay.classList.add('text-blue-600');
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Update the profile image preview
+                    const previewImg = document.getElementById('profile-image-preview');
+                    const placeholder = document.getElementById('profile-image-placeholder');
+                    
+                    if (previewImg) {
+                        previewImg.src = e.target.result;
+                        previewImg.style.display = 'block';
+                    } else {
+                        // Create new image if it doesn't exist
+                        const container = placeholder.parentElement;
+                        placeholder.style.display = 'none';
+                        
+                        const newImg = document.createElement('img');
+                        newImg.src = e.target.result;
+                        newImg.alt = 'Profile Photo';
+                        newImg.className = 'w-full h-full object-cover';
+                        newImg.id = 'profile-image-preview';
+                        container.appendChild(newImg);
+                    }
+                    
+                    if (placeholder) {
+                        placeholder.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                handleFileSelect(this);
+            });
+        }
+        
+        if (sidebarFileInput) {
+            sidebarFileInput.addEventListener('change', function() {
+                handleFileSelect(this);
+            });
+        }
+    });
+</script> 

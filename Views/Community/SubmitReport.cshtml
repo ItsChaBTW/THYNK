@@ -722,6 +722,8 @@
 }
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
     <script>
         // Initialize the map
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
@@ -884,23 +886,27 @@
             getAddressDetails(lngLat.lat, lngLat.lng);
         });
 
-        // Clear photo input
-        document.getElementById('clear-photo').addEventListener('click', function() {
-            document.getElementById('photo').value = '';
-            document.getElementById('photoPreview').classList.add('d-none');
-            
-            // Disable the submit button when photo is cleared
-            document.getElementById('submit-report-btn').disabled = true;
-        });
-
-        // Photo preview
+        // Handle photo upload preview
         document.getElementById('photo').addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
+                // Get preview container
+                const preview = document.getElementById('photoPreview');
+                
+                // Create a new image element if it doesn't exist
+                let previewImg = preview.querySelector('img');
+                if (!previewImg) {
+                    previewImg = document.createElement('img');
+                    previewImg.className = 'img-fluid rounded mx-auto d-block';
+                    previewImg.style.maxHeight = '200px';
+                    previewImg.style.objectFit = 'contain';
+                    preview.prepend(previewImg);
+                }
+                
+                // Read and display the image
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const preview = document.getElementById('photoPreview');
-                    preview.querySelector('img').src = e.target.result;
+                    previewImg.src = e.target.result;
                     preview.classList.remove('d-none');
                     
                     // Enable the submit button once image is uploaded
@@ -911,6 +917,14 @@
                 };
                 reader.readAsDataURL(file);
             }
+        });
+        
+        // Clear photo button
+        document.getElementById('clear-photo').addEventListener('click', function() {
+            const photoInput = document.getElementById('photo');
+            photoInput.value = '';
+            document.getElementById('photoPreview').classList.add('d-none');
+            document.getElementById('submit-report-btn').disabled = true;
         });
 
         // Form step navigation

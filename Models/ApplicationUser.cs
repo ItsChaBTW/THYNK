@@ -7,6 +7,9 @@ namespace THYNK.Models
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public DateTime DateCreated { get; set; } = DateTime.Now;
+        public DateTime? LastLoginDate { get; set; }
+        public string? ProfilePhotoUrl { get; set; }
+        public string? Bio { get; set; }
         
         // User role type (Community, LGU, Admin)
         public UserRoleType UserRole { get; set; } = UserRoleType.Community;

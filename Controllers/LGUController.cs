@@ -29,6 +29,14 @@ namespace THYNK.Controllers
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            // Allow ResourceLibrary and ViewResource to be accessed without authentication
+            string actionName = context.RouteData.Values["action"]?.ToString();
+            if (actionName == "ResourceLibrary" || actionName == "ViewResource")
+            {
+                await next();
+                return;
+            }
+            
             if (!User.Identity.IsAuthenticated)
             {
                 context.Result = new ChallengeResult();
@@ -338,11 +346,358 @@ namespace THYNK.Controllers
         // Manage educational resources
         public async Task<IActionResult> ManageResources()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            // Get resources created by this user
             var resources = await _context.EducationalResources
-                .OrderBy(r => r.Title)
+                .Where(r => r.CreatedById == userId)
+                .OrderByDescending(r => r.DateAdded)
                 .ToListAsync();
                 
             return View(resources);
+        }
+
+        // GET: Create Educational Resource
+        public IActionResult CreateResource()
+        {
+            return View();
+        }
+
+        // POST: Create Educational Resource
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateResource(EducationalResource resource, IFormFile resourceFile)
+        {
+            try
+            {
+                // Validate the model (except for FileUrl which we'll handle manually)
+                if (!ModelState.IsValid)
+                {
+                    // We'll manually remove FileUrl errors as we'll handle that separately
+                    if (ModelState.ContainsKey("FileUrl"))
+                    {
+                        ModelState["FileUrl"].Errors.Clear();
+                    }
+                    
+                    // If there are still errors after removing FileUrl errors
+                    if (ModelState.Values.Any(v => v.Errors.Count > 0))
+                    {
+                        // Log validation errors
+                        foreach (var modelState in ModelState.Values)
+                        {
+                            foreach (var error in modelState.Errors)
+                            {
+                                _logger.LogWarning($"Validation error: {error.ErrorMessage}");
+                            }
+                        }
+                        
+                        // Return the view with validation errors
+                        return View(resource);
+                    }
+                }
+                
+                // Set creation date and creator
+                resource.DateAdded = DateTime.Now;
+                resource.CreatedById = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                // Process file if provided
+                if (resourceFile != null && resourceFile.Length > 0)
+                {
+                    // Validate file size (max 10MB)
+                    if (resourceFile.Length > 10 * 1024 * 1024)
+                    {
+                        ModelState.AddModelError("resourceFile", "File size must be less than 10MB.");
+                        return View(resource);
+                    }
+                    
+                    // Validate file type
+                    var allowedExtensions = new[] { ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt", ".jpg", ".jpeg", ".png" };
+                    var fileExtension = Path.GetExtension(resourceFile.FileName).ToLowerInvariant();
+                    
+                    if (!allowedExtensions.Contains(fileExtension))
+                    {
+                        ModelState.AddModelError("resourceFile", $"File type {fileExtension} is not allowed. Allowed types: {string.Join(", ", allowedExtensions)}");
+                        return View(resource);
+                    }
+                    
+                    try
+                    {
+                        // Create the resource directory if it doesn't exist
+                        string resourceDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "education_resource");
+                        if (!Directory.Exists(resourceDirectory))
+                        {
+                            Directory.CreateDirectory(resourceDirectory);
+                        }
+
+                        // Generate unique filename
+                        string uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                        string filePath = Path.Combine(resourceDirectory, uniqueFileName);
+                        
+                        // Save the file
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await resourceFile.CopyToAsync(stream);
+                        }
+                        
+                        // Set file URL and size
+                        resource.FileUrl = $"/uploads/education_resource/{uniqueFileName}";
+                        resource.FileSizeKB = (int)(resourceFile.Length / 1024);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"File upload error: {ex.Message}");
+                        ModelState.AddModelError("resourceFile", $"Error uploading file: {ex.Message}");
+                        return View(resource);
+                    }
+                }
+                else
+                {
+                    // If no file was uploaded, set a placeholder URL
+                    // This addresses the "FileUrl field is required" error
+                    resource.FileUrl = string.Empty;
+                    resource.FileSizeKB = 0;
+                    
+                    // Add a warning message
+                    TempData["WarningMessage"] = "No file was attached to this resource. You can edit the resource later to add a file.";
+                }
+                
+                // Default values for unused fields if null to satisfy required constraints
+                if (string.IsNullOrEmpty(resource.ExternalUrl))
+                {
+                    resource.ExternalUrl = string.Empty;
+                }
+                
+                if (string.IsNullOrEmpty(resource.Tags))
+                {
+                    resource.Tags = string.Empty;
+                }
+                
+                // Set default approval status for new resources
+                resource.ApprovalStatus = ApprovalStatus.Pending;
+                
+                // Save resource to database
+                try
+                {
+                    _context.Add(resource);
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Educational resource created successfully! It is now pending approval.";
+                    return RedirectToAction(nameof(ManageResources));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Database error when saving resource: {ex.Message}");
+                    ModelState.AddModelError("", $"Error saving to database: {ex.Message}");
+                    return View(resource);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error in CreateResource: {ex.Message}");
+                ModelState.AddModelError("", $"An unexpected error occurred: {ex.Message}");
+                return View(resource);
+            }
+        }
+
+        // GET: Edit Educational Resource
+        public async Task<IActionResult> EditResource(int id)
+        {
+            var resource = await _context.EducationalResources.FindAsync(id);
+            
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            return View(resource);
+        }
+
+        // POST: Edit Educational Resource
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditResource(int id, EducationalResource resource, IFormFile resourceFile)
+        {
+            if (id != resource.Id)
+            {
+                return NotFound();
+            }
+            
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Get the existing resource to keep file info if not changing
+                    var existingResource = await _context.EducationalResources.AsNoTracking()
+                        .FirstOrDefaultAsync(r => r.Id == id);
+                        
+                    if (existingResource == null)
+                    {
+                        return NotFound();
+                    }
+                    
+                    // Keep existing file info if no new file uploaded
+                    if (resourceFile == null || resourceFile.Length == 0)
+                    {
+                        resource.FileUrl = existingResource.FileUrl;
+                        resource.FileSizeKB = existingResource.FileSizeKB;
+                    }
+                    else
+                    {
+                        // Process new file
+                        string resourceDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "education_resource");
+                        if (!Directory.Exists(resourceDirectory))
+                        {
+                            Directory.CreateDirectory(resourceDirectory);
+                        }
+
+                        // Delete old file if it exists
+                        if (!string.IsNullOrEmpty(existingResource.FileUrl))
+                        {
+                            string oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", 
+                                existingResource.FileUrl.TrimStart('/'));
+                            if (System.IO.File.Exists(oldFilePath))
+                            {
+                                System.IO.File.Delete(oldFilePath);
+                            }
+                        }
+
+                        // Save new file
+                        string fileExtension = Path.GetExtension(resourceFile.FileName);
+                        string uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
+                        string filePath = Path.Combine(resourceDirectory, uniqueFileName);
+                        
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await resourceFile.CopyToAsync(stream);
+                        }
+                        
+                        resource.FileUrl = $"/uploads/education_resource/{uniqueFileName}";
+                        resource.FileSizeKB = (int)(resourceFile.Length / 1024);
+                    }
+                    
+                    // Keep the original date added
+                    resource.DateAdded = existingResource.DateAdded;
+                    
+                    // Default values for unused fields if null
+                    if (string.IsNullOrEmpty(resource.ExternalUrl))
+                    {
+                        resource.ExternalUrl = string.Empty;
+                    }
+                    
+                    if (string.IsNullOrEmpty(resource.FileUrl))
+                    {
+                        resource.FileUrl = string.Empty;
+                    }
+                    
+                    if (string.IsNullOrEmpty(resource.Tags))
+                    {
+                        resource.Tags = string.Empty;
+                    }
+                    
+                    _context.Update(resource);
+                    await _context.SaveChangesAsync();
+                    
+                    TempData["SuccessMessage"] = "Educational resource updated successfully!";
+                    return RedirectToAction(nameof(ManageResources));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ResourceExists(resource.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error updating resource: {ex.Message}");
+                    ModelState.AddModelError("", "An error occurred while updating the resource.");
+                }
+            }
+            
+            return View(resource);
+        }
+
+        // GET: Delete Educational Resource Confirmation
+        public async Task<IActionResult> DeleteResource(int id)
+        {
+            var resource = await _context.EducationalResources.FindAsync(id);
+            
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            return View(resource);
+        }
+
+        // POST: Delete Educational Resource
+        [HttpPost, ActionName("DeleteResource")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteResourceConfirmed(int id)
+        {
+            var resource = await _context.EducationalResources.FindAsync(id);
+            
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            // Delete the file if it exists
+            if (!string.IsNullOrEmpty(resource.FileUrl))
+            {
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", 
+                    resource.FileUrl.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+            
+            _context.EducationalResources.Remove(resource);
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Educational resource deleted successfully!";
+            return RedirectToAction(nameof(ManageResources));
+        }
+
+        // View resource details (visible to all users)
+        [AllowAnonymous]
+        public async Task<IActionResult> ViewResource(int id)
+        {
+            var resource = await _context.EducationalResources
+                .FirstOrDefaultAsync(r => r.Id == id && r.ApprovalStatus == ApprovalStatus.Approved);
+                
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            // Track view count (optional)
+            resource.ViewCount = (resource.ViewCount ?? 0) + 1;
+            await _context.SaveChangesAsync();
+            
+            return View(resource);
+        }
+
+        // Resource Library (visible to all users)
+        [AllowAnonymous]
+        public async Task<IActionResult> ResourceLibrary()
+        {
+            var resources = await _context.EducationalResources
+                .Where(r => r.ApprovalStatus == ApprovalStatus.Approved)
+                .OrderByDescending(r => r.DateAdded)
+                .ToListAsync();
+                
+            return View(resources);
+        }
+        
+        private bool ResourceExists(int id)
+        {
+            return _context.EducationalResources.Any(e => e.Id == id);
         }
 
         // View community feed
@@ -364,10 +719,14 @@ namespace THYNK.Controllers
         }
 
         // Profile management page
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUser = _userManager.FindByIdAsync(userId).Result as LGUUser;
+            
+            // Fetch the current user directly from the database instead of using UserManager
+            // to ensure we get the most up-to-date data including ProfilePhotoUrl
+            var currentUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == userId) as LGUUser;
             
             if (currentUser == null)
             {
@@ -375,8 +734,8 @@ namespace THYNK.Controllers
             }
             
             // Get or initialize notification preferences
-            var notificationPreferences = _context.NotificationPreferences
-                .FirstOrDefaultAsync(np => np.UserId == userId).Result;
+            var notificationPreferences = await _context.NotificationPreferences
+                .FirstOrDefaultAsync(np => np.UserId == userId);
                 
             if (notificationPreferences == null)
             {
@@ -390,18 +749,21 @@ namespace THYNK.Controllers
                 };
                 
                 _context.NotificationPreferences.Add(notificationPreferences);
-                _context.SaveChangesAsync().Wait();
+                await _context.SaveChangesAsync();
             }
             
             // Pass notification preferences to the view
             currentUser.NotificationPreferences = notificationPreferences;
             
             // Get available jurisdiction areas
-            ViewBag.AvailableAreas = _context.Users
+            ViewBag.AvailableAreas = await _context.Users
                 .Where(u => !string.IsNullOrEmpty(u.CityMunicipalityName))
                 .Select(u => u.CityMunicipalityName)
                 .Distinct()
-                .ToListAsync().Result;
+                .ToListAsync();
+                
+            // Debug log to show the current profile photo URL
+            _logger.LogInformation($"User {userId} has profile photo URL: {currentUser.ProfilePhotoUrl}");
             
             return View(currentUser);
         }
@@ -542,16 +904,21 @@ namespace THYNK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateProfilePhoto(IFormFile ProfilePhoto)
         {
+            _logger.LogInformation("UpdateProfilePhoto method called");
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation($"User ID: {userId}");
             var currentUser = await _userManager.FindByIdAsync(userId);
             
             if (currentUser == null)
             {
+                _logger.LogWarning("User not found");
                 return NotFound();
             }
             
             if (ProfilePhoto != null && ProfilePhoto.Length > 0)
             {
+                _logger.LogInformation($"Received file: {ProfilePhoto.FileName}, ContentType: {ProfilePhoto.ContentType}, Size: {ProfilePhoto.Length} bytes");
+                
                 // Check file size (max 2MB)
                 if (ProfilePhoto.Length > 2 * 1024 * 1024)
                 {
@@ -569,37 +936,82 @@ namespace THYNK.Controllers
                 
                 try
                 {
+                    // Get wwwroot path
+                    var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    _logger.LogInformation($"Web root path: {webRootPath}");
+                    
                     // Create directory if it doesn't exist
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile-photos");
+                    var uploadsFolder = Path.Combine(webRootPath, "uploads", "profile_pics");
+                    _logger.LogInformation($"Uploads folder path: {uploadsFolder}");
+                    
                     if (!Directory.Exists(uploadsFolder))
                     {
+                        _logger.LogInformation("Creating uploads directory");
                         Directory.CreateDirectory(uploadsFolder);
                     }
                     
                     // Generate unique filename
                     var uniqueFileName = $"{userId}_{DateTime.Now.Ticks}{Path.GetExtension(ProfilePhoto.FileName)}";
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    _logger.LogInformation($"Saving file to: {filePath}");
                     
                     // Save the file
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await ProfilePhoto.CopyToAsync(fileStream);
+                        _logger.LogInformation("File saved successfully");
                     }
                     
-                    // Update user's profile photo URL
-                    currentUser.ProfilePhotoUrl = $"/uploads/profile-photos/{uniqueFileName}";
-                    await _userManager.UpdateAsync(currentUser);
+                    // Update user's profile photo URL with the correct path
+                    var photoUrl = $"/uploads/profile_pics/{uniqueFileName}";
+                    _logger.LogInformation($"Setting ProfilePhotoUrl to: {photoUrl}");
+                    
+                    // Force image to be created with valid permissions
+                    System.IO.File.SetAttributes(filePath, FileAttributes.Normal);
+                    
+                    // Update in both currentUser and dbUser
+                    currentUser.ProfilePhotoUrl = photoUrl;
+                    
+                    // Update with UserManager
+                    var result = await _userManager.UpdateAsync(currentUser);
+                    if (!result.Succeeded)
+                    {
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        _logger.LogError($"Error updating user profile via UserManager: {errors}");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("UserManager update succeeded");
+                    }
+                    
+                    // Also directly update the database as a fallback
+                    var dbUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                    if (dbUser != null)
+                    {
+                        dbUser.ProfilePhotoUrl = photoUrl;
+                        var saveChangesResult = await _context.SaveChangesAsync();
+                        _logger.LogInformation($"Updated profile photo URL directly in database. Result: {saveChangesResult}");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Could not find user in database context");
+                    }
+                    
+                    // Try getting the user again to verify the update
+                    var verifyUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+                    _logger.LogInformation($"Verification check - ProfilePhotoUrl after update: {verifyUser?.ProfilePhotoUrl}");
                     
                     TempData["SuccessMessage"] = "Profile photo updated successfully.";
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Error updating profile photo: {ex.Message}");
-                    TempData["ErrorMessage"] = "An error occurred while updating your profile photo.";
+                    _logger.LogError(ex, $"Error updating profile photo: {ex.Message}");
+                    TempData["ErrorMessage"] = $"An error occurred while updating your profile photo: {ex.Message}";
                 }
             }
             else
             {
+                _logger.LogWarning("No file received or file is empty");
                 TempData["ErrorMessage"] = "Please select a profile photo to upload.";
             }
             
@@ -650,7 +1062,7 @@ namespace THYNK.Controllers
             {
                 return Json(new List<object>());
             }
-
+            
             var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
             if (currentUser == null)
             {
@@ -1146,6 +1558,74 @@ namespace THYNK.Controllers
             await _context.SaveChangesAsync();
             
             return RedirectToAction(nameof(ChatSupport));
+        }
+
+        [HttpGet]
+        public IActionResult TestFileSystem()
+        {
+            var result = new Dictionary<string, string>();
+            
+            try
+            {
+                // Test wwwroot path
+                var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                result["WebRootPath"] = webRootPath;
+                result["WebRootExists"] = Directory.Exists(webRootPath).ToString();
+                
+                // Test uploads directory
+                var uploadsPath = Path.Combine(webRootPath, "uploads");
+                result["UploadsPath"] = uploadsPath;
+                result["UploadsExists"] = Directory.Exists(uploadsPath).ToString();
+                
+                // Test profile_pics directory
+                var profilePicsPath = Path.Combine(uploadsPath, "profile_pics");
+                result["ProfilePicsPath"] = profilePicsPath;
+                result["ProfilePicsExists"] = Directory.Exists(profilePicsPath).ToString();
+                
+                // Try to create a test file
+                var testFilePath = Path.Combine(profilePicsPath, "test.txt");
+                System.IO.File.WriteAllText(testFilePath, "Test file created at " + DateTime.Now);
+                result["TestFileCreated"] = "True";
+                result["TestFilePath"] = testFilePath;
+                
+                // Try to read the test file
+                var fileContent = System.IO.File.ReadAllText(testFilePath);
+                result["TestFileContent"] = fileContent;
+                
+                // Get current user information
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var currentUser = _userManager.FindByIdAsync(userId).Result;
+                
+                if (currentUser != null)
+                {
+                    result["UserId"] = userId;
+                    result["UserEmail"] = currentUser.Email;
+                    result["CurrentProfilePhoto"] = currentUser.ProfilePhotoUrl ?? "null";
+                }
+                else
+                {
+                    result["UserInfo"] = "User not found";
+                }
+                
+                // Try to get user from database context directly
+                var dbUser = _context.Users.FirstOrDefault(u => u.Id == userId);
+                if (dbUser != null)
+                {
+                    result["DbUserFound"] = "True";
+                    result["DbUserProfilePhoto"] = dbUser.ProfilePhotoUrl ?? "null";
+                }
+                else
+                {
+                    result["DbUserFound"] = "False";
+                }
+            }
+            catch (Exception ex)
+            {
+                result["Error"] = ex.Message;
+                result["StackTrace"] = ex.StackTrace;
+            }
+            
+            return Json(result);
         }
     }
 } 

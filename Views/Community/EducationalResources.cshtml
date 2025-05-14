@@ -13,12 +13,23 @@
                         <i class="fas fa-book"></i>
                     </div>
                     <div>
-                        <h5 class="m-0">Educational Resources</h5>
-                        <small>Learn how to prepare for and respond to emergencies</small>
+                        <h5 class="m-0">Community Resource Library</h5>
+                        <small>Exclusive access to emergency preparedness materials</small>
                     </div>
                 </div>
             </div>
             <div class="card-body">
+                <!-- Community perk banner -->
+                <div class="alert alert-success mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-star text-warning fa-2x me-3"></i>
+                        <div>
+                            <h5 class="mb-1">Community Member Exclusive</h5>
+                            <p class="mb-0">As a THYNK community member, you have premium access to these educational resources. Save them offline for emergency situations!</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="input-group">
@@ -84,20 +95,26 @@
                                         }
                                     </div>
                                     <div class="card-footer bg-white border-top-0">
-                                        <a href="@Url.Action("ResourceDetails", "Community", new { id = resource.Id })" class="btn btn-info text-white btn-sm">
-                                            <i class="fas fa-book-open me-1"></i> View Resource
-                                        </a>
-                                        @if (!string.IsNullOrEmpty(resource.FileUrl) && resource.IsOfflineAccessible)
-                                        {
-                                            <a href="@resource.FileUrl" download class="btn btn-outline-success btn-sm float-end">
-                                                <i class="fas fa-download me-1"></i> 
-                                                Download
-                                                @if (resource.FileSizeKB.HasValue)
-                                                {
-                                                    <span>(@(resource.FileSizeKB < 1024 ? $"{resource.FileSizeKB} KB" : $"{resource.FileSizeKB / 1024.0:F1} MB"))</span>
-                                                }
+                                        <div class="d-flex justify-content-between">
+                                            <a href="@Url.Action("ResourceDetails", "Community", new { id = resource.Id })" class="btn btn-info text-white btn-sm">
+                                                <i class="fas fa-book-open me-1"></i> View Resource
                                             </a>
-                                        }
+                                            <div>
+                                                <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = resource.Id })" class="btn btn-primary btn-sm me-1" title="Download as PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                @if (!string.IsNullOrEmpty(resource.FileUrl) && resource.IsOfflineAccessible)
+                                                {
+                                                    <a href="@resource.FileUrl" download class="btn btn-outline-success btn-sm" title="Download Original File">
+                                                        <i class="fas fa-download"></i>
+                                                        @if (resource.FileSizeKB.HasValue)
+                                                        {
+                                                            <span>(@(resource.FileSizeKB < 1024 ? $"{resource.FileSizeKB} KB" : $"{resource.FileSizeKB / 1024.0:F1} MB"))</span>
+                                                        }
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
