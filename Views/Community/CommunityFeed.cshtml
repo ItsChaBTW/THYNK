@@ -1102,34 +1102,12 @@
                     return false;
                 }
                 
-                // Store form data for later use
-                const formData = new FormData(this);
-                
                 // Show loading state on button
                 $('#submit-post-btn').html('<span class="spinner-border spinner-border-sm me-2"></span>Posting...').prop('disabled', true);
                 
-                // Temporarily prevent default form submission for the modal demo
-                e.preventDefault();
-                
-                // Hide the create post modal
-                $('#createPostModal').modal('hide');
-                
-                // Show the review pending modal
-                setTimeout(function() {
-                    $('#reviewPendingModal').modal('show');
-                    
-                    // Reset the form and button state
-                    setTimeout(function() {
-                        $('#submit-post-btn').html('<i class="fas fa-paper-plane me-2"></i>Post').prop('disabled', false);
-                        $('.create-post-form')[0].reset();
-                        $('#imagePreview').addClass('d-none');
-                    }, 500);
-                    
-                    // In a real application, you would submit the form here
-                    // $('.create-post-form')[0].submit();
-                }, 1000);
-                
-                return false; // Prevent default form submission for demo
+                // Let the form submit normally to the server
+                // The form will be submitted to the PostUpdate action in CommunityController
+                return true;
             });
             
             // Clear validation on input

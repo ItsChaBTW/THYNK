@@ -1,6 +1,8 @@
 @{
     ViewData["Title"] = "Incident Map";
-    Layout = "_CommunityLayout";
+    Layout = User.IsInRole("Admin") ? "_AdminLayout" : 
+             User.IsInRole("LGU") ? "_LGULayout" : 
+             "_CommunityLayout";
 }
 
 <!-- Introduction and Guidelines Section -->
@@ -89,18 +91,13 @@
                         </div>
                         <div class="col-md-auto col-12">
                             <div class="quick-filter-section">
-                                <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-primary quick-date" data-days="7">
-                                        <i class="far fa-calendar-alt"></i><span class="ms-1 d-none d-md-inline">Week</span>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary quick-date" data-days="30">
-                                        <i class="far fa-calendar-alt"></i><span class="ms-1 d-none d-md-inline">Month</span>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary quick-date" data-days="90">
-                                        <i class="far fa-calendar-alt"></i><span class="ms-1 d-none d-md-inline">Quarter</span>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary quick-date" data-days="all">
-                                        <i class="far fa-calendar"></i><span class="ms-1 d-none d-md-inline">All</span>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                    <input type="date" id="quick-filter-date-from" class="form-control form-control-sm" placeholder="Start Date">
+                                    <span class="input-group-text bg-white">to</span>
+                                    <input type="date" id="quick-filter-date-to" class="form-control form-control-sm" placeholder="End Date">
+                                    <button class="btn btn-outline-primary" id="apply-quick-date-filter">
+                                        <i class="fas fa-filter"></i>
                                     </button>
                                 </div>
                             </div>
@@ -108,18 +105,9 @@
                         <div class="col-md-auto col-12">
                             <div class="quick-filter-section">
                                 <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-warning quick-status" data-status="Pending">
-                                        <i class="fas fa-clock"></i><span class="ms-1 d-none d-md-inline">Pending</span>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary quick-status" data-status="InProgress">
-                                        <i class="fas fa-tools"></i><span class="ms-1 d-none d-md-inline">In Progress</span>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-success quick-status" data-status="Resolved">
-                                        <i class="fas fa-check-circle"></i><span class="ms-1 d-none d-md-inline">Resolved</span>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-secondary quick-status" data-status="all">
-                                        <i class="fas fa-list"></i><span class="ms-1 d-none d-md-inline">All</span>
-                                    </button>
+                                    <button type="button" class="btn btn-outline-primary quick-status" data-status="2">In Progress</button>
+                                    <button type="button" class="btn btn-outline-success quick-status" data-status="3">Resolved</button>
+                                    <button type="button" class="btn btn-outline-secondary quick-status" data-status="all">All</button>
                                 </div>
                             </div>
                         </div>
@@ -163,14 +151,6 @@
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-success me-2"></span>
                                 <span>Resolved</span>
-                            </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <span class="legend-dot bg-warning me-2"></span>
-                                <span>Pending</span>
-                            </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <span class="legend-dot bg-danger me-2"></span>
-                                <span>Declined</span>
                             </div>
                         </div>
                         <div class="legend-content" id="severity-content">
@@ -294,16 +274,16 @@
                     <!-- Date Range Filter -->
                     <div class="col-md-6 mb-4">
                         <label class="form-label fw-bold">Date Range</label>
-                    <div class="input-group input-group-sm mb-2">
+                        <div class="input-group input-group-sm mb-2">
                             <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                             <input type="date" id="filter-date-from" class="form-control form-control-sm" placeholder="Start Date">
-                    </div>
-                    <div class="input-group input-group-sm">
+                        </div>
+                        <div class="input-group input-group-sm">
                             <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                             <input type="date" id="filter-date-to" class="form-control form-control-sm" placeholder="End Date">
-                    </div>
+                        </div>
                         <small class="text-muted mt-2 d-block">Filter incidents by date range</small>
-                </div>
+                    </div>
                     
                     <!-- Incident Type Filter -->
                     <div class="col-md-6 mb-4">
@@ -326,7 +306,7 @@
                                 <label class="form-check-label" for="type-landslide">Landslide</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input type-filter" type="checkbox" value="Storm" id="type-storm" checked>
+                                <input class="form-check-input type-filter" type="checkbox" value="4" id="type-storm" checked>
                                 <label class="form-check-label" for="type-storm">Storm</label>
                             </div>
                             <div class="form-check form-check-inline">
@@ -338,8 +318,8 @@
                             <button class="btn btn-sm btn-outline-secondary me-2 select-all-types">Select All</button>
                             <button class="btn btn-sm btn-outline-secondary clear-all-types">Clear All</button>
                         </div>
-            </div>
-        </div>
+                    </div>
+                </div>
 
                 <div class="row">
                     <!-- Status Filter -->
@@ -347,31 +327,19 @@
                         <label class="form-label fw-bold">Status</label>
                         <div class="status-filters">
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input status-filter" type="checkbox" value="Pending" id="status-pending" checked>
-                                <label class="form-check-label" for="status-pending">Pending</label>
-            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input status-filter" type="checkbox" value="Verified" id="status-verified" checked>
-                                <label class="form-check-label" for="status-verified">Verified</label>
-                    </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input status-filter" type="checkbox" value="InProgress" id="status-inprogress" checked>
+                                <input class="form-check-input status-filter" type="checkbox" value="2" id="status-inprogress" checked>
                                 <label class="form-check-label" for="status-inprogress">In Progress</label>
-                    </div>
+                            </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input status-filter" type="checkbox" value="Resolved" id="status-resolved" checked>
+                                <input class="form-check-input status-filter" type="checkbox" value="3" id="status-resolved" checked>
                                 <label class="form-check-label" for="status-resolved">Resolved</label>
-                </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input status-filter" type="checkbox" value="Declined" id="status-declined" checked>
-                                <label class="form-check-label" for="status-declined">Declined</label>
-                    </div>
-                    </div>
+                            </div>
+                        </div>
                         <div class="d-flex mt-1">
                             <button class="btn btn-sm btn-outline-secondary me-2 select-all-statuses">Select All</button>
                             <button class="btn btn-sm btn-outline-secondary clear-all-statuses">Clear All</button>
+                        </div>
                     </div>
-                </div>
                     
                     <!-- Severity Filter -->
                     <div class="col-md-6 mb-4">
@@ -380,11 +348,11 @@
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input severity-filter" type="checkbox" value="Low" id="severity-low" checked>
                                 <label class="form-check-label" for="severity-low">Low</label>
-            </div>
+                            </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input severity-filter" type="checkbox" value="Medium" id="severity-medium" checked>
                                 <label class="form-check-label" for="severity-medium">Medium</label>
-        </div>
+                            </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input severity-filter" type="checkbox" value="High" id="severity-high" checked>
                                 <label class="form-check-label" for="severity-high">High</label>
@@ -656,7 +624,24 @@
         // Update incident count
         function updateIncidentCount(count) {
             const countElement = document.getElementById('incident-count');
-            countElement.textContent = `${count} Incident${count !== 1 ? 's' : ''} Displayed`;
+            const inProgressCount = incidents.filter(i => {
+                let statusNum = i.status;
+                if (typeof statusNum === 'string') {
+                    if (statusNum === 'InProgress') statusNum = 2;
+                    else if (statusNum === 'Resolved') statusNum = 3;
+                    else if (statusNum === 'Pending') statusNum = 0;
+                    else if (statusNum === 'Declined') statusNum = 1;
+                    else statusNum = -1;
+                }
+                return statusNum === 2;
+            }).length;
+            const resolvedCount = incidents.filter(i => i.status === 3).length;
+            
+            // Update the count display to show both status counts
+            countElement.innerHTML = `
+                <span class="badge bg-primary me-1">${inProgressCount} In Progress</span>
+                <span class="badge bg-success">${resolvedCount} Resolved</span>
+            `;
         }
 
         // Modified renderMarkers function to handle no incidents scenario
@@ -809,13 +794,12 @@
 
         // Get status class for badges
         function getStatusClass(status) {
-            switch(status) {
-                case 'Pending': return 'bg-warning text-dark';
-                case 'Verified': return 'bg-info text-dark';
-                case 'InProgress': return 'bg-primary';
-                case 'Resolved': return 'bg-success';
-                case 'Declined': return 'bg-danger';
-                default: return 'bg-secondary';
+            switch (status) {
+                case 2: return 'bg-primary text-white'; // In Progress
+                case 3: return 'bg-success text-white'; // Resolved
+                case 0: return 'bg-warning text-dark'; // Pending
+                case 1: return 'bg-danger text-white'; // Declined
+                default: return 'bg-secondary text-white';
             }
         }
         
@@ -827,26 +811,28 @@
         
         // Get type icon
         function getTypeIcon(type) {
-            switch(type) {
-                case 'Earthquake': return 'fa-house-damage';
-                case 'Flood': return 'fa-water';
-                case 'Fire': return 'fa-fire';
-                case 'Landslide': return 'fa-mountain';
-                case 'Storm': return 'fa-cloud-showers-heavy';
-                case 'Accident': return 'fa-car-crash';
-                default: return 'fa-exclamation-triangle';
+            switch (type) {
+                case 0: return 'fas fa-house-damage'; // Earthquake
+                case 1: return 'fas fa-water'; // Flood
+                case 2: return 'fas fa-fire'; // Fire
+                case 3: return 'fas fa-mountain'; // Landslide
+                case 4: return 'fas fa-cloud-showers-heavy'; // Storm
+                case 5: return 'fas fa-car-crash'; // Accident
+                case 6: return 'fas fa-question'; // Other
+                default: return 'fas fa-exclamation-triangle';
             }
         }
         
         // Get type color
         function getTypeColor(type) {
-            switch(type) {
-                case 'Earthquake': return '#dc3545';
-                case 'Flood': return '#0d6efd';
-                case 'Fire': return '#ffc107';
-                case 'Landslide': return '#6c757d';
-                case 'Storm': return '#6610f2';
-                case 'Accident': return '#fd7e14';
+            switch (type) {
+                case 0: return '#dc3545'; // Earthquake - red
+                case 1: return '#0d6efd'; // Flood - blue
+                case 2: return '#ffc107'; // Fire - yellow
+                case 3: return '#6c757d'; // Landslide - gray
+                case 4: return '#6610f2'; // Storm - purple
+                case 5: return '#fd7e14'; // Accident - orange
+                case 6: return '#343a40'; // Other - dark gray
                 default: return '#343a40';
             }
         }
@@ -859,7 +845,7 @@
             
             // Set basic information
             document.getElementById('modal-title').textContent = incident.title;
-            document.getElementById('modal-date').textContent = formatDate(incident.dateReported);
+            document.getElementById('modal-date').textContent = formatDate(incident.dateModified || incident.dateReported);
             document.getElementById('modal-description').textContent = incident.description;
             document.getElementById('modal-location').textContent = incident.location;
             document.getElementById('modal-id').textContent = `Incident ID: ${incident.id}`;
@@ -999,23 +985,14 @@
         document.querySelectorAll('.quick-status').forEach(button => {
             button.addEventListener('click', function() {
                 const statusValue = this.getAttribute('data-status');
-                
-                // Get all status checkboxes
-                const statusCheckboxes = document.querySelectorAll('.status-filter');
-                
+                // Remove active class from all buttons
+                document.querySelectorAll('.quick-status').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
                 if (statusValue === 'all') {
-                    // Select all statuses
-                    statusCheckboxes.forEach(checkbox => checkbox.checked = true);
+                    fetchIncidentsCommunity({}); // No status param, show all
                 } else {
-                    // First uncheck all
-                    statusCheckboxes.forEach(checkbox => checkbox.checked = false);
-                    
-                    // Then check only the selected one
-                    document.querySelector(`.status-filter[value="${statusValue}"]`).checked = true;
+                    fetchIncidentsCommunity({ status: statusValue });
                 }
-                
-                // Apply the filter
-                applyFilters();
             });
         });
         
@@ -1036,10 +1013,13 @@
                     
                     // Format date as YYYY-MM-DD
                     const formattedStartDate = startDate.toISOString().split('T')[0];
+                    const formattedEndDate = today.toISOString().split('T')[0];
+                    
                     document.getElementById('filter-date-from').value = formattedStartDate;
+                    document.getElementById('filter-date-to').value = formattedEndDate;
                 }
                 
-                // Apply the filter
+                // Apply the filter immediately
                 applyFilters();
                 
                 // Add active state to this button and remove from others
@@ -1067,22 +1047,16 @@
             // Remove any no data message
             const noDataMsg = document.querySelector('.map-no-data-message');
             if (noDataMsg) noDataMsg.remove();
-            
             // Show loading indicator
             showMapLoading(true);
-            
             const dateFromFilter = document.getElementById('filter-date-from').value;
             const dateToFilter = document.getElementById('filter-date-to').value;
-            
-            // Get selected incident types
-            const selectedTypes = Array.from(document.querySelectorAll('.type-filter:checked')).map(checkbox => checkbox.value);
-            
-            // Get selected statuses
-            const selectedStatuses = Array.from(document.querySelectorAll('.status-filter:checked')).map(checkbox => checkbox.value);
-            
-            // Get selected severities
-            const selectedSeverities = Array.from(document.querySelectorAll('.severity-filter:checked')).map(checkbox => checkbox.value);
-            
+            // Get selected incident types (as numbers)
+            const selectedTypes = Array.from(document.querySelectorAll('.type-filter:checked')).map(cb => Number(cb.value));
+            // Get selected statuses (as numbers)
+            const selectedStatuses = Array.from(document.querySelectorAll('.status-filter:checked')).map(cb => Number(cb.value));
+            // Get selected severities (as numbers)
+            const selectedSeverities = Array.from(document.querySelectorAll('.severity-filter:checked')).map(cb => Number(cb.value));
             // Store active filters for display
             activeFilters = {
                 dateFrom: dateFromFilter,
@@ -1091,60 +1065,63 @@
                 statuses: selectedStatuses,
                 severities: selectedSeverities
             };
-            
             // Update active filters display
             updateActiveFiltersDisplay();
-            
             let filteredIncidents = [...incidents];
-            
-            // Filter by date range
+            // Filter by date range (using modification date)
             if (dateFromFilter) {
                 const fromDate = new Date(dateFromFilter);
-                filteredIncidents = filteredIncidents.filter(incident => 
-                    new Date(incident.dateReported) >= fromDate
-                );
+                fromDate.setHours(0, 0, 0, 0); // Set to start of day
+                filteredIncidents = filteredIncidents.filter(incident => {
+                    const incidentDate = new Date(incident.dateModified || incident.dateReported);
+                    return incidentDate >= fromDate;
+                });
             }
-            
             if (dateToFilter) {
                 const toDate = new Date(dateToFilter);
-                toDate.setHours(23, 59, 59); // Set to end of day
-                filteredIncidents = filteredIncidents.filter(incident => 
-                    new Date(incident.dateReported) <= toDate
-                );
+                toDate.setHours(23, 59, 59, 999); // Set to end of day
+                filteredIncidents = filteredIncidents.filter(incident => {
+                    const incidentDate = new Date(incident.dateModified || incident.dateReported);
+                    return incidentDate <= toDate;
+                });
             }
-            
-            // Filter by incident type
-            if (selectedTypes.length > 0) {
-                filteredIncidents = filteredIncidents.filter(incident => 
-                    selectedTypes.includes(incident.type)
-                );
+            // Filter by incident type (zero-based)
+            if (selectedTypes.length > 0 && selectedTypes.length < document.querySelectorAll('.type-filter').length) {
+                filteredIncidents = filteredIncidents.filter(incident => selectedTypes.includes(incident.type));
             }
-            
-            // Filter by status
-            if (selectedStatuses.length > 0) {
-                filteredIncidents = filteredIncidents.filter(incident => 
-                    selectedStatuses.includes(incident.status)
-                );
+            // Filter by status (zero-based)
+            if (selectedStatuses.length > 0 && selectedStatuses.length < document.querySelectorAll('.status-filter').length) {
+                filteredIncidents = filteredIncidents.filter(incident => {
+                    // Convert string status to number if needed
+                    let statusNum = incident.status;
+                    if (typeof statusNum === 'string') {
+                        if (statusNum === 'InProgress') statusNum = 2;
+                        else if (statusNum === 'Resolved') statusNum = 3;
+                        else if (statusNum === 'Pending') statusNum = 0;
+                        else if (statusNum === 'Declined') statusNum = 1;
+                        else statusNum = -1;
+                    }
+                    return selectedStatuses.includes(statusNum);
+                });
             }
-            
-            // Filter by severity
-            if (selectedSeverities.length > 0) {
-                filteredIncidents = filteredIncidents.filter(incident => 
-                    selectedSeverities.includes(incident.severity)
-                );
+            // Filter by severity (zero-based)
+            if (selectedSeverities.length > 0 && selectedSeverities.length < document.querySelectorAll('.severity-filter').length) {
+                filteredIncidents = filteredIncidents.filter(incident => selectedSeverities.includes(incident.severity));
             }
-            
             // Delay slightly to show the loading indicator
             setTimeout(() => {
-            // Render filtered markers
-            renderMarkers(filteredIncidents);
-            
-                // Hide loading indicator
+                renderMarkers(filteredIncidents);
+                document.getElementById('incident-count').textContent = `${filteredIncidents.length} Incident${filteredIncidents.length !== 1 ? 's' : ''} Displayed`;
                 showMapLoading(false);
-                
-                // Show toast notification
                 showFilterToast(filteredIncidents.length, incidents.length);
-            }, 500);
+                const noIncidentsAlert = document.getElementById('no-incidents-alert');
+                if (filteredIncidents.length === 0) {
+                    noIncidentsAlert.classList.remove('d-none');
+                } else {
+                    noIncidentsAlert.classList.add('d-none');
+                }
+                populateRecentIncidents(filteredIncidents);
+            }, 300);
         }
         
         // Display active filters
@@ -1346,13 +1323,12 @@
 
         // Function to get an appropriate status icon
         function getStatusIcon(status) {
-            switch(status) {
-                case 'Pending': return 'fa-clock';
-                case 'Verified': return 'fa-check-square';
-                case 'InProgress': return 'fa-tools';
-                case 'Resolved': return 'fa-check-circle';
-                case 'Declined': return 'fa-times-circle';
-                default: return 'fa-question-circle';
+            switch (status) {
+                case 2: return 'fas fa-tools'; // In Progress
+                case 3: return 'fas fa-check-circle'; // Resolved
+                case 0: return 'fas fa-clock'; // Pending
+                case 1: return 'fas fa-times-circle'; // Declined
+                default: return 'fas fa-question-circle';
             }
         }
         
@@ -1435,25 +1411,30 @@
                 }
             });
             
-            const statusIconClass = getStatusIcon(incident.status);
-            const statusIconColor = getStatusIconColor(incident.status);
             const typeIconClass = getTypeIcon(incident.type);
             const typeColor = getTypeColor(incident.type);
             
-            const formattedDate = new Date(incident.dateReported).toLocaleDateString('en-US', {
+            // Format the date and time
+            const displayDate = incident.dateModified || incident.dateReported;
+            const formattedDate = new Date(displayDate).toLocaleDateString('en-US', {
                 month: 'short',
-                day: 'numeric'
+                day: 'numeric',
+                year: 'numeric'
             });
             
-            const formattedTime = new Date(incident.dateReported).toLocaleTimeString('en-US', {
+            const formattedTime = new Date(displayDate).toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit'
             });
-            
-            // Truncate description to first 60 characters
-            const shortDescription = incident.description.length > 60 
-                ? incident.description.substring(0, 60) + '...' 
-                : incident.description;
+
+            // Create a detailed location string
+            let locationDetails = incident.location;
+            if (incident.barangay && incident.barangay !== 'Unknown') {
+                locationDetails += `, Barangay ${incident.barangay}`;
+            }
+            if (incident.city && incident.city !== 'Unknown') {
+                locationDetails += `, ${incident.city}`;
+            }
             
             item.innerHTML = `
                 <div class="d-flex">
@@ -1461,22 +1442,26 @@
                         <i class="fas ${typeIconClass}"></i>
                     </div>
                     <div class="flex-grow-1 min-width-0">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0 text-truncate">${incident.title}</h6>
-                            <div class="ms-2 text-nowrap incident-time">
-                                <span class="badge bg-light text-dark">${formattedDate}</span>
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <div>
+                                <span class="badge ${getStatusClass(incident.status)} mb-1">
+                                    <i class="${getStatusIcon(incident.status)} me-1"></i>${mapStatus(incident.status)}
+                                </span>
+                                <span class="badge" style="background-color: ${typeColor}20; color: ${typeColor}; border: 1px solid ${typeColor}">
+                                    <i class="${getTypeIcon(incident.type)} me-1"></i>${mapType(incident.type)}
+                                </span>
+                                <span class="badge ms-1 ${getSeverityClass(incident.severity)}">
+                                    <i class="${getSeverityIcon(incident.severity)} me-1"></i>${getSeverityLabel(incident.severity)}
+                                </span>
+                            </div>
+                            <div class="text-end">
+                                <div class="text-muted small">${formattedDate}</div>
+                                <div class="text-muted small">${formattedTime}</div>
                             </div>
                         </div>
-                        <p class="mb-1 small text-muted text-truncate incident-location">${incident.location}</p>
-                        <p class="mb-2 small incident-description text-truncate">${shortDescription}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="badge ${getStatusClass(incident.status)}">${formatStatus(incident.status)}</span>
-                                <span class="badge bg-${getSeverityClass(incident.severity)}" style="font-size: 0.7rem;">${incident.severity}</span>
-                            </div>
-                            <span class="status-dot" style="color: ${statusIconColor}">
-                                <i class="fas ${statusIconClass}"></i>
-                            </span>
+                        <div class="incident-title fw-bold mb-1">${incident.title}</div>
+                        <div class="incident-location small text-muted mb-1">
+                            <i class="fas fa-map-marker-alt me-1"></i>${locationDetails}
                         </div>
                     </div>
                 </div>
@@ -1485,38 +1470,96 @@
             return item;
         }
 
-        // Get severity badge class
-        function getSeverityClass(severity) {
-            switch(severity) {
-                case 'Low': return 'success';
-                case 'Medium': return 'warning';
-                case 'High': return 'danger';
-                case 'Critical': return 'dark';
-                default: return 'secondary';
+        // Update the styles for the recent incidents list
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            .incident-list-icon {
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+                border-radius: 8px;
+                background-color: rgba(0,0,0,0.05);
             }
-        }
-        
+            
+            .incident-location {
+                color: #6c757d;
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+            
+            .incident-description {
+                color: #495057;
+                line-height: 1.4;
+                max-height: 2.8em;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+            }
+            
+            .list-group-item {
+                transition: all 0.2s ease;
+                border-left: 3px solid transparent;
+            }
+            
+            .list-group-item:hover {
+                background-color: #f8f9fa;
+                border-left-color: #0d6efd;
+            }
+            
+            .list-group-item.active {
+                background-color: #f0f7ff !important;
+                border-left-color: #0d6efd !important;
+            }
+            
+            .badge {
+                font-weight: 500;
+                padding: 0.35em 0.65em;
+                font-size: 0.75em;
+            }
+            
+            #recent-incidents-list {
+                max-height: calc(100vh - 300px);
+                overflow-y: auto;
+                scrollbar-width: thin;
+            }
+            
+            #recent-incidents-list::-webkit-scrollbar {
+                width: 6px;
+            }
+            
+            #recent-incidents-list::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+            
+            #recent-incidents-list::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 3px;
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
         // Initialize search functionality for incidents
         document.getElementById('incidents-search').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase().trim();
             const incidentItems = document.querySelectorAll('#recent-incidents-list a.list-group-item');
             
             incidentItems.forEach(item => {
-                const title = item.querySelector('h6').textContent.toLowerCase();
-                const location = item.querySelector('.incident-location').textContent.toLowerCase();
-                const description = item.querySelector('.incident-description').textContent.toLowerCase();
-                
-                if (title.includes(searchTerm) || location.includes(searchTerm) || description.includes(searchTerm)) {
+                const title = item.querySelector('.incident-title')?.textContent.toLowerCase() || '';
+                const location = item.querySelector('.incident-location')?.textContent.toLowerCase() || '';
+                // No description in markup
+                if (title.includes(searchTerm) || location.includes(searchTerm)) {
                     item.classList.remove('d-none');
                 } else {
                     item.classList.add('d-none');
                 }
             });
-            
             // Show "no results" message if all items are hidden
             const visibleItems = document.querySelectorAll('#recent-incidents-list a.list-group-item:not(.d-none)').length;
             const noResultsMsg = document.getElementById('no-search-results');
-            
             if (visibleItems === 0 && searchTerm !== '') {
                 if (!noResultsMsg) {
                     const msg = document.createElement('div');
@@ -1577,6 +1620,183 @@
                     
                     alert('Error refreshing incidents. Please try again.');
                 });
+        });
+
+        // Add event listener for the date filter apply button
+        document.getElementById('apply-quick-date-filter').addEventListener('click', function() {
+            // Sync quick filter dates to modal dates
+            document.getElementById('filter-date-from').value = document.getElementById('quick-filter-date-from').value;
+            document.getElementById('filter-date-to').value = document.getElementById('quick-filter-date-to').value;
+            applyFilters();
+        });
+        // Add event listeners for quick date inputs to sync with modal and apply filter on change
+        document.getElementById('quick-filter-date-from').addEventListener('change', function() {
+            document.getElementById('filter-date-from').value = this.value;
+            applyFilters();
+        });
+        document.getElementById('quick-filter-date-to').addEventListener('change', function() {
+            document.getElementById('filter-date-to').value = this.value;
+            applyFilters();
+        });
+        // When modal date changes, sync to quick filter
+        document.getElementById('filter-date-from').addEventListener('change', function() {
+            document.getElementById('quick-filter-date-from').value = this.value;
+        });
+        document.getElementById('filter-date-to').addEventListener('change', function() {
+            document.getElementById('quick-filter-date-to').value = this.value;
+        });
+
+        // Remove the old quick date filter event listeners and add new date validation
+        function validateDateRange() {
+            const fromDate = document.getElementById('filter-date-from').value;
+            const toDate = document.getElementById('filter-date-to').value;
+            
+            if (fromDate && toDate) {
+                const start = new Date(fromDate);
+                const end = new Date(toDate);
+                
+                if (start > end) {
+                    // If start date is after end date, swap them
+                    document.getElementById('filter-date-from').value = toDate;
+                    document.getElementById('filter-date-to').value = fromDate;
+                }
+            }
+        }
+
+        // Add validation to date inputs
+        document.getElementById('filter-date-from').addEventListener('change', validateDateRange);
+        document.getElementById('filter-date-to').addEventListener('change', validateDateRange);
+
+        // Update the reset filters function
+        function resetFilters() {
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            
+            // Reset all filter checkboxes
+            document.querySelectorAll('.type-filter, .status-filter, .severity-filter').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            
+            // Clear active filters
+            activeFilters = {
+                dateFrom: null,
+                dateTo: null,
+                types: [],
+                statuses: [],
+                severities: []
+            };
+            
+            // Update active filters display
+            updateActiveFiltersDisplay();
+            
+            // Show loading indicator
+            showMapLoading(true);
+            
+            // Apply the reset
+            setTimeout(() => {
+                renderMarkers(incidents);
+                showMapLoading(false);
+                showFilterToast(incidents.length, incidents.length, true);
+            }, 300);
+        }
+
+        function mapStatus(status) {
+            switch (status) {
+                case 2: return 'In Progress';
+                case 3: return 'Resolved';
+                case 0: return 'Pending';
+                case 1: return 'Declined';
+                default: return status; // fallback if already a string
+            }
+        }
+
+        function mapType(type) {
+            switch (type) {
+                case 0: return 'Earthquake';
+                case 1: return 'Flood';
+                case 2: return 'Fire';
+                case 3: return 'Landslide';
+                case 4: return 'Storm';
+                case 5: return 'Accident';
+                case 6: return 'Other';
+                default: return type; // fallback if already a string
+            }
+        }
+
+        // Add helper functions for severity icon and class
+        function getSeverityLabel(severity) {
+            switch (severity) {
+                case 0: return 'Low';
+                case 1: return 'Medium';
+                case 2: return 'High';
+                case 3: return 'Critical';
+                default: return severity; // fallback if already a string
+            }
+        }
+
+        function getSeverityIcon(severity) {
+            switch (severity) {
+                case 0: return 'fa-solid fa-circle-check text-success';
+                case 1: return 'fa-solid fa-circle-exclamation text-warning';
+                case 2: return 'fa-solid fa-triangle-exclamation text-danger';
+                case 3: return 'fa-solid fa-skull-crossbones text-dark';
+                default: return 'fa-solid fa-circle-question text-secondary';
+            }
+        }
+
+        function getSeverityClass(severity) {
+            switch (severity) {
+                case 0: return 'bg-success text-white';
+                case 1: return 'bg-warning text-dark';
+                case 2: return 'bg-danger text-white';
+                case 3: return 'bg-dark text-white';
+                default: return 'bg-secondary text-white';
+            }
+        }
+
+        // Add this function for fetching incidents with filters
+        function fetchIncidentsCommunity(filters) {
+            let url = '@Url.Action("GetMapData", "Community")';
+            let params = [];
+            if (filters.status && filters.status !== 'all') params.push('status=' + filters.status);
+            if (filters.dateFrom) params.push('dateFrom=' + filters.dateFrom);
+            if (filters.dateTo) params.push('dateTo=' + filters.dateTo);
+            if (params.length > 0) url += '?' + params.join('&');
+            showMapLoading(true);
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    incidents = data;
+                    showMapLoading(false);
+                    renderMarkers(incidents);
+                    populateRecentIncidents(incidents);
+                })
+                .catch(error => {
+                    showMapLoading(false);
+                    // handle error
+                });
+        }
+
+        // Helper to get the currently selected status
+        function getSelectedStatus() {
+            const activeBtn = document.querySelector('.quick-status.active');
+            return activeBtn ? activeBtn.getAttribute('data-status') : 'all';
+        }
+
+        // Listen for changes on the date inputs
+        document.getElementById('quick-filter-date-from').addEventListener('change', function() {
+            fetchIncidentsCommunity({
+                status: getSelectedStatus(),
+                dateFrom: this.value,
+                dateTo: document.getElementById('quick-filter-date-to').value
+            });
+        });
+        document.getElementById('quick-filter-date-to').addEventListener('change', function() {
+            fetchIncidentsCommunity({
+                status: getSelectedStatus(),
+                dateFrom: document.getElementById('quick-filter-date-from').value,
+                dateTo: this.value
+            });
         });
     </script>
 }
@@ -2168,6 +2388,44 @@
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Date filter styling */
+        .quick-filter-section .input-group {
+            min-width: 300px;
+        }
+        
+        .quick-filter-section .input-group-text {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+        
+        .quick-filter-section .form-control {
+            border-color: #dee2e6;
+        }
+        
+        .quick-filter-section .form-control:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        #apply-date-filter {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        @@media (max-width: 768px) {
+            .quick-filter-section .input-group {
+                min-width: 100%;
+            }
+            
+            .quick-filter-section .input-group-text {
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .quick-filter-section .form-control {
+                padding: 0.25rem 0.5rem;
+            }
         }
     </style>
 } 

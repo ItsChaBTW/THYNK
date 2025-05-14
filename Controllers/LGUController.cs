@@ -377,82 +377,98 @@ namespace THYNK.Controllers
 
         // API endpoint to get map data
         [HttpGet]
-        public async Task<JsonResult> GetMapData()
+        public async Task<JsonResult> GetMapData(int? status, DateTime? dateFrom, DateTime? dateTo)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
-            // Check if userId is null before calling FindByIdAsync
             if (string.IsNullOrEmpty(userId))
             {
                 return Json(new List<object>());
             }
-            
+
             var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
-            
             if (currentUser == null)
             {
                 return Json(new List<object>());
             }
 
-            var reports = await _context.DisasterReports
+            // Start with base query for incidents assigned to this LGU
+            var query = _context.DisasterReports
                 .Include(r => r.AssignedTo)
-                .Where(r => 
-                    // Reports assigned to this user
-                    r.AssignedToId == userId || 
-                    // OR reports in progress assigned to the same organization
-                    (r.Status == ReportStatus.InProgress && 
-                     r.AssignedTo != null && 
-                     r.AssignedTo.OrganizationName == currentUser.OrganizationName))
-                .Select(r => new {
+                .Where(r => r.AssignedToId == userId || 
+                       (r.Status == ReportStatus.InProgress && r.AssignedTo != null && r.AssignedTo.OrganizationName == currentUser.OrganizationName));
+
+            // Apply status filter if provided
+            if (status.HasValue)
+            {
+                query = query.Where(r => (int)r.Status == status.Value);
+            }
+            else
+            {
+                // By default, only show In Progress and Resolved
+                query = query.Where(r => r.Status == ReportStatus.InProgress || r.Status == ReportStatus.Resolved);
+            }
+
+            // Apply date filters if provided
+            if (dateFrom.HasValue)
+            {
+                query = query.Where(r => r.DateReported >= dateFrom.Value);
+            }
+            if (dateTo.HasValue)
+            {
+                query = query.Where(r => r.DateReported <= dateTo.Value);
+            }
+
+            // Get the filtered incidents
+            var incidents = await query
+                .OrderByDescending(r => r.DateReported)
+                .Select(r => new
+                {
                     r.Id,
                     r.Title,
-                    r.Type,
-                    r.Severity,
-                    r.Status,
+                    r.Description,
+                    r.Location,
+                    r.Barangay,
+                    r.City,
                     r.Latitude,
                     r.Longitude,
+                    r.Type,
+                    r.Status,
+                    r.Severity,
                     r.DateReported,
-                    r.Location,
-                    HasLocation = r.Latitude != 0 && r.Longitude != 0,
-                    AssignedTo = r.AssignedTo != null ? new {
-                        Name = $"{r.AssignedTo.FirstName} {r.AssignedTo.LastName}",
+                    AssignedTo = r.AssignedTo != null ? new
+                    {
+                        r.AssignedTo.Id,
+                        Name = r.AssignedTo.FirstName + " " + r.AssignedTo.LastName,
                         Organization = r.AssignedTo.OrganizationName
                     } : null
                 })
                 .ToListAsync();
 
-            // Detailed logging for debugging
-            _logger.LogInformation($"Found {reports.Count} reports for user {userId}");
-            foreach (var report in reports)
-            {
-                _logger.LogInformation($"Report {report.Id}: Title={report.Title}, Status={report.Status}");
-                _logger.LogInformation($"Coordinates: Lat={report.Latitude}, Lng={report.Longitude}, HasLocation={report.HasLocation}");
-                if (report.AssignedTo != null)
-                {
-                    _logger.LogInformation($"Assigned to: {report.AssignedTo.Name} ({report.AssignedTo.Organization})");
-                }
-            }
-                
-            return Json(reports);
+            return Json(incidents);
         }
 
         // Post a community update
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostUpdate(string Content, UpdateType Type, string Location, IFormFile Image, double? Latitude, double? Longitude)
+        public async Task<IActionResult> PostUpdate(CommunityUpdate update, IFormFile Image)
         {
             try
             {
-                _logger.LogInformation($"PostUpdate called with Content: {Content}, Type: {Type}, Location: {Location}");
+                // Add these debug lines
+                _logger.LogInformation("PostUpdate action called");
+                _logger.LogInformation($"Content: {update.Content}");
+                _logger.LogInformation($"Type: {update.Type}");
+                _logger.LogInformation($"UserId: {User.FindFirstValue(ClaimTypes.NameIdentifier)}");
 
-                if (string.IsNullOrEmpty(Content))
+                // Get the current user's ID
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
                 {
-                    _logger.LogWarning("PostUpdate failed: Content is empty");
-                    TempData["ErrorMessage"] = "Post content cannot be empty.";
-                    return RedirectToAction(nameof(CommunityFeed));
+                    _logger.LogWarning("User not authenticated");
+                    TempData["ErrorMessage"] = "User not authenticated.";
+                    return View(update);
                 }
 
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 _logger.LogInformation($"User ID: {userId}");
 
                 var user = await _userManager.FindByIdAsync(userId) as LGUUser;
@@ -462,18 +478,17 @@ namespace THYNK.Controllers
                     return NotFound();
                 }
 
-                var update = new CommunityUpdate
+                // Set the required fields
+                update.UserId = userId;
+                update.DatePosted = DateTime.Now;
+                update.ModerationStatus = ModerationStatus.Approved; // Automatically approve LGU/SLU posts
+                update.ImageUrl = "/images/no-image.png"; // Set default image URL
+
+                // Set optional fields if not provided
+                if (string.IsNullOrEmpty(update.Location))
                 {
-                    UserId = userId,
-                    Content = Content,
-                    Type = Type,
-                    DatePosted = DateTime.Now,
-                    ModerationStatus = ModerationStatus.Approved, // Automatically approve LGU/SLU posts
-                    Location = Location ?? "Not specified",
-                    Latitude = Latitude,
-                    Longitude = Longitude,
-                    ImageUrl = "/images/no-image.png" // Set default image URL
-                };
+                    update.Location = "Not specified";
+                }
 
                 _logger.LogInformation($"Created CommunityUpdate object: {JsonSerializer.Serialize(update)}");
 
@@ -511,8 +526,8 @@ namespace THYNK.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in PostUpdate action");
-                TempData["ErrorMessage"] = "An error occurred while saving your post. Please try again.";
-                return RedirectToAction(nameof(CommunityFeed));
+                TempData["ErrorMessage"] = "An error occurred while posting your update. Please try again.";
+                return View(update);
             }
         }
     }
