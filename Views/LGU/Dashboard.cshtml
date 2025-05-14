@@ -3,124 +3,407 @@
     Layout = "_LGULayout";
 }
 
-<div class="mb-6">
-    <h1 class="text-2xl font-bold mb-1">LGU Dashboard</h1>
-    <p class="text-sm text-gray-600">Welcome back! Here's an overview of your community's disaster management status.</p>
-</div>
+<style>
+    /* Enhanced Minimalist Dashboard Styles */
+    .dashboard-section {
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+    
+    .dashboard-card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden;
+        background-color: #ffffff;
+    }
+    
+    .dashboard-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+        transform: translateY(-3px);
+    }
+    
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--dark-alt);
+        margin-bottom: 0.8rem;
+        position: relative;
+        padding-left: 0.75rem;
+        display: inline-block;
+    }
+    
+    .section-title::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 16px;
+        background-color: var(--sidebar-hover);
+        border-radius: 2px;
+    }
+    
+    .action-btn {
+        border-radius: 0.3rem;
+        padding: 0.9rem 1.25rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        letter-spacing: 0.02em;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .action-btn:active {
+        transform: translateY(0);
+    }
+    
+    .action-btn i {
+        margin-right: 0.5rem;
+        font-size: 1rem;
+    }
+    
+    .action-btn.create-alert {
+        background-color: var(--danger);
+        background-image: linear-gradient(to right, var(--danger), #e84e5a);
+    }
+    
+    .action-btn.manage-reports {
+        background-color: var(--sidebar-bg);
+        background-image: linear-gradient(to right, var(--sidebar-bg), var(--sidebar-light));
+    }
+    
+    .action-btn.manage-resources {
+        background-color: var(--sidebar-accent);
+        background-image: linear-gradient(to right, var(--sidebar-accent), #4dabf7);
+    }
+    
+    .list-item {
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        padding: 1.2rem 1.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .list-item:hover {
+        background-color: rgba(0, 0, 0, 0.01);
+    }
+    
+    .item-title {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin-bottom: 0.35rem;
+        line-height: 1.4;
+    }
+    
+    .item-date {
+        font-size: 0.7rem;
+        color: var(--dark-alt);
+        padding: 0.25rem 0.5rem;
+        background-color: rgba(0, 0, 0, 0.03);
+        border-radius: 3px;
+        display: inline-block;
+    }
+    
+    .item-content {
+        font-size: 0.85rem;
+        color: var(--dark-light);
+        margin-bottom: 0.6rem;
+        line-height: 1.5;
+    }
+    
+    .item-footer {
+        font-size: 0.75rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+        position: relative;
+    }
+    
+    .status-indicator::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background-color: inherit;
+        border-radius: 50%;
+        opacity: 0.2;
+        z-index: -1;
+    }
+    
+    .empty-state {
+        padding: 3.5rem 1.5rem;
+        text-align: center;
+        background-color: rgba(0, 0, 0, 0.01);
+        border-radius: 0.5rem;
+    }
+    
+    .empty-icon {
+        font-size: 2rem;
+        color: var(--muted);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-text {
+        font-size: 0.9rem;
+        color: var(--dark-alt);
+        margin-bottom: 1.5rem;
+        font-weight: 400;
+    }
+    
+    .badge {
+        font-weight: 400;
+        padding: 0.3em 0.6em;
+        font-size: 0.7em;
+        border-radius: 3px;
+        letter-spacing: 0.02em;
+    }
+    
+    .resource-card {
+        text-align: center;
+        padding: 2rem 1.5rem;
+        height: 100%;
+        border-radius: 0.5rem;
+        background-color: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .resource-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: var(--sidebar-hover);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .resource-card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+        transform: translateY(-4px);
+        border-color: rgba(0, 0, 0, 0);
+    }
+    
+    .resource-card:hover::before {
+        opacity: 1;
+    }
+    
+    .resource-icon {
+        font-size: 1.75rem;
+        margin-bottom: 1.25rem;
+        color: var(--sidebar-hover);
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+    
+    .resource-card:hover .resource-icon {
+        transform: scale(1.1);
+    }
+    
+    .btn-outline-secondary {
+        color: var(--dark-alt);
+        border-color: rgba(0, 0, 0, 0.1);
+        background-color: transparent;
+        transition: all 0.2s ease;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: var(--sidebar-hover);
+        border-color: var(--sidebar-hover);
+        color: white;
+    }
+    
+    .stats-summary {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-card {
+        flex: 1;
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        padding: 1.2rem;
+        text-align: center;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        margin: 0 0.5rem;
+    }
+    
+    .stat-card:first-child {
+        margin-left: 0;
+    }
+    
+    .stat-card:last-child {
+        margin-right: 0;
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--dark-alt);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .card-accent-alerts {
+        border-left: 3px solid var(--danger);
+    }
+    
+    .card-accent-reports {
+        border-left: 3px solid var(--sidebar-bg);
+    }
+    
+    .card-accent-community {
+        border-left: 3px solid var(--success);
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .dashboard-section {
+        animation: fadeIn 0.5s ease forwards;
+    }
+    
+    .dashboard-section:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+    
+    .dashboard-section:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+    
+    .dashboard-section:nth-child(4) {
+        animation-delay: 0.3s;
+    }
+    
+    .dashboard-section:nth-child(5) {
+        animation-delay: 0.4s;
+    }
+</style>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <!-- Summary Cards -->
-    <div class="lgu-card p-4">
-        <div class="flex items-center mb-4">
-            <div class="header-icon bg-red-100 text-red-600">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold">Active Incidents</h3>
-                <p class="text-sm text-gray-500">Requiring attention</p>
-            </div>
+<!-- Stats Summary -->
+<div class="dashboard-section">
+    <div class="stats-summary">
+        <div class="stat-card">
+            <div class="stat-value">@(ViewBag.ActiveAlerts?.Count ?? 0)</div>
+            <div class="stat-label">Active Alerts</div>
         </div>
-        <div class="flex justify-between items-end">
-            <div class="text-3xl font-bold">@(ViewBag.ActiveIncidents ?? 0)</div>
-            <div class="text-sm @(ViewBag.IncidentChangePositive != null && ViewBag.IncidentChangePositive ? "text-green-600" : "text-red-600")">
-                <i class="fas @(ViewBag.IncidentChangePositive != null && ViewBag.IncidentChangePositive ? "fa-arrow-down" : "fa-arrow-up") mr-1"></i>
-                @(ViewBag.IncidentChangePercentage ?? 0)% from last week
-            </div>
+        <div class="stat-card">
+            <div class="stat-value">@(ViewBag.RecentReports?.Count ?? 0)</div>
+            <div class="stat-label">Recent Reports</div>
         </div>
-                    </div>
-
-    <div class="lgu-card p-4">
-        <div class="flex items-center mb-4">
-            <div class="header-icon bg-blue-100 text-blue-600">
-                <i class="fas fa-users"></i>
-                    </div>
-            <div>
-                <h3 class="text-lg font-semibold">Community Activity</h3>
-                <p class="text-sm text-gray-500">Recent engagement</p>
-                    </div>
-                </div>
-        <div class="flex justify-between items-end">
-            <div class="text-3xl font-bold">@(ViewBag.CommunityPosts ?? 0)</div>
-            <div class="text-sm @(ViewBag.CommunityChangePositive != null && ViewBag.CommunityChangePositive ? "text-green-600" : "text-red-600")">
-                <i class="fas @(ViewBag.CommunityChangePositive != null && ViewBag.CommunityChangePositive ? "fa-arrow-up" : "fa-arrow-down") mr-1"></i>
-                @(ViewBag.CommunityChangePercentage ?? 0)% from last week
-            </div>
+        <div class="stat-card">
+            <div class="stat-value">@(ViewBag.CommunityUpdates?.Count ?? 0)</div>
+            <div class="stat-label">Updates</div>
         </div>
-    </div>
-
-    <div class="lgu-card p-4">
-        <div class="flex items-center mb-4">
-            <div class="header-icon bg-green-100 text-green-600">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold">Response Rate</h3>
-                <p class="text-sm text-gray-500">Avg. resolution time</p>
-            </div>
-        </div>
-        <div class="flex justify-between items-end">
-            <div class="text-3xl font-bold">@(ViewBag.ResponseRate ?? 0)%</div>
-            <div class="text-sm @(ViewBag.ResponseRatePositive != null && ViewBag.ResponseRatePositive ? "text-green-600" : "text-red-600")">
-                <i class="fas @(ViewBag.ResponseRatePositive != null && ViewBag.ResponseRatePositive ? "fa-arrow-up" : "fa-arrow-down") mr-1"></i>
-                @(ViewBag.ResponseRateChange ?? 0)% from last week
-            </div>
+        <div class="stat-card">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Resources</div>
         </div>
     </div>
 </div>
 
 <!-- Quick Actions -->
-<div class="lgu-card mb-6">
-    <div class="lgu-card-header">
-        <div class="header-icon bg-primary text-white">
-            <i class="fas fa-bolt"></i>
+<div class="dashboard-section">
+    <h6 class="section-title mb-3">QUICK ACTIONS</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a href="@Url.Action("CreateAlert", "LGU")" class="btn action-btn create-alert w-100 text-white">
+                <i class="fas fa-bell"></i>Create Alert
+            </a>
         </div>
-        <h2 class="text-lg font-semibold">Quick Actions</h2>
-    </div>
-    <div class="p-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-            <a href="@Url.Action("CreateAlert", "LGU")" class="btn bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg transition-all flex items-center justify-center">
-                <i class="fas fa-bell mr-2"></i> Create Alert
+        <div class="col-md-4">
+            <a href="@Url.Action("ManageReports", "LGU")" class="btn action-btn manage-reports w-100 text-white">
+                <i class="fas fa-clipboard-list"></i>Manage Reports
             </a>
-            <a href="@Url.Action("ManageReports", "LGU")" class="btn bg-primary hover:bg-primaryDark text-white py-3 rounded-lg transition-all flex items-center justify-center">
-                <i class="fas fa-clipboard-list mr-2"></i> Manage Reports
-            </a>
-            <a href="@Url.Action("ResourceManagement", "LGU")" class="btn bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg transition-all flex items-center justify-center">
-                <i class="fas fa-box mr-2"></i> Resource Management
-            </a>
-            <a href="@Url.Action("SendBroadcast", "LGU")" class="btn bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg transition-all flex items-center justify-center">
-                <i class="fas fa-bullhorn mr-2"></i> Send Broadcast
+        </div>
+        <div class="col-md-4">
+            <a href="@Url.Action("ManageResources", "LGU")" class="btn action-btn manage-resources w-100 text-white">
+                <i class="fas fa-book"></i>Manage Resources
             </a>
         </div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+<!-- Alerts and Reports Section -->
+<div class="row">
     <!-- Active Alerts -->
-    <div class="lgu-card">
-        <div class="lgu-card-header">
-            <div class="header-icon bg-red-600 text-white">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <div>
-                <h2 class="text-lg font-semibold mb-0">Active Alerts</h2>
-                <p class="text-xs text-gray-500 mb-0">Currently active alerts in your area</p>
-            </div>
-        </div>
-        <div class="p-4">
-                @if (ViewBag.ActiveAlerts != null && ViewBag.ActiveAlerts.Count > 0)
-                {
-                <div class="divide-y">
-                        @foreach (var alert in ViewBag.ActiveAlerts)
-                        {
-                        <div class="py-3 transition-all hover:bg-gray-50 rounded-md cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <h5 class="font-medium mb-1 flex items-center">
-                                    <span class="inline-block w-2 h-2 rounded-full mr-2 @(alert.Severity == AlertSeverity.Critical ? "bg-red-600" : 
-                                        alert.Severity == AlertSeverity.Danger ? "bg-orange-500" : 
-                                        alert.Severity == AlertSeverity.Warning ? "bg-yellow-500" : "bg-blue-500")"></span>
+    <div class="col-12 col-lg-6 dashboard-section">
+        <h6 class="section-title">ACTIVE ALERTS</h6>
+        <div class="dashboard-card card-accent-alerts">
+            @if (ViewBag.ActiveAlerts != null && ViewBag.ActiveAlerts.Count > 0)
+            {
+                <div class="p-0">
+                    @foreach (var alert in ViewBag.ActiveAlerts)
+                    {
+                        <div class="list-item">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="item-title">
+                                        <span class="status-indicator" style="background-color: @(alert.Severity == AlertSeverity.Critical ? "var(--danger)" : 
+                                                                alert.Severity == AlertSeverity.Danger ? "#fd7e14" : 
+                                                                alert.Severity == AlertSeverity.Warning ? "var(--warning)" : "var(--info)")"></span>
                                         @alert.Title
                                     </h5>
                                 <span class="text-xs text-gray-500">@alert.DateIssued.ToString("MMM dd, HH:mm")</span>
+                                    </h6>
+                                    <p class="item-content">@alert.Message</p>
+                                    <div class="item-footer">
+                                        <i class="fas fa-map-marker-alt me-1" style="font-size: 0.7rem;"></i>
+                                        @alert.AffectedArea
+                                    </div>
                                 </div>
                             <p class="text-sm mb-1 text-gray-600">@alert.Message</p>
                             <div class="flex items-center text-xs text-gray-500">
@@ -129,295 +412,170 @@
                             </div>
                             </div>
                         }
+                                <span class="item-date">
+                                    <i class="far fa-clock me-1"></i>
+                                    @alert.DateIssued.ToString("MMM dd, HH:mm")
+                                </span>
+                            </div>
+                        </div>
+                    }
+                    <div class="p-3 text-end">
+                        <a href="@Url.Action("ManageAlerts", "LGU")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> View All Alerts
+                        </a>
                     </div>
-                <div class="mt-4 text-center">
-                    <a href="@Url.Action("ManageAlerts", "LGU")" class="inline-block px-4 py-2 text-sm text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-all">
-                        Manage Alerts
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-check-circle empty-icon"></i>
+                    <p class="empty-text">No active alerts at this time</p>
+                    <a href="@Url.Action("CreateAlert", "LGU")" class="btn btn-sm action-btn create-alert text-white">
+                        <i class="fas fa-plus me-1"></i> Create New Alert
                     </a>
-                    </div>
-                }
-                else
-                {
-                <div class="text-center py-6">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 text-green-600 rounded-full mb-4">
-                        <i class="fas fa-check-circle text-3xl"></i>
-                    </div>
-                    <p class="text-gray-600 mb-3">No active alerts at this time.</p>
-                    <a href="@Url.Action("CreateAlert", "LGU")" class="inline-block px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-all">
-                        Create New Alert
-                    </a>
-                    </div>
-                }
+                </div>
+            }
         </div>
     </div>
 
     <!-- Recent Reports -->
-    <div class="lgu-card">
-        <div class="lgu-card-header">
-            <div class="header-icon bg-primary text-white">
-                        <i class="fas fa-exclamation-circle"></i>
-                    </div>
-                    <div>
-                <h2 class="text-lg font-semibold mb-0">Recent Reports</h2>
-                <p class="text-xs text-gray-500 mb-0">Latest incidents reported in your area</p>
-            </div>
-        </div>
-        <div class="p-4">
-                @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
-                {
-                <div class="divide-y">
-                        @foreach (var report in ViewBag.RecentReports)
-                        {
-                        <div class="py-3 transition-all hover:bg-gray-50 rounded-md cursor-pointer" 
-                             onclick="location.href='@Url.Action("ReportDetails", "LGU", new { id = report.Id })'">
-                            <div class="flex justify-between items-start">
-                                <h5 class="font-medium mb-1">@report.Title</h5>
-                                <span class="text-xs text-gray-500">@report.DateReported.ToString("MMM dd, HH:mm")</span>
-                                </div>
-                            <p class="text-sm mb-1 text-gray-600 line-clamp-1">@report.Description</p>
-                            <div class="flex flex-wrap gap-1">
-                                <span class="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-700">@report.Type</span>
-                                <span class="px-2 py-0.5 text-xs rounded-full @(report.Severity == SeverityLevel.Low ? "bg-blue-100 text-blue-700" : 
-                                    report.Severity == SeverityLevel.Medium ? "bg-yellow-100 text-yellow-700" : 
-                                    report.Severity == SeverityLevel.High ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700")">
-                                        @report.Severity
-                                    </span>
-                                <span class="px-2 py-0.5 text-xs rounded-full @(report.Status == ReportStatus.Pending ? "bg-yellow-100 text-yellow-700" : 
-                                    report.Status == ReportStatus.Verified ? "bg-blue-100 text-blue-700" : 
-                                    report.Status == ReportStatus.InProgress ? "bg-purple-100 text-purple-700" : 
-                                    report.Status == ReportStatus.Resolved ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700")">
-                                        @report.Status
-                                    </span>
-                            </div>
-                        </div>
-                        }
-                    </div>
-                <div class="mt-4 text-center">
-                    <a href="@Url.Action("ManageReports", "LGU")" class="inline-block px-4 py-2 text-sm text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-all">
-                        Manage All Reports
-                    </a>
-                    </div>
-                }
-                else
-                {
-                <div class="text-center py-6">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 text-green-600 rounded-full mb-4">
-                        <i class="fas fa-clipboard-check text-3xl"></i>
-                    </div>
-                    <p class="text-gray-600">No recent reports in your area.</p>
-                    </div>
-                }
-        </div>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-    <!-- Resource Status -->
-    <div class="lgu-card">
-        <div class="lgu-card-header">
-            <div class="header-icon bg-blue-500 text-white">
-                <i class="fas fa-box"></i>
-            </div>
-            <div>
-                <h2 class="text-lg font-semibold mb-0">Resource Status</h2>
-                <p class="text-xs text-gray-500 mb-0">Available emergency resources</p>
-            </div>
-        </div>
-        <div class="p-4">
-            <div class="space-y-3">
-                <div class="resource-item">
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium">Food Supplies</span>
-                        <span class="text-sm">75%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: 75%"></div>
-                    </div>
-                </div>
-                <div class="resource-item">
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium">Medical Kits</span>
-                        <span class="text-sm">45%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 45%"></div>
-                    </div>
-                </div>
-                <div class="resource-item">
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium">Emergency Vehicles</span>
-                        <span class="text-sm">90%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: 90%"></div>
-                    </div>
-                </div>
-                <div class="resource-item">
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium">Temporary Shelters</span>
-                        <span class="text-sm">30%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-red-500 h-2 rounded-full" style="width: 30%"></div>
-                    </div>
-                </div>
-                <div class="resource-item">
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium">Rescue Personnel</span>
-                        <span class="text-sm">65%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: 65%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 text-center">
-                <a href="@Url.Action("ResourceManagement", "LGU")" class="inline-block px-4 py-2 text-sm text-blue-500 border border-blue-500 rounded-md hover:bg-blue-500 hover:text-white transition-all">
-                    Manage Resources
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Community Updates -->
-    <div class="lgu-card">
-        <div class="lgu-card-header">
-            <div class="header-icon bg-green-600 text-white">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div>
-                <h2 class="text-lg font-semibold mb-0">Community Updates</h2>
-                <p class="text-xs text-gray-500 mb-0">Latest updates from your community</p>
-            </div>
-        </div>
-        <div class="p-4">
-                @if (ViewBag.CommunityUpdates != null && ViewBag.CommunityUpdates.Count > 0)
-                {
-                <div class="divide-y">
-                        @foreach (var update in ViewBag.CommunityUpdates)
-                        {
-                        <div class="py-3">
-                            <div class="flex justify-between items-start mb-1">
-                                <span class="px-2 py-0.5 text-xs rounded-full @(update.Type == UpdateType.HelpRequest ? "bg-red-100 text-red-700" : 
-                                    update.Type == UpdateType.StatusUpdate ? "bg-blue-100 text-blue-700" : 
-                                    update.Type == UpdateType.ResourceSharing ? "bg-green-100 text-green-700" : 
-                                    update.Type == UpdateType.Information ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700")">
-                                            @update.Type
+    <div class="col-12 col-lg-6 dashboard-section">
+        <h6 class="section-title">RECENT REPORTS</h6>
+        <div class="dashboard-card card-accent-reports">
+            @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
+            {
+                <div class="p-0">
+                    @foreach (var report in ViewBag.RecentReports)
+                    {
+                        <a href="@Url.Action("ManageReports", "LGU")" class="list-item d-block text-decoration-none">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="item-title">@report.Title</h6>
+                                    <p class="item-content text-truncate">@report.Description</p>
+                                    <div class="item-footer">
+                                        <span class="badge bg-secondary">@report.Type</span>
+                                        <span class="badge @(report.Severity == SeverityLevel.Low ? "bg-info" : 
+                                                         report.Severity == SeverityLevel.Medium ? "bg-warning" : 
+                                                         report.Severity == SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                                            @report.Severity
                                         </span>
-                                <span class="text-xs text-gray-500">@update.DatePosted.ToString("MMM dd, HH:mm")</span>
+                                        <span class="badge @(report.Status == ReportStatus.Pending ? "bg-warning" : 
+                                                        report.Status == ReportStatus.Verified ? "bg-info" : 
+                                                        report.Status == ReportStatus.InProgress ? "bg-primary" : 
+                                                        report.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                                            @report.Status
+                                        </span>
+                                    </div>
                                 </div>
-                            <p class="text-sm mb-1 text-gray-600 line-clamp-2">@update.Content</p>
-                            <p class="text-xs text-gray-500">
-                                <i class="fas fa-user mr-1"></i>
-                                @(update.User != null ? update.User.UserName : "Unknown User")
-                            </p>
+                                <span class="item-date">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    @report.DateReported.ToString("MMM dd, HH:mm")
+                                </span>
                             </div>
-                        }
-                    </div>
-                <div class="mt-4 text-center">
-                    <a href="@Url.Action("CommunityFeed", "LGU")" class="inline-block px-4 py-2 text-sm text-green-600 border border-green-600 rounded-md hover:bg-green-600 hover:text-white transition-all">
-                        View Community Feed
-                    </a>
-                    </div>
-                }
-                else
-                {
-                <div class="text-center py-6">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 text-gray-500 rounded-full mb-4">
-                        <i class="fas fa-comments text-3xl"></i>
-                    </div>
-                    <p class="text-gray-600">No community updates available.</p>
-                    </div>
-                }
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="lgu-card">
-        <div class="lgu-card-header">
-            <div class="header-icon bg-purple-600 text-white">
-                <i class="fas fa-history"></i>
-            </div>
-            <div>
-                <h2 class="text-lg font-semibold mb-0">Recent Activity</h2>
-                <p class="text-xs text-gray-500 mb-0">Latest actions taken by the team</p>
-            </div>
-        </div>
-        <div class="p-4">
-            <div class="divide-y">
-                <div class="py-3">
-                    <div class="flex items-start">
-                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3 flex-shrink-0">
-                            <i class="fas fa-clipboard-check"></i>
-                    </div>
-                    <div>
-                            <p class="text-sm text-gray-800 mb-0">Report <span class="font-medium">#1234</span> marked as resolved</p>
-                            <p class="text-xs text-gray-500">2 hours ago · John Doe</p>
-                        </div>
+                        </a>
+                    }
+                    <div class="p-3 text-end">
+                        <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> View All Reports
+                        </a>
                     </div>
                 </div>
-                <div class="py-3">
-                    <div class="flex items-start">
-                        <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center mr-3 flex-shrink-0">
-                            <i class="fas fa-bell"></i>
-            </div>
-                        <div>
-                            <p class="text-sm text-gray-800 mb-0">New alert created for <span class="font-medium">Flood Warning</span></p>
-                            <p class="text-xs text-gray-500">5 hours ago · Jane Smith</p>
-                        </div>
-                    </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-check empty-icon"></i>
+                    <p class="empty-text">No recent reports in your area</p>
                 </div>
-                <div class="py-3">
-                    <div class="flex items-start">
-                        <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3 flex-shrink-0">
-                            <i class="fas fa-comment-dots"></i>
-                            </div>
-                        <div>
-                            <p class="text-sm text-gray-800 mb-0">Responded to community question about evacuation</p>
-                            <p class="text-xs text-gray-500">Yesterday · Admin</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="py-3">
-                    <div class="flex items-start">
-                        <div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center mr-3 flex-shrink-0">
-                            <i class="fas fa-box"></i>
-                            </div>
-                        <div>
-                            <p class="text-sm text-gray-800 mb-0">Updated inventory of <span class="font-medium">Medical Supplies</span></p>
-                            <p class="text-xs text-gray-500">2 days ago · Mark Johnson</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 text-center">
-                <a href="@Url.Action("ActivityLog", "LGU")" class="inline-block px-4 py-2 text-sm text-purple-600 border border-purple-600 rounded-md hover:bg-purple-600 hover:text-white transition-all">
-                    View All Activity
-                </a>
-            </div>
+            }
         </div>
     </div>
 </div>
 
-<!-- Incident Map Preview -->
-<div class="lgu-card mb-6">
-    <div class="lgu-card-header">
-        <div class="header-icon bg-primary text-white">
-            <i class="fas fa-map-marked-alt"></i>
-        </div>
-        <div>
-            <h2 class="text-lg font-semibold mb-0">Incident Map Overview</h2>
-            <p class="text-xs text-gray-500 mb-0">Geographic distribution of recent incidents</p>
-        </div>
+<!-- Community Updates -->
+<div class="dashboard-section">
+    <h6 class="section-title">COMMUNITY UPDATES</h6>
+    <div class="dashboard-card card-accent-community">
+        @if (ViewBag.CommunityUpdates != null && ViewBag.CommunityUpdates.Count > 0)
+        {
+            <div class="p-0">
+                @foreach (var update in ViewBag.CommunityUpdates)
+                {
+                    <div class="list-item">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div>
+                                <h6 class="item-title">
+                                    <span class="badge @(update.Type == UpdateType.HelpRequest ? "bg-danger" : 
+                                                    update.Type == UpdateType.StatusUpdate ? "bg-info" : 
+                                                    update.Type == UpdateType.ResourceSharing ? "bg-success" : 
+                                                    update.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
+                                        @update.Type
+                                    </span>
+                                </h6>
+                                <p class="item-content">@update.Content</p>
+                                <div class="item-footer">
+                                    <i class="fas fa-user me-1" style="font-size: 0.7rem;"></i>
+                                    Posted by @(update.User != null ? update.User.UserName : "Unknown User")
+                                </div>
+                            </div>
+                            <span class="item-date">
+                                <i class="far fa-clock me-1"></i>
+                                @update.DatePosted.ToString("MMM dd, HH:mm")
+                            </span>
+                        </div>
+                    </div>
+                }
+                <div class="p-3 text-end">
+                    <a href="@Url.Action("CommunityFeed", "LGU")" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-right me-1"></i> View Community Feed
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-comments empty-icon"></i>
+                <p class="empty-text">No community updates available</p>
+            </div>
+        }
     </div>
-    <div class="p-4">
-        <div id="map-preview" class="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-            <span class="text-gray-400">Loading map...</span>
+</div>
+
+<!-- Educational Resources -->
+<div class="dashboard-section">
+    <h6 class="section-title">EDUCATIONAL RESOURCES</h6>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="resource-card">
+                <i class="fas fa-plus-circle resource-icon"></i>
+                <h6 class="mb-2">Add New Resource</h6>
+                <p class="small text-muted mb-4">Create new educational content for your community</p>
+                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                    <i class="fas fa-plus me-2"></i>Add Resource
+                </a>
+            </div>
         </div>
-        <div class="mt-4 text-center">
-            <a href="@Url.Action("IncidentMap", "LGU")" class="inline-block px-4 py-2 text-sm text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-all">
-                Open Full Map
-            </a>
+        <div class="col-md-4">
+            <div class="resource-card">
+                <i class="fas fa-edit resource-icon"></i>
+                <h6 class="mb-2">Edit Resources</h6>
+                <p class="small text-muted mb-4">Update existing educational materials</p>
+                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                    <i class="fas fa-edit me-2"></i>Edit Resources
+                </a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="resource-card">
+                <i class="fas fa-chart-line resource-icon"></i>
+                <h6 class="mb-2">View Analytics</h6>
+                <p class="small text-muted mb-4">Monitor resource usage and engagement</p>
+                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                    <i class="fas fa-chart-bar me-2"></i>View Analytics
+                </a>
+            </div>
         </div>
     </div>
 </div> 
