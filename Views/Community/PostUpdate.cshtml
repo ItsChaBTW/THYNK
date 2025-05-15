@@ -94,6 +94,28 @@
                     this.value = '';
                     return;
                 }
+                
+                // Create image preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Check if preview container exists, if not create it
+                    let previewContainer = document.getElementById('imagePreview');
+                    if (!previewContainer) {
+                        previewContainer = document.createElement('div');
+                        previewContainer.id = 'imagePreview';
+                        previewContainer.className = 'mt-3 text-center';
+                        document.querySelector('.mb-3:has(#Image)').appendChild(previewContainer);
+                    }
+                    
+                    // Set preview content
+                    previewContainer.innerHTML = `
+                        <div class="card p-2 mb-3">
+                            <img src="${event.target.result}" class="img-fluid rounded mx-auto d-block" style="max-height: 200px; object-fit: contain;">
+                            <p class="text-center text-muted small mt-2">Image preview</p>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
             }
         });
 

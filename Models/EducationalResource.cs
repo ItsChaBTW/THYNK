@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace THYNK.Models
 {
@@ -40,6 +41,25 @@ namespace THYNK.Models
         // Indicates if this resource is cacheable for offline access
         [Required]
         public required bool IsOfflineAccessible { get; set; } = false;
+        
+        // Approval status for resource moderation
+        [Required]
+        public ApprovalStatus ApprovalStatus { get; set; } = ApprovalStatus.Pending;
+        
+        // The user who created this resource
+        public string? CreatedById { get; set; }
+        
+        [ForeignKey("CreatedById")]
+        public LGUUser? CreatedBy { get; set; }
+        
+        // Date when the resource was approved
+        public DateTime? ApprovedDate { get; set; }
+        
+        // Rejection reason if applicable
+        public string? RejectionReason { get; set; }
+        
+        // Count how many times this resource has been viewed
+        public int? ViewCount { get; set; } = 0;
     }
 
     public enum ResourceType
@@ -51,5 +71,12 @@ namespace THYNK.Models
         Document,
         FAQ,
         EmergencyContact
+    }
+    
+    public enum ApprovalStatus
+    {
+        Pending,
+        Approved,
+        Rejected
     }
 } 

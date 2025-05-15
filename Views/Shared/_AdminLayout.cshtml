@@ -67,6 +67,17 @@
                 <a href="@Url.Action("SystemLogs", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "SystemLogs" ? "active" : "")">
                     <i class="fas fa-history me-2"></i>System Logs
                 </a>
+                
+                <!-- Educational Resources -->
+                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
+                    <span>Educational Resources</span>
+                </div>
+                <a href="@Url.Action("PendingResources", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "PendingResources" || ViewContext.RouteData.Values["Action"].ToString() == "ReviewResource" ? "active" : "")">
+                    <i class="fas fa-clipboard-check me-2"></i>Pending Resources
+                </a>
+                <a href="@Url.Action("AllResources", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "AllResources" ? "active" : "")">
+                    <i class="fas fa-book-open me-2"></i>All Resources
+                </a>
             </div>
             <div class="list-group list-group-flush mt-4">
                 <div class="sidebar-heading">

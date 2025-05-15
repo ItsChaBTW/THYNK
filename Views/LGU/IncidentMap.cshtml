@@ -1,86 +1,100 @@
-@{
+s@{
     ViewData["Title"] = "Incident Map";
     Layout = "_LGULayout";
 }
 
 <!-- Introduction and Guidelines Section -->
 <div class="row mb-4">
-        <div class="col-12">
-        <div class="card border-0 shadow-sm">
+    <div class="col-12">
+        <div class="card dashboard-card border-0 shadow-sm">
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
                     <div class="guidelines-icon bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
                         <i class="fas fa-info-circle fa-lg"></i>
-                            </div>
+                    </div>
                     <div>
-                        <h5 class="mb-1">Community Incident Map</h5>
-                        <p class="text-muted mb-0">Interactive visualization of all reported incidents in your area</p>
-                            </div>
-                        </div>
+                        <h5 class="mb-1">LGU Incident Management Map</h5>
+                        <p class="text-muted mb-0">Interactive visualization of all reported incidents assigned to your organization</p>
+                    </div>
+                </div>
                 
                 <div class="row mt-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="guide-item d-flex">
                             <div class="guide-icon rounded-circle me-3 bg-success bg-opacity-10">
                                 <i class="fas fa-mouse-pointer text-success"></i>
-                                </div>
+                            </div>
                             <div>
                                 <h6 class="mb-1">Interactive Map</h6>
                                 <p class="small text-muted mb-0">Click on any marker to view detailed incident information</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="guide-item d-flex">
                             <div class="guide-icon rounded-circle me-3 bg-info bg-opacity-10">
                                 <i class="fas fa-filter text-info"></i>
-            </div>
-                            <div>
-                                <h6 class="mb-1">Filter Incidents</h6>
-                                <p class="small text-muted mb-0">Use the date filter to find specific incidents</p>
-        </div>
-                                </div>
                             </div>
-                    <div class="col-md-4">
+                            <div>
+                                <h6 class="mb-1">Advanced Filtering</h6>
+                                <p class="small text-muted mb-0">Use filters to find specific incidents by date, type, or status</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="guide-item d-flex">
                             <div class="guide-icon rounded-circle me-3 bg-warning bg-opacity-10">
                                 <i class="fas fa-map-marker-alt text-warning"></i>
                             </div>
                             <div>
-                                <h6 class="mb-1">Color Coding</h6>
-                                <p class="small text-muted mb-0">Toggle the legend button to view color codes for incident types</p>
+                                <h6 class="mb-1">Incident Details</h6>
+                                <p class="small text-muted mb-0">Get comprehensive information on each incident</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="guide-item d-flex">
+                            <div class="guide-icon rounded-circle me-3 bg-danger bg-opacity-10">
+                                <i class="fas fa-chart-area text-danger"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Heatmap View</h6>
+                                <p class="small text-muted mb-0">Toggle heatmap to visualize incident density in your area</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-                                </div>
-                                </div>
-                                </div>
-                            </div>
+        </div>
+    </div>
+</div>
 
 <div class="row">
     <div class="col-md-9">
         <div class="card dashboard-card border-0 shadow-sm">
             <div class="card-header bg-primary text-white">
                 <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-primary">
-                        <i class="fas fa-map-marked-alt"></i>
-                                </div>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon bg-white text-primary">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <div>
+                            <h5 class="m-0">Incident Map</h5>
+                            <small>View all reported incidents on the map</small>
+                        </div>
+                    </div>
                     <div>
-                        <h5 class="m-0">Incident Map</h5>
-                        <small>View all reported incidents on the map</small>
-                                    </div>
-                                    </div>
-                    <div>
-                        <button class="btn btn-light btn-sm" id="filter-toggle" data-bs-toggle="modal" data-bs-target="#filter-modal">
-                            <i class="fas fa-filter me-1"></i><span class="d-none d-md-inline">Filter</span>
+                        <button class="btn btn-light btn-sm me-2" id="toggle-heatmap">
+                            <i class="fas fa-fire me-1"></i><span class="d-none d-md-inline">Heatmap</span>
                         </button>
-            </div>
+                        <button class="btn btn-light btn-sm" id="legend-toggle">
+                            <i class="fas fa-map-signs me-1"></i><span class="d-none d-md-inline">Legend</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <!-- Quick Filters Bar - Repositioned for better presentation -->
+            <!-- Quick Filters Bar -->
             <div class="quick-filters-bar p-2 bg-light border-bottom">
                 <div class="container-fluid px-1">
                     <div class="row g-2 align-items-center">
@@ -91,10 +105,10 @@
                             <div class="quick-filter-section">
                                 <div class="input-group input-group-sm">
                                     <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                                    <input type="date" id="quick-filter-date-from" class="form-control form-control-sm" placeholder="Start Date">
+                                    <input type="date" id="filter-date-from" class="form-control form-control-sm" placeholder="Start Date">
                                     <span class="input-group-text bg-white">to</span>
-                                    <input type="date" id="quick-filter-date-to" class="form-control form-control-sm" placeholder="End Date">
-                                    <button class="btn btn-outline-primary" id="apply-quick-date-filter">
+                                    <input type="date" id="filter-date-to" class="form-control form-control-sm" placeholder="End Date">
+                                    <button class="btn btn-outline-primary" id="apply-filters">
                                         <i class="fas fa-filter"></i>
                                     </button>
                                 </div>
@@ -110,47 +124,48 @@
                             </div>
                         </div>
                         <div class="col-md-auto col-12 ms-md-auto">
-                            <button id="open-advanced-filters" class="btn btn-sm btn-primary w-100" data-bs-toggle="modal" data-bs-target="#filter-modal">
-                                <i class="fas fa-sliders-h me-1"></i><span class="d-none d-md-inline">Advanced</span>
-                                    </button>
-                                </div>
-                                            </div>
-                                        </div>
-                                            </div>
+                            <button id="reset-filters" class="btn btn-sm btn-secondary w-100">
+                                <i class="fas fa-undo-alt me-1"></i><span class="d-none d-md-inline">Reset Filters</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="card-body p-0 position-relative">
                 <div id="map" class="map-container"></div>
                 <div class="map-overlay-info">
                     <span id="incident-count" class="badge bg-primary"></span>
-            </div>
+                </div>
                 
-                <!-- Floating Legend Toggle Button - Repositioned and restyled -->
-                <button id="legend-toggle" class="btn btn-dark position-absolute shadow-sm" title="Show Map Legend">
-                    <i class="fas fa-map-signs me-1"></i><span class="d-none d-md-inline">Legend</span>
-                                                    </button>
+                <!-- No incidents alert -->
+                <div id="no-incidents-alert" class="alert alert-info m-3 d-none">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No incidents match your filter criteria. Try adjusting your filters or <a href="#" id="reset-filters-alert">reset all filters</a>.
+                </div>
                 
                 <!-- Improved Floating Collapsible Legend with Tabs -->
                 <div id="floating-legend" class="map-legend shadow">
                     <div class="legend-header">
                         <h6 class="m-0"><i class="fas fa-info-circle me-2"></i>Map Legend</h6>
                         <button type="button" class="btn-close" id="legend-close"></button>
-                                                </div>
+                    </div>
                     <div class="legend-tabs">
                         <button class="legend-tab active" data-tab="status">Status</button>
                         <button class="legend-tab" data-tab="severity">Severity</button>
                         <button class="legend-tab" data-tab="types">Types</button>
-                                            </div>
+                    </div>
                     <div class="legend-body">
                         <div class="legend-content active" id="status-content">
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-primary me-2"></span>
                                 <span>In Progress</span>
-                                        </div>
+                            </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-success me-2"></span>
                                 <span>Resolved</span>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
                         <div class="legend-content" id="severity-content">
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-success me-2"></span>
@@ -159,33 +174,33 @@
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-warning me-2"></span>
                                 <span>Medium</span>
-                        </div>
+                            </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-danger me-2"></span>
                                 <span>High</span>
-                        </div>
+                            </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-dark me-2"></span>
                                 <span>Critical</span>
-                    </div>
-            </div>
+                            </div>
+                        </div>
                         <div class="legend-content" id="types-content">
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot" style="background-color: #dc3545"></span>
                                 <span>Earthquake</span>
-        </div>
+                            </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot" style="background-color: #0d6efd"></span>
                                 <span>Flood</span>
-    </div>
+                            </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot" style="background-color: #ffc107"></span>
                                 <span>Fire</span>
-</div>
+                            </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot" style="background-color: #6c757d"></span>
                                 <span>Landslide</span>
-            </div>
+                            </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot" style="background-color: #6610f2"></span>
                                 <span>Storm</span>
@@ -196,47 +211,32 @@
                             </div>
                         </div>
                     </div>
-                    </div>
-                    
-                <!-- No Incidents Alert -->
-                <div id="no-incidents-alert" class="position-absolute alert alert-warning d-none">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <div>
-                            <h6 class="alert-heading mb-1">No Incidents Found</h6>
-                            <p class="mb-0 small">No incidents match your current filter criteria.</p>
-                        </div>
-                    </div>
-                    <button id="reset-filters-alert" class="btn btn-sm btn-warning mt-2">
-                        <i class="fas fa-undo-alt me-1"></i>Reset Filters
-                                </button>
-                            </div>
+                </div>
             </div>
-                        </div>
-                    </div>
+        </div>
+    </div>
 
-    <!-- Sidebar with Active Filters and Live Incident Feed -->
+    <!-- Recent Incidents Feed - Improved sidebar -->
     <div class="col-md-3">
-        <!-- Recent Incidents Feed - Expanded for better visibility -->
         <div class="card dashboard-card border-0 shadow-sm h-100">
             <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                 <h5 class="m-0"><i class="fas fa-bell me-2"></i>Recent Incidents</h5>
                 <div>
-                    <button id="reset-filters-quick" class="btn btn-sm btn-outline-light me-1" title="Reset all filters">
-                        <i class="fas fa-undo"></i>
+                    <button id="refresh-incidents" class="btn btn-sm btn-outline-light" title="Refresh incident list">
+                        <i class="fas fa-sync-alt"></i>
                     </button>
-                    <span class="badge bg-light text-primary rounded-pill" id="recent-count">0</span>
-            </div>
+                    <span class="badge bg-light text-primary rounded-pill ms-2" id="recent-count">0</span>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="incidents-filter-bar d-flex align-items-center p-2 bg-light border-bottom">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white">
                             <i class="fas fa-search text-muted"></i>
-                            </span>
+                        </span>
                         <input type="text" class="form-control form-control-sm border-start-0" id="incidents-search" placeholder="Search incidents...">
-                        </div>
-                            </div>
+                    </div>
+                </div>
                 <div class="list-group list-group-flush" id="recent-incidents-list">
                     <!-- This will be populated with recent incidents -->
                     <div class="recent-incidents-loading text-center py-4">
@@ -250,50 +250,78 @@
             <div class="card-footer bg-light p-2">
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted small" id="incidents-last-updated">Last updated: Just now</span>
-                    <button class="btn btn-sm btn-outline-primary" id="refresh-incidents">
-                        <i class="fas fa-sync-alt me-1"></i>Refresh
-                    </button>
+                    <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-sm btn-primary">
+                        <i class="fas fa-list me-1"></i>All Reports
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Filter Modal -->
-<div class="modal fade" id="filter-modal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<!-- Enhanced Incident Modal -->
+<div class="modal fade" id="incident-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-filter me-2"></i>Filter Incidents</h5>
+                <h5 class="modal-title" id="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span id="modal-title-text">Incident Report Details</span>
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <!-- Date Range Filter -->
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold">Date Range</label>
-                        <div class="input-group input-group-sm mb-2">
-                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                            <input type="date" id="filter-date-from" class="form-control form-control-sm" placeholder="Start Date">
-            </div>
-                        <div class="input-group input-group-sm">
-                            <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                            <input type="date" id="filter-date-to" class="form-control form-control-sm" placeholder="End Date">
-        </div>
-                        <small class="text-muted mt-2 d-block">Filter incidents by date range</small>
-                    </div>
-                    
-                    <!-- Incident Type Filter -->
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold">Incident Type</label>
-                        <div class="incident-type-filters">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input type-filter" type="checkbox" value="Earthquake" id="type-earthquake" checked>
-                                <label class="form-check-label" for="type-earthquake">Earthquake</label>
+                    <div class="col-md-8">
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h5 class="m-0 d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-2 text-primary"></i>Report Information
+                                </h5>
                             </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input type-filter" type="checkbox" value="Flood" id="type-flood" checked>
-                                <label class="form-check-label" for="type-flood">Flood</label>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-1 small">INCIDENT TITLE</h6>
+                                        <p class="mb-0 fw-bold" id="modal-title-text-content"></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-1 small">STATUS</h6>
+                                        <div id="modal-status-wrapper"></div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-1 small">TYPE</h6>
+                                        <div id="modal-type-wrapper"></div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-1 small">SEVERITY</h6>
+                                        <div id="modal-severity-wrapper"></div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-12">
+                                        <h6 class="text-muted mb-1 small">DESCRIPTION</h6>
+                                        <div class="p-3 bg-light rounded">
+                                            <p class="mb-0" id="modal-description"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-1 small">LOCATION</h6>
+                                        <p class="mb-0 fw-bold" id="modal-location"></p>
+                                        <p class="small text-muted mb-0" id="modal-detailed-location"></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-1 small">DATE REPORTED</h6>
+                                        <p class="mb-0" id="modal-date">
+                                            <i class="fas fa-calendar-alt me-1 text-primary"></i>
+                                            <span id="modal-date-value"></span>
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input type-filter" type="checkbox" value="Fire" id="type-fire" checked>
@@ -338,138 +366,320 @@
                             <button class="btn btn-sm btn-outline-secondary clear-all-statuses">Clear All</button>
                         </div>
                     </div>
-                    
-                    <!-- Severity Filter -->
-                    <div class="col-md-6 mb-4">
-                        <label class="form-label fw-bold">Severity</label>
-                        <div class="severity-filters">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input severity-filter" type="checkbox" value="Low" id="severity-low" checked>
-                                <label class="form-check-label" for="severity-low">Low</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input severity-filter" type="checkbox" value="Medium" id="severity-medium" checked>
-                                <label class="form-check-label" for="severity-medium">Medium</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input severity-filter" type="checkbox" value="High" id="severity-high" checked>
-                                <label class="form-check-label" for="severity-high">High</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input severity-filter" type="checkbox" value="Critical" id="severity-critical" checked>
-                                <label class="form-check-label" for="severity-critical">Critical</label>
-                            </div>
-                        </div>
-                        <div class="d-flex mt-1">
-                            <button class="btn btn-sm btn-outline-secondary me-2 select-all-severities">Select All</button>
-                            <button class="btn btn-sm btn-outline-secondary clear-all-severities">Clear All</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-secondary" id="reset-filters">
-                    <i class="fas fa-undo me-2"></i>Reset All
-                </button>
-                <button type="button" class="btn btn-primary" id="apply-filters">
-                    <i class="fas fa-search me-2"></i>Apply Filters
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Improved Incident Details Modal with Status Icon -->
-<div class="modal fade" id="incident-modal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modal-title">Incident Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="modal-body">
-                <div class="incident-header mb-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <div class="incident-type-icon me-3" id="modal-type-icon">
-                                <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                            <div>
-                                <span id="modal-type" class="badge bg-secondary mb-1 d-inline-block"></span>
-                                <span id="modal-date" class="text-muted d-block"></span>
+                    <div class="col-md-4">
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h5 class="m-0 d-flex align-items-center">
+                                    <i class="fas fa-user me-2 text-primary"></i>Reporter
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-1 small">NAME</h6>
+                                    <p class="mb-0" id="modal-reporter-name"></p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-1 small">EMAIL</h6>
+                                    <p class="mb-0" id="modal-reporter-email"></p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                        <span id="modal-severity" class="badge badge-lg"></span>
-                </div>
-            </div>
-                
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="incident-description mb-4">
-                            <h6 class="text-muted mb-2">DESCRIPTION</h6>
-                            <p id="modal-description" class="mb-0"></p>
-        </div>
-    </div>
-</div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="incident-location mb-4">
-                            <h6 class="text-muted mb-2"><i class="fas fa-map-marker-alt text-danger me-2"></i>LOCATION</h6>
-                            <p id="modal-location" class="mb-1 fw-bold"></p>
-                            <p id="modal-detailed-location" class="small text-muted mb-0"></p>
-                    </div>
-                                </div>
-                    <div class="col-md-6">
-                        <div class="incident-status mb-4">
-                            <h6 class="text-muted mb-2"><i class="fas fa-tasks text-primary me-2"></i>STATUS</h6>
-                            <div id="status-container" class="d-flex align-items-center">
-                                <!-- Enhanced status display with icon -->
-                                <div id="modal-status-icon" class="status-icon me-2">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div>
-                                    <span id="modal-status" class="badge badge-lg"></span>
-                                    <p id="status-description" class="small text-muted mt-2 mb-0"></p>
-                                </div>
-                                </div>
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h5 class="m-0 d-flex align-items-center">
+                                    <i class="fas fa-user-shield me-2 text-primary"></i>Assignment
+                                </h5>
                             </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-1 small">ORGANIZATION</h6>
+                                    <p class="mb-0 fw-bold" id="modal-org-name"></p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-1 small">ASSIGNED TO</h6>
+                                    <p class="mb-0" id="modal-assigned-name"></p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-1 small">ASSIGNED DATE</h6>
+                                    <p class="mb-0" id="modal-assigned-date">
+                                        <i class="fas fa-calendar-check me-1 text-primary"></i>
+                                        <span id="modal-assigned-date-value"></span>
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                
-                <div id="assigned-organization-container" class="row d-none">
-                    <div class="col-12">
-                        <div class="incident-organization mb-4 p-3 bg-light rounded">
-                            <h6 class="text-muted mb-2"><i class="fas fa-building text-primary me-2"></i>HANDLING ORGANIZATION</h6>
-                            <p id="modal-organization" class="mb-1 fw-bold"></p>
-                            <p id="modal-assignee" class="small text-muted mb-0"></p>
-                    </div>
                     </div>
                 </div>
-                
-                <div class="incident-actions d-flex justify-content-between mt-2">
-                            <div>
-                        <span class="small text-muted">Emergency Hotline: <a href="tel:911" class="text-danger fw-bold">911</a></span>
-                            </div>
-                    <div>
-                        <span id="modal-id" class="small text-muted"></span>
-                        </div>
-                    </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Close
-                    </button>
+            <div class="modal-footer bg-light">
                 <a id="view-details-link" href="#" class="btn btn-primary">
                     <i class="fas fa-info-circle me-2"></i>View Full Details
                 </a>
+                <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-outline-primary">
+                    <i class="fas fa-list me-2"></i>View All Reports
+                </a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+        /* Map styles */
+        .map-container {
+            height: 70vh;
+            width: 100%;
+            position: relative;
+            border-radius: 0 0 0.25rem 0.25rem;
+        }
+        
+        /* Map loading indicator */
+        .map-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            z-index: 10;
+        }
+        
+        /* No data message */
+        .map-no-data-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            max-width: 80%;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        /* Error message */
+        .map-error-message {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            right: 1rem;
+            z-index: 10;
+        }
+        
+        /* Map info overlay */
+        .map-overlay-info {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        /* Incident count badge */
+        #incident-count {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom marker */
+        .custom-marker {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 2px solid white;
+            color: white;
+        }
+        
+        .custom-marker:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Legend styles */
+        #legend-toggle {
+            bottom: 1rem;
+            right: 1rem;
+            z-index: 5;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .map-legend {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            width: 16rem;
+            overflow: hidden;
+            transform: translateY(150%);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+            z-index: 15;
+        }
+        
+        .map-legend.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .legend-header {
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .legend-tabs {
+            display: flex;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .legend-tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            font-size: 0.875rem;
+        }
+        
+        .legend-tab.active {
+            background-color: white;
+            border-bottom: 2px solid #0d6efd;
+            color: #0d6efd;
+        }
+        
+        .legend-body {
+            padding: 1rem;
+        }
+        
+        .legend-content {
+            display: none;
+        }
+        
+        .legend-content.active {
+            display: block;
+        }
+        
+        .legend-dot {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        /* Recent incidents sidebar */
+        .recent-incidents-loading {
+            padding: 2rem 0;
+        }
+        
+        .incident-item {
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .incident-item:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+            border-left-color: #0d6efd;
+        }
+        
+        .incident-item.active {
+            background-color: rgba(13, 110, 253, 0.1);
+            border-left-color: #0d6efd;
+        }
+        
+        /* Quick filters */
+        .quick-filters-bar {
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .quick-filter-label {
+            font-size: 0.875rem;
+        }
+        
+        .quick-filter-section {
+            width: 100%;
+        }
+        
+        /* Guide item styles */
+        .guide-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.65rem;
+            border-radius: 50rem;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        .status-badge i {
+            margin-right: 0.25rem;
+        }
+        
+        /* Type badges */
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.65rem;
+            border-radius: 50rem;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+        
+        .type-badge i {
+            margin-right: 0.25rem;
+        }
+        
+        /* Severity badges */
+        .severity-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.65rem;
+            border-radius: 50rem;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        .severity-badge i {
+            margin-right: 0.25rem;
+        }
+    </style>
     <script>
         // Initialize the map
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
@@ -494,7 +704,8 @@
         // Store the markers and incidents
         let markers = [];
         let incidents = [];
-        let organizations = new Set();
+        let heatmapLayer = null;
+        let heatmapVisible = false;
 
         // Get the incident modal
         const incidentModal = new bootstrap.Modal(document.getElementById('incident-modal'));
@@ -520,18 +731,146 @@
             });
         });
 
+        // Toggle heatmap
+        document.getElementById('toggle-heatmap').addEventListener('click', toggleHeatmap);
+
         function toggleLegend() {
             const legend = document.getElementById('floating-legend');
-            const toggleBtn = document.getElementById('legend-toggle');
             
             legend.classList.toggle('visible');
-            
-            // Update button text when toggled
-            if (legend.classList.contains('visible')) {
-                toggleBtn.innerHTML = '<i class="fas fa-times me-1"></i><span class="d-none d-md-inline">Hide Legend</span>';
-            } else {
-                toggleBtn.innerHTML = '<i class="fas fa-map-signs me-1"></i><span class="d-none d-md-inline">Legend</span>';
+        }
+
+        function toggleHeatmap() {
+            if (!map.getSource('incidents-heat')) {
+                // Initialize heatmap if not already created
+                createHeatmapLayer();
             }
+            
+            if (heatmapVisible) {
+                // Hide heatmap layer
+                map.setLayoutProperty('incidents-heat', 'visibility', 'none');
+                document.getElementById('toggle-heatmap').innerHTML = '<i class="fas fa-fire me-1"></i><span class="d-none d-md-inline">Heatmap</span>';
+                // Show markers
+                markers.forEach(marker => marker.getElement().style.display = 'flex');
+            } else {
+                // Show heatmap layer
+                map.setLayoutProperty('incidents-heat', 'visibility', 'visible');
+                document.getElementById('toggle-heatmap').innerHTML = '<i class="fas fa-map-marker-alt me-1"></i><span class="d-none d-md-inline">Markers</span>';
+                // Hide markers
+                markers.forEach(marker => marker.getElement().style.display = 'none');
+            }
+            
+            heatmapVisible = !heatmapVisible;
+        }
+        
+        function createHeatmapLayer() {
+            // Check if we have incidents data
+            if (incidents.length === 0) return;
+            
+            // Create a GeoJSON source with the incident points
+            const heatmapData = {
+                type: 'FeatureCollection',
+                features: incidents.map(incident => ({
+                    type: 'Feature',
+                    properties: {
+                        id: incident.id,
+                        intensity: getIncidentIntensity(incident)
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [incident.longitude, incident.latitude]
+                    }
+                }))
+            };
+            
+            // Add the source to the map
+            map.addSource('incidents-heat', {
+                type: 'geojson',
+                data: heatmapData
+            });
+            
+            // Add a heatmap layer
+            map.addLayer({
+                id: 'incidents-heat',
+                type: 'heatmap',
+                source: 'incidents-heat',
+                layout: {
+                    visibility: 'none'
+                },
+                paint: {
+                    // Increase the heatmap weight based on incident severity
+                    'heatmap-weight': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'intensity'],
+                        0, 0.1,
+                        1, 0.3,
+                        2, 0.5,
+                        3, 0.7,
+                        4, 1
+                    ],
+                    // Increase the heatmap color weight by zoom level
+                    'heatmap-intensity': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        0, 1,
+                        9, 3
+                    ],
+                    // Color ramp for heatmap from severity levels
+                    'heatmap-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['heatmap-density'],
+                        0, 'rgba(33,102,172,0)',
+                        0.2, 'rgb(103,169,207)',
+                        0.4, 'rgb(209,229,240)',
+                        0.6, 'rgb(253,219,199)',
+                        0.8, 'rgb(239,138,98)',
+                        1, 'rgb(178,24,43)'
+                    ],
+                    // Adjust the heatmap radius by zoom level
+                    'heatmap-radius': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        0, 2,
+                        9, 20
+                    ],
+                    // Transition from heatmap to circle layer by zoom level
+                    'heatmap-opacity': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        7, 1,
+                        12, 0.5
+                    ]
+                }
+            }, 'waterway-label');
+        }
+        
+        // Helper function to calculate incident intensity for heatmap
+        function getIncidentIntensity(incident) {
+            let intensity = 0;
+            
+            // Base on severity
+            if (incident.severity === 0) intensity = 0.3; // Low
+            else if (incident.severity === 1) intensity = 0.5; // Medium
+            else if (incident.severity === 2) intensity = 0.7; // High
+            else if (incident.severity === 3) intensity = 1.0; // Critical
+            
+            // Add more weight for specific incident types
+            if (incident.type === 'Earthquake' || incident.type === 'Fire') {
+                intensity += 0.2;
+            }
+            
+            // Less weight for resolved incidents
+            if (incident.status === 3) { // Resolved
+                intensity *= 0.7;
+            }
+            
+            // Cap intensity at 1.0
+            return Math.min(intensity, 1.0);
         }
 
         // Load incidents when map is ready
@@ -544,6 +883,19 @@
             // Set up event listeners for filters
             document.getElementById('apply-filters').addEventListener('click', applyFilters);
             document.getElementById('reset-filters').addEventListener('click', resetFilters);
+            document.getElementById('reset-filters-alert').addEventListener('click', resetFilters);
+            document.getElementById('refresh-incidents').addEventListener('click', refreshIncidents);
+            
+            // Set up quick status filters
+            document.querySelectorAll('.quick-status').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const status = this.getAttribute('data-status');
+                    applyQuickStatusFilter(status);
+                });
+            });
+            
+            // Set up search functionality
+            document.getElementById('incidents-search').addEventListener('input', searchIncidents);
         });
 
         // Show/hide loading indicator
@@ -581,19 +933,19 @@
                     // Update incident count
                     updateIncidentCount(incidents.length);
                     
-                    // Collect unique organizations
-                    organizations.clear();
-                    incidents.forEach(incident => {
-                        if (incident.assignedTo && incident.assignedTo.organization) {
-                            organizations.add(incident.assignedTo.organization);
-                        }
-                    });
-                    
                     // Render all markers initially
                     renderMarkers(incidents);
                     
+                    // Create heatmap layer (but don't show it yet)
+                    if (incidents.length > 0) {
+                        createHeatmapLayer();
+                    }
+                    
                     // Populate recent incidents list
                     populateRecentIncidents(incidents);
+                    
+                    // Update last updated timestamp
+                    updateLastUpdated();
                 })
                 .catch(error => {
                     console.error('Error loading incidents:', error);
@@ -619,7 +971,175 @@
                 });
         }
 
-        // Update incident count
+        // Update last updated time
+        function updateLastUpdated() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('incidents-last-updated').textContent = `Last updated: ${hours}:${minutes}`;
+        }
+        
+        // Refresh incidents
+        function refreshIncidents() {
+            showMapLoading(true);
+            
+            // Clear previous data
+            for (let marker of markers) {
+                marker.remove();
+            }
+            markers = [];
+            
+            // Remove heatmap if it exists
+            if (map.getSource('incidents-heat')) {
+                map.removeLayer('incidents-heat');
+                map.removeSource('incidents-heat');
+            }
+            
+            // Reset heatmap state
+            heatmapVisible = false;
+            document.getElementById('toggle-heatmap').innerHTML = '<i class="fas fa-fire me-1"></i><span class="d-none d-md-inline">Heatmap</span>';
+            
+            // Show loading in recent incidents
+            document.getElementById('recent-incidents-list').innerHTML = `
+                <div class="recent-incidents-loading text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted mt-2">Refreshing incidents...</p>
+                </div>
+            `;
+            
+            // Load fresh data
+            loadIncidents();
+        }
+        
+        // Apply quick status filter
+        function applyQuickStatusFilter(status) {
+            let filteredIncidents;
+            
+            if (status === 'all') {
+                filteredIncidents = incidents;
+            } else {
+                filteredIncidents = incidents.filter(incident => {
+                    return incident.status == status;
+                });
+            }
+            
+            // Update markers and incidents list
+            renderMarkers(filteredIncidents);
+            populateRecentIncidents(filteredIncidents);
+            
+            // Update active button styles
+            document.querySelectorAll('.quick-status').forEach(btn => {
+                btn.classList.remove('btn-primary', 'btn-success', 'btn-secondary');
+                btn.classList.add('btn-outline-primary', 'btn-outline-success', 'btn-outline-secondary');
+                
+                // Remove outline class and add solid class for the active button
+                if (btn.getAttribute('data-status') === status) {
+                    if (status === '2') {
+                        btn.classList.remove('btn-outline-primary');
+                        btn.classList.add('btn-primary');
+                    } else if (status === '3') {
+                        btn.classList.remove('btn-outline-success');
+                        btn.classList.add('btn-success');
+                    } else {
+                        btn.classList.remove('btn-outline-secondary');
+                        btn.classList.add('btn-secondary');
+                    }
+                }
+            });
+        }
+        
+        // Apply date filters
+        function applyFilters() {
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+            
+            let filteredIncidents = incidents;
+            
+            // Apply date filters
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                filteredIncidents = filteredIncidents.filter(incident => {
+                    const incidentDate = new Date(incident.dateReported);
+                    return incidentDate >= fromDate;
+                });
+            }
+            
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                // Set time to end of day
+                toDate.setHours(23, 59, 59, 999);
+                filteredIncidents = filteredIncidents.filter(incident => {
+                    const incidentDate = new Date(incident.dateReported);
+                    return incidentDate <= toDate;
+                });
+            }
+            
+            // Update UI
+            renderMarkers(filteredIncidents);
+            populateRecentIncidents(filteredIncidents);
+        }
+        
+        // Reset all filters
+        function resetFilters() {
+            // Clear date inputs
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            
+            // Reset status filters
+            document.querySelectorAll('.quick-status').forEach(btn => {
+                // Reset all buttons to outline style
+                if (btn.getAttribute('data-status') === '2') {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                } else if (btn.getAttribute('data-status') === '3') {
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-success');
+                } else {
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-outline-secondary');
+                }
+            });
+            
+            // Clear search
+            document.getElementById('incidents-search').value = '';
+            
+            // Hide no incidents alert
+            document.getElementById('no-incidents-alert').classList.add('d-none');
+            
+            // Render all incidents
+            renderMarkers(incidents);
+            populateRecentIncidents(incidents);
+        }
+        
+        // Search incidents
+        function searchIncidents() {
+            const searchTerm = document.getElementById('incidents-search').value.toLowerCase();
+            
+            if (!searchTerm) {
+                // If search is cleared, show all incidents
+                populateRecentIncidents(incidents);
+                return;
+            }
+            
+            // Filter incidents by title, description, type, location
+            const filteredIncidents = incidents.filter(incident => {
+                return (
+                    incident.title.toLowerCase().includes(searchTerm) ||
+                    incident.description.toLowerCase().includes(searchTerm) ||
+                    incident.type.toLowerCase().includes(searchTerm) ||
+                    incident.location.toLowerCase().includes(searchTerm) ||
+                    (incident.city && incident.city.toLowerCase().includes(searchTerm)) ||
+                    (incident.barangay && incident.barangay.toLowerCase().includes(searchTerm))
+                );
+            });
+            
+            // Update recent incidents list only, keep map the same
+            populateRecentIncidents(filteredIncidents);
+        }
+
+        // Update incident count display
         function updateIncidentCount(count) {
             const countElement = document.getElementById('incident-count');
             const inProgressCount = incidents.filter(i => {
@@ -639,7 +1159,87 @@
             countElement.innerHTML = `
                 <span class="badge bg-primary me-1">${inProgressCount} In Progress</span>
                 <span class="badge bg-success">${resolvedCount} Resolved</span>
+                <span class="badge bg-secondary">${count} Total</span>
             `;
+        }
+
+        // Populate recent incidents list
+        function populateRecentIncidents(data) {
+            const list = document.getElementById('recent-incidents-list');
+            const countBadge = document.getElementById('recent-count');
+            
+            // Update count badge
+            countBadge.textContent = data.length;
+            
+            // Clear previous content
+            list.innerHTML = '';
+            
+            // Check if there are incidents
+            if (data.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-map-marked-alt text-muted fa-2x mb-2"></i>
+                        <p class="text-muted">No incidents match your criteria</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort incidents by date (newest first)
+            data.sort((a, b) => new Date(b.dateReported) - new Date(a.dateReported));
+            
+            // Add each incident to the list
+            data.forEach(incident => {
+                const item = document.createElement('div');
+                item.className = 'list-group-item list-group-item-action p-3 incident-item';
+                item.setAttribute('data-incident-id', incident.id);
+                
+                // Format date
+                const date = new Date(incident.dateReported);
+                const formattedDate = `${date.toLocaleDateString()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                
+                // Construct type and status badges
+                const typeBadge = getTypeBadgeHTML(incident.type);
+                const statusBadge = getStatusBadgeHTML(incident.status);
+                
+                // Create item content
+                item.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1 text-truncate" style="max-width: 200px;">${incident.title}</h6>
+                            <p class="mb-1 small text-muted">${incident.location}</p>
+                            <div class="d-flex mt-2">
+                                ${typeBadge}
+                                ${statusBadge}
+                            </div>
+                        </div>
+                        <small class="text-muted" style="white-space: nowrap;">${formattedDate}</small>
+                    </div>
+                `;
+                
+                // Add click event to show incident details
+                item.addEventListener('click', () => {
+                    // Center map on incident
+                    map.flyTo({
+                        center: [incident.longitude, incident.latitude],
+                        zoom: 14,
+                        essential: true
+                    });
+                    
+                    // Remove active class from all items
+                    document.querySelectorAll('.incident-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked item
+                    item.classList.add('active');
+                    
+                    // Show incident details modal
+                    showIncidentDetails(incident);
+                });
+                
+                list.appendChild(item);
+            });
         }
 
         // Modified renderMarkers function to handle no incidents scenario
@@ -661,23 +1261,15 @@
                 // Check if filters are active
                 const dateFrom = document.getElementById('filter-date-from').value;
                 const dateTo = document.getElementById('filter-date-to').value;
-                const allTypesSelected = document.querySelectorAll('.type-filter:checked').length === document.querySelectorAll('.type-filter').length;
-                const allStatusesSelected = document.querySelectorAll('.status-filter:checked').length === document.querySelectorAll('.status-filter').length;
-                const allSeveritiesSelected = document.querySelectorAll('.severity-filter:checked').length === document.querySelectorAll('.severity-filter').length;
                 
-                const filtersApplied = dateFrom || dateTo || !allTypesSelected || !allStatusesSelected || !allSeveritiesSelected;
+                const filtersApplied = dateFrom || dateTo;
                 
                 if (filtersApplied) {
                     // Show the no incidents alert
                     document.getElementById('no-incidents-alert').classList.remove('d-none');
                 }
                 
-                // We don't create the map-no-data-message anymore to avoid duplication
                 return;
-            } else {
-                // Remove any existing no data message
-                const noDataMsg = document.querySelector('.map-no-data-message');
-                if (noDataMsg) noDataMsg.remove();
             }
 
             // Create bounds object to fit all markers
@@ -685,6 +1277,9 @@
 
             // Add new markers
             for (let incident of data) {
+                // Check if incident has valid coordinates
+                if (!incident.latitude || !incident.longitude) continue;
+                
                 // Set marker color based on incident type
                 let markerColor, markerIcon;
                 switch(incident.type) {
@@ -719,74 +1314,74 @@
 
                 // Create custom HTML element for marker
                 const el = document.createElement('div');
-                el.className = 'incident-marker';
+                el.className = 'custom-marker';
                 el.style.backgroundColor = markerColor;
+                el.innerHTML = `<i class="fas ${markerIcon}"></i>`;
                 
-                // Set status outline
-                let statusColor = '#6c757d'; // Default gray
-                switch(incident.status) {
-                    case 'InProgress': statusColor = '#0d6efd'; break; // Blue
-                    case 'Resolved': statusColor = '#198754'; break; // Green
-                    case 'Pending': statusColor = '#ffc107'; break; // Yellow
-                    case 'Declined': statusColor = '#dc3545'; break; // Red
+                // Add a pulse effect for in-progress incidents
+                if (incident.status === 2 || incident.status === 'InProgress') {
+                    el.style.animation = 'pulse 2s infinite';
                 }
-                el.style.borderColor = statusColor;
                 
-                // Create marker
-                const marker = new mapboxgl.Marker(el)
-                    .setLngLat([incident.longitude, incident.latitude])
-                    .addTo(map);
-                
-                // Extend bounds to include this marker
-                bounds.extend([incident.longitude, incident.latitude]);
-                
-                // Add popup information
+                // Create a popup
                 const popup = new mapboxgl.Popup({
                     offset: 25,
                     closeButton: false,
-                    className: 'incident-popup'
+                    maxWidth: '300px'
                 }).setHTML(`
-                    <div class="incident-popup-content">
-                        <h6 class="mb-1">${incident.title}</h6>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-secondary">${incident.type}</span>
-                            <span class="badge ${getStatusClass(incident.status)}">${formatStatus(incident.status)}</span>
+                    <div style="padding: 0.5rem;">
+                        <h6 style="margin-bottom: 0.5rem; font-weight: 600;">${incident.title}</h6>
+                        <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">${incident.location}</p>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 20px; background-color: ${markerColor}20; color: ${markerColor}; font-weight: 500;">
+                                ${incident.type}
+                            </span>
+                            <span style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 20px; background-color: ${incident.status === 3 ? '#19875430' : '#0d6efd30'}; color: ${incident.status === 3 ? '#198754' : '#0d6efd'}; font-weight: 500;">
+                                ${incident.status === 3 ? 'Resolved' : 'In Progress'}
+                            </span>
                         </div>
-                        <p class="small mb-2 text-truncate">${incident.location}</p>
-                        <button class="btn btn-sm btn-primary w-100">View Details</button>
+                        <hr style="margin: 0.5rem 0;">
+                        <button class="btn btn-sm btn-primary w-100" onclick="showIncidentDetails(${JSON.stringify(incident).replace(/"/g, '&quot;')})">
+                            View Details
+                        </button>
                     </div>
                 `);
+
+                // Create and add the marker
+                const marker = new mapboxgl.Marker(el)
+                    .setLngLat([incident.longitude, incident.latitude])
+                    .setPopup(popup)
+                    .addTo(map);
                 
-                marker.setPopup(popup);
-                
-                // Show popup on hover
-                marker.getElement().addEventListener('mouseenter', () => marker.togglePopup());
-                marker.getElement().addEventListener('mouseleave', () => marker.togglePopup());
-                
-                // Add click event
-                marker.getElement().addEventListener('click', () => showIncidentDetails(incident));
-                
-                // Also add click event to the popup button
-                marker.getElement().addEventListener('click', function() {
-                    setTimeout(() => {
-                        const button = document.querySelector('.incident-popup button');
-                        if (button) {
-                            button.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                showIncidentDetails(incident);
-                            });
-                        }
-                    }, 100);
+                // Add hover event to show popup
+                el.addEventListener('mouseenter', () => {
+                    marker.getPopup().addTo(map);
                 });
                 
+                el.addEventListener('mouseleave', () => {
+                    setTimeout(() => {
+                        if (!marker.getPopup()._content.matches(':hover')) {
+                            marker.getPopup().remove();
+                        }
+                    }, 300);
+                });
+                
+                // Add click event to open modal
+                el.addEventListener('click', () => {
+                    showIncidentDetails(incident);
+                });
+
+                // Add to markers array and bounds
                 markers.push(marker);
+                bounds.extend([incident.longitude, incident.latitude]);
             }
 
             // Fit map to bounds if we have markers
-            if (data.length > 0) {
-                // Add padding to the bounds
-                const padding = { top: 50, bottom: 50, left: 50, right: 50 };
-                map.fitBounds(bounds, { padding: padding, maxZoom: 15 });
+            if (markers.length > 0) {
+                map.fitBounds(bounds, {
+                    padding: 50,
+                    maxZoom: 14
+                });
             }
         }
 
@@ -837,977 +1432,185 @@
 
         // Show incident details in modal
         function showIncidentDetails(incident) {
-            // Reset previous organization info if exists
-            const previousOrgInfo = document.getElementById('assigned-organization-container');
-            previousOrgInfo.classList.add('d-none');
+            // Update modal title
+            document.getElementById('modal-title-text').textContent = 'Incident Report Details';
             
             // Set basic information
-            document.getElementById('modal-title').textContent = incident.title;
-            document.getElementById('modal-date').textContent = formatDate(incident.dateModified || incident.dateReported);
-            document.getElementById('modal-description').textContent = incident.description;
-            document.getElementById('modal-location').textContent = incident.location;
-            document.getElementById('modal-id').textContent = `Incident ID: ${incident.id}`;
-            
-            // Set type and icon
-            document.getElementById('modal-type').textContent = incident.type;
-            const typeIcon = document.getElementById('modal-type-icon');
-            typeIcon.innerHTML = `<i class="fas ${getTypeIcon(incident.type)}"></i>`;
-            typeIcon.style.backgroundColor = `${getTypeColor(incident.type)}20`;
-            typeIcon.style.color = getTypeColor(incident.type);
+            document.getElementById('modal-title-text-content').textContent = incident.title;
+            document.getElementById('modal-date-value').textContent = formatDate(incident.dateReported);
+            document.getElementById('modal-description').textContent = incident.description || 'No description provided.';
+            document.getElementById('modal-location').textContent = incident.location || 'Location not specified';
             
             // Set detailed location if available
             let detailedLocation = '';
-            if (incident.barangay && incident.barangay !== 'Unknown') {
-                detailedLocation += `Barangay ${incident.barangay}, `;
-            }
-            if (incident.city && incident.city !== 'Unknown') {
+            if (incident.barangay) detailedLocation += incident.barangay;
+            if (incident.city) {
+                if (detailedLocation) detailedLocation += ', ';
                 detailedLocation += incident.city;
             }
-            document.getElementById('modal-detailed-location').textContent = detailedLocation;
+            document.getElementById('modal-detailed-location').textContent = detailedLocation || '';
             
-            // Add assigned organization information if available
+            // Set reporter information if available
+            document.getElementById('modal-reporter-name').textContent = incident.reporterName || 'Anonymous';
+            document.getElementById('modal-reporter-email').textContent = incident.reporterEmail || 'Email not provided';
+            
+            // Set assignment information
             if (incident.assignedTo) {
-                document.getElementById('assigned-organization-container').classList.remove('d-none');
-                document.getElementById('modal-organization').textContent = incident.assignedTo.organization;
-                document.getElementById('modal-assignee').textContent = `Assigned to: ${incident.assignedTo.name}`;
-            }
-            
-            // Set status badge and description
-            const statusBadge = document.getElementById('modal-status');
-            statusBadge.textContent = formatStatus(incident.status);
-            statusBadge.className = `badge badge-lg ${getStatusClass(incident.status)}`;
-            
-            // Set status icon
-            const statusIcon = document.getElementById('modal-status-icon');
-            statusIcon.innerHTML = `<i class="fas ${getStatusIcon(incident.status)}"></i>`;
-            statusIcon.style.color = getStatusIconColor(incident.status);
-            
-            const statusDesc = document.getElementById('status-description');
-            switch(incident.status) {
-                case 'Pending': 
-                    statusDesc.textContent = 'This incident is awaiting initial verification.';
-                    break;
-                case 'Verified': 
-                    statusDesc.textContent = 'This incident has been verified and is pending assignment.';
-                    break;
-                case 'InProgress': 
-                    statusDesc.textContent = 'This incident is currently being addressed by the assigned team.';
-                    break;
-                case 'Resolved': 
-                    statusDesc.textContent = 'This incident has been successfully resolved.';
-                    break;
-                case 'Declined': 
-                    statusDesc.textContent = 'This incident has been declined due to verification issues.';
-                    break;
-                default: 
-                    statusDesc.textContent = '';
-            }
-            
-            // Set severity badge
-            const severityBadge = document.getElementById('modal-severity');
-            severityBadge.textContent = incident.severity;
-            switch(incident.severity) {
-                case 'Low': 
-                    severityBadge.className = 'badge badge-lg bg-success'; 
-                    break;
-                case 'Medium': 
-                    severityBadge.className = 'badge badge-lg bg-warning text-dark'; 
-                    break;
-                case 'High': 
-                    severityBadge.className = 'badge badge-lg bg-danger'; 
-                    break;
-                case 'Critical': 
-                    severityBadge.className = 'badge badge-lg bg-dark'; 
-                    break;
-                default: 
-                    severityBadge.className = 'badge badge-lg bg-secondary';
+                document.getElementById('modal-org-name').textContent = incident.assignedTo.organization || 'Not specified';
+                document.getElementById('modal-assigned-name').textContent = incident.assignedTo.name || 'Not assigned';
+                document.getElementById('modal-assigned-date-value').textContent = formatDate(incident.assignedAt) || 'Not recorded';
+            } else {
+                document.getElementById('modal-org-name').textContent = 'Not assigned';
+                document.getElementById('modal-assigned-name').textContent = 'Not assigned';
+                document.getElementById('modal-assigned-date-value').textContent = 'Not applicable';
             }
             
             // Set view details link
-            document.getElementById('view-details-link').href = `/LGU/ReportDetails/${incident.id}`;
+            document.getElementById('view-details-link').href = '@Url.Action("ReportDetails", "LGU")/' + incident.id;
             
-            // Show modal
+            // Update type badge
+            document.getElementById('modal-type-wrapper').innerHTML = getTypeBadgeHTML(incident.type);
+            
+            // Update status badge
+            document.getElementById('modal-status-wrapper').innerHTML = getStatusBadgeHTML(incident.status);
+            
+            // Update severity badge
+            document.getElementById('modal-severity-wrapper').innerHTML = getSeverityBadgeHTML(incident.severity);
+            
+            // Show the modal
             incidentModal.show();
         }
 
-        // Format date nicely
+        // Helper functions
         function formatDate(dateString) {
-            const options = { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            };
-            return new Date(dateString).toLocaleDateString('en-US', options);
-        }
-
-        // Initialize filter modal
-        const filterModal = new bootstrap.Modal(document.getElementById('filter-modal'));
-        
-        // Store active filters for display
-        let activeFilters = {
-            dateFrom: null,
-            dateTo: null,
-            types: [],
-            statuses: [],
-            severities: []
-        };
-        
-        // Add event listeners for select/clear all buttons
-        document.querySelector('.select-all-types').addEventListener('click', function() {
-            document.querySelectorAll('.type-filter').forEach(checkbox => checkbox.checked = true);
-        });
-        
-        document.querySelector('.clear-all-types').addEventListener('click', function() {
-            document.querySelectorAll('.type-filter').forEach(checkbox => checkbox.checked = false);
-        });
-        
-        document.querySelector('.select-all-statuses').addEventListener('click', function() {
-            document.querySelectorAll('.status-filter').forEach(checkbox => checkbox.checked = true);
-        });
-        
-        document.querySelector('.clear-all-statuses').addEventListener('click', function() {
-            document.querySelectorAll('.status-filter').forEach(checkbox => checkbox.checked = false);
-        });
-        
-        document.querySelector('.select-all-severities').addEventListener('click', function() {
-            document.querySelectorAll('.severity-filter').forEach(checkbox => checkbox.checked = true);
-        });
-        
-        document.querySelector('.clear-all-severities').addEventListener('click', function() {
-            document.querySelectorAll('.severity-filter').forEach(checkbox => checkbox.checked = false);
-        });
-        
-        // Quick status filter buttons
-        document.querySelectorAll('.quick-status').forEach(button => {
-            button.addEventListener('click', function() {
-                const statusValue = this.getAttribute('data-status');
-                // Remove active class from all buttons
-                document.querySelectorAll('.quick-status').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                if (statusValue === 'all') {
-                    fetchIncidentsCommunity({}); // No status param, show all
-                } else {
-                    fetchIncidentsCommunity({ status: statusValue });
-                }
-            });
-        });
-        
-        // Updated quick date filter buttons with better labels
-        document.querySelectorAll('.quick-date').forEach(button => {
-            button.addEventListener('click', function() {
-                const days = this.getAttribute('data-days');
-                const today = new Date();
-                
-                // Clear existing date filters
-                document.getElementById('filter-date-from').value = '';
-                document.getElementById('filter-date-to').value = '';
-                
-                if (days !== 'all') {
-                    // Calculate the start date based on days
-                    const startDate = new Date();
-                    startDate.setDate(today.getDate() - parseInt(days));
-                    
-                    // Format date as YYYY-MM-DD
-                    const formattedStartDate = startDate.toISOString().split('T')[0];
-                    const formattedEndDate = today.toISOString().split('T')[0];
-                    
-                    document.getElementById('filter-date-from').value = formattedStartDate;
-                    document.getElementById('filter-date-to').value = formattedEndDate;
-                }
-                
-                // Apply the filter immediately
-                applyFilters();
-                
-                // Add active state to this button and remove from others
-                document.querySelectorAll('.quick-date').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
-            });
-        });
-        
-        // Update the Apply Filters function to update active filters display
-        document.getElementById('apply-filters').addEventListener('click', function() {
-            applyFilters();
-            filterModal.hide();
-        });
-        
-        // Reset filters in modal
-        document.getElementById('reset-filters').addEventListener('click', function() {
-            resetFilters();
-            filterModal.hide();
-        });
-        
-        // Apply filters function
-        function applyFilters() {
-            // Remove any no data message
-            const noDataMsg = document.querySelector('.map-no-data-message');
-            if (noDataMsg) noDataMsg.remove();
-            // Show loading indicator
-            showMapLoading(true);
-            const dateFromFilter = document.getElementById('filter-date-from').value;
-            const dateToFilter = document.getElementById('filter-date-to').value;
-            // Get selected incident types (as numbers)
-            const selectedTypes = Array.from(document.querySelectorAll('.type-filter:checked')).map(cb => Number(cb.value));
-            // Get selected statuses (as numbers)
-            const selectedStatuses = Array.from(document.querySelectorAll('.status-filter:checked')).map(cb => Number(cb.value));
-            // Get selected severities (as numbers)
-            const selectedSeverities = Array.from(document.querySelectorAll('.severity-filter:checked')).map(cb => Number(cb.value));
-            // Store active filters for display
-            activeFilters = {
-                dateFrom: dateFromFilter,
-                dateTo: dateToFilter,
-                types: selectedTypes,
-                statuses: selectedStatuses,
-                severities: selectedSeverities
-            };
-            // Update active filters display
-            updateActiveFiltersDisplay();
-            let filteredIncidents = [...incidents];
-            // Filter by date range (using modification date)
-            if (dateFromFilter) {
-                const fromDate = new Date(dateFromFilter);
-                fromDate.setHours(0, 0, 0, 0); // Set to start of day
-                filteredIncidents = filteredIncidents.filter(incident => {
-                    const incidentDate = new Date(incident.dateModified || incident.dateReported);
-                    return incidentDate >= fromDate;
-                });
-            }
-            if (dateToFilter) {
-                const toDate = new Date(dateToFilter);
-                toDate.setHours(23, 59, 59, 999); // Set to end of day
-                filteredIncidents = filteredIncidents.filter(incident => {
-                    const incidentDate = new Date(incident.dateModified || incident.dateReported);
-                    return incidentDate <= toDate;
-                });
-            }
-            // Filter by incident type (zero-based)
-            if (selectedTypes.length > 0 && selectedTypes.length < document.querySelectorAll('.type-filter').length) {
-                filteredIncidents = filteredIncidents.filter(incident => selectedTypes.includes(incident.type));
-            }
-            // Filter by status (zero-based)
-            if (selectedStatuses.length > 0 && selectedStatuses.length < document.querySelectorAll('.status-filter').length) {
-                filteredIncidents = filteredIncidents.filter(incident => {
-                    // Convert string status to number if needed
-                    let statusNum = incident.status;
-                    if (typeof statusNum === 'string') {
-                        if (statusNum === 'InProgress') statusNum = 2;
-                        else if (statusNum === 'Resolved') statusNum = 3;
-                        else if (statusNum === 'Pending') statusNum = 0;
-                        else if (statusNum === 'Declined') statusNum = 1;
-                        else statusNum = -1;
-                    }
-                    return selectedStatuses.includes(statusNum);
-                });
-            }
-            // Filter by severity (zero-based)
-            if (selectedSeverities.length > 0 && selectedSeverities.length < document.querySelectorAll('.severity-filter').length) {
-                filteredIncidents = filteredIncidents.filter(incident => selectedSeverities.includes(incident.severity));
-            }
-            // Delay slightly to show the loading indicator
-            setTimeout(() => {
-                renderMarkers(filteredIncidents);
-                document.getElementById('incident-count').textContent = `${filteredIncidents.length} Incident${filteredIncidents.length !== 1 ? 's' : ''} Displayed`;
-                showMapLoading(false);
-                showFilterToast(filteredIncidents.length, incidents.length);
-                const noIncidentsAlert = document.getElementById('no-incidents-alert');
-                if (filteredIncidents.length === 0) {
-                    noIncidentsAlert.classList.remove('d-none');
-                } else {
-                    noIncidentsAlert.classList.add('d-none');
-                }
-                populateRecentIncidents(filteredIncidents);
-            }, 300);
-        }
-        
-        // Display active filters
-        function updateActiveFiltersDisplay() {
-            const container = document.getElementById('active-filters-container');
-            const noFiltersMsg = document.getElementById('no-filters-message');
+            if (!dateString) return 'Not specified';
             
-            // Check if any filters are applied
-            const hasDateFilters = activeFilters.dateFrom || activeFilters.dateTo;
-            const hasTypeFilters = activeFilters.types.length > 0 && activeFilters.types.length < 6; // Not all types
-            const hasStatusFilters = activeFilters.statuses.length > 0 && activeFilters.statuses.length < 5; // Not all statuses
-            const hasSeverityFilters = activeFilters.severities.length > 0 && activeFilters.severities.length < 4; // Not all severities
-            
-            if (hasDateFilters || hasTypeFilters || hasStatusFilters || hasSeverityFilters) {
-                // Hide the no filters message
-                noFiltersMsg.classList.add('d-none');
-                
-                // Clear container
-                container.innerHTML = '';
-                
-                // Add date filters
-                if (hasDateFilters) {
-                    let dateText = 'Date: ';
-                    if (activeFilters.dateFrom && activeFilters.dateTo) {
-                        dateText += `${formatDateShort(activeFilters.dateFrom)} to ${formatDateShort(activeFilters.dateTo)}`;
-                    } else if (activeFilters.dateFrom) {
-                        dateText += `From ${formatDateShort(activeFilters.dateFrom)}`;
-                    } else {
-                        dateText += `Until ${formatDateShort(activeFilters.dateTo)}`;
-                    }
-                    
-                    container.appendChild(createFilterBadge(dateText, 'date'));
-                }
-                
-                // Add type filters
-                if (hasTypeFilters) {
-                    activeFilters.types.forEach(type => {
-                        container.appendChild(createFilterBadge(type, 'type-' + type.toLowerCase()));
-                    });
-                }
-                
-                // Add status filters
-                if (hasStatusFilters) {
-                    activeFilters.statuses.forEach(status => {
-                        const displayStatus = status === 'InProgress' ? 'In Progress' : status;
-                        container.appendChild(createFilterBadge(displayStatus, 'status-' + status.toLowerCase()));
-                    });
-                }
-                
-                // Add severity filters
-                if (hasSeverityFilters) {
-                    activeFilters.severities.forEach(severity => {
-                        container.appendChild(createFilterBadge(severity, 'severity-' + severity.toLowerCase()));
-                    });
-                }
-            } else {
-                // Show the no filters message
-                noFiltersMsg.classList.remove('d-none');
-                container.innerHTML = '';
-            }
-        }
-        
-        // Create a filter badge element
-        function createFilterBadge(text, type) {
-            const badge = document.createElement('span');
-            badge.className = 'badge filter-badge';
-            
-            // Set badge color based on type
-            if (type === 'date') {
-                badge.classList.add('bg-primary');
-            } else if (type.startsWith('type-')) {
-                if (type === 'type-earthquake') badge.classList.add('bg-danger');
-                else if (type === 'type-flood') badge.classList.add('bg-primary');
-                else if (type === 'type-fire') badge.classList.add('bg-warning', 'text-dark');
-                else if (type === 'type-landslide') badge.classList.add('bg-secondary');
-                else if (type === 'type-storm') badge.classList.add('bg-purple');
-                else if (type === 'type-accident') badge.classList.add('bg-orange');
-                else badge.classList.add('bg-secondary');
-            } else if (type.startsWith('status-')) {
-                if (type === 'status-pending') badge.classList.add('bg-warning', 'text-dark');
-                else if (type === 'status-verified') badge.classList.add('bg-info', 'text-dark');
-                else if (type === 'status-inprogress') badge.classList.add('bg-primary');
-                else if (type === 'status-resolved') badge.classList.add('bg-success');
-                else if (type === 'status-declined') badge.classList.add('bg-danger');
-                else badge.classList.add('bg-secondary');
-            } else if (type.startsWith('severity-')) {
-                if (type === 'severity-low') badge.classList.add('bg-success');
-                else if (type === 'severity-medium') badge.classList.add('bg-warning', 'text-dark');
-                else if (type === 'severity-high') badge.classList.add('bg-danger');
-                else if (type === 'severity-critical') badge.classList.add('bg-dark');
-                else badge.classList.add('bg-secondary');
-            }
-            
-            badge.textContent = text;
-            return badge;
-        }
-        
-        // Format date for display in filter badges
-        function formatDateShort(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            return `${date.toLocaleDateString()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
         }
         
-        // Reset filters function
-        function resetFilters() {
-            document.getElementById('filter-date-from').value = '';
-            document.getElementById('filter-date-to').value = '';
+        function getTypeBadgeHTML(type) {
+            let color, icon;
             
-            // Reset all filter checkboxes
-            document.querySelectorAll('.type-filter, .status-filter, .severity-filter').forEach(checkbox => {
-                checkbox.checked = true;
-            });
+            switch(type) {
+                case 'Earthquake': 
+                    color = '#dc3545'; 
+                    icon = 'fa-house-damage';
+                    break;
+                case 'Flood': 
+                    color = '#0d6efd'; 
+                    icon = 'fa-water';
+                    break;
+                case 'Fire': 
+                    color = '#ffc107'; 
+                    icon = 'fa-fire';
+                    break;
+                case 'Landslide': 
+                    color = '#6c757d'; 
+                    icon = 'fa-mountain';
+                    break;
+                case 'Storm': 
+                    color = '#6610f2'; 
+                    icon = 'fa-cloud-showers-heavy';
+                    break;
+                case 'Accident': 
+                    color = '#fd7e14'; 
+                    icon = 'fa-car-crash';
+                    break;
+                default: 
+                    color = '#343a40';
+                    icon = 'fa-exclamation-triangle';
+            }
             
-            // Clear active filters
-            activeFilters = {
-                dateFrom: null,
-                dateTo: null,
-                types: [],
-                statuses: [],
-                severities: []
-            };
-            
-            // Update active filters display
-            updateActiveFiltersDisplay();
-            
-            // Show loading indicator
-            showMapLoading(true);
-            
-            // Delay slightly to show the loading indicator
-            setTimeout(() => {
-            renderMarkers(incidents);
-                
-                // Hide loading indicator
-                showMapLoading(false);
-                
-                // Show toast notification
-                showFilterToast(incidents.length, incidents.length, true);
-            }, 300);
+            return `<span class="badge type-badge me-1" style="background-color: ${color}20; color: ${color};">
+                <i class="fas ${icon}"></i> ${type}
+            </span>`;
         }
         
-        // Show toast notification for filter results
-        function showFilterToast(count, total, isReset = false) {
-            // Remove any existing toast
-            const existingToast = document.querySelector('.map-filter-toast');
-            if (existingToast) existingToast.remove();
+        function getStatusBadgeHTML(status) {
+            let statusText, color, icon;
             
-            // Create toast container if not exists
-            let toastContainer = document.querySelector('.toast-container');
-            if (!toastContainer) {
-                toastContainer = document.createElement('div');
-                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-                document.body.appendChild(toastContainer);
+            // Convert string status to number if needed
+            if (typeof status === 'string') {
+                if (status === 'InProgress') status = 2;
+                else if (status === 'Resolved') status = 3;
+                else if (status === 'Pending') status = 0;
+                else if (status === 'Declined') status = 1;
+                else status = -1;
             }
             
-            // Create toast
-            const toast = document.createElement('div');
-            toast.className = 'toast map-filter-toast show';
-            toast.setAttribute('role', 'alert');
-            toast.setAttribute('aria-live', 'assertive');
-            toast.setAttribute('aria-atomic', 'true');
-            
-            let toastClass, icon, message;
-            if (isReset) {
-                toastClass = 'bg-info text-white';
-                icon = 'fa-undo';
-                message = `Filters reset. Showing all ${total} incidents.`;
-            } else if (count === 0) {
-                toastClass = 'bg-warning text-dark';
-                icon = 'fa-exclamation-triangle';
-                message = `No incidents match your filter criteria.`;
-            } else {
-                toastClass = 'bg-success text-white';
-                icon = 'fa-check';
-                message = `Showing ${count} of ${total} incidents.`;
-            }
-            
-            toast.innerHTML = `
-                <div class="toast-header ${toastClass}">
-                    <i class="fas ${icon} me-2"></i>
-                    <strong class="me-auto">Filter Results</strong>
-                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                    ${message}
-                </div>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            // Auto hide after 3 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 500);
-            }, 3000);
-        }
-
-        // Add event listener for the reset button in the alert
-        document.getElementById('reset-filters-alert').addEventListener('click', resetFilters);
-
-        // Function to get an appropriate status icon
-        function getStatusIcon(status) {
-            switch (status) {
-                case 2: return 'fas fa-tools'; // In Progress
-                case 3: return 'fas fa-check-circle'; // Resolved
-                case 0: return 'fas fa-clock'; // Pending
-                case 1: return 'fas fa-times-circle'; // Declined
-                default: return 'fas fa-question-circle';
-            }
-        }
-        
-        // Function to get status icon color
-        function getStatusIconColor(status) {
             switch(status) {
-                case 'Pending': return '#ffc107';
-                case 'Verified': return '#0dcaf0';
-                case 'InProgress': return '#0d6efd';
-                case 'Resolved': return '#198754';
-                case 'Declined': return '#dc3545';
-                default: return '#6c757d';
+                case 0:
+                    statusText = 'Pending';
+                    color = '#6c757d'; // gray
+                    icon = 'fa-clock';
+                    break;
+                case 1:
+                    statusText = 'Declined';
+                    color = '#dc3545'; // red
+                    icon = 'fa-times-circle';
+                    break;
+                case 2:
+                    statusText = 'In Progress';
+                    color = '#0d6efd'; // blue
+                    icon = 'fa-spinner fa-pulse';
+                    break;
+                case 3:
+                    statusText = 'Resolved';
+                    color = '#198754'; // green
+                    icon = 'fa-check-circle';
+                    break;
+                default:
+                    statusText = 'Unknown';
+                    color = '#6c757d'; // gray
+                    icon = 'fa-question-circle';
             }
+            
+            return `<span class="badge status-badge" style="background-color: ${color}20; color: ${color};">
+                <i class="fas ${icon}"></i> ${statusText}
+            </span>`;
         }
         
-        // Populate recent incidents list
-        function populateRecentIncidents(incidents) {
-            const recentIncidentsList = document.getElementById('recent-incidents-list');
+        function getSeverityBadgeHTML(severity) {
+            let severityText, color, icon;
             
-            // Remove loading indicator
-            recentIncidentsList.innerHTML = '';
+            // Convert to number if needed
+            severity = Number(severity);
             
-            // Sort incidents by date (newest first)
-            const sortedIncidents = [...incidents].sort((a, b) => 
-                new Date(b.dateReported) - new Date(a.dateReported)
-            );
-            
-            // Take most recent 10
-            const recentIncidents = sortedIncidents.slice(0, 10);
-            
-            // Update count
-            document.getElementById('recent-count').textContent = recentIncidents.length;
-            
-            if (recentIncidents.length === 0) {
-                recentIncidentsList.innerHTML = `
-                    <div class="text-center py-4">
-                        <p class="text-muted">No incidents to display</p>
-                    </div>
-                `;
-                return;
+            switch(severity) {
+                case 0:
+                    severityText = 'Low';
+                    color = '#198754'; // green
+                    icon = 'fa-info-circle';
+                    break;
+                case 1:
+                    severityText = 'Medium';
+                    color = '#ffc107'; // yellow
+                    icon = 'fa-exclamation-circle';
+                    break;
+                case 2:
+                    severityText = 'High';
+                    color = '#dc3545'; // red
+                    icon = 'fa-radiation';
+                    break;
+                case 3:
+                    severityText = 'Critical';
+                    color = '#343a40'; // dark
+                    icon = 'fa-skull-crossbones';
+                    break;
+                default:
+                    severityText = 'Unknown';
+                    color = '#6c757d'; // gray
+                    icon = 'fa-question-circle';
             }
             
-            // Add each incident to the list
-            recentIncidents.forEach(incident => {
-                recentIncidentsList.appendChild(createRecentIncidentItem(incident));
-            });
+            return `<span class="badge severity-badge" style="background-color: ${color}20; color: ${color};">
+                <i class="fas ${icon}"></i> ${severityText}
+            </span>`;
         }
         
-        // Function to create recent incident item with enhanced details
-        function createRecentIncidentItem(incident) {
-            const item = document.createElement('a');
-            item.href = '#';
-            item.className = 'list-group-item list-group-item-action p-3 border-start-0 border-end-0';
-            item.setAttribute('data-incident-id', incident.id);
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Highlight this item
-                const allItems = document.querySelectorAll('#recent-incidents-list a.list-group-item');
-                allItems.forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Find the marker for this incident and pan to it
-                const marker = markers.find(m => m.incidentId === incident.id);
-                if (marker) {
-                    // Pan to the marker
-                    map.flyTo({
-                        center: [incident.longitude, incident.latitude],
-                        zoom: 14,
-                        speed: 1.5
-                    });
-                    
-                    // Simulate a click on the marker after the map has moved
-                    setTimeout(() => {
-                        marker.getElement().click();
-                    }, 1000);
-                } else {
-                    // Just show the incident details if marker isn't found
-                    showIncidentDetails(incident);
-                }
-            });
-            
-            const typeIconClass = getTypeIcon(incident.type);
-            const typeColor = getTypeColor(incident.type);
-            
-            // Format the date and time
-            const displayDate = incident.dateModified || incident.dateReported;
-            const formattedDate = new Date(displayDate).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            
-            const formattedTime = new Date(displayDate).toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            // Create a detailed location string
-            let locationDetails = incident.location;
-            if (incident.barangay && incident.barangay !== 'Unknown') {
-                locationDetails += `, Barangay ${incident.barangay}`;
-            }
-            if (incident.city && incident.city !== 'Unknown') {
-                locationDetails += `, ${incident.city}`;
-            }
-            
-            item.innerHTML = `
-                <div class="d-flex">
-                    <div class="incident-list-icon me-3" style="color: ${typeColor}">
-                        <i class="fas ${typeIconClass}"></i>
-                    </div>
-                    <div class="flex-grow-1 min-width-0">
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <div>
-                                <span class="badge ${getStatusClass(incident.status)} mb-1">
-                                    <i class="${getStatusIcon(incident.status)} me-1"></i>${mapStatus(incident.status)}
-                                </span>
-                                <span class="badge" style="background-color: ${typeColor}20; color: ${typeColor}; border: 1px solid ${typeColor}">
-                                    <i class="${getTypeIcon(incident.type)} me-1"></i>${mapType(incident.type)}
-                                </span>
-                                <span class="badge ms-1 ${getSeverityClass(incident.severity)}">
-                                    <i class="${getSeverityIcon(incident.severity)} me-1"></i>${getSeverityLabel(incident.severity)}
-                                </span>
-                            </div>
-                            <div class="text-end">
-                                <div class="text-muted small">${formattedDate}</div>
-                                <div class="text-muted small">${formattedTime}</div>
-                            </div>
-                        </div>
-                        <div class="incident-title fw-bold mb-1">${incident.title}</div>
-                        <div class="incident-location small text-muted mb-1">
-                            <i class="fas fa-map-marker-alt me-1"></i>${locationDetails}
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            return item;
-        }
-
-        // Update the styles for the recent incidents list
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = `
-            .incident-list-icon {
-                width: 40px;
-                height: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.2rem;
-                border-radius: 8px;
-                background-color: rgba(0,0,0,0.05);
-            }
-            
-            .incident-location {
-                color: #6c757d;
-                font-size: 0.85rem;
-                line-height: 1.4;
-            }
-            
-            .incident-description {
-                color: #495057;
-                line-height: 1.4;
-                max-height: 2.8em;
-                overflow: hidden;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                -webkit-box-orient: vertical;
-            }
-            
-            .list-group-item {
-                transition: all 0.2s ease;
-                border-left: 3px solid transparent;
-            }
-            
-            .list-group-item:hover {
-                background-color: #f8f9fa;
-                border-left-color: #0d6efd;
-            }
-            
-            .list-group-item.active {
-                background-color: #f0f7ff !important;
-                border-left-color: #0d6efd !important;
-            }
-            
-            .badge {
-                font-weight: 500;
-                padding: 0.35em 0.65em;
-                font-size: 0.75em;
-            }
-            
-            #recent-incidents-list {
-                max-height: calc(100vh - 300px);
-                overflow-y: auto;
-                scrollbar-width: thin;
-            }
-            
-            #recent-incidents-list::-webkit-scrollbar {
-                width: 6px;
-            }
-            
-            #recent-incidents-list::-webkit-scrollbar-track {
-                background: #f1f1f1;
-            }
-            
-            #recent-incidents-list::-webkit-scrollbar-thumb {
-                background: #c1c1c1;
-                border-radius: 3px;
-            }
-        `;
-        document.head.appendChild(styleSheet);
-
-        // Initialize search functionality for incidents
-        document.getElementById('incidents-search').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase().trim();
-            const incidentItems = document.querySelectorAll('#recent-incidents-list a.list-group-item');
-            
-            incidentItems.forEach(item => {
-                const title = item.querySelector('.incident-title')?.textContent.toLowerCase() || '';
-                const location = item.querySelector('.incident-location')?.textContent.toLowerCase() || '';
-                // No description in markup
-                if (title.includes(searchTerm) || location.includes(searchTerm)) {
-                    item.classList.remove('d-none');
-                } else {
-                    item.classList.add('d-none');
-                }
-            });
-            // Show "no results" message if all items are hidden
-            const visibleItems = document.querySelectorAll('#recent-incidents-list a.list-group-item:not(.d-none)').length;
-            const noResultsMsg = document.getElementById('no-search-results');
-            if (visibleItems === 0 && searchTerm !== '') {
-                if (!noResultsMsg) {
-                    const msg = document.createElement('div');
-                    msg.id = 'no-search-results';
-                    msg.className = 'text-center p-3 text-muted';
-                    msg.innerHTML = `
-                        <i class="fas fa-search fa-lg mb-2"></i>
-                        <p>No incidents found matching "${searchTerm}"</p>
-                    `;
-                    document.getElementById('recent-incidents-list').appendChild(msg);
-                }
-            } else if (noResultsMsg) {
-                noResultsMsg.remove();
-            }
-        });
-        
-        // Refresh incidents
-        document.getElementById('refresh-incidents').addEventListener('click', function() {
-            // Show loading spinner in place
-            const refreshBtn = this;
-            const originalContent = refreshBtn.innerHTML;
-            refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-            refreshBtn.disabled = true;
-            
-            // Reload incidents using LGU controller
-            fetch('@Url.Action("GetMapData", "LGU")')
-                .then(response => response.json())
-                .then(data => {
-                    incidents = data;
-                    
-                    // Update incident count
-                    updateIncidentCount(incidents.length);
-                    
-                    // Re-render all markers
-                    renderMarkers(incidents);
-                    
-                    // Populate recent incidents list
-                    populateRecentIncidents(incidents);
-                    
-                    // Update last updated time
-                    const now = new Date();
-                    const formattedTime = now.toLocaleTimeString('en-US', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                    document.getElementById('incidents-last-updated').textContent = `Last updated: ${formattedTime}`;
-                    
-                    // Reset button
-                    refreshBtn.innerHTML = originalContent;
-                    refreshBtn.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Error refreshing incidents:', error);
-                    
-                    // Show error message
-                    refreshBtn.innerHTML = originalContent;
-                    refreshBtn.disabled = false;
-                    
-                    alert('Error refreshing incidents. Please try again.');
-                });
-        });
-
-        // Add event listener for the date filter apply button
-        document.getElementById('apply-quick-date-filter').addEventListener('click', function() {
-            // Sync quick filter dates to modal dates
-            document.getElementById('filter-date-from').value = document.getElementById('quick-filter-date-from').value;
-            document.getElementById('filter-date-to').value = document.getElementById('quick-filter-date-to').value;
-            applyFilters();
-        });
-        // Add event listeners for quick date inputs to sync with modal and apply filter on change
-        document.getElementById('quick-filter-date-from').addEventListener('change', function() {
-            document.getElementById('filter-date-from').value = this.value;
-            applyFilters();
-        });
-        document.getElementById('quick-filter-date-to').addEventListener('change', function() {
-            document.getElementById('filter-date-to').value = this.value;
-            applyFilters();
-        });
-        // When modal date changes, sync to quick filter
-        document.getElementById('filter-date-from').addEventListener('change', function() {
-            document.getElementById('quick-filter-date-from').value = this.value;
-        });
-        document.getElementById('filter-date-to').addEventListener('change', function() {
-            document.getElementById('quick-filter-date-to').value = this.value;
-        });
-
-        // Remove the old quick date filter event listeners and add new date validation
-        function validateDateRange() {
-            const fromDate = document.getElementById('filter-date-from').value;
-            const toDate = document.getElementById('filter-date-to').value;
-            
-            if (fromDate && toDate) {
-                const start = new Date(fromDate);
-                const end = new Date(toDate);
-                
-                if (start > end) {
-                    // If start date is after end date, swap them
-                    document.getElementById('filter-date-from').value = toDate;
-                    document.getElementById('filter-date-to').value = fromDate;
-                }
-            }
-        }
-
-        // Add validation to date inputs
-        document.getElementById('filter-date-from').addEventListener('change', validateDateRange);
-        document.getElementById('filter-date-to').addEventListener('change', validateDateRange);
-
-        // Update the reset filters function
-        function resetFilters() {
-            document.getElementById('filter-date-from').value = '';
-            document.getElementById('filter-date-to').value = '';
-            
-            // Reset all filter checkboxes
-            document.querySelectorAll('.type-filter, .status-filter, .severity-filter').forEach(checkbox => {
-                checkbox.checked = true;
-            });
-            
-            // Clear active filters
-            activeFilters = {
-                dateFrom: null,
-                dateTo: null,
-                types: [],
-                statuses: [],
-                severities: []
-            };
-            
-            // Update active filters display
-            updateActiveFiltersDisplay();
-            
-            // Show loading indicator
-            showMapLoading(true);
-            
-            // Apply the reset
-            setTimeout(() => {
-                renderMarkers(incidents);
-                showMapLoading(false);
-                showFilterToast(incidents.length, incidents.length, true);
-            }, 300);
-        }
-
-        function mapStatus(status) {
-            switch (status) {
-                case 2: return 'In Progress';
-                case 3: return 'Resolved';
-                case 0: return 'Pending';
-                case 1: return 'Declined';
-                default: return status; // fallback if already a string
-            }
-        }
-
-        function mapType(type) {
-            switch (type) {
-                case 0: return 'Earthquake';
-                case 1: return 'Flood';
-                case 2: return 'Fire';
-                case 3: return 'Landslide';
-                case 4: return 'Storm';
-                case 5: return 'Accident';
-                case 6: return 'Other';
-                default: return type; // fallback if already a string
-            }
-        }
-
-        // Add helper functions for severity icon and class
-        function getSeverityLabel(severity) {
-            switch (severity) {
-                case 0: return 'Low';
-                case 1: return 'Medium';
-                case 2: return 'High';
-                case 3: return 'Critical';
-                default: return severity; // fallback if already a string
-            }
-        }
-
-        function getSeverityIcon(severity) {
-            switch (severity) {
-                case 0: return 'fa-solid fa-circle-check text-success';
-                case 1: return 'fa-solid fa-circle-exclamation text-warning';
-                case 2: return 'fa-solid fa-triangle-exclamation text-danger';
-                case 3: return 'fa-solid fa-skull-crossbones text-dark';
-                default: return 'fa-solid fa-circle-question text-secondary';
-            }
-        }
-
-        function getSeverityClass(severity) {
-            switch (severity) {
-                case 0: return 'bg-success text-white';
-                case 1: return 'bg-warning text-dark';
-                case 2: return 'bg-danger text-white';
-                case 3: return 'bg-dark text-white';
-                default: return 'bg-secondary text-white';
-            }
-        }
-
-        // Add this function for fetching incidents with filters
-        function fetchIncidentsCommunity(filters) {
-            let url = '@Url.Action("GetMapData", "LGU")';
-            let params = [];
-            if (filters.status && filters.status !== 'all') params.push('status=' + filters.status);
-            if (filters.dateFrom) params.push('dateFrom=' + filters.dateFrom);
-            if (filters.dateTo) params.push('dateTo=' + filters.dateTo);
-            if (params.length > 0) url += '?' + params.join('&');
-            showMapLoading(true);
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    incidents = data;
-                    showMapLoading(false);
-                    renderMarkers(incidents);
-                    populateRecentIncidents(incidents);
-                    updateIncidentCount(incidents.length);
-                })
-                .catch(error => {
-                    console.error('Error fetching incidents:', error);
-                    showMapLoading(false);
-                    // Show error message
-                    const mapContainer = document.querySelector('.map-container');
-                    const errorMsg = document.createElement('div');
-                    errorMsg.className = 'map-error-message';
-                    errorMsg.innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            Error loading incidents. Please try again later.
-                        </div>
-                    `;
-                    mapContainer.appendChild(errorMsg);
-                });
-        }
-
-        // Helper to get the currently selected status
-        function getSelectedStatus() {
-            const activeBtn = document.querySelector('.quick-status.active');
-            return activeBtn ? activeBtn.getAttribute('data-status') : 'all';
-        }
-
-        // Listen for changes on the date inputs
-        document.getElementById('quick-filter-date-from').addEventListener('change', function() {
-            fetchIncidentsCommunity({
-                status: getSelectedStatus(),
-                dateFrom: this.value,
-                dateTo: document.getElementById('quick-filter-date-to').value
-            });
-        });
-        document.getElementById('quick-filter-date-to').addEventListener('change', function() {
-            fetchIncidentsCommunity({
-                status: getSelectedStatus(),
-                dateFrom: document.getElementById('quick-filter-date-from').value,
-                dateTo: this.value
-            });
-        });
+        // Make showIncidentDetails available globally for popup buttons
+        window.showIncidentDetails = showIncidentDetails;
     </script>
 }
 

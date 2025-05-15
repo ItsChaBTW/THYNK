@@ -3,217 +3,570 @@
     Layout = "_LGULayout";
 }
 
-<div class="row">
+<style>
+    /* Enhanced Minimalist Dashboard Styles */
+    .dashboard-section {
+        margin-bottom: 2.5rem;
+        position: relative;
+    }
+    
+    .dashboard-card {
+        border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden;
+        background-color: #ffffff;
+    }
+    
+    .dashboard-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+        transform: translateY(-3px);
+    }
+    
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--dark-alt);
+        margin-bottom: 0.8rem;
+        position: relative;
+        padding-left: 0.75rem;
+        display: inline-block;
+    }
+    
+    .section-title::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 16px;
+        background-color: var(--sidebar-hover);
+        border-radius: 2px;
+    }
+    
+    .action-btn {
+        border-radius: 0.3rem;
+        padding: 0.9rem 1.25rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        letter-spacing: 0.02em;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .action-btn:active {
+        transform: translateY(0);
+    }
+    
+    .action-btn i {
+        margin-right: 0.5rem;
+        font-size: 1rem;
+    }
+    
+    .action-btn.create-alert {
+        background-color: var(--danger);
+        background-image: linear-gradient(to right, var(--danger), #e84e5a);
+    }
+    
+    .action-btn.manage-reports {
+        background-color: var(--sidebar-bg);
+        background-image: linear-gradient(to right, var(--sidebar-bg), var(--sidebar-light));
+    }
+    
+    .action-btn.manage-resources {
+        background-color: var(--sidebar-accent);
+        background-image: linear-gradient(to right, var(--sidebar-accent), #4dabf7);
+    }
+    
+    .list-item {
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        padding: 1.2rem 1.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .list-item:hover {
+        background-color: rgba(0, 0, 0, 0.01);
+    }
+    
+    .item-title {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin-bottom: 0.35rem;
+        line-height: 1.4;
+    }
+    
+    .item-date {
+        font-size: 0.7rem;
+        color: var(--dark-alt);
+        padding: 0.25rem 0.5rem;
+        background-color: rgba(0, 0, 0, 0.03);
+        border-radius: 3px;
+        display: inline-block;
+    }
+    
+    .item-content {
+        font-size: 0.85rem;
+        color: var(--dark-light);
+        margin-bottom: 0.6rem;
+        line-height: 1.5;
+    }
+    
+    .item-footer {
+        font-size: 0.75rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.5rem;
+        position: relative;
+    }
+    
+    .status-indicator::after {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background-color: inherit;
+        border-radius: 50%;
+        opacity: 0.2;
+        z-index: -1;
+    }
+    
+    .empty-state {
+        padding: 3.5rem 1.5rem;
+        text-align: center;
+        background-color: rgba(0, 0, 0, 0.01);
+        border-radius: 0.5rem;
+    }
+    
+    .empty-icon {
+        font-size: 2rem;
+        color: var(--muted);
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-text {
+        font-size: 0.9rem;
+        color: var(--dark-alt);
+        margin-bottom: 1.5rem;
+        font-weight: 400;
+    }
+    
+    .badge {
+        font-weight: 400;
+        padding: 0.3em 0.6em;
+        font-size: 0.7em;
+        border-radius: 3px;
+        letter-spacing: 0.02em;
+    }
+    
+    .resource-card {
+        text-align: center;
+        padding: 2rem 1.5rem;
+        height: 100%;
+        border-radius: 0.5rem;
+        background-color: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .resource-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: var(--sidebar-hover);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .resource-card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+        transform: translateY(-4px);
+        border-color: rgba(0, 0, 0, 0);
+    }
+    
+    .resource-card:hover::before {
+        opacity: 1;
+    }
+    
+    .resource-icon {
+        font-size: 1.75rem;
+        margin-bottom: 1.25rem;
+        color: var(--sidebar-hover);
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+    
+    .resource-card:hover .resource-icon {
+        transform: scale(1.1);
+    }
+    
+    .btn-outline-secondary {
+        color: var(--dark-alt);
+        border-color: rgba(0, 0, 0, 0.1);
+        background-color: transparent;
+        transition: all 0.2s ease;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: var(--sidebar-hover);
+        border-color: var(--sidebar-hover);
+        color: white;
+    }
+    
+    .stats-summary {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-card {
+        flex: 1;
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        padding: 1.2rem;
+        text-align: center;
+        transition: all 0.2s ease;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        margin: 0 0.5rem;
+    }
+    
+    .stat-card:first-child {
+        margin-left: 0;
+    }
+    
+    .stat-card:last-child {
+        margin-right: 0;
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--dark-alt);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .card-accent-alerts {
+        border-left: 3px solid var(--danger);
+    }
+    
+    .card-accent-reports {
+        border-left: 3px solid var(--sidebar-bg);
+    }
+    
+    .card-accent-community {
+        border-left: 3px solid var(--success);
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .dashboard-section {
+        animation: fadeIn 0.5s ease forwards;
+    }
+    
+    .dashboard-section:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+    
+    .dashboard-section:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+    
+    .dashboard-section:nth-child(4) {
+        animation-delay: 0.3s;
+    }
+    
+    .dashboard-section:nth-child(5) {
+        animation-delay: 0.4s;
+    }
+</style>
+
+<!-- Stats Summary -->
+<div class="dashboard-section">
+    <div class="stats-summary">
+        <div class="stat-card">
+            <div class="stat-value">@(ViewBag.ActiveAlerts?.Count ?? 0)</div>
+            <div class="stat-label">Active Alerts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">@(ViewBag.RecentReports?.Count ?? 0)</div>
+            <div class="stat-label">Recent Reports</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">@(ViewBag.CommunityUpdates?.Count ?? 0)</div>
+            <div class="stat-label">Updates</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Resources</div>
+        </div>
+    </div>
+</div>
+
     <!-- Quick Actions -->
-    <div class="col-12 mb-4">
-        <div class="card dashboard-card border-0 bg-light">
-            <div class="card-body">
-                <h5 class="card-title mb-3">Quick Actions</h5>
+<div class="dashboard-section">
+    <h6 class="section-title mb-3">QUICK ACTIONS</h6>
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <a href="@Url.Action("CreateAlert", "LGU")" class="btn btn-danger w-100 py-3">
-                            <i class="fas fa-bell me-2"></i> Create Alert
+            <a href="@Url.Action("CreateAlert", "LGU")" class="btn action-btn create-alert w-100 text-white">
+                <i class="fas fa-bell"></i>Create Alert
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-primary w-100 py-3">
-                            <i class="fas fa-clipboard-list me-2"></i> Manage Reports
+            <a href="@Url.Action("ManageReports", "LGU")" class="btn action-btn manage-reports w-100 text-white">
+                <i class="fas fa-clipboard-list"></i>Manage Reports
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-info text-white w-100 py-3">
-                            <i class="fas fa-book me-2"></i> Manage Resources
+            <a href="@Url.Action("ManageResources", "LGU")" class="btn action-btn manage-resources w-100 text-white">
+                <i class="fas fa-book"></i>Manage Resources
                         </a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
+<!-- Alerts and Reports Section -->
+<div class="row">
     <!-- Active Alerts -->
-    <div class="col-12 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header bg-danger text-white">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-danger">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <div>
-                        <h5 class="m-0">Active Alerts</h5>
-                        <small>Currently active alerts in your area</small>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
+    <div class="col-12 col-lg-6 dashboard-section">
+        <h6 class="section-title">ACTIVE ALERTS</h6>
+        <div class="dashboard-card card-accent-alerts">
                 @if (ViewBag.ActiveAlerts != null && ViewBag.ActiveAlerts.Count > 0)
                 {
-                    <div class="list-group">
+                <div class="p-0">
                         @foreach (var alert in ViewBag.ActiveAlerts)
                         {
-                            <div class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">
-                                        <span class="alert-badge @(alert.Severity == AlertSeverity.Critical ? "alert-critical" : 
-                                                                    alert.Severity == AlertSeverity.Danger ? "alert-danger" : 
-                                                                    alert.Severity == AlertSeverity.Warning ? "alert-warning" : "alert-info")"></span>
+                        <div class="list-item">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="item-title">
+                                        <span class="status-indicator" style="background-color: @(alert.Severity == AlertSeverity.Critical ? "var(--danger)" : 
+                                          alert.Severity == AlertSeverity.Danger ? "#fd7e14" : 
+                                           alert.Severity == AlertSeverity.Warning ? "var(--warning)" : "var(--info)")"></span>
                                         @alert.Title
-                                    </h5>
-                                    <small>@alert.DateIssued.ToString("MMM dd, HH:mm")</small>
+                                    </h6>
+                                    <p class="item-content">@alert.Message</p>
+                                    <div class="item-footer">
+                                        <i class="fas fa-map-marker-alt me-1" style="font-size: 0.7rem;"></i>
+                                        @alert.AffectedArea
+                                    </div>
                                 </div>
-                                <p class="mb-1">@alert.Message</p>
-                                <small>@alert.AffectedArea</small>
+                                <span class="item-date">
+                                    <i class="far fa-clock me-1"></i>
+                                    @alert.DateIssued.ToString("MMM dd, HH:mm")
+                                </span>
+                            </div>
                             </div>
                         }
+                    <div class="p-3 text-end">
+                        <a href="@Url.Action("ManageAlerts", "LGU")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> View All Alerts
+                        </a>
                     </div>
-                    <div class="mt-3">
-                        <a href="@Url.Action("ManageAlerts", "LGU")" class="btn btn-outline-danger">Manage Alerts</a>
                     </div>
                 }
                 else
                 {
-                    <div class="text-center py-4">
-                        <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
-                        <p>No active alerts at this time.</p>
-                        <a href="@Url.Action("CreateAlert", "LGU")" class="btn btn-danger">Create New Alert</a>
+                <div class="empty-state">
+                    <i class="fas fa-check-circle empty-icon"></i>
+                    <p class="empty-text">No active alerts at this time</p>
+                    <a href="@Url.Action("CreateAlert", "LGU")" class="btn btn-sm action-btn create-alert text-white">
+                        <i class="fas fa-plus me-1"></i> Create New Alert
+                    </a>
                     </div>
                 }
-            </div>
         </div>
     </div>
 
     <!-- Recent Reports -->
-    <div class="col-md-6 mb-4">
-        <div class="card dashboard-card h-100">
-            <div class="card-header bg-primary text-white">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-primary">
-                        <i class="fas fa-exclamation-circle"></i>
-                    </div>
-                    <div>
-                        <h5 class="m-0">Recent Reports</h5>
-                        <small>Latest incidents reported in your area</small>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
+    <div class="col-12 col-lg-6 dashboard-section">
+        <h6 class="section-title">RECENT REPORTS</h6>
+        <div class="dashboard-card card-accent-reports">
                 @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
                 {
                     <div id="lguRecentReportsList">
                         @await Html.PartialAsync("_LGURecentReports", ViewBag.RecentReports as IEnumerable<THYNK.Models.DisasterReport>)
+                <div class="p-0">
+                        @foreach (var report in ViewBag.RecentReports)
+                        {
+                        <a href="@Url.Action("ManageReports", "LGU")" class="list-item d-block text-decoration-none">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="item-title">@report.Title</h6>
+                                    <p class="item-content text-truncate">@report.Description</p>
+                                    <div class="item-footer">
+                                    <span class="badge bg-secondary">@report.Type</span>
+                                    <span class="badge @(report.Severity == SeverityLevel.Low ? "bg-info" : 
+                                                         report.Severity == SeverityLevel.Medium ? "bg-warning" : 
+                                                         report.Severity == SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                                        @report.Severity
+                                    </span>
+                                    <span class="badge @(report.Status == ReportStatus.Pending ? "bg-warning" : 
+                                                        report.Status == ReportStatus.Verified ? "bg-info" : 
+                                                        report.Status == ReportStatus.InProgress ? "bg-primary" : 
+                                                        report.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                                        @report.Status
+                                    </span>
+                                    </div>
+                                </div>
+                                <span class="item-date">
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    @report.DateReported.ToString("MMM dd, HH:mm")
+                                </span>
+                            </div>
+                            </a>
+                        }
+                    <div class="p-3 text-end">
+                        <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> View All Reports
+                        </a>
                     </div>
-                    <div class="mt-3">
-                        <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-outline-primary">Manage All Reports</a>
                     </div>
                 }
                 else
                 {
-                    <div class="text-center py-4">
-                        <i class="fas fa-clipboard-check text-success fa-4x mb-3"></i>
-                        <p>No recent reports in your area.</p>
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-check empty-icon"></i>
+                    <p class="empty-text">No recent reports in your area</p>
                     </div>
                 }
-            </div>
         </div>
     </div>
 
     <!-- Community Updates -->
-    <div class="col-md-6 mb-4">
-        <div class="card dashboard-card h-100">
-            <div class="card-header bg-success text-white">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-success">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div>
-                        <h5 class="m-0">Community Updates</h5>
-                        <small>Latest updates from your community</small>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
+    <div class="dashboard-section">
+        <h6 class="section-title">COMMUNITY UPDATES</h6>
+        <div class="dashboard-card card-accent-community">
                 @if (ViewBag.CommunityUpdates != null && ViewBag.CommunityUpdates.Count > 0)
                 {
-                    <div class="list-group">
+                <div class="p-0">
                         @foreach (var update in ViewBag.CommunityUpdates)
                         {
-                            <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">
+                        <div class="list-item">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="item-title">
                                         <span class="badge @(update.Type == UpdateType.HelpRequest ? "bg-danger" : 
                                                             update.Type == UpdateType.StatusUpdate ? "bg-info" : 
                                                             update.Type == UpdateType.ResourceSharing ? "bg-success" : 
                                                             update.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
                                             @update.Type
                                         </span>
-                                    </h5>
-                                    <small>@update.DatePosted.ToString("MMM dd, HH:mm")</small>
+                                    </h6>
+                                    <p class="item-content">@update.Content</p>
+                                    <div class="item-footer">
+                                        <i class="fas fa-user me-1" style="font-size: 0.7rem;"></i>
+                                        Posted by @(update.User != null ? update.User.UserName : "Unknown User")
+                                    </div>
                                 </div>
-                                <p class="mb-1">@update.Content</p>
-                                <small>Posted by @(update.User != null ? update.User.UserName : "Unknown User")</small>
+                                <span class="item-date">
+                                    <i class="far fa-clock me-1"></i>
+                                    @update.DatePosted.ToString("MMM dd, HH:mm")
+                                </span>
+                            </div>
                             </div>
                         }
+                    <div class="p-3 text-end">
+                        <a href="@Url.Action("CommunityFeed", "LGU")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> View Community Feed
+                        </a>
                     </div>
-                    <div class="mt-3">
-                        <a href="@Url.Action("CommunityFeed", "LGU")" class="btn btn-outline-success">View Community Feed</a>
                     </div>
                 }
                 else
                 {
-                    <div class="text-center py-4">
-                        <i class="fas fa-comments text-muted fa-4x mb-3"></i>
-                        <p>No community updates available.</p>
+                <div class="empty-state">
+                    <i class="fas fa-comments empty-icon"></i>
+                    <p class="empty-text">No community updates available</p>
                     </div>
                 }
-            </div>
         </div>
     </div>
 
     <!-- Educational Resources -->
-    <div class="col-12">
-        <div class="card dashboard-card">
-            <div class="card-header bg-info text-white">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-info">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <div>
-                        <h5 class="m-0">Educational Resources</h5>
-                        <small>Manage educational content for your community</small>
-                    </div>
+    <div class="dashboard-section">
+        <h6 class="section-title">EDUCATIONAL RESOURCES</h6>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-plus-circle resource-icon"></i>
+                    <h6 class="mb-2">Add New Resource</h6>
+                    <p class="small text-muted mb-4">Create new educational content for your community</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-plus me-2"></i>Add Resource
+                    </a>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-plus-circle text-primary fa-3x mb-3"></i>
-                                <h5>Add New Resource</h5>
-                                <p class="small">Create new educational content</p>
-                                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-primary">Add Resource</a>
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-edit resource-icon"></i>
+                    <h6 class="mb-2">Edit Resources</h6>
+                    <p class="small text-muted mb-4">Update existing educational materials</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-edit me-2"></i>Edit Resources
+                    </a>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-edit text-warning fa-3x mb-3"></i>
-                                <h5>Edit Resources</h5>
-                                <p class="small">Update existing content</p>
-                                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-warning">Edit Resources</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-chart-line text-success fa-3x mb-3"></i>
-                                <h5>View Analytics</h5>
-                                <p class="small">Track resource usage</p>
-                                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-success">View Analytics</a>
-                            </div>
-                        </div>
-                    </div>
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-chart-line resource-icon"></i>
+                    <h6 class="mb-2">View Analytics</h6>
+                    <p class="small text-muted mb-4">Monitor resource usage and engagement</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-chart-bar me-2"></i>View Analytics
+                    </a>
                 </div>
             </div>
         </div>
@@ -243,6 +596,109 @@
 
         connection.on("RecentReportUpdated", function(report) {
             reloadRecentReports();
+        });
+    </script>
+} 
+</div> 
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Mapbox map
+            if (mapboxgl) {
+                mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+                const map = new mapboxgl.Map({
+                    container: 'map-preview',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [123.0051, 10.3157], // Center on Negros Occidental
+                    zoom: 9 // Closer zoom for Negros Occidental
+                });
+                
+                // Add navigation controls
+                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                
+                // Set bounds to Negros Occidental
+                const negrosBounds = [
+                    [122.2700, 9.8500], // Southwest coordinates of Negros Occidental
+                    [123.5500, 11.0500]  // Northeast coordinates of Negros Occidental
+                ];
+                
+                // Fit map to Negros Occidental bounds
+                map.fitBounds(negrosBounds, { padding: 20 });
+                
+                // Load actual incident data from controller
+                fetch('@Url.Action("GetMapData", "LGU")')
+                    .then(response => response.json())
+                    .then(incidents => {
+                        if (incidents && incidents.length > 0) {
+                            incidents.forEach(incident => {
+                                // Skip if no valid coordinates
+                                if (!incident.latitude || !incident.longitude) return;
+                                
+                                // Set marker color based on status and severity
+                                let color = '#345995'; // Default blue
+                                
+                                if (incident.status === 3) { // Resolved
+                                    color = '#6a8d73'; // Green 
+                                } else if (incident.severity === 3) { // High severity
+                                    color = '#b56357'; // Red
+                                } else if (incident.severity === 2) { // Medium severity
+                                    color = '#e0a458'; // Orange/Yellow
+                                }
+                                
+                                // Add marker with popup
+                                new mapboxgl.Marker({ color: color })
+                                    .setLngLat([incident.longitude, incident.latitude])
+                                    .setPopup(new mapboxgl.Popup({ offset: 25 })
+                                        .setHTML(`
+                                            <h4 class="text-sm font-bold">${incident.title}</h4>
+                                            <p class="text-xs">${incident.location}</p>
+                                            <p class="text-xs">Status: ${getStatusName(incident.status)}</p>
+                                        `))
+                                    .addTo(map);
+                            });
+                        } else {
+                            // If no incidents, add sample markers within Negros Occidental
+                            const sampleIncidents = [
+                                { lng: 122.9389, lat: 10.6713, type: 'Flood', severity: 'High', title: 'Sample: Flood in Bacolod', location: 'Bacolod City' },
+                                { lng: 123.0175, lat: 10.2494, type: 'Fire', severity: 'Medium', title: 'Sample: Fire Incident', location: 'Kabankalan City' },
+                                { lng: 123.1393, lat: 10.7731, type: 'Landslide', severity: 'Low', title: 'Sample: Minor Landslide', location: 'Silay City' }
+                            ];
+                            
+                            sampleIncidents.forEach(incident => {
+                                const color = incident.severity === 'High' ? '#ef4444' : 
+                                            incident.severity === 'Medium' ? '#f59e0b' : '#3b82f6';
+                                
+                                // Add marker with popup
+                                new mapboxgl.Marker({ color: color })
+                                    .setLngLat([incident.lng, incident.lat])
+                                    .setPopup(new mapboxgl.Popup({ offset: 25 })
+                                        .setHTML(`
+                                            <h4 class="text-sm font-bold">${incident.title}</h4>
+                                            <p class="text-xs">${incident.location}</p>
+                                            <p class="text-xs">Type: ${incident.type}</p>
+                                            <p class="text-xs">Severity: ${incident.severity}</p>
+                                            <p class="text-xs text-gray-500 mt-1">This is sample data</p>
+                                        `))
+                                    .addTo(map);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching map data:', error);
+                        // Show error on map
+                        const mapContainer = document.getElementById('map-preview');
+                        if (mapContainer) {
+                            mapContainer.innerHTML = '<div class="p-4 text-center text-red-500">Error loading incident data</div>';
+                        }
+                    });
+            }
+            
+            // Helper function to get status name
+            function getStatusName(status) {
+                const statuses = ['Pending', 'Verified', 'InProgress', 'Resolved', 'Declined'];
+                return statuses[status] || 'Unknown';
+            }
         });
     </script>
 } 

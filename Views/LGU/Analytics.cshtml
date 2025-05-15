@@ -1,0 +1,518 @@
+@{
+    ViewData["Title"] = "Analytics Dashboard";
+    Layout = "_LGULayout";
+}
+
+<div class="mb-6">
+    <h1 class="text-2xl font-bold mb-1">Analytics Dashboard</h1>
+    <p class="text-sm text-gray-600">Gain insights from your community data and disaster management metrics.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <!-- Key Metrics Cards -->
+    <div class="lgu-card p-4">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 text-blue-600 rounded-full mb-3">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-1">@(ViewBag.TotalReports ?? 245)</h3>
+            <p class="text-sm text-gray-500">Total Incidents</p>
+        </div>
+    </div>
+
+    <div class="lgu-card p-4">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-green-100 text-green-600 rounded-full mb-3">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-1">@(ViewBag.ResolvedReports ?? 187)</h3>
+            <p class="text-sm text-gray-500">Resolved Incidents</p>
+        </div>
+    </div>
+
+    <div class="lgu-card p-4">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full mb-3">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-1">@(ViewBag.AverageResponseTime ?? "4.2h")</h3>
+            <p class="text-sm text-gray-500">Avg. Response Time</p>
+        </div>
+    </div>
+
+    <div class="lgu-card p-4">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-purple-100 text-purple-600 rounded-full mb-3">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-1">@(ViewBag.CommunityEngagement ?? "76%")</h3>
+            <p class="text-sm text-gray-500">Community Engagement</p>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Incident Trends Chart -->
+    <div class="lgu-card">
+        <div class="lgu-card-header">
+            <div class="header-icon bg-primary text-white">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold mb-0">Incident Trends</h2>
+                <p class="text-xs text-gray-500 mb-0">Reported incidents over time</p>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="flex justify-end mb-4">
+                <select id="incident-timeframe" class="text-sm border border-gray-300 rounded-md px-3 py-2">
+                    <option value="week">Last 7 days</option>
+                    <option value="month" selected>Last 30 days</option>
+                    <option value="quarter">Last 3 months</option>
+                    <option value="year">Last year</option>
+                </select>
+            </div>
+            <div class="h-72">
+                <canvas id="incidentTrendsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incident Types Distribution -->
+    <div class="lgu-card">
+        <div class="lgu-card-header">
+            <div class="header-icon bg-blue-500 text-white">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold mb-0">Incident Distribution</h2>
+                <p class="text-xs text-gray-500 mb-0">Breakdown by incident type</p>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="flex justify-end mb-4">
+                <select id="distribution-timeframe" class="text-sm border border-gray-300 rounded-md px-3 py-2">
+                    <option value="month" selected>This Month</option>
+                    <option value="quarter">This Quarter</option>
+                    <option value="year">This Year</option>
+                    <option value="all">All Time</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <canvas id="incidentTypesChart"></canvas>
+                </div>
+                <div>
+                    <div class="space-y-3 mt-4 md:mt-0">
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+                            <span class="text-sm">Flood (35%)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                            <span class="text-sm">Fire (25%)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
+                            <span class="text-sm">Infrastructure (15%)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                            <span class="text-sm">Medical Emergency (12%)</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
+                            <span class="text-sm">Others (13%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Geographic Distribution -->
+    <div class="lgu-card lg:col-span-2">
+        <div class="lgu-card-header">
+            <div class="header-icon bg-green-600 text-white">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold mb-0">Geographic Distribution</h2>
+                <p class="text-xs text-gray-500 mb-0">Incident density by area</p>
+            </div>
+        </div>
+        <div class="p-4">
+            <div id="heatmap" class="h-80 bg-gray-100 rounded-lg"></div>
+            <div class="mt-3 grid grid-cols-3 gap-2">
+                <div class="text-center">
+                    <div class="text-lg font-bold">North District</div>
+                    <div class="text-sm text-gray-600">@(ViewBag.NorthDistrictCount ?? 0) incidents</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-lg font-bold">Central District</div>
+                    <div class="text-sm text-gray-600">@(ViewBag.CentralDistrictCount ?? 0) incidents</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-lg font-bold">South District</div>
+                    <div class="text-sm text-gray-600">@(ViewBag.SouthDistrictCount ?? 0) incidents</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Response Performance -->
+    <div class="lgu-card">
+        <div class="lgu-card-header">
+            <div class="header-icon bg-yellow-500 text-white">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold mb-0">Response Performance</h2>
+                <p class="text-xs text-gray-500 mb-0">Efficiency metrics</p>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium">Average Response Time</span>
+                        <span class="text-sm font-bold">4.2h</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 65%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Target: 3.0h</div>
+                </div>
+                
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium">Resolution Rate</span>
+                        <span class="text-sm font-bold">84%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 84%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Target: 90%</div>
+                </div>
+                
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium">Community Satisfaction</span>
+                        <span class="text-sm font-bold">76%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-500 h-2 rounded-full" style="width: 76%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Target: 80%</div>
+                </div>
+                
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium">Resource Utilization</span>
+                        <span class="text-sm font-bold">92%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 92%"></div>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">Target: 85%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resource Utilization -->
+<div class="lgu-card mb-6">
+    <div class="lgu-card-header">
+        <div class="header-icon bg-purple-600 text-white">
+            <i class="fas fa-box"></i>
+        </div>
+        <div>
+            <h2 class="text-lg font-semibold mb-0">Resource Allocation & Utilization</h2>
+            <p class="text-xs text-gray-500 mb-0">How resources are being deployed and used</p>
+        </div>
+    </div>
+    <div class="p-4">
+        <div class="flex justify-end mb-4">
+            <select id="resource-timeframe" class="text-sm border border-gray-300 rounded-md px-3 py-2">
+                <option value="month" selected>This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+            </select>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-700">
+                        <th class="py-2 px-4 text-left text-sm">Resource Type</th>
+                        <th class="py-2 px-4 text-left text-sm">Allocated</th>
+                        <th class="py-2 px-4 text-left text-sm">Used</th>
+                        <th class="py-2 px-4 text-left text-sm">Utilization</th>
+                        <th class="py-2 px-4 text-left text-sm">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600">
+                    <tr class="border-b">
+                        <td class="py-3 px-4 text-sm">Relief Goods</td>
+                        <td class="py-3 px-4 text-sm">2,500 packages</td>
+                        <td class="py-3 px-4 text-sm">1,875 packages</td>
+                        <td class="py-3 px-4 text-sm">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 75%"></div>
+                            </div>
+                            <span class="text-xs">75%</span>
+                        </td>
+                        <td class="py-3 px-4 text-sm"><span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">Adequate</span></td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-3 px-4 text-sm">Medical Supplies</td>
+                        <td class="py-3 px-4 text-sm">500 kits</td>
+                        <td class="py-3 px-4 text-sm">425 kits</td>
+                        <td class="py-3 px-4 text-sm">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                            <span class="text-xs">85%</span>
+                        </td>
+                        <td class="py-3 px-4 text-sm"><span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Moderate</span></td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-3 px-4 text-sm">Emergency Vehicles</td>
+                        <td class="py-3 px-4 text-sm">15 vehicles</td>
+                        <td class="py-3 px-4 text-sm">10 vehicles</td>
+                        <td class="py-3 px-4 text-sm">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 67%"></div>
+                            </div>
+                            <span class="text-xs">67%</span>
+                        </td>
+                        <td class="py-3 px-4 text-sm"><span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">Adequate</span></td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-3 px-4 text-sm">Temporary Shelters</td>
+                        <td class="py-3 px-4 text-sm">8 locations</td>
+                        <td class="py-3 px-4 text-sm">7 locations</td>
+                        <td class="py-3 px-4 text-sm">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: 88%"></div>
+                            </div>
+                            <span class="text-xs">88%</span>
+                        </td>
+                        <td class="py-3 px-4 text-sm"><span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">Limited</span></td>
+                    </tr>
+                    <tr>
+                        <td class="py-3 px-4 text-sm">Rescue Personnel</td>
+                        <td class="py-3 px-4 text-sm">120 staff</td>
+                        <td class="py-3 px-4 text-sm">95 staff</td>
+                        <td class="py-3 px-4 text-sm">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 79%"></div>
+                            </div>
+                            <span class="text-xs">79%</span>
+                        </td>
+                        <td class="py-3 px-4 text-sm"><span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">Adequate</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Incident Trends Chart
+            const trendsCtx = document.getElementById('incidentTrendsChart').getContext('2d');
+            const trendsChart = new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        {
+                            label: 'Reported Incidents',
+                            data: [22, 19, 25, 37, 42, 39, 35, 29, 18, 15, 12, 22],
+                            borderColor: '#345995',
+                            backgroundColor: 'rgba(52, 89, 149, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Resolved Incidents',
+                            data: [18, 15, 20, 30, 35, 30, 28, 25, 15, 12, 10, 18],
+                            borderColor: '#6a8d73',
+                            backgroundColor: 'rgba(106, 141, 115, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Incident Types Chart
+            const typesCtx = document.getElementById('incidentTypesChart').getContext('2d');
+            const typesChart = new Chart(typesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Flood', 'Fire', 'Infrastructure', 'Medical Emergency', 'Others'],
+                    datasets: [{
+                        data: [35, 25, 15, 12, 13],
+                        backgroundColor: [
+                            '#ef4444',
+                            '#3b82f6',
+                            '#f59e0b',
+                            '#10b981',
+                            '#8b5cf6'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+            
+            // Initialize Mapbox heatmap
+            if (mapboxgl) {
+                mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+                const map = new mapboxgl.Map({
+                    container: 'heatmap',
+                    style: 'mapbox://styles/mapbox/light-v11',
+                    center: [123.0051, 10.3157], // Center on Negros Occidental
+                    zoom: 9 // Adjust zoom level to show the whole province
+                });
+                
+                map.on('load', function() {
+                    // Get the real data from ViewBag
+                    const geoData = @Html.Raw(Json.Serialize(ViewBag.GeoData));
+                    
+                    // Check if we have any data
+                    if (geoData && geoData.length > 0) {
+                        // Add markers based on real data
+                        geoData.forEach(report => {
+                            // Skip if we don't have valid coordinates
+                            if (!report.latitude || !report.longitude) return;
+                            
+                            // Determine marker color based on report status
+                            let markerColor = '#345995'; // Default blue
+                            if (report.status === 3) { // Resolved status
+                                markerColor = '#6a8d73'; // Green
+                            } else if (report.status === 2) { // In Progress
+                                markerColor = '#e0a458'; // Orange
+                            } else if (report.status === 4) { // Declined
+                                markerColor = '#b56357'; // Red
+                            }
+                            
+                            // Determine marker size based on severity
+                            const markerScale = (report.severity + 2) / 10 + 0.5;
+                            
+                            // Create a popup with report details
+                            const popup = new mapboxgl.Popup({ offset: 25 })
+                                .setHTML(`
+                                    <h4 class="text-sm font-bold">${report.title}</h4>
+                                    <p class="text-xs">${report.location}</p>
+                                    <p class="text-xs">Type: ${getDisasterTypeName(report.type)}</p>
+                                    <p class="text-xs">Status: ${getStatusName(report.status)}</p>
+                                    <p class="text-xs">Date: ${new Date(report.reportDate).toLocaleDateString()}</p>
+                                `);
+                            
+                            
+                            // Add marker to map
+                            new mapboxgl.Marker({
+                                color: markerColor,
+                                scale: markerScale
+                            })
+                            .setLngLat([report.longitude, report.latitude])
+                            .setPopup(popup)
+                            .addTo(map);
+                        });
+                        
+                        // If we have data points, fit the map to the bounds of our data
+                        if (geoData.length > 1) {
+                            const bounds = new mapboxgl.LngLatBounds();
+                            geoData.forEach(report => {
+                                if (report.latitude && report.longitude) {
+                                    bounds.extend([report.longitude, report.latitude]);
+                                }
+                            });
+                            map.fitBounds(bounds, { padding: 50, maxZoom: 10 });
+                        }
+                    } else {
+                        // If no data, ensure we're still focused on Negros Occidental
+                        map.fitBounds([
+                            [122.2700, 9.8500], // Southwest coordinates of Negros Occidental
+                            [123.5500, 11.0500]  // Northeast coordinates of Negros Occidental
+                        ], { padding: 50 });
+                    }
+                    
+                    // Add a navigation control to the map
+                    map.addControl(new mapboxgl.NavigationControl());
+                    
+                    // Add a scale control to show distance
+                    map.addControl(new mapboxgl.ScaleControl({
+                        maxWidth: 100,
+                        unit: 'metric'
+                    }));
+                });
+                
+                // Helper functions for display values
+                function getDisasterTypeName(type) {
+                    const types = ['Earthquake', 'Flood', 'Fire', 'Landslide', 'Storm', 'Accident', 'Other'];
+                    return types[type] || 'Unknown';
+                }
+                
+                function getStatusName(status) {
+                    const statuses = ['Pending', 'Verified', 'InProgress', 'Resolved', 'Declined'];
+                    return statuses[status] || 'Unknown';
+                }
+            }
+            
+            // Event listeners for filter changes
+            document.getElementById('incident-timeframe').addEventListener('change', function() {
+                // Update incident trends chart based on selection
+            });
+            
+            document.getElementById('distribution-timeframe').addEventListener('change', function() {
+                // Update incident distribution chart based on selection
+            });
+            
+            document.getElementById('resource-timeframe').addEventListener('change', function() {
+                // Update resource utilization table based on selection
+            });
+        });
+    </script>
+} 

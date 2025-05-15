@@ -1,0 +1,432 @@
+@model THYNK.Models.EducationalResource
+@{
+    ViewData["Title"] = "Create Educational Resource";
+    Layout = "_LGULayout";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Create Educational Resource</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/LGU/Dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/LGU/ManageResources">Educational Resources</a></li>
+        <li class="breadcrumb-item active">Create New</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-edit me-1"></i>
+                    Resource Information
+                </div>
+                <div class="card-body">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Please correct the following errors:</strong>
+                            
+                            <ul class="mb-0 mt-2">
+                                @foreach (var modelState in ViewData.ModelState.Values)
+                                {
+                                    foreach (var error in modelState.Errors)
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+                    
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+                    
+                    @if (TempData["WarningMessage"] != null)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            @TempData["WarningMessage"]
+                        </div>
+                    }
+                    
+                    <form asp-action="CreateResource" method="post" enctype="multipart/form-data" id="resourceForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger d-none"></div>
+                        
+                        <div id="validationSummary" style="display: none;"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Resource Title <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control" placeholder="Enter a descriptive title" required />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                            <div class="form-text">Keep titles concise and descriptive (100 characters max)</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Type" class="form-label">Resource Type <span class="text-danger">*</span></label>
+                                <select asp-for="Type" asp-items="Html.GetEnumSelectList<ResourceType>()" class="form-select" required>
+                                    <option value="">-- Select Type --</option>
+                                </select>
+                                <span asp-validation-for="Type" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Tags" class="form-label">Tags</label>
+                                <input asp-for="Tags" class="form-control" placeholder="disaster,flood,preparation,safety" />
+                                <span asp-validation-for="Tags" class="text-danger"></span>
+                                <div class="form-text">Comma-separated keywords for better searchability</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Brief description of this resource" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">Content <span class="text-danger">*</span></label>
+                            <textarea asp-for="Content" class="form-control" rows="8" placeholder="Detailed content of the resource" required></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                            <div class="form-text">Include detailed information, steps, or educational content</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="resourceFile" class="form-label">Attachment (Optional)</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="resourceFile" name="resourceFile" onchange="validateFileAndPreview()" />
+                                <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('resourceFile').click()">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                            </div>
+                            <div id="fileError" class="text-danger mt-1" style="display: none;"></div>
+                            <div class="form-text">Upload documents, images or other files (max 10MB). Allowed formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, TXT, JPG, JPEG, PNG</div>
+                            
+                            <div id="filePreview" class="mt-3" style="display: none;">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i id="fileIcon" class="fas fa-file me-2"></i><span id="fileName"></span></h6>
+                                        <p class="card-text text-muted"><span id="fileSize"></span></p>
+                                        <div id="imagePreview" style="display: none; max-width: 300px;">
+                                            <img src="" id="previewImage" class="img-fluid rounded" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="ExternalUrl" class="form-label">External URL</label>
+                            <input asp-for="ExternalUrl" class="form-control" placeholder="https://example.com/resource" />
+                            <span asp-validation-for="ExternalUrl" class="text-danger"></span>
+                            <div class="form-text">Link to external resources (optional)</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsOfflineAccessible" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsOfflineAccessible" class="form-check-label">Available Offline</label>
+                            <div class="form-text">Enable this if the resource should be accessible without internet</div>
+                        </div>
+                        
+                        <hr class="my-4" />
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Submit Resource
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Tips for Quality Resources
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        All resources will undergo review before publication.
+                    </div>
+                    
+                    <h5 class="card-title">Best Practices</h5>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Be Accurate</strong> - Verify facts before sharing
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Be Clear</strong> - Use simple language that anyone can understand
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Be Comprehensive</strong> - Cover important details
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Be Organized</strong> - Structure content with headings and lists
+                        </li>
+                    </ul>
+                    
+                    <h5 class="card-title">Content Ideas</h5>
+                    <div class="list-group mb-3">
+                        <a href="#" class="list-group-item list-group-item-action" onclick="fillTemplate('disasterPreparedness'); return false;">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Disaster Preparedness Guide</h6>
+                            </div>
+                            <small>Helping communities prepare for natural disasters</small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="fillTemplate('emergencyContacts'); return false;">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Emergency Contact List</h6>
+                            </div>
+                            <small>Compile important contact information</small>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="fillTemplate('evacuationProcedure'); return false;">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Evacuation Procedure</h6>
+                            </div>
+                            <small>Step-by-step evacuation instructions</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Custom form validation
+            $("#resourceForm").on("submit", function(e) {
+                let isValid = true;
+                
+                // Reset error messages
+                $(".field-error").remove();
+                
+                // Validate Title
+                if ($("#Title").val().trim() === "") {
+                    isValid = false;
+                    $("#Title").addClass("is-invalid");
+                    $("<div class='field-error text-danger'>Resource title is required</div>").insertAfter($("#Title"));
+                } else {
+                    $("#Title").removeClass("is-invalid").addClass("is-valid");
+                }
+                
+                // Validate Type
+                if ($("#Type").val() === "") {
+                    isValid = false;
+                    $("#Type").addClass("is-invalid");
+                    $("<div class='field-error text-danger'>Resource type is required</div>").insertAfter($("#Type"));
+                } else {
+                    $("#Type").removeClass("is-invalid").addClass("is-valid");
+                }
+                
+                // Validate Description
+                if ($("#Description").val().trim() === "") {
+                    isValid = false;
+                    $("#Description").addClass("is-invalid");
+                    $("<div class='field-error text-danger'>Description is required</div>").insertAfter($("#Description"));
+                } else {
+                    $("#Description").removeClass("is-invalid").addClass("is-valid");
+                }
+                
+                // Validate Content
+                if ($("#Content").val().trim() === "") {
+                    isValid = false;
+                    $("#Content").addClass("is-invalid");
+                    $("<div class='field-error text-danger'>Content is required</div>").insertAfter($("#Content"));
+                } else {
+                    $("#Content").removeClass("is-invalid").addClass("is-valid");
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    
+                    // Show error summary
+                    $("#validationSummary").html("<div class='alert alert-danger'><i class='fas fa-exclamation-circle me-2'></i><strong>Please fix the following errors:</strong></div>");
+                    $("#validationSummary").show();
+                    
+                    // Scroll to the top of the form
+                    $('html, body').animate({
+                        scrollTop: $("#validationSummary").offset().top - 100
+                    }, 200);
+                }
+            });
+        });
+
+        function fillTemplate(templateType) {
+            let title = '';
+            let description = '';
+            let content = '';
+            let type = '';
+            let tags = '';
+            
+            switch(templateType) {
+                case 'disasterPreparedness':
+                    title = 'Disaster Preparedness Guide';
+                    description = 'A comprehensive guide to help residents prepare for natural disasters.';
+                    content = '# Disaster Preparedness Guide\n\n## Before a Disaster\n\n1. Create an emergency plan for your family\n2. Prepare an emergency kit with essential supplies\n3. Know evacuation routes and meeting points\n4. Secure important documents\n\n## During a Disaster\n\n1. Stay calm and follow official instructions\n2. Use emergency contacts only when necessary\n3. Help vulnerable neighbors if safe to do so\n\n## After a Disaster\n\n1. Check for injuries and provide first aid if needed\n2. Report damage to authorities\n3. Be cautious of hazards like downed power lines\n4. Listen for updates from official sources';
+                    type = '0'; // Guide
+                    tags = 'preparedness,emergency,safety,disaster';
+                    break;
+                    
+                case 'emergencyContacts':
+                    title = 'Emergency Contact Information';
+                    description = 'Essential emergency contact information for our community.';
+                    content = '# Emergency Contact Information\n\n## Emergency Services\n\n- **Police Emergency**: 911\n- **Fire Department**: 911\n- **Ambulance**: 911\n- **Disaster Response**: [Local Number]\n\n## Government Agencies\n\n- **City/Municipal Office**: [Number]\n- **Barangay Office**: [Number]\n\n## Hospitals\n\n- **[Local Hospital Name]**: [Number]\n- **[Regional Hospital Name]**: [Number]\n\n## Utilities\n\n- **Electric Company**: [Number]\n- **Water District**: [Number]';
+                    type = '6'; // EmergencyContact
+                    tags = 'contacts,emergency,numbers,services';
+                    break;
+                    
+                case 'evacuationProcedure':
+                    title = 'Community Evacuation Procedure';
+                    description = 'Step-by-step evacuation procedures for our community during emergencies.';
+                    content = '# Community Evacuation Procedure\n\n## When to Evacuate\n\n- When instructed by authorities\n- When you see or smell danger\n- When emergency notifications are received\n\n## Evacuation Steps\n\n1. **Stay calm** and gather your emergency kit\n2. **Turn off utilities** if time permits (gas, electricity, water)\n3. **Follow designated evacuation routes** - avoid shortcuts\n4. **Go to the nearest evacuation center**:\n   - Primary: [Location Name]\n   - Secondary: [Alternative Location]\n\n## For Those Without Transportation\n\n- Gather at [assembly points] for transportation assistance\n- Contact [emergency number] for evacuation support';
+                    type = '1'; // Tutorial
+                    tags = 'evacuation,safety,procedure,emergency';
+                    break;
+            }
+            
+            // Fill the form with template data
+            document.getElementById('Title').value = title;
+            document.getElementById('Description').value = description;
+            document.getElementById('Content').value = content;
+            document.getElementById('Type').value = type;
+            document.getElementById('Tags').value = tags;
+        }
+
+        function validateFileAndPreview() {
+            const file = document.getElementById('resourceFile').files[0];
+            const fileError = document.getElementById('fileError');
+            const filePreview = document.getElementById('filePreview');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            if (!file) {
+                fileError.textContent = '';
+                fileError.style.display = 'none';
+                filePreview.style.display = 'none';
+                return;
+            }
+            
+            // Check file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                fileError.textContent = 'File size exceeds the maximum limit of 10MB';
+                fileError.style.display = 'block';
+                filePreview.style.display = 'none';
+                return;
+            }
+            
+            // Set file name and size
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            
+            // Check file extension
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            const allowedExts = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'jpg', 'jpeg', 'png'];
+            
+            if (!allowedExts.includes(fileExt)) {
+                fileError.textContent = `File type .${fileExt} is not supported. Allowed types: ${allowedExts.join(', ')}`;
+                fileError.style.display = 'block';
+                filePreview.style.display = 'none';
+                return;
+            }
+            
+            // Show file preview
+            fileError.style.display = 'none';
+            filePreview.style.display = 'block';
+            
+            // Set the appropriate icon based on file type
+            let iconClass = 'fas fa-file';
+            
+            switch (fileExt) {
+                case 'pdf':
+                    iconClass = 'fas fa-file-pdf';
+                    break;
+                case 'doc':
+                case 'docx':
+                    iconClass = 'fas fa-file-word';
+                    break;
+                case 'ppt':
+                case 'pptx':
+                    iconClass = 'fas fa-file-powerpoint';
+                    break;
+                case 'xls':
+                case 'xlsx':
+                    iconClass = 'fas fa-file-excel';
+                    break;
+                case 'txt':
+                    iconClass = 'fas fa-file-alt';
+                    break;
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                    iconClass = 'fas fa-file-image';
+                    break;
+            }
+            
+            // Update the icon
+            document.getElementById('fileIcon').className = iconClass;
+            
+            // Show image preview only for image files
+            if (['jpg', 'jpeg', 'png'].includes(fileExt)) {
+                imagePreview.style.display = 'block';
+                document.getElementById('previewImage').src = URL.createObjectURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+            else return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .field-error {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+            padding-right: calc(1.5em + 0.75rem);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .form-control.is-valid,
+        .form-select.is-valid {
+            border-color: #198754;
+            padding-right: calc(1.5em + 0.75rem);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .alert ul {
+            margin-bottom: 0;
+        }
+    </style>
+} 

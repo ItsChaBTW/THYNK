@@ -4,35 +4,37 @@
     Layout = "_CommunityLayout";
 }
 
-<div class="card admin-card mb-4 border-0 shadow-sm">
-    <div class="card-header bg-primary text-white">
-        <div class="d-flex align-items-center">
-            <div class="card-icon bg-white text-primary">
-                <i class="fas fa-history"></i>
+<div class="reports-container">
+    <!-- Header Section -->
+    <div class="header-section mb-4">
+        <div class="d-flex align-items-center mb-2">
+            <div class="icon-container me-3">
+                <i class="fas fa-clipboard-list"></i>
             </div>
             <div>
-                <h5 class="m-0">My Report History</h5>
-                <small>View all reports you have submitted</small>
+                <h4 class="mb-1">My Reports</h4>
+                <p class="text-muted mb-0 small">Track and manage incidents you've submitted</p>
             </div>
         </div>
     </div>
-    <div class="card-body">
-        <!-- Enhanced Search and Filter Section -->
-        <div class="row mb-4 align-items-center">
-            <div class="col-md-8">
-                <div class="search-filter-group d-flex flex-wrap gap-2">
+
+    <!-- Controls Section -->
+    <div class="controls-section mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-7">
+                <div class="search-container d-flex flex-wrap gap-2">
                     <div class="input-group">
-                        <span class="input-group-text bg-white">
+                        <span class="input-group-text border-end-0 bg-white">
                             <i class="fas fa-search text-muted"></i>
                         </span>
                         <input type="text" id="live-search" class="form-control border-start-0" 
-                               placeholder="Search reports by title, location..." 
+                               placeholder="Search reports..." 
                                value="@ViewBag.CurrentSearch">
                         <button class="btn btn-outline-secondary border-start-0" type="button" id="clear-search">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <select id="status-filter" class="form-select" style="width: auto;">
+                    <select id="status-filter" class="form-select status-select">
                         <option value="">All Status</option>
                         <option value="Pending" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Pending)">Pending</option>
                         <option value="Verified" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Verified)">Verified</option>
@@ -40,112 +42,135 @@
                         <option value="Resolved" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Resolved)">Resolved</option>
                         <option value="Declined" selected="@(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Declined)">Declined</option>
                     </select>
-                    <span class="badge bg-secondary align-self-center px-2 py-1" id="result-counter">
-                        <span id="result-count">@Model.Count()</span> results
-                    </span>
                 </div>
             </div>
-            <div class="col-md-4 text-end">
-                <a href="@Url.Action("SubmitReport", "Community")" class="btn btn-success">
-                    <i class="fas fa-plus-circle me-2"></i>New Report
+            <div class="col-md-5 text-md-end">
+                <span class="results-counter me-3">
+                    <span id="result-count">@Model.Count()</span> reports found
+                </span>
+                <a href="@Url.Action("SubmitReport", "Community")" class="btn btn-create">
+                    <i class="fas fa-plus me-2"></i>New Report
                 </a>
             </div>
         </div>
+    </div>
 
+    <!-- Content Section -->
+    <div class="content-section">
         @if (!Model.Any())
         {
-            <div class="alert alert-info d-flex align-items-center">
-                <i class="fas fa-info-circle me-3 fs-4"></i>
-                <div>
-                    <p class="mb-1">You haven't submitted any reports yet.</p>
-                    <a href="@Url.Action("SubmitReport", "Community")" class="alert-link">Submit your first report</a>
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-file-alt"></i>
                 </div>
+                <h5>No Reports Yet</h5>
+                <p class="text-muted">You haven't submitted any incident reports</p>
+                <a href="@Url.Action("SubmitReport", "Community")" class="btn btn-create mt-2">
+                    <i class="fas fa-plus-circle me-2"></i>Submit Your First Report
+                </a>
             </div>
         }
         else
         {
-            <div class="table-responsive">
-                <table class="table table-hover" id="reports-table">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Title</th>
-                            <th>Type</th>
-                            <th>Location</th>
-                            <th>Date Reported</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var report in Model)
-                        {
-                            <tr class="report-row" 
-                                data-title="@report.Title.ToLower()" 
-                                data-location="@report.Location.ToLower()" 
-                                data-status="@report.Status">
-                                <td>
-                                    <span class="fw-medium">@report.Title</span>
-                                </td>
-                                <td>
-                                    @{
-                                        var typeColor = report.Type == THYNK.Models.DisasterType.Earthquake ? "danger" :
-                                                         report.Type == THYNK.Models.DisasterType.Flood ? "primary" :
-                                                         report.Type == THYNK.Models.DisasterType.Fire ? "warning" :
-                                                         report.Type == THYNK.Models.DisasterType.Landslide ? "secondary" :
-                                                         report.Type == THYNK.Models.DisasterType.Storm ? "info" :
-                                                         report.Type == THYNK.Models.DisasterType.Accident ? "orange" : "secondary";
-                                    }
-                                    <span class="badge bg-@typeColor">@report.Type</span>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                                        <span>@report.Location</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <i class="far fa-calendar-alt text-muted me-2"></i>
-                                        <span>@report.DateReported.ToString("MMM dd, yyyy")</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    @{
-                                        var statusColor = report.Status == THYNK.Models.ReportStatus.Pending ? "warning" : 
-                                                         report.Status == THYNK.Models.ReportStatus.Verified ? "info" : 
-                                                         report.Status == THYNK.Models.ReportStatus.InProgress ? "primary" : 
-                                                         report.Status == THYNK.Models.ReportStatus.Resolved ? "success" : "danger";
-                                        
-                                        var statusIcon = report.Status == THYNK.Models.ReportStatus.Pending ? "clock" : 
-                                                        report.Status == THYNK.Models.ReportStatus.Verified ? "check-square" : 
-                                                        report.Status == THYNK.Models.ReportStatus.InProgress ? "tools" : 
-                                                        report.Status == THYNK.Models.ReportStatus.Resolved ? "check-circle" : "times-circle";
-                                    }
-                                    <div class="d-flex align-items-center">
-                                        <span class="status-icon text-@statusColor me-2">
-                                            <i class="fas fa-@statusIcon"></i>
-                                        </span>
-                                        <span class="badge bg-@statusColor">
-                                            @(report.Status == THYNK.Models.ReportStatus.InProgress ? "In Progress" : report.Status.ToString())
-                                        </span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <a href="@Url.Action("ReportDetails", "Community", new { id = report.Id })" 
-                                       class="btn btn-sm btn-info text-white">
-                                        <i class="fas fa-eye me-1"></i><span class="d-none d-lg-inline">View</span>
-                                    </a>
-                                </td>
+            <div class="reports-list">
+                <div class="table-responsive">
+                    <table class="table reports-table" id="reports-table">
+                        <thead>
+                            <tr>
+                                <th>Title & Type</th>
+                                <th>Location</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- No results message -->
-            <div id="no-results-message" class="alert alert-warning d-none">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                No reports match your search criteria.
+                        </thead>
+                        <tbody>
+                            @foreach (var report in Model)
+                            {
+                                <tr class="report-row" 
+                                    data-title="@report.Title.ToLower()" 
+                                    data-location="@report.Location.ToLower()" 
+                                    data-status="@report.Status">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            @{
+                                                var typeColor = report.Type == THYNK.Models.DisasterType.Earthquake ? "danger" :
+                                                             report.Type == THYNK.Models.DisasterType.Flood ? "primary" :
+                                                             report.Type == THYNK.Models.DisasterType.Fire ? "warning" :
+                                                             report.Type == THYNK.Models.DisasterType.Landslide ? "secondary" :
+                                                             report.Type == THYNK.Models.DisasterType.Storm ? "info" :
+                                                             report.Type == THYNK.Models.DisasterType.Accident ? "orange" : "secondary";
+                                                
+                                                var typeIcon = report.Type == THYNK.Models.DisasterType.Earthquake ? "house-damage" :
+                                                             report.Type == THYNK.Models.DisasterType.Flood ? "water" :
+                                                             report.Type == THYNK.Models.DisasterType.Fire ? "fire" :
+                                                             report.Type == THYNK.Models.DisasterType.Landslide ? "mountain" :
+                                                             report.Type == THYNK.Models.DisasterType.Storm ? "cloud-showers-heavy" :
+                                                             report.Type == THYNK.Models.DisasterType.Accident ? "car-crash" : "exclamation-triangle";
+                                            }
+                                            <div class="type-icon me-3 bg-@typeColor-subtle">
+                                                <i class="fas fa-@typeIcon text-@typeColor"></i>
+                                            </div>
+                                            <div>
+                                                <div class="report-title">@report.Title</div>
+                                                <span class="badge bg-@typeColor-subtle text-@typeColor">@report.Type</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                            <span>@report.Location</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="date-info">
+                                            <div>@report.DateReported.ToString("MMM dd, yyyy")</div>
+                                            <small class="text-muted">@report.DateReported.ToString("hh:mm tt")</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusColor = report.Status == THYNK.Models.ReportStatus.Pending ? "warning" : 
+                                                             report.Status == THYNK.Models.ReportStatus.Verified ? "info" : 
+                                                             report.Status == THYNK.Models.ReportStatus.InProgress ? "primary" : 
+                                                             report.Status == THYNK.Models.ReportStatus.Resolved ? "success" : "danger";
+                                            
+                                            var statusIcon = report.Status == THYNK.Models.ReportStatus.Pending ? "clock" : 
+                                                            report.Status == THYNK.Models.ReportStatus.Verified ? "check-square" : 
+                                                            report.Status == THYNK.Models.ReportStatus.InProgress ? "tools" : 
+                                                            report.Status == THYNK.Models.ReportStatus.Resolved ? "check-circle" : "times-circle";
+                                            
+                                            var statusText = report.Status == THYNK.Models.ReportStatus.InProgress ? "In Progress" : report.Status.ToString();
+                                        }
+                                        <div class="status-badge status-@statusColor">
+                                            <i class="fas fa-@statusIcon me-1"></i>
+                                            <span>@statusText</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="@Url.Action("ReportDetails", "Community", new { id = report.Id })" 
+                                           class="btn btn-sm btn-details">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- No results message -->
+                <div id="no-results-message" class="empty-state d-none">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h5>No Matching Reports</h5>
+                    <p class="text-muted">Try adjusting your search or filter criteria</p>
+                    <button id="reset-filters" class="btn btn-reset mt-2">
+                        <i class="fas fa-undo me-2"></i>Reset Filters
+                    </button>
+                </div>
             </div>
         }
     </div>
@@ -153,7 +178,6 @@
 
 @section Scripts {
     <script>
-        // Live search functionality
         $(document).ready(function() {
             // Function to filter the table rows
             function filterReports() {
@@ -172,8 +196,8 @@
                     const title = $(this).data('title');
                     const location = $(this).data('location');
                     const status = $(this).data('status');
-                    const $titleElement = $(this).find('td:first-child span');
-                    const $locationElement = $(this).find('td:nth-child(3) span');
+                    const $titleElement = $(this).find('.report-title');
+                    const $locationElement = $(this).find('td:nth-child(2) span');
                     
                     // Check if row matches both search term and status filter
                     const matchesSearch = searchTerm === '' || 
@@ -187,8 +211,8 @@
                         
                         // Reset and apply highlight if search term exists
                         if (searchTerm !== '') {
-                            $titleElement.html(highlightText(title, searchTerm));
-                            $locationElement.html(highlightText(location, searchTerm));
+                            $titleElement.html(highlightText($titleElement.text(), searchTerm));
+                            $locationElement.html(highlightText($locationElement.text(), searchTerm));
                         } else {
                             // Reset to original text if no search term
                             $titleElement.text(title);
@@ -203,8 +227,10 @@
                 
                 // Show/hide no results message
                 if (visibleCount === 0) {
+                    $('.reports-list .table-responsive').addClass('d-none');
                     $('#no-results-message').removeClass('d-none');
                 } else {
+                    $('.reports-list .table-responsive').removeClass('d-none');
                     $('#no-results-message').addClass('d-none');
                 }
                 
@@ -219,6 +245,14 @@
             // Clear search button
             $('#clear-search').on('click', function() {
                 $('#live-search').val('');
+                $(this).blur(); // Remove focus
+                filterReports();
+            });
+            
+            // Reset filters button
+            $('#reset-filters').on('click', function() {
+                $('#live-search').val('');
+                $('#status-filter').val('');
                 filterReports();
             });
             
@@ -230,88 +264,322 @@
 
 @section Styles {
     <style>
-        /* Status icon styling */
-        .status-icon {
-            display: inline-flex;
+        /* Base styles */
+        .reports-container {
+            background-color: #ffffff; /* Light gray background for container */
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            padding: 1.5rem;
+        }
+        
+        /* Header section */
+        .header-section {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding-bottom: 1.25rem;
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            margin-bottom: 1.5rem;
+        }
+        
+        .icon-container {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.15) 100%);
+            color: #0d6efd;
+            border-radius: 12px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
+            font-size: 1.25rem;
+            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.05);
+        }
+        
+        /* Controls section */
+        .controls-section {
+            padding: 1.25rem;
+            border-bottom: none;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-container .form-control,
+        .search-container .input-group-text,
+        .search-container .btn,
+        .status-select {
+            border-color: rgba(0, 0, 0, 0.1);
             font-size: 0.9rem;
         }
         
-        /* Table enhancements */
-        .table {
+        .search-container .form-control:focus {
+            box-shadow: none;
+            border-color: rgba(13, 110, 253, 0.25);
+        }
+        
+        .status-select {
+            min-width: 140px;
+            border-radius: 6px;
+            color: #495057;
+            border-color: rgba(0, 0, 0, 0.1);
+            background-position: right 0.5rem center;
+        }
+        
+        .results-counter {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        /* Button styles based on function */
+        .btn-create {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 2px 5px rgba(13, 110, 253, 0.2);
+            transition: all 0.2s ease;
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+        }
+        
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+            color: white;
+        }
+        
+        .btn-create:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 3px rgba(13, 110, 253, 0.2);
+        }
+        
+        .btn-details {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.08) 0%, rgba(13, 110, 253, 0.12) 100%);
+            color: #0d6efd;
+            border: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            padding: 0.375rem 0.75rem;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(13, 110, 253, 0.05);
+        }
+        
+        .btn-details:hover {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.12) 0%, rgba(13, 110, 253, 0.18) 100%);
+            color: #0d6efd;
+            box-shadow: 0 2px 5px rgba(13, 110, 253, 0.1);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #6c757d;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            padding: 0.375rem 1rem;
+            font-weight: 500;
+        }
+        
+        .btn-reset:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            color: #495057;
+            border-color: rgba(108, 117, 125, 0.3);
+        }
+        
+        /* Table styling */
+        .reports-list {
+            margin-top: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+        }
+        
+        .reports-table {
             border-collapse: separate;
             border-spacing: 0;
+            width: 100%;
+            margin-bottom: 0;
         }
         
-        .table thead th {
+        .reports-table thead th {
             font-weight: 600;
-            color: #495057;
-            border-bottom: 2px solid #dee2e6;
+            color: #4a5568;
+            font-size: 0.875rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+            background: linear-gradient(180deg, #f8f9fa 0%, #f1f3f5 100%);
         }
         
-        .table tbody tr {
-            transition: background-color 0.15s ease;
+        .reports-table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
-        .table tbody tr:hover {
-            background-color: #f8f9fa;
+        .reports-table tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.03);
         }
         
-        /* Search box styling */
-        #live-search:focus {
-            box-shadow: none;
-            border-color: #ced4da;
+        .reports-table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
         }
         
-        .search-filter-group {
-            flex-wrap: wrap;
+        /* Report row elements */
+        .type-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
         }
         
-        /* Custom badge color */
-        .bg-orange {
-            background-color: #fd7e14;
-            color: white;
+        .report-title {
+            font-weight: 500;
+            color: #212529;
+            margin-bottom: 0.25rem;
+            line-height: 1.3;
+        }
+        
+        .date-info {
+            line-height: 1.3;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            line-height: 1;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .status-primary {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.15) 100%);
+            color: #0d6efd;
+        }
+        
+        .status-success {
+            background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.15) 100%);
+            color: #198754;
+        }
+        
+        .status-warning {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.15) 100%);
+            color: #856404;
+        }
+        
+        .status-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.15) 100%);
+            color: #dc3545;
+        }
+        
+        .status-info {
+            background: linear-gradient(135deg, rgba(13, 202, 240, 0.1) 0%, rgba(13, 202, 240, 0.15) 100%);
+            color: #0dcaf0;
+        }
+        
+        /* Type badge custom colors */
+        .bg-danger-subtle {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.08) 0%, rgba(220, 53, 69, 0.12) 100%);
+            box-shadow: 0 1px 3px rgba(220, 53, 69, 0.05);
+        }
+        
+        .bg-primary-subtle {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.08) 0%, rgba(13, 110, 253, 0.12) 100%);
+            box-shadow: 0 1px 3px rgba(13, 110, 253, 0.05);
+        }
+        
+        .bg-warning-subtle {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.08) 0%, rgba(255, 193, 7, 0.12) 100%);
+            box-shadow: 0 1px 3px rgba(255, 193, 7, 0.05);
+        }
+        
+        .bg-secondary-subtle {
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.08) 0%, rgba(108, 117, 125, 0.12) 100%);
+            box-shadow: 0 1px 3px rgba(108, 117, 125, 0.05);
+        }
+        
+        .bg-info-subtle {
+            background: linear-gradient(135deg, rgba(13, 202, 240, 0.08) 0%, rgba(13, 202, 240, 0.12) 100%);
+            box-shadow: 0 1px 3px rgba(13, 202, 240, 0.05);
+        }
+        
+        .bg-orange-subtle {
+            background: linear-gradient(135deg, rgba(253, 126, 20, 0.08) 0%, rgba(253, 126, 20, 0.12) 100%);
+            box-shadow: 0 1px 3px rgba(253, 126, 20, 0.05);
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+        
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.25rem;
+            background: linear-gradient(135deg, rgba(108, 117, 125, 0.08) 0%, rgba(108, 117, 125, 0.12) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: #6c757d;
+            box-shadow: 0 2px 5px rgba(108, 117, 125, 0.08);
+        }
+        
+        /* Media queries */
+        @@media (max-width: 992px) {
+            .reports-table {
+                min-width: 800px;
+            }
+        }
+        
+        @@media (max-width: 767.98px) {
+            .reports-container {
+                padding: 1rem;
+            }
+            
+            .header-section {
+                padding-bottom: 1rem;
+            }
+            
+            .icon-container {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+            
+            .reports-table tbody td {
+                padding: 0.75rem;
+            }
+            
+            .type-icon {
+                width: 32px;
+                height: 32px;
+            }
         }
         
         /* Search result highlight */
         .highlight {
-            background-color: #fff3cd;
+            background-color: rgba(255, 193, 7, 0.3);
             padding: 0 2px;
             border-radius: 2px;
-            font-weight: bold;
-            color: #212529;
-        }
-        
-        /* Clear button styling */
-        #clear-search {
-            cursor: pointer;
-            background: transparent;
-            color: #6c757d;
-        }
-        
-        #clear-search:hover {
-            color: #dc3545;
-        }
-        
-        /* Results counter */
-        #result-counter {
-            font-size: 0.875rem;
-        }
-        
-        /* Responsive adjustments */
-        @@media (max-width: 767.98px) {
-            .search-filter-group {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .search-filter-group .input-group,
-            .search-filter-group select {
-                width: 100% !important;
-            }
+            font-weight: 500;
         }
     </style>
 } 

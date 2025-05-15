@@ -26,6 +26,12 @@
                         secondaryDark: '#d6cfbf',
                         secondaryLight: '#f4f0e5',
                         accent: '#F5F5F5',
+                        sidebarBg: '#2C3E50',
+                        sidebarLight: '#34495E',
+                        sidebarAccent: '#3498DB',
+                        sidebarText: '#ECF0F1',
+                        sidebarHover: '#1ABC9C',
+                        sidebarHoverLight: '#2CD3AF',
                         danger: '#b56357',
                         success: '#6a8d73',
                         warning: '#e0a458'
@@ -49,6 +55,13 @@
             --accent: #F5F5F5;
             --accent-rgb: 245, 245, 245;
             
+            --sidebar-bg: #2C3E50;
+            --sidebar-light: #34495E;
+            --sidebar-accent: #3498DB;
+            --sidebar-text: #ECF0F1;
+            --sidebar-hover: #1ABC9C;
+            --sidebar-hover-light: #2CD3AF;
+            
             --success: #6a8d73;
             --warning: #e0a458;
             --danger: #b56357;
@@ -70,7 +83,7 @@
         
         .sidebar {
             @@apply fixed top-0 left-0 h-screen text-white shadow-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col;
-            background-color: var(--primary-dark);
+            background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-light) 100%);
             z-index: 50;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
@@ -84,7 +97,7 @@
             @@apply overflow-y-auto px-4 py-1;
             position: absolute;
             top: 140px;
-            bottom: 100px;
+            bottom: 120px;
             left: 0;
             right: 0;
             scrollbar-width: thin;
@@ -101,12 +114,13 @@
         }
         
         .sidebar-nav::-webkit-scrollbar-thumb {
-            @@apply bg-primaryLight/30 rounded-full;
+            @@apply rounded-full;
+            background-color: rgba(236, 240, 241, 0.3);
         }
         
         /* Only show scrollbar when hovering over the navigation area */
         .sidebar-nav:hover::-webkit-scrollbar-thumb {
-            @@apply bg-primaryLight/50;
+            background-color: rgba(236, 240, 241, 0.5);
         }
         
         .sidebar-collapsed {
@@ -122,18 +136,17 @@
             transition: all 0.3s ease;
             border-radius: 8px;
             margin-bottom: 2px;
-            color: var(--accent);
+            color: var(--sidebar-text);
         }
         
         .nav-item:hover {
-            background-color: var(--primary);
+            background-color: var(--sidebar-hover-light);
             transform: translateX(3px);
-            color: #f4f0e5 !important;
-
+            color: white !important;
         }
         
         .nav-item.active {
-            background-color: var(--primary);
+            background-color: var(--sidebar-hover);
             position: relative;
         }
         
@@ -144,18 +157,19 @@
             top: 0;
             bottom: 0;
             width: 3px;
-            background: linear-gradient(180deg, var(--secondary), var(--secondary-dark));
+            background: white;
             border-radius: 0 2px 2px 0;
         }
         
         .nav-icon {
             @@apply text-lg mr-3 flex items-center justify-center w-8;
-            color: var(--accent);
+            color: var(--sidebar-text);
             transition: all 0.3s ease;
         }
         
         .nav-item:hover .nav-icon {
             transform: scale(1.1);
+            color: white;
         }
         
         .nav-text {
@@ -164,13 +178,13 @@
         
         .hamburger {
             @@apply fixed top-4 left-4 flex flex-col justify-center items-center w-10 h-10 text-white rounded-md shadow-md transition-all duration-200 focus:outline-none;
-            background-color: var(--primary-dark);
+            background-color: var(--sidebar-bg);
             z-index: 60;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         
         .hamburger:hover {
-            background-color: var(--primary);
+            background-color: var(--sidebar-light);
             transform: scale(1.05);
         }
         
@@ -241,8 +255,8 @@
         /* User profile dropdown */
         .profile-section {
             @@apply pt-2 px-4 pb-3;
-            border-top: 1px solid rgba(245, 245, 245, 0.1);
-            background-color: var(--primary-dark);
+            border-top: 1px solid var(--sidebar-light);
+            background: var(--sidebar-bg);
             position: absolute;
             bottom: 0;
             left: 0;
@@ -255,7 +269,9 @@
         }
         
         .profile-avatar {
-            @@apply w-8 h-8 rounded-full bg-accent text-primary flex items-center justify-center font-bold text-sm flex-shrink-0;
+            @@apply w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0;
+            background-color:#1ABC9C;
+            color: white;
             transition: all 0.3s ease;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
@@ -267,13 +283,13 @@
         .profile-link {
             @@apply flex items-center py-1 px-3 text-sm rounded transition-colors w-full;
             transition: all 0.3s ease;
-            color: var(--accent);
+            color: var(--sidebar-text);
         }
         
         .profile-link:hover {
             transform: translateX(3px);
-            background-color: var(--primary);
-            color: #f4f0e5;
+            background-color: var(--sidebar-hover);
+            color: white;
         }
         
         .profile-link i {
@@ -671,19 +687,19 @@
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="bg-secondary">
+<body class="bg-[#FAF7F0]">
     <!-- Hamburger Menu Button -->
-    <button id="hamburger" class="hamburger">
+    <button id="hamburger" class="hamburger md:hidden">
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
     </button>
 
     <!-- Header Bar -->
-    <header class="fixed top-0 left-0 right-0 shadow-md z-20">
+    <header class="fixed top-0 left-0 right-0 shadow-md z-20 bg-white">
         <div class="container mx-auto relative z-10">
             <div class="flex items-center justify-between px-4 py-3">
-                <div class="ml-12 flex items-center">
+                <div class="md:ml-64 ml-12 flex items-center transition-all duration-300">
                     <div class="relative flex items-center header-title-container">
                         <h2 class="text-primary text-xl font-semibold relative z-10">@ViewData["Title"]</h2>
                         <div class="ml-2 h-6 w-1 bg-primary rounded-full opacity-30"></div>
@@ -695,10 +711,10 @@
                     @if (User.Identity.IsAuthenticated)
                     {
                         <div class="hidden md:flex items-center border-l border-gray-200 pl-3 user-dropdown-container">
-                            <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center mr-2 shadow-sm">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2 shadow-sm" style="background-color: #1ABC9C; color: white;">
                                 @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
                             </div>
-                            <span class="text-primary text-sm cursor-pointer user-dropdown-trigger">@User.Identity.Name</span>
+                            <span class="text-primary text-sm cursor-pointer user-dropdown-trigger">@(User.Identity != null ? User.Identity.Name : "User")</span>
                             
                             <!-- Dropdown Menu -->
                             <div class="user-dropdown-menu">
@@ -706,13 +722,9 @@
                                     <a href="/Identity/Account/Manage" class="user-dropdown-item">
                                         <i class="fas fa-user-cog me-2"></i>Manage Account
                                     </a>
-                                    <form class="w-full" action="/Identity/Account/Logout" method="post">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
-                                        <button type="submit" class="user-dropdown-item w-full text-left">
+                                    <button type="button" data-logout-trigger class="user-dropdown-item w-full text-left">
                                             <i class="fas fa-sign-out-alt me-2"></i>Logout
                                         </button>
-                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -729,69 +741,80 @@
     <div id="overlay" class="overlay"></div>
     
     <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar sidebar-collapsed">
+    <div class="sidebar sidebar-collapsed md:sidebar-expanded" id="sidebar">
         <div class="sidebar-content">
             <!-- Fixed Header -->
             <div class="pt-12 px-4">
                 <div class="text-center mb-3">
-                    <h3 class="font-bold text-xl">THYNK</h3>
-                    <p class="text-xs opacity-80">Community Portal</p>
+                    <h3 class="font-bold text-xl text-white">THYNK</h3>
+                    <p class="text-xs opacity-80 text-white">Community Portal</p>
                 </div>
-                <hr class="border-primaryLight/30 my-2" />
+                <hr class="border-sidebar-light my-2" />
             </div>
             
             <!-- Scrollable Navigation Area -->
             <div class="sidebar-nav">
                 <div class="space-y-1">
-                    <a href="@Url.Action("CommunityFeed", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" || ViewContext.RouteData.Values["Action"].ToString() == "PostUpdate" ? "active" : "")">
+                    <a href="@Url.Action("CommunityFeed", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" || ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "PostUpdate" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-users"></i></span>
                         <span class="nav-text">Community Feed</span>
                     </a>
                     
-                    <a href="@Url.Action("SubmitReport", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "SubmitReport" ? "active" : "")">
+                    <a href="@Url.Action("EducationalResources", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "EducationalResources" || ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "ResourceDetails" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-book"></i></span>
+                        <span class="nav-text">Resource Library</span>
+                    </a>
+                    
+                    <a href="@Url.Action("SubmitReport", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "SubmitReport" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-exclamation-triangle"></i></span>
                         <span class="nav-text">Report Incident</span>
                     </a>
                     
-                    <a href="@Url.Action("EducationalResources", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "EducationalResources" || ViewContext.RouteData.Values["Action"].ToString() == "ResourceDetails" ? "active" : "")">
-                        <span class="nav-icon"><i class="fas fa-book"></i></span>
-                        <span class="nav-text">Educational Resources</span>
-                    </a>
-                    
-                    <a href="@Url.Action("Alerts", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
+                    <a href="@Url.Action("Alerts", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-bell"></i></span>
                         <span class="nav-text">Alerts</span>
                     </a>
                     
-                    <a href="@Url.Action("IncidentMap", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
+                    <a href="@Url.Action("IncidentMap", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
                         <span class="nav-text">Incident Map</span>
                     </a>
                     
-                    <a href="@Url.Action("MyReports", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "MyReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
+                    <a href="@Url.Action("MyReports", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "MyReports" || ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
                         <span class="nav-text">My Reports</span>
                     </a>
                     
-                    <a href="@Url.Action("Index", "Support")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
+                    <a href="@Url.Action("Index", "Support")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
                         <span class="nav-text">Support & FAQs</span>
                     </a>
+                    
+                
                 </div>
             </div>
             
             <!-- User Profile Section -->
-            <div class="profile-section">
+            <div class="sidebar-footer absolute bottom-0 left-0 right-0 p-4 border-t border-primary/20">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <div class="profile-info">
-                        <div class="profile-avatar">
-                            @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
+                    <div class="user-info flex items-center">
+                        <a href="/Identity/Account/Manage" class="flex items-center">
+                            <div class="avatar-circle w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+                                @if (!string.IsNullOrEmpty(User.FindFirst("ProfilePhotoUrl")?.Value))
+                                {
+                                    <img src="@User.FindFirst("ProfilePhotoUrl")?.Value" alt="Profile" class="w-full h-full object-cover rounded-full">
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user"></i>
+                                }
                         </div>
                         <div class="overflow-hidden">
-                            <p class="text-sm font-medium truncate">@User.Identity.Name</p>
-                            <p class="text-xs text-gray-300">Community User</p>
+                            <p class="text-sm font-medium truncate text-white">@User.Identity.Name</p>
+                            <p class="text-xs text-white opacity-70">Community User</p>
                         </div>
+                        </a>
                     </div>
                     <div class="profile-actions">
                         @if (User.Identity != null)
@@ -799,13 +822,9 @@
                             <a href="/Identity/Account/Manage" class="profile-link w-full">
                                 <i class="fas fa-user-cog"></i> Manage Account
                             </a>
-                            <form class="form-inline w-full" action="/Identity/Account/Logout" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
-                                <button type="submit" class="profile-link w-full text-left">
+                            <button type="button" data-logout-trigger class="profile-link w-full text-left">
                                     <i class="fas fa-sign-out-alt"></i> Logout
                                 </button>
-                            </form>
                         }
                     </div>
                 }
@@ -822,18 +841,18 @@
                 }
             </div>
         </div>
-    </nav>
+    </div>
     
     <!-- Main Content -->
-    <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300">
+    <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64">
 
        
         <div class="max-w-7xl mx-auto">
             <!-- Notifications -->
             <div id="notifications" class="space-y-3 mb-6">
-                @if (TempData["SuccessMessage"] != null)
+                @if (TempData["SuccessMessage"] != null && !TempData.ContainsKey("ReportSubmitted"))
                 {
-                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md" role="alert">
+                    @* <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md" role="alert">
                         <div class="flex items-center">
                             <i class="fas fa-check-circle mr-2"></i>
                             <p>@TempData["SuccessMessage"]</p>
@@ -841,7 +860,7 @@
                         <button type="button" class="float-right text-green-700" onclick="this.parentElement.remove()">
                             <i class="fas fa-times"></i>
                         </button>
-                    </div>
+                    </div> *@
                 }
                 
                 @if (TempData["WarningMessage"] != null)
@@ -896,8 +915,8 @@
                 }
             </div>
             
-            <!-- Content -->
-            <div class="bg-white rounded-lg shadow-md p-3 md:p-3 p-0">
+            <!-- Page Content -->
+            <div class="bg-white rounded-lg shadow-md p-6">
                 @RenderBody()
             </div>
         </div>
@@ -905,11 +924,11 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Mapbox JS -->
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
     <script>
-        // Sidebar toggle
+        // Toggle sidebar
+        document.addEventListener('DOMContentLoaded', function() {
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
@@ -923,12 +942,6 @@
                 el.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`;
                 el.style.opacity = '0';
             });
-            
-            // Add pulse effect to active sidebar item
-            const activeNavItem = document.querySelector('.nav-item.active .nav-icon');
-            if (activeNavItem) {
-                activeNavItem.style.animation = 'pulse 2s infinite';
-            }
         }
         
         // Responsive sidebar height adjustments
@@ -947,76 +960,211 @@
             }
         }
         
-        // Call once on load
-        adjustSidebarHeight();
-        addEntranceAnimations();
-        
-        // Update on resize
-        window.addEventListener('resize', adjustSidebarHeight);
-        
-        // Check for saved state in localStorage
-        const sidebarState = localStorage.getItem('sidebarState') || 'collapsed';
-        
-        if (sidebarState === 'expanded') {
-            sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-            hamburger.classList.add('active');
-            overlay.classList.add('active');
-            
-            // Only adjust margin on larger screens
-            if (window.innerWidth >= 768) {
-                mainContent.classList.add('md:ml-64');
-            }
-        }
-        
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            
-            if (sidebar.classList.contains('sidebar-collapsed')) {
-                sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-                overlay.classList.add('active');
+            // Toggle sidebar function
+            function toggleSidebar() {
+                hamburger.classList.toggle('active');
                 
-                // Only adjust margin on larger screens
-                if (window.innerWidth >= 768) {
-                    mainContent.classList.add('md:ml-64');
+                if (sidebar.classList.contains('sidebar-collapsed')) {
+            sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+            overlay.classList.add('active');
+                    localStorage.setItem('sidebarState', 'expanded');
+                } else {
+                    sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+                    overlay.classList.remove('active');
+                    localStorage.setItem('sidebarState', 'collapsed');
                 }
                 
-                localStorage.setItem('sidebarState', 'expanded');
+                // Adjust main content margin based on screen size
+            if (window.innerWidth >= 768) {
+                    mainContent.classList.toggle('md:ml-64');
+                }
+            }
+            
+            // Handle responsive sidebar behavior
+            function handleSidebarResponsiveness() {
+                if (window.innerWidth >= 768) {
+                    // Desktop: Always show sidebar and adjust main content
+                    sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+                    mainContent.classList.add('md:ml-64');
+                    overlay.classList.remove('active');
+                } else {
+                    // Mobile: Check saved state
+                    const sidebarState = localStorage.getItem('sidebarState') || 'collapsed';
+                
+                    if (sidebarState === 'expanded') {
+                        sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+                        hamburger.classList.add('active');
+                        overlay.classList.add('active');
             } else {
                 sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+                        hamburger.classList.remove('active');
                 overlay.classList.remove('active');
+                    }
+                    
+                    // Always remove margin adjustment on mobile
                 mainContent.classList.remove('md:ml-64');
-                localStorage.setItem('sidebarState', 'collapsed');
+                }
             }
-        });
-        
-        // Close sidebar when clicking overlay
-        overlay.addEventListener('click', () => {
+            
+            // Initialize sidebar state based on screen size
+            function initSidebar() {
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.add('sidebar-expanded');
+                    sidebar.classList.remove('sidebar-collapsed');
+                    mainContent.classList.add('md:ml-64');
+                } else {
             sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
-            hamburger.classList.remove('active');
             overlay.classList.remove('active');
-            mainContent.classList.remove('md:ml-64');
             localStorage.setItem('sidebarState', 'collapsed');
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth < 768 && sidebar.classList.contains('sidebar-expanded')) {
-                // Remove margin on smaller screens but keep sidebar open
-                mainContent.classList.remove('md:ml-64');
-            } else if (window.innerWidth >= 768 && sidebar.classList.contains('sidebar-expanded')) {
-                // Add margin on larger screens when sidebar is open
-                mainContent.classList.add('md:ml-64');
+                }
             }
-        });
-        
-        // Close alert messages after 5 seconds
+            
+            // Call once on load
+            adjustSidebarHeight();
+            addEntranceAnimations();
+            handleSidebarResponsiveness();
+            
+            // Update on resize
+        window.addEventListener('resize', () => {
+                adjustSidebarHeight();
+                handleSidebarResponsiveness();
+            });
+            
+            // Add event listeners
+            hamburger.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+            
+            // Auto-close alert messages after 5 seconds
         setTimeout(() => {
             document.querySelectorAll('[role="alert"]').forEach(alert => {
                 alert.classList.add('opacity-0', 'transition-opacity', 'duration-500');
                 setTimeout(() => alert.remove(), 500);
             });
         }, 5000);
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
+    
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-lg shadow-lg border-0">
+                <div class="modal-header border-bottom border-gray-100">
+                    <h5 class="modal-title font-medium" style="color: var(--sidebar-bg);" id="logoutConfirmModalLabel">
+                        Confirm Logout
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="text-dark-alt mb-0">Are you sure you want to log out of your account?</p>
+                </div>
+                <div class="modal-footer border-top border-gray-100">
+                    <button type="button" class="btn rounded-pill px-4 text-white" style="background-color: var(--success);" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" id="confirmLogoutBtn" class="btn rounded-pill px-4 text-white" style="background-color: var(--danger);">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Logout Form (Hidden) -->
+    <form id="logoutForm" class="d-none" action="/Identity/Account/Logout" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
+    </form>
+    
+    <!-- Report Submission Success Modal -->
+    <div class="modal fade" id="reportSubmissionModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="reportSubmissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title" id="reportSubmissionModalLabel">
+                        <i class="fas fa-check-circle me-2"></i>Report Submitted Successfully
+                    </h5>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="success-icon bg-success bg-opacity-10 text-success mx-auto mb-4" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-check-circle fa-3x"></i>
+                        </div>
+                        
+                        <h4 class="mt-4 mb-2 text-success">Thank You!</h4>
+                        <p class="mb-3">Your incident report has been successfully submitted.</p>
+                        <p class="small text-muted">Our team will review your report and take appropriate action.</p>
+                        
+                        <div class="report-info mt-4 text-start bg-light p-3 rounded">
+                            @if (TempData["ReportId"] != null)
+                            {
+                                <p class="mb-2"><strong>Report ID:</strong> <span id="reportIdValue">@TempData["ReportId"]</span></p>
+                            }
+                            @if (TempData["ReportTitle"] != null)
+                            {
+                                <p class="mb-2"><strong>Title:</strong> @TempData["ReportTitle"]</p>
+                            }
+                            @if (TempData["ReportType"] != null)
+                            {
+                                <p class="mb-0"><strong>Type:</strong> @TempData["ReportType"]</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pt-0">
+                    <a href="@Url.Action("MyReports", "Community")" class="btn btn-outline-secondary">
+                        <i class="fas fa-clipboard-list me-2"></i>View My Reports
+                    </a>
+                    <a href="@Url.Action("CommunityFeed", "Community")" class="btn btn-success px-4">
+                        <i class="fas fa-home me-2"></i>Return to Feed
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Logout confirmation handling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for report submission
+            @if (TempData.ContainsKey("ReportSubmitted") && (bool)TempData["ReportSubmitted"] == true)
+            {
+                <text>
+                const reportModal = new bootstrap.Modal(document.getElementById('reportSubmissionModal'));
+                reportModal.show();
+                </text>
+            }
+            
+            // Get all logout buttons
+            const logoutBtns = document.querySelectorAll('[data-logout-trigger]');
+            const logoutModal = document.getElementById('logoutConfirmModal');
+            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+            const logoutForm = document.getElementById('logoutForm');
+            
+            // Initialize Bootstrap modal
+            let bootstrapModal = null;
+            if (typeof bootstrap !== 'undefined') {
+                bootstrapModal = new bootstrap.Modal(logoutModal);
+            }
+            
+            // Add click event to all logout buttons
+            logoutBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (bootstrapModal) {
+                        bootstrapModal.show();
+                    } else {
+                        // Fallback if bootstrap modal isn't available
+                        logoutForm.submit();
+                    }
+                });
+            });
+            
+            // Confirm logout button event
+            confirmLogoutBtn.addEventListener('click', function() {
+                logoutForm.submit();
+            });
+        });
+    </script>
 </body>
 </html> 

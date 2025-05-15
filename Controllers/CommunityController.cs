@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using THYNK.Hubs;
 using Microsoft.AspNetCore.Identity;
+using THYNK.Services;
 
 namespace THYNK.Controllers
 {
@@ -30,11 +31,15 @@ namespace THYNK.Controllers
             UserManager<ApplicationUser> userManager,
             IWebHostEnvironment webHostEnvironment,
             IHubContext<AdminHub> hubContext)
+        private readonly PdfService _pdfService;
+
+        public CommunityController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, PdfService pdfService)
         {
             _context = context;
             _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
             _hubContext = hubContext;
+            _pdfService = pdfService;
         }
 
         // Dashboard main page
@@ -169,8 +174,14 @@ namespace THYNK.Controllers
                     // Send real-time update for Recent Reports
                     await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
 
+                    // Set report submission success data for the modal
+                    TempData["ReportSubmitted"] = true;
+                    TempData["ReportId"] = report.Id;
+                    TempData["ReportTitle"] = report.Title;
+                    TempData["ReportType"] = report.Type.ToString();
                     TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
-                    return RedirectToAction(nameof(Dashboard));
+                    
+                    return RedirectToAction(nameof(CommunityFeed));
                 }
                 else
                 {
@@ -332,6 +343,7 @@ namespace THYNK.Controllers
         public async Task<IActionResult> EducationalResources()
         {
             var resources = await _context.EducationalResources
+                .Where(r => r.ApprovalStatus == ApprovalStatus.Approved)
                 .OrderBy(r => r.Title)
                 .ToListAsync();
                 
@@ -342,7 +354,7 @@ namespace THYNK.Controllers
         public async Task<IActionResult> ResourceDetails(int id)
         {
             var resource = await _context.EducationalResources
-                .FirstOrDefaultAsync(r => r.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id && r.ApprovalStatus == ApprovalStatus.Approved);
                 
             if (resource == null)
             {
@@ -350,6 +362,37 @@ namespace THYNK.Controllers
             }
             
             return View(resource);
+        }
+        
+        // Download educational resource as PDF
+        public async Task<IActionResult> DownloadResourcePdf(int id)
+        {
+            var resource = await _context.EducationalResources
+                .Include(r => r.CreatedBy)
+                .FirstOrDefaultAsync(r => r.Id == id && r.ApprovalStatus == ApprovalStatus.Approved);
+                
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            try
+            {
+                byte[] pdfBytes = _pdfService.GenerateResourcePdf(resource);
+                
+                // Generate a clean filename
+                string safeFileName = resource.Title.Replace(" ", "_").Replace("/", "_").Replace("\\", "_");
+                string fileName = $"{safeFileName}_{DateTime.Now:yyyyMMdd}.pdf";
+                
+                // Return the PDF as a file download
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                // Log error and redirect back to resource details with error
+                TempData["ErrorMessage"] = "Error generating PDF: " + ex.Message;
+                return RedirectToAction(nameof(ResourceDetails), new { id });
+            }
         }
         
         // View alerts

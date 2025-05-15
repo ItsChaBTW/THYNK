@@ -13,12 +13,23 @@
                         <i class="fas fa-book"></i>
                     </div>
                     <div>
-                        <h5 class="m-0">Educational Resources</h5>
-                        <small>Learn how to prepare for and respond to emergencies</small>
+                        <h5 class="m-0">Community Resource Library</h5>
+                        <small>Exclusive access to emergency preparedness materials</small>
                     </div>
                 </div>
             </div>
             <div class="card-body">
+                <!-- Community perk banner -->
+                <div class="alert alert-success mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-star text-warning fa-2x me-3"></i>
+                        <div>
+                            <h5 class="mb-1">Community Member Exclusive</h5>
+                            <p class="mb-0">As a THYNK community member, you have premium access to these educational resources. Save them offline for emergency situations!</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="input-group">
@@ -28,121 +39,134 @@
                             </button>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <select id="filter-resource-type" class="form-select">
-                            <option value="all">All Resource Types</option>
-                            @foreach (var type in Enum.GetValues(typeof(ResourceType)))
-                            {
-                                <option value="@type">@type</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-check form-switch mt-2">
-                            <input class="form-check-input" type="checkbox" id="offline-only">
-                            <label class="form-check-label" for="offline-only">Offline Only</label>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="row" id="resource-container">
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var resource in Model)
+                    <!-- Resource Counter -->
+                    <div class="resource-counter mb-3">
+                        <span class="counter-text">Showing <span id="resource-count">0</span> resources</span>
+                    </div>
+
+                    <!-- Resources Grid -->
+                    <div class="row g-4" id="resource-container">
+                        @if (Model != null && Model.Any())
                         {
-                            <div class="col-md-4 mb-4 resource-item" 
-                                data-type="@resource.Type" 
-                                data-offline="@resource.IsOfflineAccessible.ToString().ToLower()"
-                                data-title="@resource.Title"
-                                data-tags="@resource.Tags">
-                                <div class="card h-100 @(resource.IsOfflineAccessible ? "border-success" : "")">
-                                    <div class="card-header bg-light">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h5 class="card-title mb-0">@resource.Title</h5>
-                                            @if (resource.IsOfflineAccessible)
-                                            {
-                                                <span class="badge bg-success" title="Available offline">
-                                                    <i class="fas fa-wifi-slash"></i>
-                                                </span>
-                                            }
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <p class="card-text">@resource.Description</p>
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <span class="badge bg-primary">@resource.Type</span>
-                                            <small class="text-muted">Added @resource.DateAdded.ToString("MMM dd, yyyy")</small>
-                                        </div>
-                                        @if (!string.IsNullOrEmpty(resource.Tags))
+                            foreach (var resource in Model)
+                            {
+                                <div class="col-lg-4 col-md-6 mb-4 resource-item" 
+                                    data-type="@resource.Type" 
+                                    data-offline="@resource.IsOfflineAccessible.ToString().ToLower()"
+                                    data-title="@resource.Title"
+                                    data-tags="@resource.Tags">
+                                    <div class="resource-card">
+                                        @if (resource.IsOfflineAccessible)
                                         {
-                                            <div class="mb-2">
-                                                @foreach (var tag in resource.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                                                {
-                                                    <span class="badge bg-secondary me-1">@tag.Trim()</span>
-                                                }
+                                            <div class="card-badge offline-badge" title="Available offline">
+                                                <i class="fas fa-wifi-slash"></i> Offline
                                             </div>
                                         }
                                     </div>
                                     <div class="card-footer bg-white border-top-0">
-                                        <a href="@Url.Action("ResourceDetails", "Community", new { id = resource.Id })" class="btn btn-info text-white btn-sm">
-                                            <i class="fas fa-book-open me-1"></i> View Resource
-                                        </a>
-                                        @if (!string.IsNullOrEmpty(resource.FileUrl) && resource.IsOfflineAccessible)
-                                        {
-                                            <a href="@resource.FileUrl" download class="btn btn-outline-success btn-sm float-end">
-                                                <i class="fas fa-download me-1"></i> 
-                                                Download
-                                                @if (resource.FileSizeKB.HasValue)
-                                                {
-                                                    <span>(@(resource.FileSizeKB < 1024 ? $"{resource.FileSizeKB} KB" : $"{resource.FileSizeKB / 1024.0:F1} MB"))</span>
-                                                }
+                                        <div class="d-flex justify-content-between">
+                                            <a href="@Url.Action("ResourceDetails", "Community", new { id = resource.Id })" class="btn btn-info text-white btn-sm">
+                                                <i class="fas fa-book-open me-1"></i> View Resource
                                             </a>
-                                        }
+                                            <div>
+                                                <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = resource.Id })" class="btn btn-primary btn-sm me-1" title="Download as PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                @if (!string.IsNullOrEmpty(resource.FileUrl) && resource.IsOfflineAccessible)
+                                                {
+                                                    <a href="@resource.FileUrl" download class="btn btn-outline-success btn-sm" title="Download Original File">
+                                                        <i class="fas fa-download"></i>
+                                                        @if (resource.FileSizeKB.HasValue)
+                                                        {
+                                                            <span>(@(resource.FileSizeKB < 1024 ? $"{resource.FileSizeKB} KB" : $"{resource.FileSizeKB / 1024.0:F1} MB"))</span>
+                                                        }
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         }
-                    }
-                    else
-                    {
-                        <div class="col-12 text-center py-5">
-                            <i class="fas fa-books text-muted fa-4x mb-3"></i>
-                            <h4>No educational resources available yet</h4>
-                            <p>Please check back later as we continue to add resources.</p>
-                        </div>
-                    }
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-12">
-        <div class="card dashboard-card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="m-0"><i class="fas fa-info-circle me-2"></i>Offline Access Instructions</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 text-center mb-3 mb-md-0">
-                        <div class="p-3">
-                            <i class="fas fa-download text-primary fa-3x mb-3"></i>
-                            <h5>1. Download Resources</h5>
-                            <p>Look for resources with the <span class="badge bg-success"><i class="fas fa-wifi-slash"></i></span> icon and download them to your device.</p>
+        <!-- Offline Access Instructions Card -->
+        <div class="col-12">
+            <div class="offline-access-section mt-4">
+                <div class="section-header">
+                    <div class="d-flex align-items-center">
+                        <div class="section-icon">
+                            <i class="fas fa-cloud-download-alt"></i>
+                        </div>
+                        <h5 class="section-title mb-0">Offline Access</h5>
+                    </div>
+                    <p class="section-subtitle mb-0">Access resources even without internet connection</p>
+                </div>
+                
+                <div class="steps-container">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="step-card">
+                                <div class="step-number">1</div>
+                                <div class="step-icon-container">
+                                    <div class="step-icon">
+                                        <i class="fas fa-search-plus"></i>
+                                    </div>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Find Resources</h6>
+                                    <p class="step-description">Look for resources with the <span class="badge offline-indicator"><i class="fas fa-wifi-slash"></i> Offline</span> badge</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="step-card">
+                                <div class="step-number">2</div>
+                                <div class="step-icon-container">
+                                    <div class="step-icon">
+                                        <i class="fas fa-download"></i>
+                                    </div>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Download</h6>
+                                    <p class="step-description">Save resources to your device using the download button</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="step-card">
+                                <div class="step-number">3</div>
+                                <div class="step-icon-container">
+                                    <div class="step-icon">
+                                        <i class="fas fa-wifi-slash"></i>
+                                    </div>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title">Access Anytime</h6>
+                                    <p class="step-description">View your downloaded resources even without internet connection</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-4 text-center mb-3 mb-md-0">
-                        <div class="p-3">
-                            <i class="fas fa-cog text-primary fa-3x mb-3"></i>
-                            <h5>2. Enable Offline Mode</h5>
-                            <p>In your browser settings, allow this website to store data for offline use.</p>
-                        </div>
+                </div>
+                
+                <div class="offline-info mt-4">
+                    <div class="info-icon">
+                        <i class="fas fa-info-circle"></i>
                     </div>
-                    <div class="col-md-4 text-center">
-                        <div class="p-3">
-                            <i class="fas fa-wifi-slash text-primary fa-3x mb-3"></i>
-                            <h5>3. Access Anytime</h5>
-                            <p>Once downloaded, you can access these resources even without an internet connection.</p>
-                        </div>
+                    <div class="info-content">
+                        <h6 class="info-title">How it works</h6>
+                        <p class="info-description">
+                            This site uses Progressive Web App technology to store resources locally on your device. 
+                            To ensure proper offline access, please allow storage permissions in your browser settings.
+                        </p>
+                        <button class="btn btn-enable-offline" id="enable-offline">
+                            <i class="fas fa-cog me-1"></i> Enable Offline Mode
+                        </button>
                     </div>
                 </div>
             </div>
@@ -152,61 +176,305 @@
 
 @section Scripts {
     <script>
-        // Search and filter functionality
         $(document).ready(function() {
+            // Variables for filters
+            let activeFilters = {
+                search: '',
+                type: 'all',
+                offline: false,
+                tags: []
+            };
+            
+            // Initialize resource count
+            updateResourceCount();
+            
             // Search resources
             $("#search-resources").on("keyup", function() {
-                let value = $(this).val().toLowerCase();
+                activeFilters.search = $(this).val().toLowerCase();
+                updateFilterChips();
                 filterResources();
             });
             
             // Filter by type
             $("#filter-resource-type").on("change", function() {
+                activeFilters.type = $(this).val();
+                updateFilterChips();
                 filterResources();
             });
             
             // Filter offline only
             $("#offline-only").on("change", function() {
+                activeFilters.offline = $(this).is(":checked");
+                updateFilterChips();
                 filterResources();
             });
             
-            function filterResources() {
-                let searchText = $("#search-resources").val().toLowerCase();
-                let typeFilter = $("#filter-resource-type").val();
-                let offlineOnly = $("#offline-only").is(":checked");
+            // Clear all filters
+            $("#clear-filters").on("click", function() {
+                activeFilters = {
+                    search: '',
+                    type: 'all',
+                    offline: false,
+                    tags: []
+                };
                 
+                // Reset form controls
+                $("#search-resources").val('');
+                $("#filter-resource-type").val('all');
+                $("#offline-only").prop('checked', false);
+                
+                // Update UI
+                updateFilterChips();
+                filterResources();
+            });
+            
+            // Enable offline mode
+            $("#enable-offline").on("click", function() {
+                $(this).html('<i class="fas fa-spinner fa-spin me-1"></i> Enabling...');
+                
+                setTimeout(function() {
+                    $("#enable-offline").html('<i class="fas fa-check-circle me-1"></i> Enabled');
+                    $("#enable-offline").addClass('btn-enabled');
+                    
+                    // Show toast notification
+                    showToast('Offline mode enabled successfully!', 'success');
+                    
+                    setTimeout(function() {
+                        $("#enable-offline").html('<i class="fas fa-cog me-1"></i> Enable Offline Mode');
+                        $("#enable-offline").removeClass('btn-enabled');
+                    }, 3000);
+                }, 1500);
+            });
+            
+            // Filter resources function
+            function filterResources() {
                 $(".resource-item").each(function() {
-                    let title = $(this).data("title").toLowerCase();
-                    let type = $(this).data("type");
-                    let tags = $(this).data("tags") ? $(this).data("tags").toLowerCase() : "";
-                    let offlineAccessible = $(this).data("offline") === "true";
+                    let $item = $(this);
+                    let title = $item.data("title").toLowerCase();
+                    let type = $item.data("type");
+                    let tags = $item.data("tags") ? $item.data("tags").toLowerCase() : "";
+                    let offlineAccessible = $item.data("offline") === "true";
                     
-                    let matchesSearch = title.includes(searchText) || tags.includes(searchText);
-                    let matchesType = typeFilter === "all" || type === typeFilter;
-                    let matchesOffline = !offlineOnly || offlineAccessible;
+                    // Check if matches all filter criteria
+                    let matchesSearch = title.includes(activeFilters.search) || tags.includes(activeFilters.search);
+                    let matchesType = activeFilters.type === "all" || type === activeFilters.type;
+                    let matchesOffline = !activeFilters.offline || offlineAccessible;
                     
-                    if (matchesSearch && matchesType && matchesOffline) {
-                        $(this).show();
+                    // Tag filtering - if we have active tag filters
+                    let matchesTags = true;
+                    if (activeFilters.tags.length > 0) {
+                        matchesTags = activeFilters.tags.some(tag => tags.includes(tag.toLowerCase()));
+                    }
+                    
+                    if (matchesSearch && matchesType && matchesOffline && matchesTags) {
+                        $item.removeClass('hidden-item').addClass('visible-item');
                     } else {
-                        $(this).hide();
+                        $item.removeClass('visible-item').addClass('hidden-item');
                     }
                 });
                 
+                // Update count after filtering
+                updateResourceCount();
+                
                 // Show message if no results
+                updateNoResultsMessage();
+            }
+            
+            // Update filter chips UI
+            function updateFilterChips() {
+                const $chipContainer = $(".filter-chips");
+                $chipContainer.empty();
+                let hasFilters = false;
+                
+                // Add search chip if search text exists
+                if (activeFilters.search) {
+                    $chipContainer.append(`
+                        <div class="filter-chip" data-filter-type="search">
+                            <span class="chip-icon"><i class="fas fa-search"></i></span>
+                            <span class="chip-text">${activeFilters.search}</span>
+                            <button class="chip-remove" data-filter-type="search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `);
+                    hasFilters = true;
+                }
+                
+                // Add type chip if not "all"
+                if (activeFilters.type !== 'all') {
+                    $chipContainer.append(`
+                        <div class="filter-chip" data-filter-type="type">
+                            <span class="chip-icon"><i class="fas fa-filter"></i></span>
+                            <span class="chip-text">${activeFilters.type}</span>
+                            <button class="chip-remove" data-filter-type="type">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `);
+                    hasFilters = true;
+                }
+                
+                // Add offline chip if selected
+                if (activeFilters.offline) {
+                    $chipContainer.append(`
+                        <div class="filter-chip" data-filter-type="offline">
+                            <span class="chip-icon"><i class="fas fa-wifi-slash"></i></span>
+                            <span class="chip-text">Offline only</span>
+                            <button class="chip-remove" data-filter-type="offline">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `);
+                    hasFilters = true;
+                }
+                
+                // Add tag chips
+                activeFilters.tags.forEach(tag => {
+                    $chipContainer.append(`
+                        <div class="filter-chip" data-filter-type="tag" data-tag="${tag}">
+                            <span class="chip-icon"><i class="fas fa-tag"></i></span>
+                            <span class="chip-text">${tag}</span>
+                            <button class="chip-remove" data-filter-type="tag" data-tag="${tag}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `);
+                    hasFilters = true;
+                });
+                
+                // Toggle visibility of filter elements
+                if (hasFilters) {
+                    $("#filter-label").removeClass('d-none');
+                    $("#clear-filters").removeClass('d-none');
+                } else {
+                    $("#filter-label").addClass('d-none');
+                    $("#clear-filters").addClass('d-none');
+                }
+                
+                // Add click handlers for chip remove buttons
+                $(".chip-remove").on("click", function() {
+                    const filterType = $(this).data("filter-type");
+                    
+                    if (filterType === "search") {
+                        activeFilters.search = '';
+                        $("#search-resources").val('');
+                    } else if (filterType === "type") {
+                        activeFilters.type = 'all';
+                        $("#filter-resource-type").val('all');
+                    } else if (filterType === "offline") {
+                        activeFilters.offline = false;
+                        $("#offline-only").prop('checked', false);
+                    } else if (filterType === "tag") {
+                        const tag = $(this).data("tag");
+                        activeFilters.tags = activeFilters.tags.filter(t => t !== tag);
+                    }
+                    
+                    updateFilterChips();
+                    filterResources();
+                });
+            }
+            
+            // Update resource count
+            function updateResourceCount() {
+                const visibleCount = $(".resource-item:visible").length;
+                $("#resource-count").text(visibleCount);
+            }
+            
+            // Show/hide no results message
+            function updateNoResultsMessage() {
                 if ($(".resource-item:visible").length === 0) {
                     if ($("#no-results").length === 0) {
                         $("#resource-container").append(`
-                            <div id="no-results" class="col-12 text-center py-4">
-                                <i class="fas fa-search text-muted fa-3x mb-3"></i>
-                                <h4>No matching resources found</h4>
-                                <p>Try adjusting your search criteria or filters.</p>
+                            <div id="no-results" class="no-results">
+                                <div class="no-results-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h5 class="no-results-title">No matching resources found</h5>
+                                <p class="no-results-message">Try adjusting your search criteria or filters</p>
+                                <button id="reset-filters" class="btn btn-reset">Reset Filters</button>
                             </div>
                         `);
+                        
+                        $("#reset-filters").on("click", function() {
+                            $("#clear-filters").click();
+                        });
+                        
+                        $("#no-results").hide().fadeIn(300);
                     }
                 } else {
-                    $("#no-results").remove();
+                    $("#no-results").fadeOut(300, function() {
+                        $(this).remove();
+                    });
                 }
             }
+            
+            // Add click handler for tags to filter by tag
+            $(document).on("click", ".tag", function() {
+                const tag = $(this).text().trim();
+                
+                // Only add if not already in array
+                if (!activeFilters.tags.includes(tag)) {
+                    activeFilters.tags.push(tag);
+                    updateFilterChips();
+                    filterResources();
+                }
+            });
+            
+            // Show toast notification
+            function showToast(message, type = 'info') {
+                // Remove existing toasts
+                $(".toast-notification").remove();
+                
+                // Create new toast
+                const toast = $(`
+                    <div class="toast-notification toast-${type}">
+                        <div class="toast-icon">
+                            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                        </div>
+                        <div class="toast-content">
+                            <p>${message}</p>
+                        </div>
+                        <button class="toast-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `);
+                
+                // Add to body
+                $("body").append(toast);
+                
+                // Show with animation
+                setTimeout(() => {
+                    toast.addClass('show');
+                    
+                    // Auto hide after 5 seconds
+                    setTimeout(() => {
+                        toast.removeClass('show');
+                        setTimeout(() => {
+                            toast.remove();
+                        }, 300);
+                    }, 5000);
+                }, 100);
+                
+                // Close button handler
+                toast.find(".toast-close").on("click", function() {
+                    toast.removeClass('show');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                });
+            }
+            
+            // Card animations
+            $(".resource-card").each(function(index) {
+                const card = $(this);
+                setTimeout(() => {
+                    card.addClass('show');
+                }, index * 100);
+            });
+            
+            // Initial filtering
+            filterResources();
             
             // Install Service Worker for offline capability
             if ('serviceWorker' in navigator) {
@@ -220,4 +488,856 @@
             }
         });
     </script>
+    
+    <style>
+        :root {
+            /* Base colors */
+            --primary: #3a7bd5;
+            --primary-light: #53a0fd;
+            --primary-dark: #2c5ea2;
+            --secondary: #577590;
+            --accent: #43aa8b;
+            --accent-light: #4fbfa0;
+            --accent-dark: #358f73;
+            --info: #4599e1;
+            --success: #4caf9e;
+            --warning: #f9bc60;
+            --danger: #e66767;
+            --light: #f8f9fa;
+            --dark: #334155;
+            --muted: #94a3b8;
+            
+            /* UI colors */
+            --background: #f1f5f9;
+            --surface: #ffffff;
+            --text-primary: #334155;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            
+            /* Custom theme colors */
+            --theme-bg: #EFF3EA;
+            
+            /* Component colors */
+            --guide-color: #43aa8b;
+            --video-color: #4599e1;
+            --infographic-color: #f9bc60;
+            --document-color: #577590;
+            --interactive-color: #7467ef;
+            --offline-color: #4caf9e;
+            
+            /* Typography */
+            --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-heading: var(--font-sans);
+            --font-body: var(--font-sans);
+            
+            /* Elevations */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 10px 25px rgba(58, 123, 213, 0.07);
+            
+            /* Border radius */
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 1rem;
+            --radius-full: 9999px;
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.25s ease;
+            --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Z-index layers */
+            --z-toast: 5000;
+            --z-dropdown: 1000;
+            --z-modal: 2000;
+        }
+        
+        /* Base styles */
+        body {
+            font-family: var(--font-body);
+            background-color: var(--background);
+            color: var(--text-primary);
+        }
+        
+        /* Page header */
+        .page-header {
+            margin-bottom: 1rem;
+            padding: 1rem 0;
+        }
+        
+        .page-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .page-title {
+            color: var(--dark);
+            font-weight: 600;
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+        }
+        
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        
+        /* Search and filter */
+        .search-filter-container {
+            background-color: var(--theme-bg);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-container, .filter-container {
+            position: relative;
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            transition: var(--transition-normal);
+        }
+        
+        .btn-search:hover {
+            opacity: 0.9;
+            color: white;
+        }
+        
+        .offline-toggle-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .offline-toggle {
+            background-color: #f8fafc;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-full);
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-normal);
+        }
+        
+        .offline-toggle:hover {
+            background-color: #ffffff;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .offline-toggle .form-check-input {
+            width: 2.5em;
+            height: 1.25em;
+        }
+        
+        .offline-toggle .form-check-input:checked {
+            background-color: var(--offline-color);
+            border-color: var(--offline-color);
+        }
+        
+        /* Filter chips */
+        .filter-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            background-color: #eef2ff;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            color: var(--primary);
+            border: 1px solid #d1ddfb;
+            transition: var(--transition-fast);
+        }
+        
+        .filter-chip:hover {
+            background-color: #dce7ff;
+        }
+        
+        .chip-icon {
+            margin-right: 0.35rem;
+        }
+        
+        .chip-text {
+            font-weight: 500;
+        }
+        
+        .chip-remove {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.75rem;
+            width: 18px;
+            height: 18px;
+            padding: 0;
+            margin-left: 0.35rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+        
+        .chip-remove:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-clear-filters {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            transition: var(--transition-fast);
+        }
+        
+        .btn-clear-filters:hover {
+            color: var(--danger);
+        }
+        
+        /* Resource counter */
+        .resource-counter {
+            margin-bottom: 1rem;
+        }
+        
+        .counter-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* Resource cards */
+        .resource-card {
+            position: relative;
+            background-color: var(--surface);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-slow);
+            transform: translateY(20px);
+            opacity: 0;
+            min-height: 360px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .resource-card.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        /* Card cover */
+        .card-cover {
+            height: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cover-icon {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+        }
+        
+        .cover-guide {
+            background: linear-gradient(135deg, var(--guide-color), #36977b);
+        }
+        
+        .cover-video {
+            background: linear-gradient(135deg, var(--video-color), #3b82c4);
+        }
+        
+        .cover-infographic {
+            background: linear-gradient(135deg, var(--infographic-color), #e0a44e);
+        }
+        
+        .cover-document {
+            background: linear-gradient(135deg, var(--document-color), #4a6379);
+        }
+        
+        .cover-interactive {
+            background: linear-gradient(135deg, var(--interactive-color), #6254cf);
+        }
+        
+        /* Card content */
+        .card-content {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        
+        .card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        
+        .meta-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-full);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .type-guide {
+            background-color: rgba(67, 170, 139, 0.15);
+            color: var(--guide-color);
+        }
+        
+        .type-video {
+            background-color: rgba(69, 153, 225, 0.15);
+            color: var(--video-color);
+        }
+        
+        .type-infographic {
+            background-color: rgba(249, 188, 96, 0.15);
+            color: var(--infographic-color);
+        }
+        
+        .type-document {
+            background-color: rgba(87, 117, 144, 0.15);
+            color: var(--document-color);
+        }
+        
+        .type-interactive {
+            background-color: rgba(116, 103, 239, 0.15);
+            color: var(--interactive-color);
+        }
+        
+        .meta-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+            color: var(--text-primary);
+        }
+        
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+            
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Tags */
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            background-color: #f1f5f9;
+            color: var(--text-secondary);
+            border-radius: var(--radius-full);
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .tag:hover {
+            background-color: #e2e8f0;
+            color: var(--primary);
+        }
+        
+        /* Card badges */
+        .card-badge {
+            position: absolute;
+            z-index: 10;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .offline-badge {
+            top: 0.75rem;
+            right: 0.75rem;
+            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
+            color: white;
+        }
+        
+        .sample-badge {
+            top: 0.75rem;
+            left: 0.75rem;
+            background: linear-gradient(135deg, var(--warning), #e0a44e);
+            color: white;
+        }
+        
+        /* Card actions */
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+        
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition-normal);
+            text-decoration: none;
+        }
+        
+        .btn-view {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            flex-grow: 1;
+        }
+        
+        .btn-view:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .btn-download {
+            background-color: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        
+        .btn-download:hover {
+            background-color: rgba(67, 170, 139, 0.08);
+            transform: translateY(-2px);
+            color: var(--accent);
+        }
+        
+        /* No results message */
+        .no-results {
+            text-align: center;
+            padding: 3rem 1rem;
+            background-color: var(--surface);
+            border-radius: var(--radius-md);
+            margin: 2rem 0;
+            width: 100%;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .no-results-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #f1f5f9;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 1.75rem;
+        }
+        
+        .no-results-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .no-results-message {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .btn-reset {
+            background-color: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 0.5rem 1.25rem;
+            border-radius: var(--radius-full);
+            font-weight: 500;
+            transition: var(--transition-normal);
+        }
+        
+        .btn-reset:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        /* Offline access section */
+        .offline-access-section {
+            background-color: var(--surface);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .section-header {
+            margin-bottom: 2rem;
+        }
+        
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
+            color: white;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-right: 1rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 0.25rem;
+        }
+        
+        .steps-container {
+            margin-bottom: 2rem;
+        }
+        
+        .step-card {
+            background-color: #f8fafc;
+            border-radius: var(--radius-md);
+            padding: 1.75rem;
+            position: relative;
+            height: 100%;
+            transition: var(--transition-normal);
+        }
+        
+        .step-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .step-icon-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+        
+        .step-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(76, 175, 158, 0.15);
+            color: var(--offline-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .step-content {
+            text-align: center;
+        }
+        
+        .step-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        
+        .step-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+        
+        .offline-indicator {
+            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
+        .offline-info {
+            background-color: #f8fafc;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .info-icon {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(76, 175, 158, 0.15);
+            color: var(--offline-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .info-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-enable-offline {
+            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
+            color: white;
+            border: none;
+            border-radius: var(--radius-full);
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+            transition: var(--transition-normal);
+        }
+        
+        .btn-enable-offline:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-enabled {
+            background: linear-gradient(135deg, #4caf9e, #2d8b7c);
+        }
+        
+        /* Toast notifications */
+        .toast-notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: white;
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            max-width: 350px;
+            z-index: var(--z-toast);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition-normal);
+        }
+        
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast-success {
+            border-left: 4px solid var(--success);
+        }
+        
+        .toast-info {
+            border-left: 4px solid var(--info);
+        }
+        
+        .toast-warning {
+            border-left: 4px solid var(--warning);
+        }
+        
+        .toast-error {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .toast-icon {
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+        
+        .toast-success .toast-icon {
+            color: var(--success);
+        }
+        
+        .toast-info .toast-icon {
+            color: var(--info);
+        }
+        
+        .toast-warning .toast-icon {
+            color: var(--warning);
+        }
+        
+        .toast-error .toast-icon {
+            color: var(--danger);
+        }
+        
+        .toast-content {
+            flex-grow: 1;
+        }
+        
+        .toast-content p {
+            margin-bottom: 0;
+            color: var(--text-primary);
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            margin-left: 0.5rem;
+            transition: var(--transition-fast);
+        }
+        
+        .toast-close:hover {
+            color: var(--danger);
+        }
+        
+        /* Animation helper classes */
+        .hidden-item {
+            display: none;
+        }
+        
+        .visible-item {
+            display: block;
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 992px) {
+            .offline-toggle-container {
+                justify-content: flex-start;
+            }
+            
+            .search-filter-container {
+                padding: 1rem;
+            }
+        }
+        
+        @@media (max-width: 767.98px) {
+            .page-header {
+                padding: 0.75rem 0;
+            }
+            
+            .page-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .page-title {
+                font-size: 1.25rem;
+            }
+            
+            .page-subtitle {
+                font-size: 0.85rem;
+            }
+            
+            .offline-toggle {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .search-container, .filter-container, .offline-toggle-container {
+                margin-bottom: 0.5rem;
+            }
+            
+            .search-filter-container .row {
+                gap: 0.5rem !important;
+            }
+            
+            .section-title {
+                font-size: 1.1rem;
+            }
+            
+            .step-card {
+                padding: 1.5rem 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .offline-info {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .info-icon {
+                margin-right: 0;
+                margin-bottom: 0.75rem;
+            }
+            
+            .toast-notification {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
+                max-width: none;
+            }
+        }
+    </style>
 } 

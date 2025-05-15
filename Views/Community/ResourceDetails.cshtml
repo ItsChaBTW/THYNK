@@ -1,0 +1,251 @@
+@model THYNK.Models.EducationalResource
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "_CommunityLayout";
+}
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon bg-white text-info me-3">
+                            @switch (Model.Type)
+                            {
+                                case ResourceType.Guide:
+                                    <i class="fas fa-compass"></i>
+                                    break;
+                                case ResourceType.Tutorial:
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                    break;
+                                case ResourceType.Infographic:
+                                    <i class="fas fa-chart-pie"></i>
+                                    break;
+                                case ResourceType.Video:
+                                    <i class="fas fa-video"></i>
+                                    break;
+                                case ResourceType.Document:
+                                    <i class="fas fa-file-alt"></i>
+                                    break;
+                                case ResourceType.FAQ:
+                                    <i class="fas fa-question-circle"></i>
+                                    break;
+                                case ResourceType.EmergencyContact:
+                                    <i class="fas fa-phone-alt"></i>
+                                    break;
+                                default:
+                                    <i class="fas fa-book"></i>
+                                    break;
+                            }
+                        </div>
+                        <div>
+                            <h5 class="m-0">@Model.Title</h5>
+                            <small>@Model.Type</small>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="@Url.Action("EducationalResources", "Community")" class="btn btn-sm btn-light">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Resources
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Community exclusive badge -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="badge bg-success px-3 py-2">
+                        <i class="fas fa-star me-1"></i> Community Exclusive Resource
+                    </span>
+                    <span class="text-muted">Added on @Model.DateAdded.ToString("MMMM dd, yyyy")</span>
+                </div>
+                
+                <!-- Resource description -->
+                <div class="alert alert-light border mb-4">
+                    <h5 class="mb-2">Description</h5>
+                    <p>@Model.Description</p>
+                </div>
+                
+                <!-- Resource content -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Resource Content</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="markdown-content">
+                            @Html.Raw(ConvertMarkdownToHtml(Model.Content))
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resource metadata -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Tags</h5>
+                            </div>
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(Model.Tags))
+                                {
+                                    <div>
+                                        @foreach (var tag in Model.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <span class="badge bg-secondary me-1 mb-1">@tag.Trim()</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <p class="text-muted mb-0">No tags assigned</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-download me-2"></i>Resource File</h5>
+                            </div>
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(Model.FileUrl))
+                                {
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>Resource file available</span>
+                                        <div>
+                                            <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = Model.Id })" class="btn btn-primary me-2">
+                                                <i class="fas fa-file-pdf me-1"></i> Download as PDF
+                                            </a>
+                                            <a href="@Model.FileUrl" download class="btn btn-success">
+                                                <i class="fas fa-download me-1"></i> 
+                                                Download Original
+                                                @if (Model.FileSizeKB.HasValue)
+                                                {
+                                                    <span>(@(Model.FileSizeKB < 1024 ? $"{Model.FileSizeKB} KB" : $"{Model.FileSizeKB / 1024.0:F1} MB"))</span>
+                                                }
+                                            </a>
+                                        </div>
+                                    </div>
+                                    @if (Model.IsOfflineAccessible)
+                                    {
+                                        <div class="alert alert-success mt-3 mb-0">
+                                            <i class="fas fa-wifi-slash me-2"></i>
+                                            This resource is available offline. Download it now to access during emergencies!
+                                        </div>
+                                    }
+                                }
+                                else if (!string.IsNullOrEmpty(Model.ExternalUrl))
+                                {
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>External resource available</span>
+                                        <div>
+                                            <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = Model.Id })" class="btn btn-primary me-2">
+                                                <i class="fas fa-file-pdf me-1"></i> Download as PDF
+                                            </a>
+                                            <a href="@Model.ExternalUrl" target="_blank" class="btn btn-success">
+                                                <i class="fas fa-external-link-alt me-1"></i> Visit Resource
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span>No downloadable files available</span>
+                                        <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = Model.Id })" class="btn btn-primary">
+                                            <i class="fas fa-file-pdf me-1"></i> Download as PDF
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Related resources placeholder -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="fas fa-link me-2"></i>Related Resources</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center text-muted py-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Related resources feature coming soon!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add copy button to code blocks
+            $('.markdown-content pre').each(function() {
+                let $this = $(this);
+                let $code = $this.find('code');
+                let $button = $('<button class="btn btn-sm btn-light position-absolute top-0 end-0 mt-2 me-2"><i class="fas fa-copy"></i></button>');
+                
+                $this.addClass('position-relative');
+                $this.append($button);
+                
+                $button.on('click', function() {
+                    let text = $code.text();
+                    navigator.clipboard.writeText(text).then(function() {
+                        $button.html('<i class="fas fa-check text-success"></i>');
+                        setTimeout(function() {
+                            $button.html('<i class="fas fa-copy"></i>');
+                        }, 2000);
+                    });
+                });
+            });
+        });
+    </script>
+}
+
+@functions {
+    // Simple markdown to HTML converter (you may want to use a proper library in production)
+    public string ConvertMarkdownToHtml(string markdown)
+    {
+        if (string.IsNullOrEmpty(markdown))
+            return "";
+            
+        // Replace markdown headers
+        var html = System.Text.RegularExpressions.Regex.Replace(markdown, @"^# (.+)$", "<h1>$1</h1>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"^## (.+)$", "<h2>$1</h2>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"^### (.+)$", "<h3>$1</h3>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        
+        // Replace bold text
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+        
+        // Replace italic text
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"\*(.+?)\*", "<em>$1</em>");
+        
+        // Replace links
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"\[(.+?)\]\((.+?)\)", "<a href=\"$2\">$1</a>");
+        
+        // Replace code blocks
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"```(.+?)```", "<pre><code>$1</code></pre>", System.Text.RegularExpressions.RegexOptions.Singleline);
+        
+        // Replace inline code
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"`(.+?)`", "<code>$1</code>");
+        
+        // Replace lists
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"^- (.+)$", "<li>$1</li>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"^(\d+)\. (.+)$", "<li>$2</li>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        
+        // Replace paragraphs (line breaks followed by text)
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"([^\n])\n([^\n])", "$1<br/>$2");
+        
+        // Wrap paragraphs
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"([^\n<][^\n]+)(?!\n<)", "<p>$1</p>");
+        
+        // Wrap lists
+        html = html.Replace("<li>", "<ul><li>").Replace("</li>", "</li></ul>");
+        html = System.Text.RegularExpressions.Regex.Replace(html, "</ul><ul>", "");
+        
+        return html;
+    }
+} 

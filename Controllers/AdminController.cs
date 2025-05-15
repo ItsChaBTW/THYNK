@@ -14,6 +14,7 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR;
 using THYNK.Hubs;
+using System.Security.Claims;
 
 namespace THYNK.Controllers
 {
@@ -751,6 +752,93 @@ namespace THYNK.Controllers
             var pendingReportsCount = await _context.DisasterReports
                 .CountAsync(r => r.Status == ReportStatus.Pending);
             return Json(new { count = pendingReportsCount });
+        // GET: List pending educational resources
+        public async Task<IActionResult> PendingResources()
+        {
+            var pendingResources = await _context.EducationalResources
+                .Include(r => r.CreatedBy)
+                .Where(r => r.ApprovalStatus == ApprovalStatus.Pending)
+                .OrderByDescending(r => r.DateAdded)
+                .ToListAsync();
+                
+            return View(pendingResources);
+        }
+        
+        // GET: Resource details for review
+        public async Task<IActionResult> ReviewResource(int id)
+        {
+            var resource = await _context.EducationalResources
+                .Include(r => r.CreatedBy)
+                .FirstOrDefaultAsync(r => r.Id == id);
+                
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            return View(resource);
+        }
+        
+        // POST: Approve resource
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveResource(int id)
+        {
+            var resource = await _context.EducationalResources
+                .Include(r => r.CreatedBy)
+                .FirstOrDefaultAsync(r => r.Id == id);
+                
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            // Update status
+            resource.ApprovalStatus = ApprovalStatus.Approved;
+            resource.ApprovedDate = DateTime.Now;
+            resource.RejectionReason = null;
+            
+            // Save changes
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Resource has been approved and is now available in the library.";
+            return RedirectToAction(nameof(PendingResources));
+        }
+        
+        // POST: Reject resource
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectResource(int id, string rejectionReason)
+        {
+            var resource = await _context.EducationalResources
+                .Include(r => r.CreatedBy)
+                .FirstOrDefaultAsync(r => r.Id == id);
+                
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            // Update status
+            resource.ApprovalStatus = ApprovalStatus.Rejected;
+            resource.RejectionReason = rejectionReason;
+            
+            // Save changes
+            await _context.SaveChangesAsync();
+            
+            TempData["SuccessMessage"] = "Resource has been rejected and the creator has been notified.";
+            return RedirectToAction(nameof(PendingResources));
+        }
+        
+        // GET: All resources
+        public async Task<IActionResult> AllResources()
+        {
+            var resources = await _context.EducationalResources
+                .Include(r => r.CreatedBy)
+                .OrderByDescending(r => r.DateAdded)
+                .ToListAsync();
+                
+            return View(resources);
         }
     }
 } 

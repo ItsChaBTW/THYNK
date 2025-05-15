@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using THYNK.Services;
 using THYNK.Models;
 using Microsoft.AspNetCore.Authentication.Google;
+using WkHtmlToPdfDotNet;
+using WkHtmlToPdfDotNet.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,10 @@ builder.Services.AddAuthentication()
         options.ClientId = "11636115526-jphpfc89sg5tka1gkv86a3166n9j1qd3.apps.googleusercontent.com";
         options.ClientSecret = "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";
     });
+
+// Add PDF services
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+builder.Services.AddScoped<PdfService>();
 
 builder.Services.AddScoped<IPSGCService, PSGCService>();
 builder.Services.AddHttpClient<IPSGCService, PSGCService>();

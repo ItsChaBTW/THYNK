@@ -3,186 +3,538 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - THYNK LGU/SLU</title>
+    <title>@ViewData["Title"] - THYNK LGU Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/community.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/lgu-styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/THYNK.styles.css" asp-append-version="true" />
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <!-- Mapbox CSS -->
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#545454',
+                        primaryDark: '#3c3c3c',
+                        primaryLight: '#6e6e6e',
+                        secondary: '#E5DFD2',
+                        secondaryDark: '#d6cfbf',
+                        secondaryLight: '#f4f0e5',
+                        accent: '#F5F5F5',
+                        sidebarBg: '#2C3E50',
+                        sidebarLight: '#34495E',
+                        sidebarAccent: '#3498DB',
+                        sidebarText: '#ECF0F1',
+                        sidebarHover: '#1ABC9C',
+                        sidebarHoverLight: '#2CD3AF',
+                        danger: '#b56357',
+                        success: '#6a8d73',
+                        warning: '#e0a458'
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        :root {
+            --primary: #545454;
+            --primary-dark: #3c3c3c;
+            --primary-light: #6e6e6e;
+            --primary-rgb: 84, 84, 84;
+            
+            --secondary: #E5DFD2;
+            --secondary-dark: #d6cfbf;
+            --secondary-light: #f4f0e5;
+            --secondary-rgb: 229, 223, 210;
+            
+            --accent: #F5F5F5;
+            --accent-rgb: 245, 245, 245;
+            
+            --sidebar-bg: #2C3E50;
+            --sidebar-light: #34495E;
+            --sidebar-accent: #3498DB;
+            --sidebar-text: #ECF0F1;
+            --sidebar-hover: #1ABC9C;
+            --sidebar-hover-light: #2CD3AF;
+            
+            --success: #6a8d73;
+            --warning: #e0a458;
+            --danger: #b56357;
+            --danger-rgb: 181, 99, 87;
+            
+            --dark: #545454;
+            --dark-alt: #696969;
+            --dark-light: #7e7e7e;
+            --light: #F5F5F5;
+            --muted: #a0a0a0;
+            
+            --body-bg: #E5DFD2;
+            --body-color: #545454;
+        }
+        
+        body {
+            @@apply bg-secondary text-primary font-sans;
+        }
+        
+        .sidebar {
+            @@apply fixed top-0 left-0 h-screen shadow-lg transition-all duration-300 ease-in-out overflow-hidden flex flex-col;
+            background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-light) 100%);
+            z-index: 50;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .sidebar-content {
+            @@apply flex flex-col h-full;
+            position: relative;
+        }
+        
+        .sidebar-nav {
+            @@apply overflow-y-auto px-4 py-1;
+            position: absolute;
+            top: 140px;
+            bottom: 120px;
+            left: 0;
+            right: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(110, 110, 110, 0.3) transparent;
+            scroll-behavior: smooth;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-track {
+            @@apply bg-transparent;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            @@apply rounded-full;
+            background-color: rgba(236, 240, 241, 0.3);
+        }
+        
+        /* Only show scrollbar when hovering over the navigation area */
+        .sidebar-nav:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(236, 240, 241, 0.5);
+        }
+        
+        .sidebar-collapsed {
+            width: 0;
+        }
+        
+        .sidebar-expanded {
+            @@apply w-64;
+        }
+        
+        .nav-item {
+            @@apply flex items-center py-2 px-4 transition-colors duration-200 w-full;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin-bottom: 2px;
+            color: var(--sidebar-text);
+        }
+        
+        .nav-item:hover {
+            background-color: var(--sidebar-hover-light);
+            transform: translateX(3px);
+            color: white !important;
+        }
+        
+        .nav-item.active {
+            background-color: var(--sidebar-hover);
+            position: relative;
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: white;
+            border-radius: 0 2px 2px 0;
+        }
+        
+        .nav-icon {
+            @@apply text-lg mr-3 flex items-center justify-center w-8;
+            color: var(--sidebar-text);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover .nav-icon {
+            transform: scale(1.1);
+            color: white;
+        }
+        
+        .nav-text {
+            @@apply text-sm font-medium;
+        }
+        
+        .hamburger {
+            @@apply fixed top-4 left-4 flex flex-col justify-center items-center w-10 h-10 text-white rounded-md shadow-md transition-all duration-200 focus:outline-none;
+            background-color: var(--sidebar-bg);
+            z-index: 60;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hamburger:hover {
+            background-color: var(--sidebar-light);
+            transform: scale(1.05);
+        }
+        
+        .hamburger-line {
+            @@apply w-6 h-0.5 bg-white my-0.5 transition-all duration-300;
+        }
+        
+        .hamburger.active .hamburger-line:nth-child(1) {
+            @@apply transform rotate-45 translate-y-1.5;
+        }
+        
+        .hamburger.active .hamburger-line:nth-child(2) {
+            @@apply opacity-0;
+        }
+        
+        .hamburger.active .hamburger-line:nth-child(3) {
+            @@apply transform -rotate-45 -translate-y-1.5;
+        }
+        
+        .overlay {
+            @@apply fixed inset-0 bg-black bg-opacity-50 transition-opacity duration-300;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 40;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .main-content {
+            @@apply transition-all duration-300 ease-in-out;
+            z-index: 10;
+            background-color:#FAF7F0;
+        }
+        
+        /* Header Bar */
+        header {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+            background: linear-gradient(to right, #ffffff 0%, #fafafa 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .header-title-container {
+            position: relative;
+        }
+        
+        /* User dropdown styles */
+        .user-dropdown-container {
+            position: relative;
+        }
+        
+        .user-dropdown-trigger {
+            cursor: pointer;
+            position: relative;
+            padding: 2px 4px;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+        
+        .user-dropdown-trigger:hover {
+            background-color: var(--secondary-light);
+        }
+        
+        .user-dropdown-trigger::after {
+            content: "\f107";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            margin-left: 5px;
+            font-size: 0.85em;
+            opacity: 0.7;
+            transition: transform 0.2s ease;
+        }
+        
+        .user-dropdown-container:hover .user-dropdown-trigger::after {
+            transform: rotate(180deg);
+        }
+        
+        .user-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 180px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            overflow: hidden;
+            margin-top: 5px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .user-dropdown-container:hover .user-dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-dropdown-content {
+            padding: 5px 0;
+        }
+        
+        .user-dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            color: var(--primary);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .user-dropdown-item:hover {
+            background-color: var(--secondary-light);
+            color: var(--primary-dark);
+        }
+        
+        .user-dropdown-item i {
+            width: 20px;
+            text-align: center;
+            margin-right: 8px;
+            font-size: 0.9em;
+        }
+
+        /* Animations and UI Effects */
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
-    <div class="d-flex" id="wrapper">
-        <!-- Sidebar -->
-        <div class="bg-dark text-white" id="sidebar-wrapper">
-            <div class="sidebar-heading text-center py-4">
-                <h3 class="m-0">THYNK</h3>
-                <small>LGU/SLU Dashboard</small>
+<body class="bg-secondary">
+    <!-- Hamburger Menu Button -->
+    <button id="hamburger" class="hamburger md:hidden">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Header Bar -->
+    <header class="fixed top-0 left-0 right-0 shadow-md z-20">
+        <div class="container mx-auto relative z-10">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="md:ml-64 ml-12 flex items-center transition-all duration-300">
+                    <div class="relative flex items-center header-title-container">
+                        <h2 class="text-primary text-xl font-semibold relative z-10">@ViewData["Title"]</h2>
+                        <div class="ml-2 h-6 w-1 bg-primary rounded-full opacity-30"></div>
+                        <span class="ml-2 text-sm text-sidebar-bg font-medium">THYNK LGU/SLU</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="hidden md:flex items-center border-l border-gray-200 pl-3 user-dropdown-container">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2 shadow-sm" style="background-color: #1ABC9C; color: white;">
+                                @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
+                            </div>
+                            <span class="text-sidebar-bg text-sm font-medium cursor-pointer user-dropdown-trigger">@User.Identity.Name</span>
+                            
+                            <!-- Dropdown Menu -->
+                            <div class="user-dropdown-menu">
+                                <div class="user-dropdown-content">
+                                    <a href="@Url.Action("Profile", "LGU")" class="user-dropdown-item">
+                                        <i class="fas fa-user-cog me-2"></i>Profile
+                                    </a>
+                                    <button type="button" data-logout-trigger class="user-dropdown-item w-full text-left">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
-            <div class="list-group list-group-flush my-3">
-                <a href="@Url.Action("Dashboard", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
-                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                </a>
-                <a href="@Url.Action("ManageReports", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageReports" ? "active" : "")">
-                    <i class="fas fa-clipboard-list me-2"></i>Manage Reports
-                </a>
-                <a href="@Url.Action("CreateAlert", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CreateAlert" ? "active" : "")">
-                    <i class="fas fa-bell me-2"></i>Create Alert
-                </a>
-                <a href="@Url.Action("ManageAlerts", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageAlerts" ? "active" : "")">
-                    <i class="fas fa-bell-slash me-2"></i>Manage Alerts
-                </a>
-                <a href="@Url.Action("IncidentMap", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
-                    <i class="fas fa-map-marked-alt me-2"></i>Incident Map
-                </a>
-                <a href="@Url.Action("ManageResources", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageResources" ? "active" : "")">
-                    <i class="fas fa-book me-2"></i>Manage Resources
-                </a>
-                <a href="@Url.Action("CommunityFeed", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" ? "active" : "")">
-                    <i class="fas fa-users me-2"></i>Community Feed
-                </a>
-                <a href="@Url.Action("Support", "LGU")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
-                    <i class="fas fa-question-circle me-2"></i>Support & FAQs
+        </div>
+    </header>
+    
+    <!-- Overlay for mobile -->
+    <div id="overlay" class="overlay"></div>
+    
+        <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar sidebar-collapsed">
+        <div class="sidebar-content">
+            <!-- Fixed Header -->
+            <div class="pt-12 px-4">
+                <div class="text-center mb-3">
+                    <h3 class="font-bold text-xl text-sidebar-text text-white">THYNK</h3>
+                    <p class="text-xs opacity-80 text-sidebar-text text-white">LGU/SLU Dashboard</p>
+                </div>
+                <hr class="border-sidebar-light my-2 text-white" />
+            </div>
+            
+            <!-- Scrollable Navigation Area -->
+            <div class="sidebar-nav">
+                <div class="space-y-1">
+                    <a href="@Url.Action("Dashboard", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                    
+                    <a href="@Url.Action("ManageReports", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ManageReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
+                        <span class="nav-text">Manage Reports</span>
+                    </a>
+                    
+                    <a href="@Url.Action("CreateAlert", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "CreateAlert" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-bell"></i></span>
+                        <span class="nav-text">Create Alert</span>
+                    </a>
+                    
+                    <a href="@Url.Action("ManageAlerts", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ManageAlerts" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-bell-slash"></i></span>
+                        <span class="nav-text">Manage Alerts</span>
+                    </a>
+                    
+                    <a href="@Url.Action("IncidentMap", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
+                        <span class="nav-text">Incident Map</span>
+                    </a>
+                    <a href="@Url.Action("Analytics", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Analytics" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="nav-text">Analytics</span>
+                    </a>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ManageResources" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-book"></i></span>
+                        <span class="nav-text">Manage Resources</span>
+                    </a>
+                    
+                    <a href="@Url.Action("CommunityFeed", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span>
+                        <span class="nav-text">Community Feed</span>
+                    </a>
+                    
+                    <a href="@Url.Action("ChatSupport", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ChatSupport" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="nav-text">Support & FAQs</span>
                 </a>
             </div>
         </div>
-        <!-- Page Content -->
-        <div id="page-content-wrapper">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
-                <div class="container-fluid">
-                    <button class="btn btn-link" id="menu-toggle">
-                        <i class="fas fa-bars"></i>
+            
+            <!-- User Profile at Bottom of Sidebar -->
+            <div class="mt-auto px-4 py-3 border-t border-sidebar-light">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="flex items-center mb-2">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2" style="background-color: #1ABC9C; color: white;">
+                            @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-medium truncate text-white">@User.Identity.Name</p>
+                            <p class="text-xs opacity-70 text-white">LGU/SLU Account</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col space-y-1 mt-3">
+                        <a href="@Url.Action("Profile", "LGU")" class="nav-item py-1">
+                            <span class="nav-icon"><i class="fas fa-user-cog"></i></span>
+                            <span class="nav-text text-xs">Manage Account</span>
+                        </a>
+                        <button type="button" data-logout-trigger class="nav-item py-1 w-full text-left">
+                            <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                            <span class="nav-text text-xs">Logout</span>
                     </button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-user-circle me-2"></i>@User.Identity?.Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="@Url.Action("Profile", "LGU")"><i class="fas fa-user me-2"></i>Profile</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                                            <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
+                    </div>
+                }
                     </div>
                 </div>
             </nav>
-            <div class="container-fluid p-4">
+    
+    <!-- Main Content -->
+    <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64">
+        <div class="max-w-7xl mx-auto">
+            <!-- Content -->
+            <div class="bg-white rounded-lg shadow-md p-3 md:p-3 p-0">
                 @RenderBody()
             </div>
         </div>
-    </div>
-
-    <button id="enableSound" class="btn btn-sm btn-primary" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: block;">Enable Sound</button>
-    <audio id="alarmSound" src="/sounds/alarm.mp3" preload="auto"></audio>
-    <!-- Sound Enable Modal -->
-    <div class="modal fade" id="soundEnableModal" tabindex="-1" aria-labelledby="soundEnableModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="soundEnableModalLabel">Enable Notification Sound</h5>
-          </div>
-          <div class="modal-body">
-            <p>To receive real-time alerts for new incident report assignments, please enable sound notifications.</p>
-            <button id="modalEnableSound" class="btn btn-primary w-100">Enable Sound</button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
-    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-lg shadow-lg border-0">
+                <div class="modal-header border-bottom border-gray-100">
+                    <h5 class="modal-title font-medium" style="color: var(--sidebar-bg);" id="logoutConfirmModalLabel">
+                        Confirm Logout
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="text-dark-alt mb-0">Are you sure you want to log out of your account?</p>
+                </div>
+                <div class="modal-footer border-top border-gray-100">
+                    <button type="button" class="btn rounded-pill px-4 text-white" style="background-color: var(--success);" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" id="confirmLogoutBtn" class="btn rounded-pill px-4 text-white" style="background-color: var(--danger);">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Logout Form (Hidden) -->
+    <form id="logoutForm" class="d-none" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+    </form>
+    
     <script>
-        // Toggle sidebar
-        $("#menu-toggle").click(function(e) {
-            e.preventDefault();
-            $("#wrapper").toggleClass("toggled");
-        });
-
-        // Check for in-progress reports on page load
-        $(document).ready(function() {
-            checkInProgressReports();
-        });
-
-        function checkInProgressReports() {
-            $.get('/LGU/GetInProgressReportsCount', function(data) {
-                if (data.count > 0) {
-                    // Play alarm if there are in-progress reports
-                    var alarm = document.getElementById('alarmSound');
-                    if (alarm && sessionStorage.getItem('soundEnabled') === 'true') {
-                        alarm.currentTime = 0;
-                        alarm.play().catch(function(error) {
-                            console.log("Error playing alarm:", error);
-                        });
-                    }
-                }
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', function() {
-            // Show modal if sound not enabled
-            if (sessionStorage.getItem('soundEnabled') !== 'true') {
-                var soundModal = new bootstrap.Modal(document.getElementById('soundEnableModal'));
-                soundModal.show();
-                document.getElementById('modalEnableSound').addEventListener('click', function() {
-                    var alarm = document.getElementById('alarmSound');
-                    if (alarm) {
-                        alarm.play().then(() => {
-                            alarm.pause();
-                            alarm.currentTime = 0;
-                            sessionStorage.setItem('soundEnabled', 'true');
-                            soundModal.hide();
-                            document.getElementById('enableSound').style.display = 'none';
-                            alert('Sound enabled! You will now hear alerts for new assignments.');
-                        });
-                    }
-                });
-            } else {
-                document.getElementById('enableSound').style.display = 'none';
-            }
-
-            // Clear soundEnabled on logout
-            document.querySelectorAll('form[action*="/Account/Logout"]').forEach(function(form) {
-                form.addEventListener('submit', function() {
-                    sessionStorage.removeItem('soundEnabled');
+        // Logout confirmation handling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all logout buttons
+            const logoutBtns = document.querySelectorAll('[data-logout-trigger]');
+            const logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmModal'));
+            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+            const logoutForm = document.getElementById('logoutForm');
+            
+            // Add click event to all logout buttons
+            logoutBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logoutModal.show();
                 });
             });
-
-            // SignalR connection for alarm
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/adminHub")
-                .withAutomaticReconnect()
-                .build();
-
-            connection.start()
-                .then(() => console.log("SignalR Connected (LGU Layout)"))
-                .catch(err => console.error("SignalR Connection Error: ", err));
-
-            // Listen for report assignments
-            connection.on("ReportAssigned", function (report) {
-                // Only play alarm if the report is in progress
-                if (report.status === 'InProgress' && sessionStorage.getItem('soundEnabled') === 'true') {
-                    var alarm = document.getElementById('alarmSound');
-                    if (alarm) {
-                        alarm.currentTime = 0;
-                        alarm.play();
-                    }
-                }
+            
+            // Confirm logout button event
+            confirmLogoutBtn.addEventListener('click', function() {
+                logoutForm.submit();
             });
         });
     </script>
-    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html> 
