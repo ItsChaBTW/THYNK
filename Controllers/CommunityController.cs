@@ -25,15 +25,14 @@ namespace THYNK.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IHubContext<AdminHub> _hubContext;
+        private readonly PdfService _pdfService;
 
         public CommunityController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             IWebHostEnvironment webHostEnvironment,
-            IHubContext<AdminHub> hubContext)
-        private readonly PdfService _pdfService;
-
-        public CommunityController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, PdfService pdfService)
+            IHubContext<AdminHub> hubContext,
+            PdfService pdfService)
         {
             _context = context;
             _userManager = userManager;

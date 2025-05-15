@@ -587,14 +587,12 @@
         }
         else
         {
-            <div id="lguReportsTable">
-                @await Html.PartialAsync("_LGUReportsTable", Model)
             <div class="table-container">
                 <table class="reports-table">
                     <thead>
                         <tr>
                             <th>Title</th>
-                            <th>Type</th>
+                            <th>Type</th>   
                             <th>Severity</th>
                             <th>Location</th>
                             <th>Date Reported</th>
@@ -644,32 +642,6 @@
     </div>
 </div>
 
-@section Scripts {
-    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/adminHub")
-            .withAutomaticReconnect()
-            .build();
-
-        connection.start()
-            .then(() => console.log("SignalR Connected"))
-            .catch(err => console.error("SignalR Connection Error: ", err));
-
-        function reloadReportsTable() {
-            $.get(window.location.pathname + window.location.search, function (data) {
-                const html = $(data);
-                const newTable = html.find("#lguReportsTable").html();
-                $("#lguReportsTable").html(newTable);
-            });
-        }
-
-        connection.on("RecentReportUpdated", function(report) {
-            reloadReportsTable();
-        });
-    </script>
-} 
 @foreach (var report in Model)
 {
                             <!-- Status Update Modal -->

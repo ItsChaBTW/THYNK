@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/community.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/lgu-styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/lgu-notification.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/THYNK.styles.css" asp-append-version="true" />
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -477,121 +476,12 @@
                 @RenderBody()
             </div>
         </div>
-    </main>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
-    <script>
-        // Sidebar toggle
-        const hamburger = document.getElementById('hamburger');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const mainContent = document.getElementById('main-content');
-        const sidebarNav = document.querySelector('.sidebar-nav');
-        
-        // Add entrance animations to content elements
-        function addEntranceAnimations() {
-            const contentElements = document.querySelectorAll('.bg-white > *');
-            contentElements.forEach((el, index) => {
-                el.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`;
-                el.style.opacity = '0';
-            });
-        }
-        
-        // Responsive sidebar height adjustments
-        function adjustSidebarHeight() {
-            const windowHeight = window.innerHeight;
-            
-            if (windowHeight <= 480) {
-                sidebarNav.classList.add('sidebar-nav-small');
-                sidebarNav.classList.remove('sidebar-nav-medium');
-            } else if (windowHeight <= 580) {
-                sidebarNav.classList.add('sidebar-nav-medium');
-                sidebarNav.classList.remove('sidebar-nav-small');
-            } else {
-                sidebarNav.classList.remove('sidebar-nav-medium');
-                sidebarNav.classList.remove('sidebar-nav-small');
-            }
-        }
-        
-        // Handle responsive sidebar behavior
-        function handleSidebarResponsiveness() {
-            if (window.innerWidth >= 768) {
-                // Desktop: Always show sidebar and adjust main content
-                sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-                mainContent.classList.add('md:ml-64');
-                overlay.classList.remove('active');
-            } else {
-                // Mobile: Check saved state
-                const sidebarState = localStorage.getItem('sidebarStateLGU') || 'collapsed';
-                
-                if (sidebarState === 'expanded') {
-                    sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-                    hamburger.classList.add('active');
-                    overlay.classList.add('active');
-                } else {
-                    sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
-                    hamburger.classList.remove('active');
-                    overlay.classList.remove('active');
-                }
-                
-                // Always remove margin adjustment on mobile
-                mainContent.classList.remove('md:ml-64');
-            }
-        }
-        
-        // Call once on load
-        adjustSidebarHeight();
-        addEntranceAnimations();
-        handleSidebarResponsiveness();
-        
-        // Update on resize
-        window.addEventListener('resize', () => {
-            adjustSidebarHeight();
-            handleSidebarResponsiveness();
-        });
-        
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            
-            if (sidebar.classList.contains('sidebar-collapsed')) {
-                sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-                overlay.classList.add('active');
-                
-                // Only adjust margin on larger screens
-                if (window.innerWidth >= 768) {
-                    mainContent.classList.add('md:ml-64');
-                }
-                
-                localStorage.setItem('sidebarStateLGU', 'expanded');
-            } else {
-                sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
-                overlay.classList.remove('active');
-                
-                // Only adjust margin on mobile
-                if (window.innerWidth < 768) {
-                    mainContent.classList.remove('md:ml-64');
-                }
-                
-                localStorage.setItem('sidebarStateLGU', 'collapsed');
-            }
-        });
-        
-        // Close sidebar when clicking overlay
-        overlay.addEventListener('click', () => {
-            sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
-            hamburger.classList.remove('active');
-            overlay.classList.remove('active');
-            
-            if (window.innerWidth < 768) {
-                mainContent.classList.remove('md:ml-64');
-            }
-            
-            localStorage.setItem('sidebarStateLGU', 'collapsed');
-        });
-    </script>
     @await RenderSectionAsync("Scripts", required: false)
     
     <!-- Logout Confirmation Modal -->
@@ -620,15 +510,8 @@
     </div>
     
     <!-- Logout Form (Hidden) -->
-    <form id="logoutForm" class="d-none" action="/Identity/Account/Logout" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="ReturnUrl" value="~/" />
+    <form id="logoutForm" class="d-none" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
     </form>
-    
-    <!-- Notification Sound Element -->
-    <audio id="notificationSound" preload="auto">
-        <source src="~/sounds/alarm.mp3" type="audio/mpeg">
-    </audio>
     
     <script>
         // Logout confirmation handling
@@ -651,220 +534,7 @@
             confirmLogoutBtn.addEventListener('click', function() {
                 logoutForm.submit();
             });
-
-            // In-progress reports notification system
-            const notificationSound = document.getElementById('notificationSound');
-            let soundEnabled = localStorage.getItem('soundEnabled') === 'true';
-            let soundPermissionGranted = localStorage.getItem('soundPermissionGranted') === 'true';
-            
-            // Ask for sound permission if not yet set
-            function askSoundPermission() {
-                if (soundPermissionGranted === false && soundEnabled === true) {
-                    if (confirm("Allow sound notifications for in-progress reports?")) {
-                        soundPermissionGranted = true;
-                        localStorage.setItem('soundPermissionGranted', 'true');
-                    } else {
-                        soundEnabled = false;
-                        localStorage.setItem('soundEnabled', 'false');
-                        // Update UI state
-                        const soundToggleCheckbox = document.getElementById('soundToggleCheckbox');
-                        if (soundToggleCheckbox) {
-                            soundToggleCheckbox.checked = false;
-                        }
-                    }
-                }
-            }
-            
-            // Check for in-progress reports periodically
-            function checkInProgressReports() {
-                $.get('@Url.Action("GetInProgressReportsCount", "LGU")', function(data) {
-                    if (data.count > 0) {
-                        // Show notification indicator
-                        showNotificationBadge(data.count);
-                        
-                        // Play sound if enabled and permission granted
-                        if (soundEnabled && soundPermissionGranted && notificationSound) {
-                            try {
-                                notificationSound.play().catch(e => console.log('Sound play prevented by browser policy:', e));
-                            } catch (e) {
-                                console.error('Error playing notification sound:', e);
-                            }
-                        }
-                    } else {
-                        // Hide notification indicator
-                        hideNotificationBadge();
-                        
-                        // Stop sound if playing
-                        if (notificationSound && !notificationSound.paused) {
-                            notificationSound.pause();
-                            notificationSound.currentTime = 0;
-                        }
-                    }
-                });
-            }
-            
-            // Sound toggle control - add to user menu
-            const userDropdownContent = document.querySelector('.user-dropdown-content');
-            if (userDropdownContent) {
-                // Create toggle button for sound
-                const soundToggle = document.createElement('div');
-                soundToggle.className = 'user-dropdown-item';
-                soundToggle.innerHTML = `
-                    <i class="fas ${soundEnabled ? 'fa-volume-up' : 'fa-volume-mute'} me-2"></i>
-                    <span>Sound: ${soundEnabled ? 'On' : 'Off'}</span>
-                    <label class="switch ml-auto">
-                        <input type="checkbox" id="soundToggleCheckbox" ${soundEnabled ? 'checked' : ''}>
-                        <span class="slider round"></span>
-                    </label>
-                `;
-                userDropdownContent.appendChild(soundToggle);
-                
-                // Add event listener to toggle
-                const soundToggleCheckbox = document.getElementById('soundToggleCheckbox');
-                if (soundToggleCheckbox) {
-                    soundToggleCheckbox.addEventListener('change', function() {
-                        soundEnabled = this.checked;
-                        localStorage.setItem('soundEnabled', soundEnabled);
-                        
-                        // Ask for permission when enabling sound
-                        if (soundEnabled && !soundPermissionGranted) {
-                            askSoundPermission();
-                        }
-                        
-                        // Update icon
-                        const icon = soundToggle.querySelector('i');
-                        if (icon) {
-                            icon.className = `fas ${soundEnabled ? 'fa-volume-up' : 'fa-volume-mute'} me-2`;
-                        }
-                        
-                        // Update text
-                        const span = soundToggle.querySelector('span');
-                        if (span) {
-                            span.textContent = `Sound: ${soundEnabled ? 'On' : 'Off'}`;
-                        }
-                        
-                        // If disabled, stop any playing sound
-                        if (!soundEnabled && notificationSound && !notificationSound.paused) {
-                            notificationSound.pause();
-                            notificationSound.currentTime = 0;
-                        }
-                    });
-                }
-            }
-            
-            // Ask for permission on initial load if needed
-            if (soundEnabled && !soundPermissionGranted) {
-                askSoundPermission();
-            }
-            
-            // Helper functions for notification indicator
-            function showNotificationBadge(count) {
-                // Select all nav items that should show notifications
-                const reportsNavItem = document.querySelector('.nav-item[href*="ManageReports"]');
-                if (reportsNavItem) {
-                    // Check if badge already exists
-                    let badge = reportsNavItem.querySelector('.notification-badge');
-                    if (!badge) {
-                        badge = document.createElement('span');
-                        badge.className = 'notification-badge';
-                        reportsNavItem.appendChild(badge);
-                    }
-                    badge.textContent = count;
-                    badge.style.display = 'flex';
-                }
-            }
-            
-            function hideNotificationBadge() {
-                const badges = document.querySelectorAll('.notification-badge');
-                badges.forEach(badge => {
-                    badge.style.display = 'none';
-                });
-            }
-            
-            // Initial check and start periodic checking
-            checkInProgressReports();
-            setInterval(checkInProgressReports, 30000); // Check every 30 seconds
         });
     </script>
-    
-    <style>
-        /* Notification Badge Styles */
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #e74c3c;
-            color: white;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
-            animation: pulse 2s infinite;
-        }
-        
-        /* Define the pulse animation in an external CSS file */
-        
-        /* Toggle Switch Styles */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-            margin-left: auto;
-        }
-        
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-        }
-        
-        input:checked + .slider {
-            background-color: #1ABC9C;
-        }
-        
-        input:focus + .slider {
-            box-shadow: 0 0 1px #1ABC9C;
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-        
-        .slider.round {
-            border-radius: 34px;
-        }
-        
-        .slider.round:before {
-            border-radius: 50%;
-        }
-    </style>
 </body>
 </html> 

@@ -1073,7 +1073,7 @@
     <!-- Logout Form (Hidden) -->
     <form id="logoutForm" class="d-none" action="/Identity/Account/Logout" method="post">
         @Html.AntiForgeryToken()
-        <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
+        <input type="hidden" name="ReturnUrl" value="~/" />
     </form>
     
     <!-- Report Submission Success Modal -->
@@ -1130,8 +1130,12 @@
             @if (TempData.ContainsKey("ReportSubmitted") && (bool)TempData["ReportSubmitted"] == true)
             {
                 <text>
-                const reportModal = new bootstrap.Modal(document.getElementById('reportSubmissionModal'));
-                reportModal.show();
+                try {
+                    const reportModal = new bootstrap.Modal(document.getElementById('reportSubmissionModal'));
+                    reportModal.show();
+                } catch (e) {
+                    console.error("Error showing report modal:", e);
+                }
                 </text>
             }
             
@@ -1143,8 +1147,10 @@
             
             // Initialize Bootstrap modal
             let bootstrapModal = null;
-            if (typeof bootstrap !== 'undefined') {
+            try {
                 bootstrapModal = new bootstrap.Modal(logoutModal);
+            } catch (e) {
+                console.error("Error initializing logout modal:", e);
             }
             
             // Add click event to all logout buttons
@@ -1155,6 +1161,7 @@
                         bootstrapModal.show();
                     } else {
                         // Fallback if bootstrap modal isn't available
+                        console.log("Modal not available, submitting form directly");
                         logoutForm.submit();
                     }
                 });

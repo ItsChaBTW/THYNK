@@ -752,6 +752,8 @@ namespace THYNK.Controllers
             var pendingReportsCount = await _context.DisasterReports
                 .CountAsync(r => r.Status == ReportStatus.Pending);
             return Json(new { count = pendingReportsCount });
+        }
+
         // GET: List pending educational resources
         public async Task<IActionResult> PendingResources()
         {

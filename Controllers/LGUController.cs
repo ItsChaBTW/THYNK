@@ -1211,8 +1211,6 @@ namespace THYNK.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetInProgressReportsCount()
-        // Analytics dashboard
-        public async Task<IActionResult> Analytics()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
@@ -1227,9 +1225,18 @@ namespace THYNK.Controllers
                                 && r.Status == ReportStatus.InProgress);
             
             return Json(new { count = inProgressCount });
+        }
+
+        // Analytics dashboard
+        public async Task<IActionResult> Analytics()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
                 return NotFound();
             }
-            
             
             // Get total reports count
             var totalReports = await _context.DisasterReports
