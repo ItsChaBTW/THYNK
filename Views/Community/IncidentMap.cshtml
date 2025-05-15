@@ -1,6 +1,6 @@
 @{
     ViewData["Title"] = "Incident Map";
-    Layout = "_LGULayout";
+    Layout = "_CommunityLayout";
 }
 
 <!-- Introduction and Guidelines Section -->
@@ -272,16 +272,16 @@
                     <!-- Date Range Filter -->
                     <div class="col-md-6 mb-4">
                         <label class="form-label fw-bold">Date Range</label>
-                        <div class="input-group input-group-sm mb-2">
+                    <div class="input-group input-group-sm mb-2">
                             <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                             <input type="date" id="filter-date-from" class="form-control form-control-sm" placeholder="Start Date">
-                        </div>
-                        <div class="input-group input-group-sm">
+                    </div>
+                    <div class="input-group input-group-sm">
                             <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                             <input type="date" id="filter-date-to" class="form-control form-control-sm" placeholder="End Date">
-                        </div>
-                        <small class="text-muted mt-2 d-block">Filter incidents by date range</small>
                     </div>
+                        <small class="text-muted mt-2 d-block">Filter incidents by date range</small>
+                </div>
                     
                     <!-- Incident Type Filter -->
                     <div class="col-md-6 mb-4">
@@ -316,8 +316,8 @@
                             <button class="btn btn-sm btn-outline-secondary me-2 select-all-types">Select All</button>
                             <button class="btn btn-sm btn-outline-secondary clear-all-types">Clear All</button>
                         </div>
-                    </div>
-                </div>
+            </div>
+        </div>
 
                 <div class="row">
                     <!-- Status Filter -->
@@ -327,16 +327,16 @@
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input status-filter" type="checkbox" value="2" id="status-inprogress" checked>
                                 <label class="form-check-label" for="status-inprogress">In Progress</label>
-                            </div>
+            </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input status-filter" type="checkbox" value="3" id="status-resolved" checked>
                                 <label class="form-check-label" for="status-resolved">Resolved</label>
-                            </div>
-                        </div>
+                    </div>
+                    </div>
                         <div class="d-flex mt-1">
                             <button class="btn btn-sm btn-outline-secondary me-2 select-all-statuses">Select All</button>
                             <button class="btn btn-sm btn-outline-secondary clear-all-statuses">Clear All</button>
-                        </div>
+                </div>
                     </div>
                     
                     <!-- Severity Filter -->
@@ -346,15 +346,15 @@
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input severity-filter" type="checkbox" value="Low" id="severity-low" checked>
                                 <label class="form-check-label" for="severity-low">Low</label>
-                            </div>
+                    </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input severity-filter" type="checkbox" value="Medium" id="severity-medium" checked>
                                 <label class="form-check-label" for="severity-medium">Medium</label>
-                            </div>
+                    </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input severity-filter" type="checkbox" value="High" id="severity-high" checked>
                                 <label class="form-check-label" for="severity-high">High</label>
-                            </div>
+                </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input severity-filter" type="checkbox" value="Critical" id="severity-critical" checked>
                                 <label class="form-check-label" for="severity-critical">Critical</label>
@@ -1692,7 +1692,7 @@
             
             // Apply the reset
             setTimeout(() => {
-                renderMarkers(incidents);
+            renderMarkers(incidents);
                 showMapLoading(false);
                 showFilterToast(incidents.length, incidents.length, true);
             }, 300);

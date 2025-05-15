@@ -358,80 +358,80 @@
 
 <div class="report-container">
     <div class="page-header">
-        <div>
+            <div>
             <h1 class="page-title">Incident Report Details</h1>
             <p class="page-subtitle">View comprehensive information about this disaster report</p>
         </div>
     </div>
     
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-    
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
     <div class="row row-compact">
-        <div class="col-md-8">
+            <div class="col-md-8">
             <!-- Report Information -->
             <div class="report-card animate-in">
-                <div class="card-header">
+                    <div class="card-header">
                     <h5 class="card-title"><i class="fas fa-clipboard-list"></i>Report Information</h5>
-                </div>
-                <div class="card-body">
+                    </div>
+                    <div class="card-body">
                     <div class="row row-compact">
-                        <div class="col-md-6">
+                            <div class="col-md-6">
                             <div class="info-group">
                                 <div class="info-label">Title</div>
                                 <div class="info-value">@Model.Title</div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
+                            </div>
+                            <div class="col-md-6">
                             <div class="info-group">
                                 <div class="info-label">Status</div>
                                 <div class="info-value">
-                                    <span class="badge @(Model.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
-                                                     Model.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
-                                                     Model.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
-                                                     Model.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
-                                        @Model.Status
-                                    </span>
-                                </div>
+                                <span class="badge @(Model.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
+                                                  Model.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
+                                                  Model.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
+                                                  Model.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                                    @Model.Status
+                                </span>
                             </div>
+                        </div>
                         </div>
                     </div>
                     <div class="row row-compact">
-                        <div class="col-md-6">
+                            <div class="col-md-6">
                             <div class="info-group">
                                 <div class="info-label">Type</div>
                                 <div class="info-value">
-                                    <span class="badge bg-secondary">@Model.Type</span>
+                                <span class="badge bg-secondary">@Model.Type</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
+                            </div>
+                            <div class="col-md-6">
                             <div class="info-group">
                                 <div class="info-label">Severity</div>
                                 <div class="info-value">
                                     <span class="badge severity-badge @(Model.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
-                                                     Model.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
-                                                     Model.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
-                                        @Model.Severity
-                                    </span>
-                                </div>
+                                                  Model.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
+                                                  Model.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                                    @Model.Severity
+                                </span>
                             </div>
+                        </div>
                         </div>
                     </div>
                     <div class="row row-compact">
-                        <div class="col-12">
+                            <div class="col-12">
                             <div class="info-group">
                                 <div class="info-label">Description</div>
                                 <div class="info-value">@Model.Description</div>
@@ -439,7 +439,7 @@
                         </div>
                     </div>
                     <div class="row row-compact">
-                        <div class="col-md-6">
+                            <div class="col-md-6">
                             <div class="info-group">
                                 <div class="info-label">Location</div>
                                 <div class="info-value">
@@ -453,27 +453,27 @@
                                     }
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
+                            </div>
+                            <div class="col-md-6">
                             <div class="info-group">
                                 <div class="info-label">Date Reported</div>
                                 <div class="info-value">@Model.DateReported.ToString("MMM dd, yyyy HH:mm")</div>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                    @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
-                    {
+                        @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
+                        {
                         <div class="row row-compact">
-                            <div class="col-12">
+                                <div class="col-12">
                                 <div class="info-group">
                                     <div class="info-label">Additional Information</div>
                                     <div class="info-value">@Model.AdditionalInfo</div>
                                 </div>
+                                </div>
                             </div>
-                        </div>
-                    }
+                        }
+                    </div>
                 </div>
-            </div>
 
             <!-- Location Map -->
             <div class="report-card animate-in">
@@ -486,10 +486,10 @@
             </div>
             
             <!-- Report Image -->
-            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-            {
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
                 <div class="report-card animate-in">
-                    <div class="card-header">
+                        <div class="card-header">
                         <h5 class="card-title"><i class="fas fa-image"></i>Report Image</h5>
                     </div>
                     <div class="card-body p-0">
@@ -499,17 +499,17 @@
                                 <button class="expand-btn" data-bs-toggle="modal" data-bs-target="#imageModal">
                                     <i class="fas fa-expand-alt"></i>
                                 </button>
-                            </div>
+                        </div>
+                        </div>
                         </div>
                     </div>
-                </div>
-            }
+                }
         </div>
 
         <div class="col-md-4">
             <!-- Reporter Information -->
             <div class="report-card animate-in">
-                <div class="card-header">
+                    <div class="card-header">
                     <h5 class="card-title"><i class="fas fa-user"></i>Reporter Information</h5>
                 </div>
                 <div class="card-body">
@@ -541,23 +541,23 @@
                         <div class="info-group">
                             <div class="info-label">Name</div>
                             <div class="info-value">@(Model.AssignedTo.FirstName + " " + Model.AssignedTo.LastName)</div>
-                        </div>
-                        
+                </div>
+
                         <div class="info-group">
                             <div class="info-label">Assigned Date</div>
                             <div class="info-value">@Model.AssignedAt?.ToString("MMM dd, yyyy HH:mm")</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            }
+                }
 
             <!-- Actions -->
             <div class="report-card animate-in">
-                <div class="card-header">
+                    <div class="card-header">
                     <h5 class="card-title"><i class="fas fa-cog"></i>Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
                         <a href="@Url.Action("ManageReports", "LGU")" class="action-btn btn-back">
                             <i class="fas fa-arrow-left"></i>Back to Reports
                         </a>
@@ -634,14 +634,14 @@
                 <div>
                     <div class="popup-header">@Model.Title</div>
                     <div class="popup-body">
-                        <p class="mb-1 small text-muted">@Model.Type</p>
-                        <p class="mb-0 small">
-                            <span class="badge @(Model.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
-                                              Model.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
-                                              Model.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
-                                @Model.Severity
-                            </span>
-                        </p>
+                    <p class="mb-1 small text-muted">@Model.Type</p>
+                    <p class="mb-0 small">
+                        <span class="badge @(Model.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
+                                          Model.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
+                                          Model.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                            @Model.Severity
+                        </span>
+                    </p>
                     </div>
                 </div>
             `);

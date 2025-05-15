@@ -839,9 +839,9 @@
         <div class="max-w-7xl mx-auto">
             <!-- Notifications -->
             <div id="notifications" class="space-y-3 mb-6">
-                @if (TempData["SuccessMessage"] != null)
+                @if (TempData["SuccessMessage"] != null && !TempData.ContainsKey("ReportSubmitted"))
                 {
-                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md" role="alert">
+                    @* <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md" role="alert">
                         <div class="flex items-center">
                             <i class="fas fa-check-circle mr-2"></i>
                             <p>@TempData["SuccessMessage"]</p>
@@ -849,7 +849,7 @@
                         <button type="button" class="float-right text-green-700" onclick="this.parentElement.remove()">
                             <i class="fas fa-times"></i>
                         </button>
-                    </div>
+                    </div> *@
                 }
                 
                 @if (TempData["WarningMessage"] != null)
@@ -1066,9 +1066,65 @@
         <input type="hidden" name="returnUrl" value="@Url.Action("Index", "Home")" />
     </form>
     
+    <!-- Report Submission Success Modal -->
+    <div class="modal fade" id="reportSubmissionModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="reportSubmissionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title" id="reportSubmissionModalLabel">
+                        <i class="fas fa-check-circle me-2"></i>Report Submitted Successfully
+                    </h5>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="success-icon bg-success bg-opacity-10 text-success mx-auto mb-4" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-check-circle fa-3x"></i>
+                        </div>
+                        
+                        <h4 class="mt-4 mb-2 text-success">Thank You!</h4>
+                        <p class="mb-3">Your incident report has been successfully submitted.</p>
+                        <p class="small text-muted">Our team will review your report and take appropriate action.</p>
+                        
+                        <div class="report-info mt-4 text-start bg-light p-3 rounded">
+                            @if (TempData["ReportId"] != null)
+                            {
+                                <p class="mb-2"><strong>Report ID:</strong> <span id="reportIdValue">@TempData["ReportId"]</span></p>
+                            }
+                            @if (TempData["ReportTitle"] != null)
+                            {
+                                <p class="mb-2"><strong>Title:</strong> @TempData["ReportTitle"]</p>
+                            }
+                            @if (TempData["ReportType"] != null)
+                            {
+                                <p class="mb-0"><strong>Type:</strong> @TempData["ReportType"]</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pt-0">
+                    <a href="@Url.Action("MyReports", "Community")" class="btn btn-outline-secondary">
+                        <i class="fas fa-clipboard-list me-2"></i>View My Reports
+                    </a>
+                    <a href="@Url.Action("CommunityFeed", "Community")" class="btn btn-success px-4">
+                        <i class="fas fa-home me-2"></i>Return to Feed
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // Logout confirmation handling
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for report submission
+            @if (TempData.ContainsKey("ReportSubmitted") && (bool)TempData["ReportSubmitted"] == true)
+            {
+                <text>
+                const reportModal = new bootstrap.Modal(document.getElementById('reportSubmissionModal'));
+                reportModal.show();
+                </text>
+            }
+            
             // Get all logout buttons
             const logoutBtns = document.querySelectorAll('[data-logout-trigger]');
             const logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmModal'));

@@ -767,7 +767,7 @@
                 this.classList.add('active');
                 if (statusValue === 'all') {
                     fetchIncidentsCommunity({}); // No status param, show all
-                } else {
+            } else {
                     fetchIncidentsCommunity({ status: statusValue });
                 }
             });
@@ -1471,7 +1471,7 @@
             
             // Apply the reset
             setTimeout(() => {
-                renderMarkers(incidents);
+            renderMarkers(incidents);
                 showMapLoading(false);
                 showFilterToast(incidents.length, incidents.length, true);
             }, 300);

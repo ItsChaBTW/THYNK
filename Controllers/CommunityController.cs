@@ -148,8 +148,14 @@ namespace THYNK.Controllers
                 
                 if (recordsAffected > 0)
                 {
+                    // Set report submission success data for the modal
+                    TempData["ReportSubmitted"] = true;
+                    TempData["ReportId"] = report.Id;
+                    TempData["ReportTitle"] = report.Title;
+                    TempData["ReportType"] = report.Type.ToString();
                     TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
-                    return RedirectToAction(nameof(Dashboard));
+                    
+                    return RedirectToAction(nameof(CommunityFeed));
                 }
                 else
                 {

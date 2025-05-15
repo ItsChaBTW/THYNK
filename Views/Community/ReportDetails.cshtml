@@ -4,11 +4,11 @@
     Layout = "_CommunityLayout";
 }
 
-<div class="container-fluid px-lg-4 py-3">
+<div class="container-fluid px-lg-4 py-4">
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-12">
             <!-- Main Incident Card -->
-            <div class="card shadow-sm mb-4 border-0">
+            <div class="card shadow-sm mb-4 border-0 incident-card">
                 <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-3">
                     <div class="d-flex align-items-center">
                         @{
@@ -22,30 +22,47 @@
                                             Model.Status == ReportStatus.InProgress ? "tools" :
                                             Model.Status == ReportStatus.Resolved ? "check-circle" : "times-circle";
                         }
-                        <div class="card-icon bg-@headerColor text-white me-3">
+                        <div class="card-icon bg-gradient-@headerColor text-white me-3">
                             <i class="fas fa-@statusIcon"></i>
                         </div>
                         <div>
-                            <h5 class="fw-bold m-0">@Model.Title</h5>
-                            <span class="badge bg-@headerColor mt-1">
-                                @(Model.Status == ReportStatus.InProgress ? "In Progress" : Model.Status.ToString())
-                            </span>
+                            <h5 class="fw-bold m-0 title-text">@Model.Title</h5>
+                            <div class="d-flex align-items-center mt-1">
+                                <span class="badge bg-gradient-@headerColor">
+                                    @(Model.Status == ReportStatus.InProgress ? "In Progress" : Model.Status.ToString())
+                                </span>
+                                <span class="text-muted ms-2 fs-7">
+                                    <i class="fas fa-calendar-alt me-1"></i>@Model.DateReported.ToString("MMM dd, yyyy")
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <div class="text-end">
+                    <div class="text-end d-flex flex-column align-items-end">
                         @switch (Model.Severity)
                         {
                             case SeverityLevel.Low:
-                                <span class="badge bg-success">Low Severity</span>
+                                <span class="severity-badge severity-low">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    Low Severity
+                                </span>
                                 break;
                             case SeverityLevel.Medium:
-                                <span class="badge bg-warning text-dark">Medium Severity</span>
+                                <span class="severity-badge severity-medium">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    Medium Severity
+                                </span>
                                 break;
                             case SeverityLevel.High:
-                                <span class="badge bg-danger">High Severity</span>
+                                <span class="severity-badge severity-high">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    High Severity
+                                </span>
                                 break;
                             case SeverityLevel.Critical:
-                                <span class="badge bg-dark">Critical Severity</span>
+                                <span class="severity-badge severity-critical">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Critical Severity
+                                </span>
                                 break;
                         }
                     </div>
@@ -53,108 +70,113 @@
                 
                 <div class="card-body">
                     <!-- Key Information Section -->
-                    <div class="d-flex justify-content-between mb-4">
+                    <div class="d-flex justify-content-between mb-4 key-info-section">
                         <div class="incident-meta">
-                            <p class="text-muted mb-1 fs-7">
-                                <i class="fas fa-calendar-alt me-1"></i> Reported on @Model.DateReported.ToString("MMM dd, yyyy")
-                            </p>
                             <p class="text-muted mb-0 fs-7">
                                 <i class="fas fa-clock me-1"></i> @Model.DateReported.ToString("hh:mm tt")
                             </p>
                         </div>
-                        <div class="incident-type">
-                            @switch (Model.Type)
-                            {
-                                case DisasterType.Earthquake:
-                                    <div class="type-badge bg-light-danger text-danger">
-                                        <i class="fas fa-house-damage me-2"></i>Earthquake
-                                    </div>
-                                    break;
-                                case DisasterType.Flood:
-                                    <div class="type-badge bg-light-primary text-primary">
-                                        <i class="fas fa-water me-2"></i>Flood
-                                    </div>
-                                    break;
-                                case DisasterType.Fire:
-                                    <div class="type-badge bg-light-warning text-warning">
-                                        <i class="fas fa-fire me-2"></i>Fire
-                                    </div>
-                                    break;
-                                case DisasterType.Landslide:
-                                    <div class="type-badge bg-light-secondary text-secondary">
-                                        <i class="fas fa-mountain me-2"></i>Landslide
-                                    </div>
-                                    break;
-                                case DisasterType.Storm:
-                                    <div class="type-badge bg-light-info text-info">
-                                        <i class="fas fa-cloud-showers-heavy me-2"></i>Storm
-                                    </div>
-                                    break;
-                                case DisasterType.Accident:
-                                    <div class="type-badge bg-light-dark text-dark">
-                                        <i class="fas fa-car-crash me-2"></i>Accident
-                                    </div>
-                                    break;
-                                default:
-                                    <div class="type-badge bg-light-secondary text-secondary">
-                                        <i class="fas fa-exclamation-circle me-2"></i>Other
-                                    </div>
-                                    break;
-                            }
+                        <div class="d-flex gap-2 align-items-center">
+                            <div class="incident-type">
+                                @switch (Model.Type)
+                                {
+                                    case DisasterType.Earthquake:
+                                        <div class="type-badge bg-gradient-danger text-white">
+                                            <i class="fas fa-house-damage me-2"></i>Earthquake
+                                        </div>
+                                        break;
+                                    case DisasterType.Flood:
+                                        <div class="type-badge bg-gradient-primary text-white">
+                                            <i class="fas fa-water me-2"></i>Flood
+                                        </div>
+                                        break;
+                                    case DisasterType.Fire:
+                                        <div class="type-badge bg-gradient-warning text-white">
+                                            <i class="fas fa-fire me-2"></i>Fire
+                                        </div>
+                                        break;
+                                    case DisasterType.Landslide:
+                                        <div class="type-badge bg-gradient-secondary text-white">
+                                            <i class="fas fa-mountain me-2"></i>Landslide
+                                        </div>
+                                        break;
+                                    case DisasterType.Storm:
+                                        <div class="type-badge bg-gradient-info text-white">
+                                            <i class="fas fa-cloud-showers-heavy me-2"></i>Storm
+                                        </div>
+                                        break;
+                                    case DisasterType.Accident:
+                                        <div class="type-badge bg-gradient-dark text-white">
+                                            <i class="fas fa-car-crash me-2"></i>Accident
+                                        </div>
+                                        break;
+                                    default:
+                                        <div class="type-badge bg-gradient-secondary text-white">
+                                            <i class="fas fa-exclamation-circle me-2"></i>Other
+                                        </div>
+                                        break;
+                                }
+                            </div>
+                            <button type="button" class="btn btn-action btn-timeline" data-bs-toggle="modal" data-bs-target="#timelineModal">
+                                <i class="fas fa-history me-1"></i> Timeline
+                            </button>
+                            <button type="button" class="btn btn-action btn-emergency" data-bs-toggle="modal" data-bs-target="#emergencyModal">
+                                <i class="fas fa-phone-alt me-1"></i> Emergency
+                            </button>
                         </div>
                     </div>
                     
                     <!-- Description Section -->
                     <div class="content-section mb-4">
                         <h6 class="section-title">
-                            <i class="fas fa-align-left me-2"></i>Description
+                            <i class="fas fa-align-left me-2 text-primary"></i>Description
                         </h6>
                         <div class="section-content">
-                            <p class="mb-0">@Model.Description</p>
+                            <p class="mb-0 text-description">@Model.Description</p>
                         </div>
                     </div>
                     
                     <!-- Location Details Section -->
                     <div class="content-section mb-4">
                         <h6 class="section-title">
-                            <i class="fas fa-map-marker-alt me-2"></i>Location Details
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>Location Details
                         </h6>
                         <div class="section-content">
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="location-item">
-                                        <span class="fw-bold d-block fs-7">Full Address</span>
-                                        <span>@Model.Location</span>
+                                        <span class="fw-bold d-block fs-7 text-secondary">Full Address</span>
+                                        <span class="location-text">@Model.Location</span>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="location-item">
-                                        <span class="fw-bold d-block fs-7">Coordinates</span>
-                                        <span class="small">@Model.Latitude.ToString("F6"), @Model.Longitude.ToString("F6")</span>
+                                        <span class="fw-bold d-block fs-7 text-secondary">Coordinates</span>
+                                        <span class="small location-text">@Model.Latitude.ToString("F6"), @Model.Longitude.ToString("F6")</span>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="location-item">
-                                        <span class="fw-bold d-block fs-7">Purok/Street</span>
-                                        <span>@(String.IsNullOrEmpty(Model.Purok) || Model.Purok == "Unknown" ? "Not specified" : Model.Purok)</span>
+                                        <span class="fw-bold d-block fs-7 text-secondary">Purok/Street</span>
+                                        <span class="location-text">@(String.IsNullOrEmpty(Model.Purok) || Model.Purok == "Unknown" ? "Not specified" : Model.Purok)</span>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="location-item">
-                                        <span class="fw-bold d-block fs-7">Barangay</span>
-                                        <span>@(String.IsNullOrEmpty(Model.Barangay) || Model.Barangay == "Unknown" ? "Not specified" : Model.Barangay)</span>
+                                        <span class="fw-bold d-block fs-7 text-secondary">Barangay</span>
+                                        <span class="location-text">@(String.IsNullOrEmpty(Model.Barangay) || Model.Barangay == "Unknown" ? "Not specified" : Model.Barangay)</span>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="location-item">
-                                        <span class="fw-bold d-block fs-7">City/Municipality</span>
-                                        <span>@(String.IsNullOrEmpty(Model.City) || Model.City == "Unknown" ? "Not specified" : Model.City)</span>
+                                        <span class="fw-bold d-block fs-7 text-secondary">City/Municipality</span>
+                                        <span class="location-text">@(String.IsNullOrEmpty(Model.City) || Model.City == "Unknown" ? "Not specified" : Model.City)</span>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="location-item">
-                                        <span class="fw-bold d-block fs-7">Country</span>
-                                        <span>@Model.Country</span>
+                                        <span class="fw-bold d-block fs-7 text-secondary">Country</span>
+                                        <span class="location-text">@Model.Country</span>
                                     </div>
                                 </div>
                             </div>
@@ -162,11 +184,13 @@
                             <!-- Incident Image (moved here) -->
                             @if (!String.IsNullOrEmpty(Model.ImageUrl) && Model.ImageUrl != "/images/default-report.jpg")
                             {
-                                <div class="mt-3 incident-image-container">
+                                <div class="mt-4 incident-image-container">
                                     <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-image text-primary me-2"></i>
-                                        <h6 class="section-subtitle mb-0">Incident Photo</h6>
-                                        <span class="ms-auto text-primary fs-7">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-image text-primary me-2"></i>
+                                            <h6 class="section-subtitle mb-0">Incident Photo</h6>
+                                        </div>
+                                        <span class="ms-auto text-primary fs-7 view-image-text">
                                             <i class="fas fa-search-plus me-1"></i>Click to enlarge
                                         </span>
                                     </div>
@@ -182,10 +206,12 @@
                             }
 
                             <!-- Map inside location section -->
-                            <div class="mt-3">
+                            <div class="mt-4">
                                 <div class="d-flex align-items-center mb-2">
-                                    <i class="fas fa-map-marked-alt text-primary me-2"></i>
-                                    <h6 class="section-subtitle mb-0">Map View</h6>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-map-marked-alt text-primary me-2"></i>
+                                        <h6 class="section-subtitle mb-0">Map View</h6>
+                                    </div>
                                 </div>
                                 <div id="map" class="map-preview rounded"></div>
                             </div>
@@ -197,108 +223,141 @@
                     {
                         <div class="content-section mb-4">
                             <h6 class="section-title">
-                                <i class="fas fa-info-circle me-2"></i>Additional Information
+                                <i class="fas fa-info-circle me-2 text-primary"></i>Additional Information
                             </h6>
                             <div class="section-content">
-                                <p class="mb-0">@Model.AdditionalInfo</p>
+                                <p class="mb-0 text-description">@Model.AdditionalInfo</p>
                             </div>
                         </div>
                     }
                     
                     <!-- Action Buttons -->
-                    <div class="d-flex flex-wrap gap-2 justify-content-between mt-4">
-                        <a asp-action="MyReports" class="btn btn-outline-secondary">
+                    <div class="d-flex flex-wrap gap-3 justify-content-between mt-4 action-buttons-container">
+                        <a asp-action="MyReports" class="btn btn-back">
                             <i class="fas fa-arrow-left me-2"></i>Back to My Reports
                         </a>
-                        <div>
-                            <a asp-action="IncidentMap" class="btn btn-info text-white">
-                                <i class="fas fa-map-marked-alt me-1"></i>View on Map
-                            </a>
-                        </div>
+                        <a asp-action="IncidentMap" class="btn btn-map">
+                            <i class="fas fa-map-marked-alt me-1"></i>View on Map
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-lg-4">
-            <!-- Status Timeline -->
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-header py-3 bg-white border-bottom">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="fas fa-history me-2 text-primary"></i>Status Timeline
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="timeline">
-                        <div class="timeline-item">
-                            <div class="timeline-marker bg-success"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-0 fw-bold fs-7">Report Submitted</h6>
-                                <small class="text-muted">@Model.DateReported.ToString("MMM dd, yyyy hh:mm tt")</small>
-                            </div>
+    </div>
+</div>
+
+<!-- Status Timeline Modal -->
+<div class="modal fade" id="timelineModal" tabindex="-1" aria-labelledby="timelineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title" id="timelineModalLabel">
+                    <i class="fas fa-history me-2"></i>Status Timeline
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-0 fw-bold fs-7">Report Submitted</h6>
+                            <small class="text-muted">@Model.DateReported.ToString("MMM dd, yyyy hh:mm tt")</small>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker @(Model.Status != ReportStatus.Pending ? "bg-success" : "bg-secondary")"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-0 fw-bold fs-7">Verification</h6>
-                                <small class="text-muted">@(Model.Status != ReportStatus.Pending ? "Verified" : "Pending verification")</small>
-                            </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker @(Model.Status != ReportStatus.Pending ? "bg-success" : "bg-secondary")"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-0 fw-bold fs-7">Verification</h6>
+                            <small class="text-muted">@(Model.Status != ReportStatus.Pending ? "Verified" : "Pending verification")</small>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker @(Model.Status == ReportStatus.InProgress || Model.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-0 fw-bold fs-7">Response In Progress</h6>
-                                <small class="text-muted">@(Model.Status == ReportStatus.InProgress ? "Currently responding" : (Model.Status == ReportStatus.Resolved ? "Completed" : "Not started"))</small>
-                            </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker @(Model.Status == ReportStatus.InProgress || Model.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-0 fw-bold fs-7">Response In Progress</h6>
+                            <small class="text-muted">@(Model.Status == ReportStatus.InProgress ? "Currently responding" : (Model.Status == ReportStatus.Resolved ? "Completed" : "Not started"))</small>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-marker @(Model.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")"></div>
-                            <div class="timeline-content">
-                                <h6 class="mb-0 fw-bold fs-7">Resolution</h6>
-                                <small class="text-muted">@(Model.Status == ReportStatus.Resolved ? "Incident resolved" : "Pending resolution")</small>
-                            </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker @(Model.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-0 fw-bold fs-7">Resolution</h6>
+                            <small class="text-muted">@(Model.Status == ReportStatus.Resolved ? "Incident resolved" : "Pending resolution")</small>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Quick Response Card -->
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-header py-3 bg-white border-bottom">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="fas fa-phone-alt me-2 text-primary"></i>Emergency Contacts
-                    </h6>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Emergency Contacts Modal -->
+<div class="modal fade" id="emergencyModal" tabindex="-1" aria-labelledby="emergencyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-gradient-danger text-white">
+                <h5 class="modal-title" id="emergencyModalLabel">
+                    <i class="fas fa-phone-alt me-2"></i>Emergency Contacts
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="emergency-info py-3 px-4 bg-light">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-info-circle text-danger me-2"></i>
+                        <h6 class="mb-0 fw-bold">In case of emergency:</h6>
+                    </div>
+                    <ol class="ps-4 mb-0">
+                        <li>Stay calm and assess the situation</li>
+                        <li>Ensure your safety first</li>
+                        <li>Call the appropriate emergency service</li>
+                        <li>Provide clear location details</li>
+                    </ol>
                 </div>
-                <div class="card-body">
-                    <div class="emergency-contacts">
-                        <div class="contact-item mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-ambulance text-danger me-2"></i>
-                                <h6 class="mb-0 fs-7 fw-bold">Medical Emergency</h6>
+                
+                <div class="emergency-contacts p-4">
+                    <div class="contact-grid">
+                        <div class="contact-item">
+                            <div class="contact-icon medical">
+                                <i class="fas fa-ambulance"></i>
                             </div>
-                            <a href="tel:911" class="btn btn-sm btn-outline-danger w-100">
-                                <i class="fas fa-phone-alt me-1"></i> 911
-                            </a>
-                        </div>
-                        
-                        <div class="contact-item mb-3">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-fire-extinguisher text-warning me-2"></i>
-                                <h6 class="mb-0 fs-7 fw-bold">Fire Department</h6>
+                            <div class="contact-details">
+                                <h6 class="contact-title">Medical Emergency</h6>
+                                <p class="contact-description mb-2">For injuries, health emergencies, and ambulance services</p>
+                                <a href="tel:911" class="btn btn-contact btn-medical">
+                                    <i class="fas fa-phone-alt me-1"></i> 911
+                                </a>
                             </div>
-                            <a href="tel:911" class="btn btn-sm btn-outline-warning w-100">
-                                <i class="fas fa-phone-alt me-1"></i> 911
-                            </a>
                         </div>
                         
                         <div class="contact-item">
-                            <div class="d-flex align-items-center mb-1">
-                                <i class="fas fa-shield-alt text-primary me-2"></i>
-                                <h6 class="mb-0 fs-7 fw-bold">Local Disaster Office</h6>
+                            <div class="contact-icon fire">
+                                <i class="fas fa-fire-extinguisher"></i>
                             </div>
-                            <a href="tel:123456789" class="btn btn-sm btn-outline-primary w-100">
-                                <i class="fas fa-phone-alt me-1"></i> Local Hotline
-                            </a>
+                            <div class="contact-details">
+                                <h6 class="contact-title">Fire Department</h6>
+                                <p class="contact-description mb-2">For fires, rescues, and hazardous materials incidents</p>
+                                <a href="tel:911" class="btn btn-contact btn-fire">
+                                    <i class="fas fa-phone-alt me-1"></i> 911
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon disaster">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="contact-details">
+                                <h6 class="contact-title">Local Disaster Office</h6>
+                                <p class="contact-description mb-2">For disaster response coordination and evacuation</p>
+                                <a href="tel:123456789" class="btn btn-contact btn-disaster">
+                                    <i class="fas fa-phone-alt me-1"></i> Local Hotline
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -416,56 +475,362 @@
             --dark-color: #212529;
             --dark-light: rgba(33, 37, 41, 0.1);
             --light-color: #f8f9fa;
-            --border-color: #e9ecef;
+            --border-color: rgba(0, 0, 0, 0.05);
+            --bg-color: #eef0f5;
+            --text-color: #2d3748;
+            --text-muted: #6c757d;
+            --border-radius: 10px;
+            --box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
+        /* Base styles */
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        /* Container adjustments for full width */
+        .container-fluid {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
         /* Font size utility */
         .fs-7 {
             font-size: 0.85rem;
         }
         
+        /* Card enhancements */
+        .card {
+            transition: all 0.2s ease;
+            border-radius: var(--border-radius);
+            border: none;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+        }
+        
+        .card-header {
+            border-top-left-radius: var(--border-radius) !important;
+            border-top-right-radius: var(--border-radius) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .incident-card .card-body {
+            padding: 1.5rem;
+        }
+        
+        /* Title text styling */
+        .title-text {
+            color: var(--text-color);
+            letter-spacing: -0.01em;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        /* Card icon */
+        .card-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        /* New action buttons */
+        .btn-action {
+            border-radius: 50px;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            margin-right: 0.5rem;
+            font-weight: 500;
+            border: none;
+            box-shadow: var(--box-shadow);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-timeline {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.08) 0%, rgba(13, 110, 253, 0.12) 100%);
+            color: var(--primary-color);
+        }
+        
+        .btn-timeline:hover {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.12) 0%, rgba(13, 110, 253, 0.18) 100%);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 110, 253, 0.1);
+        }
+        
+        .btn-emergency {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.08) 0%, rgba(220, 53, 69, 0.12) 100%);
+            color: var(--danger-color);
+        }
+        
+        .btn-emergency:hover {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.12) 0%, rgba(220, 53, 69, 0.18) 100%);
+            color: var(--danger-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.1);
+        }
+        
+        /* Key info section */
+        .key-info-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1rem 1.25rem;
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--border-color);
+        }
+        
         /* Content sections styling */
         .content-section {
-            background-color: var(--light-color);
-            border-radius: 0.5rem;
-            padding: 1.25rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
             border: 1px solid var(--border-color);
         }
         
         .section-title {
             text-transform: uppercase;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 0.85rem;
-            color: var(--dark-color);
-            margin-bottom: 1rem;
+            color: var(--text-color);
+            margin-bottom: 1.25rem;
             letter-spacing: 0.5px;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.75rem;
         }
         
         .section-subtitle {
             font-weight: 600;
             font-size: 0.85rem;
-            color: var(--dark-color);
+            color: var(--text-color);
         }
         
         .section-content {
-            color: var(--dark-color);
+            color: var(--text-color);
+        }
+        
+        .text-description {
+            line-height: 1.6;
+            color: #444;
+        }
+        
+        /* Location item styling */
+        .location-item {
+            margin-bottom: 0;
+            background-color: rgba(248, 249, 250, 0.5);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        
+        .location-item:hover {
+            background-color: rgba(248, 249, 250, 0.8);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        
+        .location-text {
+            color: #444;
+            display: block;
+            margin-top: 0.25rem;
+        }
+        
+        /* Type badge styling */
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         /* Map styling */
         .map-preview {
             width: 100%;
-            height: 200px;
+            height: 220px;
             border: 1px solid var(--border-color);
+            box-shadow: var(--box-shadow);
+            border-radius: 8px;
+            overflow: hidden;
         }
         
         .map-popup {
-            padding: 2px 0;
+            padding: 4px 2px;
         }
         
-        /* Timeline styling */
+        /* Incident image styling */
+        .incident-image-container {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.25rem;
+        }
+        
+        .view-image-text {
+            opacity: 0.8;
+            transition: all 0.2s ease;
+        }
+        
+        .view-image-text:hover {
+            opacity: 1;
+        }
+        
+        .incident-image {
+            max-width: 100%;
+            max-height: 250px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .incident-image:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .incident-image img {
+            object-fit: cover;
+            width: 100%;
+            max-height: 250px;
+        }
+        
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .incident-image:hover .image-overlay {
+            opacity: 1;
+        }
+        
+        /* Action buttons container */
+        .action-buttons-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Action buttons */
+        .btn-back {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: var(--secondary-color);
+            border: 1px solid rgba(108, 117, 125, 0.2);
+            border-radius: 8px;
+            transition: all 0.25s ease;
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn-back:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            transition: all 0.25s ease;
+            z-index: -1;
+        }
+        
+        .btn-back:hover {
+            color: var(--dark-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        
+        .btn-back:hover:before {
+            width: 100%;
+        }
+        
+        .btn-map {
+            background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(13, 202, 240, 0.15);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn-map:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #0aa2c0 0%, #098da8 100%);
+            transition: all 0.25s ease;
+            z-index: -1;
+        }
+        
+        .btn-map:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 202, 240, 0.2);
+        }
+        
+        .btn-map:hover:before {
+            width: 100%;
+        }
+        
+        /* Modal styling */
+        .modal-content {
+            border-radius: 12px;
+            overflow: hidden;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--light-color);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        /* Adjusted timeline for modal */
         .timeline {
             position: relative;
             padding-left: 25px;
@@ -502,112 +867,225 @@
             background-color: var(--border-color);
         }
         
-        /* Card icon */
-        .card-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            font-size: 1.2rem;
+        /* Emergency info section */
+        .emergency-info {
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(220, 53, 69, 0.03);
         }
         
-        /* Type badge styling */
-        .type-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 12px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 600;
+        .emergency-info ol {
+            color: #444;
+            font-size: 0.9rem;
+            line-height: 1.6;
         }
         
-        /* Light background colors for badges */
-        .bg-light-primary { background-color: var(--primary-light); color: var(--primary-color); }
-        .bg-light-secondary { background-color: var(--secondary-light); color: var(--secondary-color); }
-        .bg-light-success { background-color: var(--success-light); color: var(--success-color); }
-        .bg-light-danger { background-color: var(--danger-light); color: var(--danger-color); }
-        .bg-light-warning { background-color: var(--warning-light); color: var(--warning-color); }
-        .bg-light-info { background-color: var(--info-light); color: var(--info-color); }
-        .bg-light-dark { background-color: var(--dark-light); color: var(--dark-color); }
+        .emergency-info ol li {
+            margin-bottom: 0.5rem;
+        }
         
-        /* Location item styling */
-        .location-item {
+        .emergency-info ol li:last-child {
             margin-bottom: 0;
         }
         
-        /* Incident image styling */
-        .incident-image-container {
-            border-top: 1px solid var(--border-color);
-            padding-top: 1rem;
+        /* Contact grid */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
         }
         
-        .incident-image {
-            max-width: 100%;
-            max-height: 250px;
-            overflow: hidden;
+        /* Contact item styling */
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            background-color: rgba(248, 249, 250, 0.5);
+            border-radius: 10px;
             border: 1px solid var(--border-color);
-            border-radius: 0.25rem;
-            position: relative;
-            cursor: pointer;
             transition: all 0.2s ease;
+            padding: 0;
+            overflow: hidden;
         }
         
-        .incident-image:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        .contact-item:hover {
+            background-color: rgba(248, 249, 250, 0.8);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
         }
         
-        .incident-image img {
-            object-fit: cover;
-            width: 100%;
-            max-height: 250px;
-        }
-        
-        .image-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.3);
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.5rem;
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            font-size: 1.1rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
         }
         
-        .incident-image:hover .image-overlay {
-            opacity: 1;
+        .contact-details {
+            padding: 1rem;
+            flex-grow: 1;
         }
         
-        /* Card enhancements */
-        .card {
-            transition: all 0.2s ease;
+        .contact-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-color);
         }
         
-        .card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        .contact-description {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+        
+        /* Button styling */
+        .btn-contact {
+            padding: 0.45rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.25s ease;
+        }
+        
+        @@media (min-width: 768px) {
+            .contact-grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 1rem;
+            }
+            
+            .contact-item {
+                flex-direction: column;
+                align-items: stretch;
+                height: 100%;
+            }
+            
+            .contact-icon {
+                width: 100%;
+                height: 60px;
+                margin-right: 0;
+                border-radius: 0;
+                margin-bottom: 0;
+            }
+            
+            .contact-details {
+                padding: 1.25rem;
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+            }
+            
+            .contact-description {
+                margin-bottom: 1rem;
+                flex-grow: 1;
+            }
+            
+            .btn-contact {
+                align-self: flex-start;
+                justify-content: center;
+                width: 100%;
+            }
         }
         
         /* Responsive adjustments */
         @@media (max-width: 767.98px) {
-            .action-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-            
-            .action-buttons .btn {
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
-            
             .content-section {
-                padding: 1rem;
+                padding: 1.25rem;
             }
+            
+            .incident-card .card-body {
+                padding: 1.25rem;
+            }
+            
+            .incident-image {
+                max-height: 200px;
+            }
+            
+            .incident-image img {
+                max-height: 200px;
+            }
+            
+            .key-info-section {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .key-info-section .d-flex.gap-2 {
+                flex-wrap: wrap;
+            }
+        }
+        
+        /* Gradient backgrounds */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        }
+        
+        .bg-gradient-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+        
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+        }
+        
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+        }
+        
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);
+        }
+        
+        .bg-gradient-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+        }
+        
+        .bg-gradient-dark {
+            background: linear-gradient(135deg, #212529 0%, #1a1e21 100%);
+        }
+        
+        /* Severity badges */
+        .severity-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .severity-low {
+            background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.15) 100%);
+            color: #198754;
+        }
+        
+        .severity-medium {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.15) 100%);
+            color: #856404;
+        }
+        
+        .severity-high {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.15) 100%);
+            color: #dc3545;
+        }
+        
+        .severity-critical {
+            background: linear-gradient(135deg, rgba(33, 37, 41, 0.1) 0%, rgba(33, 37, 41, 0.15) 100%);
+            color: #212529;
+        }
+        
+        /* Button hover transitions */
+        .btn {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         /* Lightbox customizations */

@@ -365,6 +365,33 @@
     </div>
 </div>
 
+<!-- Post Confirmation Modal -->
+<div class="modal fade" id="postConfirmModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0 p-3" id="postConfirmHeader">
+                <h5 class="modal-title">Confirm Post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3 px-4 text-center">
+                <div class="confirmation-icon mb-3">
+                    <i id="postConfirmIcon" class="fas fa-pen fa-2x"></i>
+                </div>
+                <h6 class="mb-3">Ready to post?</h6>
+                <p class="small text-muted mb-0">Your post will be submitted for review. Once approved, it will be visible to the community.</p>
+            </div>
+            <div class="modal-footer p-2 border-0 d-flex justify-content-between">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="editPostBtn">
+                    <i class="fas fa-pencil-alt me-1"></i> Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-primary px-3" id="confirmPostBtn">
+                    <i class="fas fa-check me-1"></i> Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Styles {
     <style>
         :root {
@@ -972,6 +999,68 @@
             border-radius: 16px;
         }
         
+        /* Post confirmation modal styles */
+        #postConfirmModal .modal-content {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        #postConfirmModal .modal-header {
+            padding: 15px;
+        }
+        
+        #postConfirmModal .confirmation-icon {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(79, 111, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        
+        #postConfirmModal .modal-footer {
+            background-color: #f9f9f9;
+        }
+        
+        #postConfirmModal .btn-outline-secondary:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        #postConfirmModal .btn-primary {
+            background-color: #4f6fff;
+            border-color: #4f6fff;
+        }
+        
+        #postConfirmModal .btn-primary:hover {
+            background-color: #3e5ce2;
+            border-color: #3e5ce2;
+        }
+        
+        /* Soft background classes for confirmation modal */
+        .bg-primary-soft {
+            background-color: rgba(79, 111, 255, 0.1);
+        }
+        
+        .bg-danger-soft {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        
+        .bg-success-soft {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        
+        .bg-info-soft {
+            background-color: rgba(23, 162, 184, 0.1);
+        }
+        
+        .bg-secondary-soft {
+            background-color: rgba(108, 117, 125, 0.1);
+        }
+        
         /* User feedback animation */
         @@keyframes pulse {
             0% {
@@ -1108,6 +1197,70 @@
                 // Let the form submit normally to the server
                 // The form will be submitted to the PostUpdate action in CommunityController
                 return true;
+            });
+            
+            // Show confirmation dialog when the submit button is clicked
+            $('#submit-post-btn').on('click', function(e) {
+                e.preventDefault();
+                
+                // Validate the form first
+                const content = $('#modalContent').val().trim();
+                if (content === '') {
+                    $('#modalContent').addClass('is-invalid');
+                    return false;
+                }
+                
+                // Get the post type to style the confirmation modal
+                const postType = $('#modalType').val();
+                
+                // Set the confirmation modal styling based on post type
+                const $header = $('#postConfirmHeader');
+                const $icon = $('#postConfirmIcon');
+                
+                // Reset classes
+                $header.removeClass('bg-primary bg-danger bg-success bg-info bg-secondary bg-primary-soft bg-danger-soft bg-success-soft bg-info-soft bg-secondary-soft');
+                $icon.removeClass('fas fa-pen fa-hands-helping fa-share-alt fa-info-circle fa-comment-alt').addClass('fas');
+                
+                // Set appropriate classes based on post type
+                switch(postType) {
+                    case 'HelpRequest':
+                        $header.addClass('bg-danger-soft');
+                        $icon.addClass('fa-hands-helping text-danger');
+                        break;
+                    case 'ResourceSharing':
+                        $header.addClass('bg-success-soft');
+                        $icon.addClass('fa-share-alt text-success');
+                        break;
+                    case 'Information':
+                        $header.addClass('bg-info-soft');
+                        $icon.addClass('fa-info-circle text-info');
+                        break;
+                    case 'StatusUpdate':
+                        $header.addClass('bg-primary-soft');
+                        $icon.addClass('fa-comment-alt text-primary');
+                        break;
+                    default: // GeneralUpdate
+                        $header.addClass('bg-primary-soft');
+                        $icon.addClass('fa-pen text-primary');
+                }
+                
+                // Show the confirmation modal
+                new bootstrap.Modal(document.getElementById('postConfirmModal')).show();
+            });
+            
+            // Confirm button handler
+            $('#confirmPostBtn').on('click', function() {
+                // Hide the confirmation modal
+                bootstrap.Modal.getInstance(document.getElementById('postConfirmModal')).hide();
+                
+                // Actually submit the form
+                $('.create-post-form').submit();
+            });
+            
+            // Edit button handler - go back to edit the post
+            $('#editPostBtn').on('click', function() {
+                // Just close the confirmation modal
+                bootstrap.Modal.getInstance(document.getElementById('postConfirmModal')).hide();
             });
             
             // Clear validation on input

@@ -660,12 +660,12 @@
             <div>
                 <h1 class="page-title">Community Feed</h1>
                 <p class="page-subtitle">Manage and monitor community updates and discussions</p>
-            </div>
+                            </div>
             <button type="button" class="btn create-post-btn" data-bs-toggle="modal" data-bs-target="#createPostModal">
                 <i class="fas fa-plus-circle me-2"></i>Create New Post
-            </button>
-        </div>
-        
+                            </button>
+                        </div>
+
         <!-- Post Type Shortcuts -->
         <div class="post-shortcuts mb-4 animate-in">
             <button type="button" class="post-shortcut-btn btn-general" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="GeneralUpdate">
@@ -687,34 +687,34 @@
             <button type="button" class="post-shortcut-btn btn-info" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="Information">
                 <i class="fas fa-info-circle"></i>
                 <span>Info</span>
-            </button>
+                                </button>
         </div>
-        
+
         <div class="row">
-            <!-- Community Feed -->
+        <!-- Community Feed -->
             <div class="col-12 animate-in" style="animation-delay: 0.1s;">
                 <div class="feed-card">
                     <div class="feed-card-header">
-                        <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center">
                             <h5 class="feed-card-title"><i class="fas fa-stream"></i>Community Updates</h5>
                             <div class="feed-filter-container d-flex gap-2">
                                 <select class="form-select feed-filter" id="postFilter">
-                                    <option value="all">All Posts</option>
-                                    <option value="HelpRequest">Help Requests</option>
-                                    <option value="StatusUpdate">Status Updates</option>
-                                    <option value="ResourceSharing">Resources</option>
-                                    <option value="Information">Information</option>
-                                    <option value="GeneralUpdate">General Updates</option>
-                                </select>
+                                <option value="all">All Posts</option>
+                                <option value="HelpRequest">Help Requests</option>
+                                <option value="StatusUpdate">Status Updates</option>
+                                <option value="ResourceSharing">Resources</option>
+                                <option value="Information">Information</option>
+                                <option value="GeneralUpdate">General Updates</option>
+                            </select>
                                 <a href="@Url.Action("Dashboard", "LGU")" class="btn btn-light btn-m" >
                                     <i class="fas fa-arrow-left me-1"></i>Back
-                                </a>
-                            </div>
+                            </a>
                         </div>
                     </div>
-                    <div class="card-body">
-                        @if (Model != null && Model.Any())
-                        {
+                </div>
+                <div class="card-body">
+                    @if (Model != null && Model.Any())
+                    {
                             <div class="post-container">
                                 @foreach (var post in Model)
                                 {
@@ -730,9 +730,9 @@
                                             </div>
                                             <div class="post-status">
                                                 <span class="post-badge @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 
-                                                                        post.Type == UpdateType.StatusUpdate ? "bg-info" : 
-                                                                        post.Type == UpdateType.ResourceSharing ? "bg-success" : 
-                                                                        post.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
+                                                                    post.Type == UpdateType.StatusUpdate ? "bg-info" : 
+                                                                    post.Type == UpdateType.ResourceSharing ? "bg-success" : 
+                                                                    post.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
                                                     <i class="fas @(post.Type == UpdateType.HelpRequest ? "fa-hands-helping" : 
                                                                 post.Type == UpdateType.StatusUpdate ? "fa-chart-line" : 
                                                                 post.Type == UpdateType.ResourceSharing ? "fa-share-alt" : 
@@ -750,74 +750,74 @@
                                         
                                         <div class="post-content">@post.Content</div>
                                         
-                                        @if (!string.IsNullOrEmpty(post.ImageUrl))
-                                        {
+                                    @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                    {
                                             <div class="post-image">
                                                 <img src="@post.ImageUrl" class="img-fluid" alt="Post image" onclick="openImageViewer('@post.ImageUrl')">
                                             </div>
-                                        }
+                                    }
                                         
-                                        @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
-                                        {
+                                    @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
+                                    {
                                             <div class="post-location">
                                                 <i class="fas fa-map-marker-alt text-danger me-1"></i>@post.Location
-                                                @if (post.Latitude.HasValue && post.Longitude.HasValue)
-                                                {
-                                                    <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
-                                                    target="_blank" class="ms-2">
-                                                        <i class="fas fa-external-link-alt"></i> View on Map
-                                                    </a>
-                                                }
+                                            @if (post.Latitude.HasValue && post.Longitude.HasValue)
+                                            {
+                                                <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
+                                                   target="_blank" class="ms-2">
+                                                    <i class="fas fa-external-link-alt"></i> View on Map
+                                                </a>
+                                            }
                                             </div>
-                                        }
+                                    }
                                         
-                                        @if (post.ModerationStatus == ModerationStatus.Pending)
-                                        {
+                                    @if (post.ModerationStatus == ModerationStatus.Pending)
+                                    {
                                             <div class="moderation-controls">
-                                                <form asp-action="ModeratePost" asp-route-id="@post.Id" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="action" value="approve" />
+                                            <form asp-action="ModeratePost" asp-route-id="@post.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="action" value="approve" />
                                                     <button type="submit" class="control-btn btn-approve">
-                                                        <i class="fas fa-check me-1"></i>Approve
-                                                    </button>
-                                                </form>
-                                                <button type="button" class="control-btn btn-reject ms-2" data-bs-toggle="modal" data-bs-target="#rejectModal@(post.Id)">
-                                                    <i class="fas fa-times me-1"></i>Reject
+                                                    <i class="fas fa-check me-1"></i>Approve
                                                 </button>
-                                            </div>
+                                            </form>
+                                                <button type="button" class="control-btn btn-reject ms-2" data-bs-toggle="modal" data-bs-target="#rejectModal@(post.Id)">
+                                                <i class="fas fa-times me-1"></i>Reject
+                                            </button>
+                                        </div>
 
-                                            <!-- Reject Modal -->
-                                            <div class="modal fade" id="rejectModal@(post.Id)" tabindex="-1" aria-labelledby="rejectModalLabel@(post.Id)" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="rejectModalLabel@(post.Id)">Reject Post</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form asp-action="ModeratePost" asp-route-id="@post.Id" method="post">
-                                                            @Html.AntiForgeryToken()
-                                                            <input type="hidden" name="action" value="reject" />
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="rejectionReason" class="form-label">Reason for rejection:</label>
-                                                                    <textarea id="rejectionReason" name="rejectionReason" class="form-control" rows="3" required></textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                                <button type="submit" class="btn btn-danger">Reject Post</button>
-                                                            </div>
-                                                        </form>
+                                        <!-- Reject Modal -->
+                                        <div class="modal fade" id="rejectModal@(post.Id)" tabindex="-1" aria-labelledby="rejectModalLabel@(post.Id)" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="rejectModalLabel@(post.Id)">Reject Post</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
+                                                    <form asp-action="ModeratePost" asp-route-id="@post.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="action" value="reject" />
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="rejectionReason" class="form-label">Reason for rejection:</label>
+                                                                <textarea id="rejectionReason" name="rejectionReason" class="form-control" rows="3" required></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-danger">Reject Post</button>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
-                                        }
-                                    </div>
+                                        </div>
+                                    }
+                                </div>
                                 }
                             </div>
-                        }
-                        else
-                        {
+                    }
+                    else
+                    {
                             <div class="text-center py-5">
                                 <div class="mb-3">
                                     <i class="fas fa-comment-slash fa-3x text-muted"></i>
@@ -827,8 +827,8 @@
                                 <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#createPostModal">
                                     <i class="fas fa-plus-circle me-2"></i>Create First Post
                                 </button>
-                            </div>
-                        }
+                        </div>
+                    }
                     </div>
                 </div>
             </div>
@@ -1036,11 +1036,11 @@
 
         // Detect location
         document.getElementById('detectLocation').addEventListener('click', function() {
-            if (navigator.geolocation) {
+        if (navigator.geolocation) {
                 this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    document.getElementById('latitude').value = position.coords.latitude;
-                    document.getElementById('longitude').value = position.coords.longitude;
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('latitude').value = position.coords.latitude;
+                document.getElementById('longitude').value = position.coords.longitude;
                     
                     // Get location name using reverse geocoding
                     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
@@ -1081,8 +1081,8 @@
                     if (postBadge && postBadge.textContent.trim() === selectedType) {
                         post.style.display = 'block';
                         visibleCount++;
-                    } else {
-                        post.style.display = 'none';
+                } else {
+                    post.style.display = 'none';
                     }
                 }
             });
