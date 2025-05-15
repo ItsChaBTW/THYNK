@@ -1,0 +1,498 @@
+@model THYNK.Models.EducationalResource
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "_Layout"; // Using the main layout since this is accessible to all users
+}
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("ResourceLibrary", "LGU")">Resource Library</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Title</li>
+                </ol>
+            </nav>
+            <h1 class="display-6 fw-bold mb-2">@Model.Title</h1>
+            <div class="d-flex align-items-center mb-3">
+                <span class="badge @GetBadgeClass(Model.Type) me-2">
+                    <i class="@GetResourceIcon(Model.Type) me-1"></i> @Model.Type
+                </span>
+                <span class="text-muted small">Added @Model.DateAdded.ToString("MMMM dd, yyyy")</span>
+                
+                @if (Model.ViewCount.HasValue && Model.ViewCount > 0) 
+                {
+                    <span class="text-muted small ms-3">
+                        <i class="fas fa-eye me-1"></i> @Model.ViewCount Views
+                    </span>
+                }
+            </div>
+        </div>
+        <div class="col-md-4 d-flex justify-content-md-end align-items-start">
+            @if (User.Identity.IsAuthenticated)
+            {
+                @if (!string.IsNullOrEmpty(Model.FileUrl))
+                {
+                    <a href="@Model.FileUrl" download class="btn btn-success">
+                        <i class="fas fa-download me-1"></i> Download
+                        @if (Model.FileSizeKB.HasValue)
+                        {
+                            <span class="badge bg-light text-success ms-1">
+                                @(Model.FileSizeKB < 1024 ? $"{Model.FileSizeKB} KB" : $"{Model.FileSizeKB / 1024.0:F1} MB")
+                            </span>
+                        }
+                    </a>
+                }
+            }
+            else
+            {
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    <i class="fas fa-download me-1"></i> Download
+                </button>
+            }
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Main resource content -->
+            <div class="card mb-4 book-main shadow-sm">
+                <div class="card-header book-header @GetHeaderClass(Model.Type)">
+                    <h5 class="mb-0 text-white">
+                        <i class="fas fa-book me-2"></i> Resource Content
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Resource description -->
+                    <div class="book-description mb-4">
+                        <h4>Overview</h4>
+                        <p class="lead">@Model.Description</p>
+                    </div>
+                    
+                    <!-- Resource content -->
+                    <div class="book-content">
+                        @if (!string.IsNullOrEmpty(Model.Content))
+                        {
+                            <div class="content-preview">
+                                @Html.Raw(ConvertMarkdownToHtml(Model.Content))
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(Model.ExternalUrl))
+                        {
+                            <div class="alert alert-info">
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                This resource is available at an external link.
+                                <a href="@Model.ExternalUrl" target="_blank" class="alert-link">Visit External Resource</a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No preview content is available for this resource.
+                                @if (!User.Identity.IsAuthenticated)
+                                {
+                                    <span class="d-block mt-2">
+                                        <a href="/Identity/Account/Login" class="alert-link">Login</a> to download the full resource.
+                                    </span>
+                                }
+                            </div>
+                        }
+                    </div>
+                    
+                    @if (!User.Identity.IsAuthenticated && !string.IsNullOrEmpty(Model.Content) && Model.Content.Length > 1000)
+                    {
+                        <div class="content-fade-overlay"></div>
+                        <div class="text-center py-3 mt-3 login-prompt">
+                            <div class="py-3 px-4 border rounded bg-light">
+                                <h5><i class="fas fa-lock me-2"></i> Full Access Restricted</h5>
+                                <p>Create a THYNK account to access the complete resource</p>
+                                <a href="/Identity/Account/Register" class="btn btn-primary">Register Now</a>
+                                <span class="mx-2">or</span>
+                                <a href="/Identity/Account/Login" class="btn btn-outline-primary">Login</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Resource metadata sidebar -->
+            <div class="book-sidebar">
+                <!-- File information card -->
+                @if (!string.IsNullOrEmpty(Model.FileUrl))
+                {
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-file-alt me-2"></i> Resource File
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                @{
+                                    string fileExtension = System.IO.Path.GetExtension(Model.FileUrl).TrimStart('.');
+                                    string fileIconClass = GetFileIconClass(fileExtension);
+                                }
+                                <div class="file-icon me-3 @GetFileColorClass(fileExtension)">
+                                    <i class="@fileIconClass"></i>
+                                </div>
+                                <div>
+                                    <small class="text-uppercase text-muted">File Type</small>
+                                    <div>@fileExtension.ToUpper() File</div>
+                                </div>
+                            </div>
+                            
+                            @if (Model.FileSizeKB.HasValue)
+                            {
+                                <div class="mb-3">
+                                    <small class="text-uppercase text-muted">File Size</small>
+                                    <div>@(Model.FileSizeKB < 1024 ? $"{Model.FileSizeKB} KB" : $"{Model.FileSizeKB / 1024.0:F1} MB")</div>
+                                </div>
+                            }
+                            
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <a href="@Model.FileUrl" download class="btn btn-success w-100">
+                                    <i class="fas fa-download me-1"></i> Download Resource
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                    <i class="fas fa-lock me-1"></i> Login to Download
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                <!-- Tags card -->
+                @if (!string.IsNullOrEmpty(Model.Tags))
+                {
+                    <div class="card mb-4 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-tags me-2"></i> Tags
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap">
+                                @foreach (var tag in Model.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <a href="@Url.Action("ResourceLibrary", "LGU", new { tag = tag.Trim() })" class="badge bg-secondary text-decoration-none me-2 mb-2 p-2">
+                                        @tag.Trim()
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Related resources suggestion -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-link me-2"></i> Related Resources
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center mb-0 py-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Related resources feature coming soon!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Login Required</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-lock fa-3x text-primary mb-3"></i>
+                    <h4>Access Restricted</h4>
+                    <p>Please login or create an account to download resources from our library.</p>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="/Identity/Account/Login" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                    </a>
+                    <a href="/Identity/Account/Register" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus me-2"></i> Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Book styling */
+        .book-main {
+            border: none;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .book-header {
+            padding: 1.25rem;
+        }
+        
+        .book-description {
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding-bottom: 1.5rem;
+        }
+        
+        .book-content {
+            padding-top: 1.5rem;
+            position: relative;
+        }
+        
+        .content-preview {
+            max-height: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Only show content fade for non-authenticated users */
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <text>
+            .content-fade-overlay {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 150px;
+                background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+                pointer-events: none;
+            }
+            </text>
+        }
+        
+        .login-prompt {
+            border-top: 1px dashed rgba(0,0,0,0.1);
+            margin-top: 1rem;
+        }
+        
+        /* File icon styling */
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .file-color-pdf {
+            background-color: #DC3545;
+        }
+        
+        .file-color-doc, .file-color-docx {
+            background-color: #0D6EFD;
+        }
+        
+        .file-color-ppt, .file-color-pptx {
+            background-color: #FD7E14;
+        }
+        
+        .file-color-xls, .file-color-xlsx {
+            background-color: #198754;
+        }
+        
+        .file-color-zip, .file-color-rar {
+            background-color: #6C757D;
+        }
+        
+        .file-color-default {
+            background-color: #6C757D;
+        }
+        
+        /* Header colors */
+        .header-guide {
+            background-color: #4285F4;
+        }
+        
+        .header-tutorial {
+            background-color: #0F9D58;
+        }
+        
+        .header-infographic {
+            background-color: #DB4437;
+        }
+        
+        .header-video {
+            background-color: #F4B400;
+        }
+        
+        .header-document {
+            background-color: #6C757D;
+        }
+        
+        .header-faq {
+            background-color: #9C27B0;
+        }
+        
+        .header-emergencycontact {
+            background-color: #DC3545;
+        }
+        
+        /* Badge colors */
+        .badge-guide {
+            background-color: #4285F4;
+        }
+        
+        .badge-tutorial {
+            background-color: #0F9D58;
+        }
+        
+        .badge-infographic {
+            background-color: #DB4437;
+        }
+        
+        .badge-video {
+            background-color: #F4B400;
+        }
+        
+        .badge-document {
+            background-color: #6C757D;
+        }
+        
+        .badge-faq {
+            background-color: #9C27B0;
+        }
+        
+        .badge-emergencycontact {
+            background-color: #DC3545;
+        }
+    </style>
+}
+
+@functions {
+    private string GetHeaderClass(ResourceType type)
+    {
+        return "header-" + type.ToString().ToLower();
+    }
+    
+    private string GetBadgeClass(ResourceType type)
+    {
+        return "badge-" + type.ToString().ToLower();
+    }
+    
+    private string GetResourceIcon(ResourceType type)
+    {
+        switch (type)
+        {
+            case ResourceType.Guide:
+                return "fas fa-compass";
+            case ResourceType.Tutorial:
+                return "fas fa-chalkboard-teacher";
+            case ResourceType.Infographic:
+                return "fas fa-chart-pie";
+            case ResourceType.Video:
+                return "fas fa-video";
+            case ResourceType.Document:
+                return "fas fa-file-alt";
+            case ResourceType.FAQ:
+                return "fas fa-question-circle";
+            case ResourceType.EmergencyContact:
+                return "fas fa-phone-alt";
+            default:
+                return "fas fa-file";
+        }
+    }
+    
+    private string GetFileIconClass(string extension)
+    {
+        switch (extension.ToLower())
+        {
+            case "pdf":
+                return "fas fa-file-pdf";
+            case "doc":
+            case "docx":
+                return "fas fa-file-word";
+            case "ppt":
+            case "pptx":
+                return "fas fa-file-powerpoint";
+            case "xls":
+            case "xlsx":
+                return "fas fa-file-excel";
+            case "zip":
+            case "rar":
+                return "fas fa-file-archive";
+            case "jpg":
+            case "jpeg":
+            case "png":
+            case "gif":
+                return "fas fa-file-image";
+            case "mp4":
+            case "avi":
+            case "mov":
+                return "fas fa-file-video";
+            default:
+                return "fas fa-file-alt";
+        }
+    }
+    
+    private string GetFileColorClass(string extension)
+    {
+        switch (extension.ToLower())
+        {
+            case "pdf":
+                return "file-color-pdf";
+            case "doc":
+            case "docx":
+                return "file-color-doc";
+            case "ppt":
+            case "pptx":
+                return "file-color-ppt";
+            case "xls":
+            case "xlsx":
+                return "file-color-xls";
+            case "zip":
+            case "rar":
+                return "file-color-zip";
+            default:
+                return "file-color-default";
+        }
+    }
+    
+    private string ConvertMarkdownToHtml(string markdown)
+    {
+        if (string.IsNullOrEmpty(markdown))
+            return "";
+            
+        // Very simple markdown converter (in real app, use a proper library)
+        var html = System.Text.RegularExpressions.Regex.Replace(markdown, @"^# (.+)$", "<h1>$1</h1>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"^## (.+)$", "<h2>$1</h2>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"^### (.+)$", "<h3>$1</h3>", System.Text.RegularExpressions.RegexOptions.Multiline);
+        
+        // Replace bold text
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"\*\*(.+?)\*\*", "<strong>$1</strong>");
+        
+        // Replace italic text
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"\*(.+?)\*", "<em>$1</em>");
+        
+        // Replace links
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"\[(.+?)\]\((.+?)\)", "<a href=\"$2\">$1</a>");
+        
+        // Replace newlines with paragraphs
+        html = "<p>" + html.Replace("\n\n", "</p><p>") + "</p>";
+        
+        return html;
+    }
+} 

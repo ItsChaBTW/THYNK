@@ -2,9 +2,32 @@
 
 @if (!String.IsNullOrEmpty(Model))
 {
-    var statusMessageClass = Model.StartsWith("Error") ? "danger" : "success";
-    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        @Model
+    string statusMessageClass;
+    string iconClass;
+    
+    if (Model.StartsWith("Error"))
+    {
+        statusMessageClass = "danger";
+        iconClass = "fas fa-times-circle";
+    }
+    else if (Model.StartsWith("Warning"))
+    {
+        statusMessageClass = "warning";
+        iconClass = "fas fa-exclamation-circle";
+    }
+    else
+    {
+        statusMessageClass = "success";
+        iconClass = "fas fa-check-circle";
+    }
+    
+    <div class="bg-@statusMessageClass-100 border-l-4 border-@statusMessageClass-500 text-@statusMessageClass-700 p-4 rounded shadow-md mb-6" role="alert">
+        <div class="flex items-center">
+            <i class="@iconClass mr-2"></i>
+            <p>@Model</p>
+            <button type="button" class="ml-auto text-@statusMessageClass-700" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
     </div>
 }

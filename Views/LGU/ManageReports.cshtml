@@ -4,53 +4,591 @@
     Layout = "_LGULayout";
 }
 
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <div class="d-flex align-items-center">
-            <div class="card-icon bg-white text-primary">
-                <i class="fas fa-clipboard-list"></i>
-            </div>
+<style>
+    /* Enhanced Minimalist Manage Reports Styles */
+    .reports-container {
+        height: calc(100vh - 80px);
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem 0;
+        overflow: hidden;
+    }
+    
+    .page-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+    
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100px;
+        height: 2px;
+        background: linear-gradient(to right, #1ABC9C, rgba(26, 188, 156, 0.1));
+    }
+    
+    .page-title {
+        font-size: 1.4rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin: 0;
+        letter-spacing: 0.01em;
+    }
+    
+    .page-subtitle {
+        font-size: 0.85rem;
+        color: var(--dark-alt);
+        margin-top: 0.25rem;
+        max-width: 600px;
+    }
+    
+    .info-notice {
+        background-color: rgba(26, 188, 156, 0.05);
+        border-left: 3px solid #1ABC9C;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        color: var(--dark-alt);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        transition: all 0.3s ease;
+    }
+    
+    .info-notice:hover {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        transform: translateY(-1px);
+    }
+    
+    .info-notice i {
+        color: #1ABC9C;
+    }
+    
+    .controls-section {
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 20;
+    }
+    
+    .controls-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+    
+    .filter-group {
+        display: flex;
+        background-color: #fff;
+        border-radius: 0.25rem;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+    }
+    
+    .filter-group:hover {
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .filter-link {
+        padding: 0.6rem 1.25rem;
+        font-size: 0.85rem;
+        color: var(--dark-alt);
+        text-decoration: none;
+        border: 1px solid rgba(0, 0, 0, 0.07);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .filter-link:not(:last-child) {
+        border-right: none;
+    }
+    
+    .filter-link:hover {
+        background-color: rgba(26, 188, 156, 0.05);
+        color: #1ABC9C;
+    }
+    
+    .filter-link.active {
+        background-color: #1ABC9C;
+        color: white;
+        border-color: #1ABC9C;
+    }
+    
+    .filter-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .search-form {
+        display: flex;
+        max-width: 320px;
+        position: relative;
+    }
+    
+    .search-input {
+        border: 1px solid rgba(0, 0, 0, 0.07);
+        border-right: none;
+        border-radius: 0.25rem 0 0 0.25rem;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        color: var(--dark);
+        width: 100%;
+        transition: all 0.3s ease;
+        background-color: #fff;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+        border-color: rgba(26, 188, 156, 0.3);
+    }
+    
+    .search-button {
+        background-color: #1ABC9C;
+        border: none;
+        color: #fff;
+        padding: 0 1rem;
+        border-radius: 0 0.25rem 0.25rem 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .search-button:hover {
+        background-color: #16a085;
+    }
+    
+    .content-area {
+        flex: 1;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+        position: relative;
+        height: calc(100vh - 250px);
+    }
+    
+    .content-area::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .content-area::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .content-area::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+    }
+    
+    .content-area::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+    
+    .table-container {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+        background-color: #fff;
+        animation: fadeIn 0.5s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .reports-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .reports-table th {
+        background-color: rgba(26, 188, 156, 0.03);
+        color: var(--dark-alt);
+        font-weight: 500;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        padding: 1rem 1.25rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(5px);
+        white-space: nowrap;
+    }
+    
+    .reports-table td {
+        padding: 1.25rem;
+        font-size: 0.85rem;
+        color: var(--dark);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        vertical-align: middle;
+        transition: all 0.2s ease;
+    }
+    
+    .reports-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .reports-table tr {
+        transition: all 0.3s ease;
+    }
+    
+    .reports-table tr:hover td {
+        background-color: rgba(26, 188, 156, 0.02);
+    }
+    
+    .reports-table tr:hover {
+        transform: translateX(3px);
+        box-shadow: -3px 0 0 #1ABC9C;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 0.35em 0.65em;
+        font-size: 0.7em;
+        font-weight: 500;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 3px;
+        letter-spacing: 0.03em;
+        transition: all 0.3s ease;
+    }
+    
+    .severity-badge {
+        border-radius: 50px;
+        padding: 0.4em 0.8em;
+        font-weight: 400;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .date-cell {
+        color: var(--dark-alt);
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+    
+    .actions-cell {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+    
+    .action-button {
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--dark);
+        background-color: transparent;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        text-decoration: none;
+    }
+    
+    .action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-view {
+        color: #1ABC9C;
+        border-color: #1ABC9C;
+    }
+    
+    .action-view:hover {
+        background-color: #1ABC9C;
+        color: white;
+    }
+    
+    .action-update {
+        color: var(--success);
+        border-color: var(--success);
+    }
+    
+    .action-update:hover {
+        background-color: var(--success);
+        color: white;
+    }
+    
+    .empty-state {
+        padding: 5rem 2rem;
+        text-align: center;
+        color: var(--dark-alt);
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.5s ease;
+        height: 100%;
+    }
+    
+    .empty-icon {
+        color: rgba(26, 188, 156, 0.15);
+        margin-bottom: 1.5rem;
+        font-size: 3rem;
+    }
+    
+    .empty-text {
+        font-size: 1rem;
+        color: var(--dark-alt);
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-subtext {
+        font-size: 0.85rem;
+        color: var(--muted);
+        max-width: 400px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+    
+    .modal-container {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+    
+    .modal-header::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 80px;
+        height: 2px;
+        background: linear-gradient(to right, #1ABC9C, rgba(26, 188, 156, 0.1));
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--primary);
+        margin: 0;
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--dark-alt);
+    }
+    
+    .form-select,
+    .form-textarea {
+        width: 100%;
+        padding: 0.85rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        color: var(--dark);
+        background-color: #fff;
+        transition: all 0.3s ease;
+    }
+    
+    .form-select:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: #1ABC9C;
+        box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.1);
+    }
+    
+    .form-textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        background-color: rgba(0, 0, 0, 0.01);
+    }
+    
+    .btn-cancel {
+        background-color: transparent;
+        color: var(--dark-alt);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 0.7rem 1.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    .btn-submit {
+        background-color: #1ABC9C;
+        color: white;
+        border: none;
+        padding: 0.7rem 1.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        background-color: #16a085;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(26, 188, 156, 0.3);
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Table animations */
+    @@keyframes slideIn {
+        from { transform: translateX(-10px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .reports-table tr {
+        animation: slideIn 0.3s ease forwards;
+        opacity: 0;
+    }
+    
+    .reports-table tr:nth-child(1) { animation-delay: 0.05s; }
+    .reports-table tr:nth-child(2) { animation-delay: 0.1s; }
+    .reports-table tr:nth-child(3) { animation-delay: 0.15s; }
+    .reports-table tr:nth-child(4) { animation-delay: 0.2s; }
+    .reports-table tr:nth-child(5) { animation-delay: 0.25s; }
+    .reports-table tr:nth-child(6) { animation-delay: 0.3s; }
+    .reports-table tr:nth-child(7) { animation-delay: 0.35s; }
+    .reports-table tr:nth-child(8) { animation-delay: 0.4s; }
+    .reports-table tr:nth-child(9) { animation-delay: 0.45s; }
+    .reports-table tr:nth-child(10) { animation-delay: 0.5s; }
+    
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .reports-container {
+            height: auto;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .controls-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-group,
+        .search-form {
+            width: 100%;
+            max-width: none;
+        }
+        
+        .filter-link {
+            flex: 1;
+            text-align: center;
+            padding: 0.6rem 0.5rem;
+        }
+        
+        .reports-table {
+            min-width: 768px;
+        }
+        
+        .content-area {
+            overflow-x: auto;
+            height: auto;
+            max-height: calc(100vh - 300px);
+        }
+    }
+</style>
+
+<div class="reports-container">
+    <div class="page-header">
             <div>
-                <h5 class="m-0">Manage Incident Reports</h5>
-                <small>Review, update, and respond to incident reports assigned to your department</small>
-            </div>
+            <h1 class="page-title">Manage Incident Reports</h1>
+            <p class="page-subtitle">Review, update, and respond to incident reports assigned to your department</p>
         </div>
     </div>
-    <div class="card-body">
-        <div class="mb-4">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i> As an LGU/SLU (Secondary Level User) your role is to respond to and manage incident reports that have been assigned to your department.
+    
+    <div class="info-notice">
+        <i class="fas fa-info-circle me-2"></i> As an LGU/SLU, your role is to respond to and manage incident reports assigned to your department.
+    </div>
+    
+    <div class="controls-section">
+        <div class="controls-row">
+            <div class="filter-group">
+                <a href="@Url.Action("ManageReports", "LGU")" class="filter-link @(ViewBag.CurrentFilter == null ? "active" : "")">All</a>
+                <a href="@Url.Action("ManageReports", "LGU", new { status = THYNK.Models.ReportStatus.InProgress })" class="filter-link @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.InProgress ? "active" : "")">In Progress</a>
+                <a href="@Url.Action("ManageReports", "LGU", new { status = THYNK.Models.ReportStatus.Resolved })" class="filter-link @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Resolved ? "active" : "")">Resolved</a>
             </div>
             
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-                <div class="filters mb-2">
-                    <div class="btn-group" role="group">
-                        <a href="@Url.Action("ManageReports", "LGU")" class="btn @(ViewBag.CurrentFilter == null ? "btn-primary" : "btn-outline-primary")">All</a>
-                        <a href="@Url.Action("ManageReports", "LGU", new { status = THYNK.Models.ReportStatus.InProgress })" class="btn @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.InProgress ? "btn-primary" : "btn-outline-primary")">In Progress</a>
-                        <a href="@Url.Action("ManageReports", "LGU", new { status = THYNK.Models.ReportStatus.Resolved })" class="btn @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Resolved ? "btn-primary" : "btn-outline-primary")">Resolved</a>
-                    </div>
-                </div>
-                <div class="search mb-2">
-                    <form method="get" class="input-group">
-                        <input type="text" name="search" class="form-control" placeholder="Search reports..." value="@ViewBag.CurrentSearch">
-                        <button type="submit" class="btn btn-primary">
+            <form method="get" class="search-form">
+                <input type="text" name="search" class="search-input" placeholder="Search reports..." value="@ViewBag.CurrentSearch">
+                <button type="submit" class="search-button">
                             <i class="fas fa-search"></i>
                         </button>
                     </form>
-                </div>
             </div>
         </div>
 
+    <div class="content-area">
         @if (!Model.Any())
         {
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i> No reports found matching your criteria.
+            <div class="empty-state">
+                <i class="fas fa-clipboard-check empty-icon"></i>
+                <p class="empty-text">No reports found matching your criteria</p>
+                <p class="empty-subtext">Try adjusting your filters or search terms to see more results</p>
             </div>
         }
         else
         {
-            <div class="table-responsive">
-                <table class="table table-hover">
+            <div class="table-container">
+                <table class="reports-table">
                     <thead>
                         <tr>
                             <th>Title</th>
@@ -59,7 +597,7 @@
                             <th>Location</th>
                             <th>Date Reported</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th style="text-align: right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,14 +609,14 @@
                                     <span class="badge bg-secondary">@report.Type</span>
                                 </td>
                                 <td>
-                                    <span class="badge @(report.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
+                                    <span class="badge severity-badge @(report.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
                                                        report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
                                                        report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
                                         @report.Severity
                                     </span>
                                 </td>
                                 <td>@(string.IsNullOrEmpty(report.Location) ? "Not specified" : report.Location)</td>
-                                <td>@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
+                                <td class="date-cell">@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
                                 <td>
                                     <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
                                                        report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
@@ -87,22 +625,29 @@
                                         @report.Status
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="btn-group">
-                                        <a href="@Url.Action("ReportDetails", "LGU", new { id = report.Id })" class="btn btn-sm btn-outline-primary">
+                                <td class="actions-cell">
+                                    <a href="@Url.Action("ReportDetails", "LGU", new { id = report.Id })" class="action-button action-view">
                                             <i class="fas fa-eye"></i> View
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#updateStatusModal@(report.Id)">
+                                    <button type="button" class="action-button action-update" data-bs-toggle="modal" data-bs-target="#updateStatusModal@(report.Id)">
                                             <i class="fas fa-edit"></i> Update
                                         </button>
-                                    </div>
                                 </td>
                             </tr>
-                            
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@foreach (var report in Model)
+{
                             <!-- Status Update Modal -->
                             <div class="modal fade" id="updateStatusModal@(report.Id)" tabindex="-1" aria-labelledby="updateStatusModalLabel@(report.Id)" aria-hidden="true">
                                 <div class="modal-dialog">
-                                    <div class="modal-content">
+            <div class="modal-content modal-container">
                                         <div class="modal-header">
                                             <h5 class="modal-title" id="updateStatusModalLabel@(report.Id)">Update Report Status</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -110,7 +655,7 @@
                                         <form asp-action="UpdateReportStatus" asp-route-id="@report.Id" method="post">
                                             @Html.AntiForgeryToken()
                                             <div class="modal-body">
-                                                <div class="mb-3">
+                        <div class="form-group">
                                                     <label for="status@(report.Id)" class="form-label">Status</label>
                                                     <select id="status@(report.Id)" name="status" class="form-select" required>
                                                         @{
@@ -121,23 +666,17 @@
                                                         @Html.Raw($"<option value=\"3\" {resolvedSelected}>Resolved</option>")
                                                     </select>
                                                 </div>
-                                                <div class="mb-3">
+                        <div class="form-group">
                                                     <label for="notes@(report.Id)" class="form-label">Response Notes</label>
-                                                    <textarea id="notes@(report.Id)" name="notes" class="form-control" rows="4" required placeholder="Describe the actions taken or resolution details..."></textarea>
+                            <textarea id="notes@(report.Id)" name="notes" class="form-textarea" required placeholder="Describe the actions taken or resolution details..."></textarea>
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <button type="submit" class="btn btn-primary">Update Status</button>
+                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-submit">Update Status</button>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
                         }
-                    </tbody>
-                </table>
-            </div>
-        }
-    </div>
-</div> 

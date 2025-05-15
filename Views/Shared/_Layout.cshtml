@@ -307,6 +307,16 @@
                             <a class="nav-link" href="#education">Education</a>
                         </li>
                         <li class="nav-item">
+                            @if (User.Identity.IsAuthenticated && User.IsInRole("Community"))
+                            {
+                                <a class="nav-link" asp-controller="Community" asp-action="EducationalResources">Resource Library</a>
+                            }
+                            else
+                            {
+                                <a class="nav-link" asp-controller="LGU" asp-action="ResourceLibrary">Resource Library</a>
+                            }
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#faq">FAQ</a>
                         </li>
                      
