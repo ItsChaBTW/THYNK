@@ -380,7 +380,7 @@
     <!-- Overlay for mobile -->
     <div id="overlay" class="overlay"></div>
     
-    <!-- Sidebar -->
+        <!-- Sidebar -->
     <nav id="sidebar" class="sidebar sidebar-collapsed">
         <div class="sidebar-content">
             <!-- Fixed Header -->
@@ -430,12 +430,12 @@
                         <span class="nav-text">Community Feed</span>
                     </a>
                     
-                    <a href="@Url.Action("Support", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
+                    <a href="@Url.Action("ChatSupport", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ChatSupport" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
                         <span class="nav-text">Support & FAQs</span>
-                    </a>
-                </div>
+                </a>
             </div>
+        </div>
             
             <!-- User Profile at Bottom of Sidebar -->
             <div class="mt-auto px-4 py-3 border-t border-sidebar-light">
@@ -458,12 +458,12 @@
                         <button type="button" data-logout-trigger class="nav-item py-1 w-full text-left">
                             <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
                             <span class="nav-text text-xs">Logout</span>
-                        </button>
+                    </button>
                     </div>
                 }
-            </div>
-        </div>
-    </nav>
+                    </div>
+                </div>
+            </nav>
     
     <!-- Main Content -->
     <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64">

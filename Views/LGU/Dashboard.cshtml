@@ -355,27 +355,27 @@
     </div>
 </div>
 
-<!-- Quick Actions -->
+    <!-- Quick Actions -->
 <div class="dashboard-section">
     <h6 class="section-title mb-3">QUICK ACTIONS</h6>
-    <div class="row g-3">
-        <div class="col-md-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
             <a href="@Url.Action("CreateAlert", "LGU")" class="btn action-btn create-alert w-100 text-white">
                 <i class="fas fa-bell"></i>Create Alert
-            </a>
-        </div>
-        <div class="col-md-4">
+                        </a>
+                    </div>
+                    <div class="col-md-4">
             <a href="@Url.Action("ManageReports", "LGU")" class="btn action-btn manage-reports w-100 text-white">
                 <i class="fas fa-clipboard-list"></i>Manage Reports
-            </a>
-        </div>
-        <div class="col-md-4">
+                        </a>
+                    </div>
+                    <div class="col-md-4">
             <a href="@Url.Action("ManageResources", "LGU")" class="btn action-btn manage-resources w-100 text-white">
                 <i class="fas fa-book"></i>Manage Resources
-            </a>
+                        </a>
+            </div>
         </div>
     </div>
-</div>
 
 <!-- Alerts and Reports Section -->
 <div class="row">
@@ -383,21 +383,19 @@
     <div class="col-12 col-lg-6 dashboard-section">
         <h6 class="section-title">ACTIVE ALERTS</h6>
         <div class="dashboard-card card-accent-alerts">
-            @if (ViewBag.ActiveAlerts != null && ViewBag.ActiveAlerts.Count > 0)
-            {
+                @if (ViewBag.ActiveAlerts != null && ViewBag.ActiveAlerts.Count > 0)
+                {
                 <div class="p-0">
-                    @foreach (var alert in ViewBag.ActiveAlerts)
-                    {
+                        @foreach (var alert in ViewBag.ActiveAlerts)
+                        {
                         <div class="list-item">
                             <div class="d-flex w-100 justify-content-between align-items-start">
                                 <div>
                                     <h6 class="item-title">
                                         <span class="status-indicator" style="background-color: @(alert.Severity == AlertSeverity.Critical ? "var(--danger)" : 
-                                                                alert.Severity == AlertSeverity.Danger ? "#fd7e14" : 
-                                                                alert.Severity == AlertSeverity.Warning ? "var(--warning)" : "var(--info)")"></span>
+                                          alert.Severity == AlertSeverity.Danger ? "#fd7e14" : 
+                                           alert.Severity == AlertSeverity.Warning ? "var(--warning)" : "var(--info)")"></span>
                                         @alert.Title
-                                    </h5>
-                                <span class="text-xs text-gray-500">@alert.DateIssued.ToString("MMM dd, HH:mm")</span>
                                     </h6>
                                     <p class="item-content">@alert.Message</p>
                                     <div class="item-footer">
@@ -405,37 +403,30 @@
                                         @alert.AffectedArea
                                     </div>
                                 </div>
-                            <p class="text-sm mb-1 text-gray-600">@alert.Message</p>
-                            <div class="flex items-center text-xs text-gray-500">
-                                <i class="fas fa-map-marker-alt mr-1"></i>
-                                <span>@alert.AffectedArea</span>
-                            </div>
-                            </div>
-                        }
                                 <span class="item-date">
                                     <i class="far fa-clock me-1"></i>
                                     @alert.DateIssued.ToString("MMM dd, HH:mm")
                                 </span>
                             </div>
-                        </div>
-                    }
+                            </div>
+                        }
                     <div class="p-3 text-end">
                         <a href="@Url.Action("ManageAlerts", "LGU")" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-arrow-right me-1"></i> View All Alerts
                         </a>
                     </div>
-                </div>
-            }
-            else
-            {
+                    </div>
+                }
+                else
+                {
                 <div class="empty-state">
                     <i class="fas fa-check-circle empty-icon"></i>
                     <p class="empty-text">No active alerts at this time</p>
                     <a href="@Url.Action("CreateAlert", "LGU")" class="btn btn-sm action-btn create-alert text-white">
                         <i class="fas fa-plus me-1"></i> Create New Alert
                     </a>
-                </div>
-            }
+                    </div>
+                }
         </div>
     </div>
 
@@ -443,29 +434,29 @@
     <div class="col-12 col-lg-6 dashboard-section">
         <h6 class="section-title">RECENT REPORTS</h6>
         <div class="dashboard-card card-accent-reports">
-            @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
-            {
+                @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
+                {
                 <div class="p-0">
-                    @foreach (var report in ViewBag.RecentReports)
-                    {
+                        @foreach (var report in ViewBag.RecentReports)
+                        {
                         <a href="@Url.Action("ManageReports", "LGU")" class="list-item d-block text-decoration-none">
                             <div class="d-flex w-100 justify-content-between align-items-start">
                                 <div>
                                     <h6 class="item-title">@report.Title</h6>
                                     <p class="item-content text-truncate">@report.Description</p>
                                     <div class="item-footer">
-                                        <span class="badge bg-secondary">@report.Type</span>
-                                        <span class="badge @(report.Severity == SeverityLevel.Low ? "bg-info" : 
+                                    <span class="badge bg-secondary">@report.Type</span>
+                                    <span class="badge @(report.Severity == SeverityLevel.Low ? "bg-info" : 
                                                          report.Severity == SeverityLevel.Medium ? "bg-warning" : 
                                                          report.Severity == SeverityLevel.High ? "bg-danger" : "bg-dark")">
-                                            @report.Severity
-                                        </span>
-                                        <span class="badge @(report.Status == ReportStatus.Pending ? "bg-warning" : 
+                                        @report.Severity
+                                    </span>
+                                    <span class="badge @(report.Status == ReportStatus.Pending ? "bg-warning" : 
                                                         report.Status == ReportStatus.Verified ? "bg-info" : 
                                                         report.Status == ReportStatus.InProgress ? "bg-primary" : 
                                                         report.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
-                                            @report.Status
-                                        </span>
+                                        @report.Status
+                                    </span>
                                     </div>
                                 </div>
                                 <span class="item-date">
@@ -473,108 +464,108 @@
                                     @report.DateReported.ToString("MMM dd, HH:mm")
                                 </span>
                             </div>
-                        </a>
-                    }
+                            </a>
+                        }
                     <div class="p-3 text-end">
                         <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-arrow-right me-1"></i> View All Reports
                         </a>
                     </div>
-                </div>
-            }
-            else
-            {
+                    </div>
+                }
+                else
+                {
                 <div class="empty-state">
                     <i class="fas fa-clipboard-check empty-icon"></i>
                     <p class="empty-text">No recent reports in your area</p>
-                </div>
-            }
-        </div>
-    </div>
-</div>
-
-<!-- Community Updates -->
-<div class="dashboard-section">
-    <h6 class="section-title">COMMUNITY UPDATES</h6>
-    <div class="dashboard-card card-accent-community">
-        @if (ViewBag.CommunityUpdates != null && ViewBag.CommunityUpdates.Count > 0)
-        {
-            <div class="p-0">
-                @foreach (var update in ViewBag.CommunityUpdates)
-                {
-                    <div class="list-item">
-                        <div class="d-flex w-100 justify-content-between align-items-start">
-                            <div>
-                                <h6 class="item-title">
-                                    <span class="badge @(update.Type == UpdateType.HelpRequest ? "bg-danger" : 
-                                                    update.Type == UpdateType.StatusUpdate ? "bg-info" : 
-                                                    update.Type == UpdateType.ResourceSharing ? "bg-success" : 
-                                                    update.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
-                                        @update.Type
-                                    </span>
-                                </h6>
-                                <p class="item-content">@update.Content</p>
-                                <div class="item-footer">
-                                    <i class="fas fa-user me-1" style="font-size: 0.7rem;"></i>
-                                    Posted by @(update.User != null ? update.User.UserName : "Unknown User")
-                                </div>
-                            </div>
-                            <span class="item-date">
-                                <i class="far fa-clock me-1"></i>
-                                @update.DatePosted.ToString("MMM dd, HH:mm")
-                            </span>
-                        </div>
                     </div>
                 }
-                <div class="p-3 text-end">
-                    <a href="@Url.Action("CommunityFeed", "LGU")" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-arrow-right me-1"></i> View Community Feed
+        </div>
+    </div>
+
+    <!-- Community Updates -->
+    <div class="dashboard-section">
+        <h6 class="section-title">COMMUNITY UPDATES</h6>
+        <div class="dashboard-card card-accent-community">
+                @if (ViewBag.CommunityUpdates != null && ViewBag.CommunityUpdates.Count > 0)
+                {
+                <div class="p-0">
+                        @foreach (var update in ViewBag.CommunityUpdates)
+                        {
+                        <div class="list-item">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="item-title">
+                                        <span class="badge @(update.Type == UpdateType.HelpRequest ? "bg-danger" : 
+                                                            update.Type == UpdateType.StatusUpdate ? "bg-info" : 
+                                                            update.Type == UpdateType.ResourceSharing ? "bg-success" : 
+                                                            update.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
+                                            @update.Type
+                                        </span>
+                                    </h6>
+                                    <p class="item-content">@update.Content</p>
+                                    <div class="item-footer">
+                                        <i class="fas fa-user me-1" style="font-size: 0.7rem;"></i>
+                                        Posted by @(update.User != null ? update.User.UserName : "Unknown User")
+                                    </div>
+                                </div>
+                                <span class="item-date">
+                                    <i class="far fa-clock me-1"></i>
+                                    @update.DatePosted.ToString("MMM dd, HH:mm")
+                                </span>
+                            </div>
+                            </div>
+                        }
+                    <div class="p-3 text-end">
+                        <a href="@Url.Action("CommunityFeed", "LGU")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> View Community Feed
+                        </a>
+                    </div>
+                    </div>
+                }
+                else
+                {
+                <div class="empty-state">
+                    <i class="fas fa-comments empty-icon"></i>
+                    <p class="empty-text">No community updates available</p>
+                    </div>
+                }
+        </div>
+    </div>
+
+    <!-- Educational Resources -->
+    <div class="dashboard-section">
+        <h6 class="section-title">EDUCATIONAL RESOURCES</h6>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-plus-circle resource-icon"></i>
+                    <h6 class="mb-2">Add New Resource</h6>
+                    <p class="small text-muted mb-4">Create new educational content for your community</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-plus me-2"></i>Add Resource
                     </a>
                 </div>
             </div>
-        }
-        else
-        {
-            <div class="empty-state">
-                <i class="fas fa-comments empty-icon"></i>
-                <p class="empty-text">No community updates available</p>
-            </div>
-        }
-    </div>
-</div>
-
-<!-- Educational Resources -->
-<div class="dashboard-section">
-    <h6 class="section-title">EDUCATIONAL RESOURCES</h6>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="resource-card">
-                <i class="fas fa-plus-circle resource-icon"></i>
-                <h6 class="mb-2">Add New Resource</h6>
-                <p class="small text-muted mb-4">Create new educational content for your community</p>
-                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
-                    <i class="fas fa-plus me-2"></i>Add Resource
-                </a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="resource-card">
-                <i class="fas fa-edit resource-icon"></i>
-                <h6 class="mb-2">Edit Resources</h6>
-                <p class="small text-muted mb-4">Update existing educational materials</p>
-                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
-                    <i class="fas fa-edit me-2"></i>Edit Resources
-                </a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="resource-card">
-                <i class="fas fa-chart-line resource-icon"></i>
-                <h6 class="mb-2">View Analytics</h6>
-                <p class="small text-muted mb-4">Monitor resource usage and engagement</p>
-                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
-                    <i class="fas fa-chart-bar me-2"></i>View Analytics
-                </a>
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-edit resource-icon"></i>
+                    <h6 class="mb-2">Edit Resources</h6>
+                    <p class="small text-muted mb-4">Update existing educational materials</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-edit me-2"></i>Edit Resources
+                    </a>
+                            </div>
+                        </div>
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-chart-line resource-icon"></i>
+                    <h6 class="mb-2">View Analytics</h6>
+                    <p class="small text-muted mb-4">Monitor resource usage and engagement</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-chart-bar me-2"></i>View Analytics
+                    </a>
+                </div>
             </div>
         </div>
     </div>
