@@ -1220,6 +1220,7 @@ namespace THYNK.Controllers
                 return NotFound();
             }
             
+            
             // Get total reports count
             var totalReports = await _context.DisasterReports
                 .Where(r => r.AssignedToId == userId || 
