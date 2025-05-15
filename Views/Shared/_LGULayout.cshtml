@@ -419,7 +419,10 @@
                         <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
                         <span class="nav-text">Incident Map</span>
                     </a>
-                    
+                    <a href="@Url.Action("Analytics", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Analytics" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="nav-text">Analytics</span>
+                    </a>
                     <a href="@Url.Action("ManageResources", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ManageResources" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-book"></i></span>
                         <span class="nav-text">Manage Resources</span>
