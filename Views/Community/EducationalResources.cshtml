@@ -4,74 +4,38 @@
     Layout = "_CommunityLayout";
 }
 
-<div class="container-fluid px-0">
-    <div class="row g-2">
-        <!-- Page Header -->
-        <div class="col-12 mb-2">
-            <div class="page-header d-flex align-items-center">
-                <div class="page-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <div class="ms-3">
-                    <h4 class="page-title mb-0">Educational Resources</h4>
-                    <p class="page-subtitle mb-0">Learn emergency preparedness and response techniques</p>
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card dashboard-card">
+            <div class="card-header bg-info text-white">
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-info">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div>
+                        <h5 class="m-0">Community Resource Library</h5>
+                        <small>Exclusive access to emergency preparedness materials</small>
+                    </div>
                 </div>
             </div>
-        </div>
-    
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">                
-                <div class="card-body p-3" style="background-color: #EFF3EA;">
-                    <!-- Search and Filter Bar -->
-                    <div class="search-filter-container mb-2 mt-1">
-                        <div class="row g-3 align-items-center" style="gap: 2rem;">
-                            <div class="col-lg-5 col-md-7 col-12">
-                                <div class="search-container">
-                                    <div class="input-group input-group-merge rounded-pill overflow-hidden border">
-                                        <span class="input-group-text bg-transparent border-0">
-                                            <i class="fas fa-search text-muted"></i>
-                                        </span>
-                                        <input type="text" id="search-resources" class="form-control border-0 shadow-none py-2" placeholder="Search by title or keywords...">
-                                        <button class="btn btn-search px-3 d-none d-md-inline-block" type="button">
-                                            Search
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                                <div class="filter-container">
-                                    <select id="filter-resource-type" class="form-select border-0 shadow-sm rounded-pill py-2">
-                                        <option value="all">All Resource Types</option>
-                                        @foreach (var type in Enum.GetValues(typeof(ResourceType)))
-                                        {
-                                            <option value="@type">@type</option>
-                                        }
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-3 col-md-12 col-sm-5 col-12">
-                                <div class="offline-toggle-container">
-                                    <div class="form-check form-switch d-flex align-items-center offline-toggle">
-                                        <input class="form-check-input me-2" type="checkbox" id="offline-only">
-                                        <label class="form-check-label d-flex align-items-center gap-2" for="offline-only">
-                                            <i class="fas fa-wifi-slash"></i> 
-                                            <span>Offline Resources Only</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
+            <div class="card-body">
+                <!-- Community perk banner -->
+                <div class="alert alert-success mb-4">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-star text-warning fa-2x me-3"></i>
+                        <div>
+                            <h5 class="mb-1">Community Member Exclusive</h5>
+                            <p class="mb-0">As a THYNK community member, you have premium access to these educational resources. Save them offline for emergency situations!</p>
                         </div>
                     </div>
-                    
-                    <!-- Active Filters -->
-                    <div class="active-filters mb-4" id="active-filters">
-                        <div class="d-flex flex-wrap gap-2 align-items-center">
-                            <span class="filter-label me-2 d-none" id="filter-label">Active filters:</span>
-                            <div class="filter-chips d-flex flex-wrap gap-2">
-                                <!-- Filter chips will be added here dynamically -->
-                            </div>
-                            <button class="btn btn-sm btn-clear-filters d-none" id="clear-filters">
-                                <i class="fas fa-times-circle me-1"></i>Clear all
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" id="search-resources" class="form-control" placeholder="Search resources...">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-search"></i>
                             </button>
                         </div>
                     </div>
@@ -99,296 +63,27 @@
                                                 <i class="fas fa-wifi-slash"></i> Offline
                                             </div>
                                         }
-                                        <div class="card-cover">
-                                            @switch (resource.Type.ToString())
-                                            {
-                                                case "Guide":
-                                                    <div class="cover-icon cover-guide">
-                                                        <i class="fas fa-book"></i>
-                                                    </div>
-                                                    break;
-                                                case "Video":
-                                                    <div class="cover-icon cover-video">
-                                                        <i class="fas fa-video"></i>
-                                                    </div>
-                                                    break;
-                                                case "Infographic":
-                                                    <div class="cover-icon cover-infographic">
-                                                        <i class="fas fa-chart-bar"></i>
-                                                    </div>
-                                                    break;
-                                                case "Document":
-                                                    <div class="cover-icon cover-document">
-                                                        <i class="fas fa-file-alt"></i>
-                                                    </div>
-                                                    break;
-                                                default:
-                                                    <div class="cover-icon cover-other">
-                                                        <i class="fas fa-file"></i>
-                                                    </div>
-                                                    break;
-                                            }
-                                        </div>
-                                        <div class="card-content">
-                                            <div class="card-meta">
-                                                @switch (resource.Type.ToString())
-                                                {
-                                                    case "Guide":
-                                                        <span class="meta-badge type-guide">
-                                                            <i class="fas fa-book me-1"></i> Guide
-                                                        </span>
-                                                        break;
-                                                    case "Video":
-                                                        <span class="meta-badge type-video">
-                                                            <i class="fas fa-video me-1"></i> Video
-                                                        </span>
-                                                        break;
-                                                    case "Infographic":
-                                                        <span class="meta-badge type-infographic">
-                                                            <i class="fas fa-chart-bar me-1"></i> Infographic
-                                                        </span>
-                                                        break;
-                                                    case "Document":
-                                                        <span class="meta-badge type-document">
-                                                            <i class="fas fa-file-alt me-1"></i> Document
-                                                        </span>
-                                                        break;
-                                                    default:
-                                                        <span class="meta-badge type-other">
-                                                            <i class="fas fa-file me-1"></i> @resource.Type
-                                                        </span>
-                                                        break;
-                                                }
-                                                <span class="meta-date">
-                                                    <i class="far fa-calendar-alt me-1"></i>
-                                                    @resource.DateAdded.ToString("MMM dd, yyyy")
-                                                </span>
-                                            </div>
-                                            <h5 class="card-title">@resource.Title</h5>
-                                            <p class="card-description">@resource.Description</p>
-                                            
-                                            @if (!string.IsNullOrEmpty(resource.Tags))
-                                            {
-                                                <div class="card-tags">
-                                                    @foreach (var tag in resource.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                                                    {
-                                                        <span class="tag">@tag.Trim()</span>
-                                                    }
-                                                </div>
-                                            }
-                                            
-                                            <div class="card-actions">
-                                                <a href="@Url.Action("ResourceDetails", "Community", new { id = resource.Id })" 
-                                                   class="btn-action btn-view">
-                                                    <i class="fas fa-book-open me-1"></i> View
+                                    </div>
+                                    <div class="card-footer bg-white border-top-0">
+                                        <div class="d-flex justify-content-between">
+                                            <a href="@Url.Action("ResourceDetails", "Community", new { id = resource.Id })" class="btn btn-info text-white btn-sm">
+                                                <i class="fas fa-book-open me-1"></i> View Resource
+                                            </a>
+                                            <div>
+                                                <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = resource.Id })" class="btn btn-primary btn-sm me-1" title="Download as PDF">
+                                                    <i class="fas fa-file-pdf"></i>
                                                 </a>
                                                 @if (!string.IsNullOrEmpty(resource.FileUrl) && resource.IsOfflineAccessible)
                                                 {
-                                                    <a href="@resource.FileUrl" download 
-                                                       class="btn-action btn-download">
-                                                        <i class="fas fa-download me-1"></i> 
+                                                    <a href="@resource.FileUrl" download class="btn btn-outline-success btn-sm" title="Download Original File">
+                                                        <i class="fas fa-download"></i>
                                                         @if (resource.FileSizeKB.HasValue)
                                                         {
-                                                            <span>@(resource.FileSizeKB < 1024 ? $"{resource.FileSizeKB} KB" : $"{resource.FileSizeKB / 1024.0:F1} MB")</span>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span>Download</span>
+                                                            <span>(@(resource.FileSizeKB < 1024 ? $"{resource.FileSizeKB} KB" : $"{resource.FileSizeKB / 1024.0:F1} MB"))</span>
                                                         }
                                                     </a>
                                                 }
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <!-- Sample Resources by Category (when actual resources not available) -->
-                            <div class="col-lg-4 col-md-6 mb-4 resource-item" data-type="Guide" data-offline="true" data-title="Emergency Preparedness Guide" data-tags="preparedness,emergency,kit">
-                                <div class="resource-card">
-                                    <div class="card-badge sample-badge">Sample</div>
-                                    <div class="card-badge offline-badge" title="Available offline">
-                                        <i class="fas fa-wifi-slash"></i> Offline
-                                    </div>
-                                    <div class="card-cover">
-                                        <div class="cover-icon cover-guide">
-                                            <i class="fas fa-book"></i>
-                                        </div>
-                                    </div>
-                                    <div class="card-content">
-                                        <div class="card-meta">
-                                            <span class="meta-badge type-guide">
-                                                <i class="fas fa-book me-1"></i> Guide
-                                            </span>
-                                            <span class="meta-date">
-                                                <i class="far fa-calendar-alt me-1"></i>
-                                                Jun 15, 2023
-                                            </span>
-                                        </div>
-                                        <h5 class="card-title">Emergency Preparedness Guide</h5>
-                                        <p class="card-description">A comprehensive guide to preparing your home and family for various emergency situations.</p>
-                                        <div class="card-tags">
-                                            <span class="tag">preparedness</span>
-                                            <span class="tag">emergency</span>
-                                            <span class="tag">kit</span>
-                                        </div>
-                                        <div class="card-actions">
-                                            <a href="#" class="btn-action btn-view">
-                                                <i class="fas fa-book-open me-1"></i> View
-                                            </a>
-                                            <a href="#" class="btn-action btn-download">
-                                                <i class="fas fa-download me-1"></i> 2.5 MB
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-lg-4 col-md-6 mb-4 resource-item" data-type="Video" data-offline="false" data-title="Flood Safety Tutorial" data-tags="flood,safety,tutorial">
-                                <div class="resource-card">
-                                    <div class="card-badge sample-badge">Sample</div>
-                                    <div class="card-cover">
-                                        <div class="cover-icon cover-video">
-                                            <i class="fas fa-video"></i>
-                                        </div>
-                                    </div>
-                                    <div class="card-content">
-                                        <div class="card-meta">
-                                            <span class="meta-badge type-video">
-                                                <i class="fas fa-video me-1"></i> Video
-                                            </span>
-                                            <span class="meta-date">
-                                                <i class="far fa-calendar-alt me-1"></i>
-                                                Aug 22, 2023
-                                            </span>
-                                        </div>
-                                        <h5 class="card-title">Flood Safety Tutorial</h5>
-                                        <p class="card-description">Learn essential safety techniques for before, during, and after flooding events in your area.</p>
-                                        <div class="card-tags">
-                                            <span class="tag">flood</span>
-                                            <span class="tag">safety</span>
-                                            <span class="tag">tutorial</span>
-                                        </div>
-                                        <div class="card-actions">
-                                            <a href="#" class="btn-action btn-view">
-                                                <i class="fas fa-play-circle me-1"></i> Watch
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-lg-4 col-md-6 mb-4 resource-item" data-type="Infographic" data-offline="true" data-title="Earthquake Response Infographic" data-tags="earthquake,response,visual">
-                                <div class="resource-card">
-                                    <div class="card-badge sample-badge">Sample</div>
-                                    <div class="card-badge offline-badge" title="Available offline">
-                                        <i class="fas fa-wifi-slash"></i> Offline
-                                    </div>
-                                    <div class="card-cover">
-                                        <div class="cover-icon cover-infographic">
-                                            <i class="fas fa-chart-bar"></i>
-                                        </div>
-                                    </div>
-                                    <div class="card-content">
-                                        <div class="card-meta">
-                                            <span class="meta-badge type-infographic">
-                                                <i class="fas fa-chart-bar me-1"></i> Infographic
-                                            </span>
-                                            <span class="meta-date">
-                                                <i class="far fa-calendar-alt me-1"></i>
-                                                Sep 10, 2023
-                                            </span>
-                                        </div>
-                                        <h5 class="card-title">Earthquake Response Infographic</h5>
-                                        <p class="card-description">Visual guide showing the proper steps to take during and after an earthquake.</p>
-                                        <div class="card-tags">
-                                            <span class="tag">earthquake</span>
-                                            <span class="tag">response</span>
-                                            <span class="tag">visual</span>
-                                        </div>
-                                        <div class="card-actions">
-                                            <a href="#" class="btn-action btn-view">
-                                                <i class="fas fa-image me-1"></i> View
-                                            </a>
-                                            <a href="#" class="btn-action btn-download">
-                                                <i class="fas fa-download me-1"></i> 1.2 MB
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-lg-4 col-md-6 mb-4 resource-item" data-type="Document" data-offline="true" data-title="First Aid Procedures Manual" data-tags="first aid,medical,emergency">
-                                <div class="resource-card">
-                                    <div class="card-badge sample-badge">Sample</div>
-                                    <div class="card-badge offline-badge" title="Available offline">
-                                        <i class="fas fa-wifi-slash"></i> Offline
-                                    </div>
-                                    <div class="card-cover">
-                                        <div class="cover-icon cover-document">
-                                            <i class="fas fa-file-alt"></i>
-                                        </div>
-                                    </div>
-                                    <div class="card-content">
-                                        <div class="card-meta">
-                                            <span class="meta-badge type-document">
-                                                <i class="fas fa-file-alt me-1"></i> Document
-                                            </span>
-                                            <span class="meta-date">
-                                                <i class="far fa-calendar-alt me-1"></i>
-                                                Oct 05, 2023
-                                            </span>
-                                        </div>
-                                        <h5 class="card-title">First Aid Procedures Manual</h5>
-                                        <p class="card-description">Step-by-step instructions for common first aid procedures during emergencies.</p>
-                                        <div class="card-tags">
-                                            <span class="tag">first aid</span>
-                                            <span class="tag">medical</span>
-                                            <span class="tag">emergency</span>
-                                        </div>
-                                        <div class="card-actions">
-                                            <a href="#" class="btn-action btn-view">
-                                                <i class="fas fa-file-pdf me-1"></i> View
-                                            </a>
-                                            <a href="#" class="btn-action btn-download">
-                                                <i class="fas fa-download me-1"></i> 3.1 MB
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-lg-4 col-md-6 mb-4 resource-item" data-type="Interactive" data-offline="false" data-title="Evacuation Route Planner" data-tags="evacuation,planning,interactive">
-                                <div class="resource-card">
-                                    <div class="card-badge sample-badge">Sample</div>
-                                    <div class="card-cover">
-                                        <div class="cover-icon cover-interactive">
-                                            <i class="fas fa-map-marked-alt"></i>
-                                        </div>
-                                    </div>
-                                    <div class="card-content">
-                                        <div class="card-meta">
-                                            <span class="meta-badge type-interactive">
-                                                <i class="fas fa-map-marked-alt me-1"></i> Interactive
-                                            </span>
-                                            <span class="meta-date">
-                                                <i class="far fa-calendar-alt me-1"></i>
-                                                Nov 18, 2023
-                                            </span>
-                                        </div>
-                                        <h5 class="card-title">Evacuation Route Planner</h5>
-                                        <p class="card-description">Interactive tool to plan and visualize optimal evacuation routes based on your location.</p>
-                                        <div class="card-tags">
-                                            <span class="tag">evacuation</span>
-                                            <span class="tag">planning</span>
-                                            <span class="tag">interactive</span>
-                                        </div>
-                                        <div class="card-actions">
-                                            <a href="#" class="btn-action btn-view">
-                                                <i class="fas fa-map me-1"></i> Launch
-                                            </a>
                                         </div>
                                     </div>
                                 </div>

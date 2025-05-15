@@ -1,0 +1,288 @@
+@{
+    ViewData["Title"] = "Resident Support Chats";
+    Layout = "_LGULayout";
+}
+
+<div class="mb-6">
+    <h1 class="text-2xl font-bold mb-1">Resident Support Chats</h1>
+    <p class="text-sm text-gray-600">Respond to community inquiries and provide assistance to residents.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Active Chats List -->
+    <div class="lgu-card lg:col-span-1">
+        <div class="lgu-card-header">
+            <div class="header-icon bg-blue-500 text-white">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold mb-0">Active Chats</h2>
+                <p class="text-xs text-gray-500 mb-0">Manage resident support requests</p>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex space-x-2">
+                    <button id="btn-active" class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-600 font-medium active-filter">Active</button>
+                    <button id="btn-pending" class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-medium">Pending</button>
+                    <button id="btn-all" class="px-3 py-1 text-xs rounded-full bg-gray-100 text-gray-600 font-medium">All</button>
+                </div>
+                <div>
+                    <a href="@Url.Action("ChatHistory", "SupportAdmin")" class="text-xs text-blue-500 hover:underline">
+                        <i class="fas fa-history mr-1"></i>View History
+                    </a>
+                </div>
+            </div>
+            
+            <div class="chat-list-container overflow-y-auto" style="max-height: 600px;">
+                @if (ViewBag.ActiveChats != null && ViewBag.ActiveChats.Count > 0)
+                {
+                    foreach (var chat in ViewBag.ActiveChats)
+                    {
+                        <div class="chat-item p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all @(chat.Id == ViewBag.SelectedChatId ? "bg-blue-50" : "")" 
+                             data-chat-id="@chat.Id" data-status="@chat.Status.ToString().ToLower()">
+                            <div class="flex justify-between items-start mb-1">
+                                <h6 class="font-medium text-sm text-gray-800 mb-0 truncate w-3/4">
+                                    @(string.IsNullOrEmpty(chat.Title) ? "Chat #" + chat.Id : chat.Title)
+                                </h6>
+                                <span class="text-xs px-2 py-1 rounded-full 
+                                    @(chat.Status == THYNK.Models.ChatStatus.Active ? "bg-green-100 text-green-600" : 
+                                      chat.Status == THYNK.Models.ChatStatus.Pending ? "bg-yellow-100 text-yellow-600" : "bg-gray-100 text-gray-600")">
+                                    @chat.Status
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs mr-2">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <span class="text-xs text-gray-600 truncate">@($"{chat.User?.FirstName} {chat.User?.LastName}")</span>
+                                </div>
+                                <span class="text-xs text-gray-500">@chat.StartTime.ToString("MMM dd, HH:mm")</span>
+                            </div>
+                            <div class="mt-1 flex items-center justify-between">
+                                @if (!string.IsNullOrEmpty(chat.Category))
+                                {
+                                    <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded">@chat.Category</span>
+                                }
+                                else
+                                {
+                                    <span class="text-xs bg-gray-50 text-gray-500 px-2 py-0.5 rounded">No category</span>
+                                }
+                                <span class="text-xs text-gray-500">@(chat.Messages?.Count ?? 0) messages</span>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="py-8 text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 text-gray-400 rounded-full mb-4">
+                            <i class="fas fa-comments fa-lg"></i>
+                        </div>
+                        <h5 class="text-lg font-medium text-gray-500 mb-1">No Active Chats</h5>
+                        <p class="text-sm text-gray-400">There are currently no active support chats in your jurisdiction.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="lgu-card lg:col-span-2">
+        <div class="lgu-card-header">
+            <div class="header-icon bg-green-600 text-white">
+                <i class="fas fa-comment-dots"></i>
+            </div>
+            <div class="flex-grow">
+                @if (ViewBag.SelectedChat != null)
+                {
+                    <h2 class="text-lg font-semibold mb-0">@(string.IsNullOrEmpty(ViewBag.SelectedChat.Title) ? "Chat #" + ViewBag.SelectedChat.Id : ViewBag.SelectedChat.Title)</h2>
+                    <p class="text-xs text-gray-500 mb-0">
+                        Started @ViewBag.SelectedChat.StartTime.ToString("MMM dd, yyyy HH:mm") by @($"{ViewBag.SelectedChat.User?.FirstName} {ViewBag.SelectedChat.User?.LastName}")
+                    </p>
+                }
+                else
+                {
+                    <h2 class="text-lg font-semibold mb-0">Chat Window</h2>
+                    <p class="text-xs text-gray-500 mb-0">Select a chat from the list to respond</p>
+                }
+            </div>
+            <div>
+                @if (ViewBag.SelectedChat != null && ViewBag.SelectedChat.Status != THYNK.Models.ChatStatus.Closed)
+                {
+                    <form asp-action="CloseChat" asp-controller="LGU" method="post" class="d-inline-block" 
+                            onsubmit="return confirm('Are you sure you want to close this chat session?');">
+                        <input type="hidden" name="sessionId" value="@ViewBag.SelectedChat.Id" />
+                        <button type="submit" class="btn-close-chat px-3 py-1 text-xs rounded bg-red-100 text-red-600 hover:bg-red-200 transition-colors">
+                            <i class="fas fa-times-circle mr-1"></i>Close Chat
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+        
+        <div class="p-4 flex flex-col h-[600px]">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="bg-red-100 border border-red-300 text-red-800 px-4 py-3 rounded mb-4">
+                    <p class="text-sm">@TempData["ErrorMessage"]</p>
+                </div>
+            }
+
+            @if (ViewBag.SelectedChat != null)
+            {
+                <div class="chat-messages flex-grow bg-gray-50 rounded-lg p-4 mb-4 overflow-y-auto">
+                    @if (ViewBag.SelectedChat.Messages != null && ViewBag.SelectedChat.Messages.Count > 0)
+                    {
+                        foreach (var message in ViewBag.SelectedChat.Messages)
+                        {
+                            var isFromUser = message.SenderId == ViewBag.SelectedChat.UserId;
+                            var isSystem = message.SenderId == null;
+                            
+                            <div class="mb-4 @(isFromUser ? "" : "text-right")">
+                                @if (isSystem)
+                                {
+                                    <div class="inline-block rounded-lg bg-gray-200 px-4 py-2 max-w-[80%] text-center mx-auto text-gray-600 text-sm">
+                                        <i class="fas fa-info-circle mr-1"></i> @message.Content
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="@(isFromUser ? "message-user" : "message-admin") inline-block rounded-lg px-4 py-2 max-w-[80%] @(isFromUser ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800")">
+                                        @message.Content
+                                        
+                                        @if (!string.IsNullOrEmpty(message.AttachmentUrl))
+                                        {
+                                            <div class="mt-2">
+                                                <a href="@message.AttachmentUrl" target="_blank" class="text-xs underline">
+                                                    <i class="fas fa-paperclip mr-1"></i>View Attachment
+                                                </a>
+                                            </div>
+                                        }
+                                        
+                                        <div class="text-xs opacity-75 text-right mt-1">
+                                            @message.Timestamp.ToString("HH:mm")
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="h-full flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 text-gray-400 rounded-full mb-4">
+                                    <i class="fas fa-comment-dots fa-lg"></i>
+                                </div>
+                                <p class="text-gray-500">No messages in this chat yet.</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                @if (ViewBag.SelectedChat.Status != THYNK.Models.ChatStatus.Closed)
+                {
+                    <form asp-action="SendMessage" asp-controller="LGU" method="post" class="chat-input-form">
+                        <input type="hidden" name="sessionId" value="@ViewBag.SelectedChat.Id" />
+                        <div class="flex gap-3">
+                            <div class="flex-grow">
+                                <textarea name="message" class="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                        placeholder="Type your message here..." rows="2" required></textarea>
+                            </div>
+                            <div>
+                                <button type="submit" class="h-full btn-send-message rounded-lg bg-primary text-white px-6 flex items-center justify-center hover:bg-primaryDark transition-colors">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="bg-gray-100 rounded-lg p-4 text-center text-gray-600">
+                        <i class="fas fa-lock mr-2"></i>
+                        This chat session has been closed. You cannot send new messages.
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="h-full flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 text-gray-400 rounded-full mb-4">
+                            <i class="fas fa-comment-dots fa-2x"></i>
+                        </div>
+                        <h4 class="text-xl font-medium text-gray-600 mb-2">No Chat Selected</h4>
+                        <p class="text-gray-500 mb-4">Select a chat from the list to view the conversation.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Filter buttons
+            const btnActive = document.getElementById('btn-active');
+            const btnPending = document.getElementById('btn-pending');
+            const btnAll = document.getElementById('btn-all');
+            const chatItems = document.querySelectorAll('.chat-item');
+            
+            function setActiveFilter(button) {
+                [btnActive, btnPending, btnAll].forEach(btn => {
+                    btn.classList.remove('bg-blue-100', 'text-blue-600');
+                    btn.classList.add('bg-gray-100', 'text-gray-600');
+                });
+                
+                button.classList.remove('bg-gray-100', 'text-gray-600');
+                button.classList.add('bg-blue-100', 'text-blue-600');
+            }
+            
+            btnActive.addEventListener('click', function() {
+                setActiveFilter(this);
+                chatItems.forEach(item => {
+                    if (item.dataset.status === 'active') {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+            
+            btnPending.addEventListener('click', function() {
+                setActiveFilter(this);
+                chatItems.forEach(item => {
+                    if (item.dataset.status === 'pending') {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+            
+            btnAll.addEventListener('click', function() {
+                setActiveFilter(this);
+                chatItems.forEach(item => {
+                    item.style.display = 'block';
+                });
+            });
+            
+            // Chat selection
+            chatItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    window.location.href = '@Url.Action("ChatSupport", "LGU")?chatId=' + this.dataset.chatId;
+                });
+            });
+            
+            // Scroll to bottom of chat messages
+            const chatMessages = document.querySelector('.chat-messages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+    </script>
+} 

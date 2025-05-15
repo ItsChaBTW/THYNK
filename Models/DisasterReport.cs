@@ -69,6 +69,9 @@ namespace THYNK.Models
         public LGUUser? AssignedTo { get; set; }
         
         public DateTime? AssignedAt { get; set; }
+        
+        // When the report was resolved
+        public DateTime? ResolvedAt { get; set; }
     }
 
     public enum DisasterType

@@ -1,0 +1,245 @@
+@model IEnumerable<THYNK.Models.EducationalResource>
+@{
+    ViewData["Title"] = "Educational Resources";
+    Layout = "_Layout"; // Using the main layout since this is accessible to all users
+}
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-6 fw-bold mb-2">Educational Resource Library</h1>
+            <p class="text-muted lead">Access disaster management and emergency resources provided by local government units.</p>
+        </div>
+        <div class="col-md-4 d-flex justify-content-md-end align-items-center">
+            <div class="input-group">
+                <input type="text" id="resourceSearch" class="form-control" placeholder="Search resources...">
+                <button class="btn btn-primary" type="button" id="searchButton">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-pills" id="resourceTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-filter="all">All Resources</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-filter="@ResourceType.Guide">Guides</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-filter="@ResourceType.Tutorial">Tutorials</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-filter="@ResourceType.Infographic">Infographics</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-filter="@ResourceType.Video">Videos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-filter="@ResourceType.Document">Documents</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-filter="@ResourceType.FAQ">FAQs</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="resourceGrid">
+        @foreach (var resource in Model)
+        {
+            <div class="col resource-item" data-type="@resource.Type" data-title="@resource.Title.ToLower()">
+                <div class="card h-100 shadow-sm resource-card">
+                    <div class="book-cover position-relative">
+                        @{
+                            string coverBg = resource.Type switch
+                            {
+                                ResourceType.Guide => "bg-primary",
+                                ResourceType.Tutorial => "bg-success",
+                                ResourceType.Infographic => "bg-info",
+                                ResourceType.Video => "bg-danger",
+                                ResourceType.Document => "bg-warning",
+                                ResourceType.FAQ => "bg-secondary",
+                                _ => "bg-secondary"
+                            };
+                            
+                            string coverIcon = resource.Type switch
+                            {
+                                ResourceType.Guide => "fas fa-compass",
+                                ResourceType.Tutorial => "fas fa-book",
+                                ResourceType.Infographic => "fas fa-presentation",
+                                ResourceType.Video => "fas fa-video",
+                                ResourceType.Document => "fas fa-file-alt",
+                                ResourceType.FAQ => "fas fa-file",
+                                _ => "fas fa-file"
+                            };
+                        }
+                        
+                        <div class="position-relative">
+                            <div class="@coverBg text-white p-4 d-flex justify-content-center align-items-center" style="height: 180px;">
+                                <div class="text-center">
+                                    <i class="@coverIcon fa-4x mb-2"></i>
+                                    <div class="book-title mt-2">@resource.Title</div>
+                                </div>
+                            </div>
+                            <div class="book-spine @coverBg"></div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">@resource.Title</h5>
+                        <p class="card-text mb-0">
+                            <span class="badge @coverBg text-white">@resource.Type</span>
+                            <small class="text-muted ms-2">Added @resource.DateAdded.ToString("MMM dd, yyyy")</small>
+                        </p>
+                        <p class="card-text mt-2">@(resource.Description.Length > 100 ? resource.Description.Substring(0, 100) + "..." : resource.Description)</p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <div class="d-grid gap-2">
+                            <a href="@Url.Action("Details", "ResourceLibrary", new { id = resource.Id })" class="btn btn-outline-primary">
+                                <i class="fas fa-info-circle me-1"></i> View Details
+                            </a>
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <a href="@Url.Action("Download", "ResourceLibrary", new { id = resource.Id })" class="btn btn-primary">
+                                    <i class="fas fa-download me-1"></i> Download
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="@Url.Action("Login", "Account", new { area = "Identity", returnUrl = Url.Action("Details", "ResourceLibrary", new { id = resource.Id }) })" class="btn btn-primary">
+                                    <i class="fas fa-lock me-1"></i> Login to Download
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <div class="text-center py-4" id="noResults" style="display: none;">
+        <div class="alert alert-info">
+            <i class="fas fa-search me-2"></i> No resources found matching your search criteria.
+        </div>
+    </div>
+</div>
+
+<style>
+    .resource-card {
+        transition: transform 0.3s;
+        overflow: hidden;
+    }
+    
+    .resource-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .book-spine {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 15px;
+        height: 100%;
+        transform: perspective(100px) rotateY(15deg);
+        transform-origin: left;
+        opacity: 0.8;
+    }
+    
+    .book-title {
+        font-size: 0.9rem;
+        max-width: 90%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin: 0 auto;
+    }
+    
+    .nav-pills .nav-link {
+        color: #495057;
+        background-color: #f8f9fa;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        border-radius: 20px;
+        padding: .5rem 1rem;
+    }
+    
+    .nav-pills .nav-link.active {
+        color: #fff;
+        background-color: #0d6efd;
+    }
+    
+    /* Media queries for responsive design */
+    @@media (max-width: 768px) {
+        .nav-pills .nav-link {
+            padding: .5rem .75rem;
+            font-size: 0.9rem;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        // Filter resources by type
+        $("#resourceTabs a").click(function(e) {
+            e.preventDefault();
+            
+            // Set active class
+            $("#resourceTabs a").removeClass("active");
+            $(this).addClass("active");
+            
+            // Get filter value
+            var filter = $(this).data("filter");
+            
+            // Filter grid items
+            if (filter === "all") {
+                $(".resource-item").show();
+            } else {
+                $(".resource-item").hide();
+                $('.resource-item[data-type="' + filter + '"]').show();
+            }
+            
+            // Check if there are visible items
+            checkVisibleItems();
+        });
+        
+        // Search functionality
+        $("#searchButton, #resourceSearch").on("click keyup", function(e) {
+            if (e.type === "click" || e.keyCode === 13) {
+                var searchTerm = $("#resourceSearch").val().toLowerCase();
+                
+                if (searchTerm.length > 0) {
+                    $(".resource-item").hide();
+                    $(".resource-item[data-title*='" + searchTerm + "']").show();
+                } else {
+                    // If search is cleared, respect the current tab filter
+                    var currentFilter = $("#resourceTabs a.active").data("filter");
+                    if (currentFilter === "all") {
+                        $(".resource-item").show();
+                    } else {
+                        $(".resource-item").hide();
+                        $('.resource-item[data-type="' + currentFilter + '"]').show();
+                    }
+                }
+                
+                // Check if there are visible items
+                checkVisibleItems();
+            }
+        });
+        
+        // Function to check if there are any visible items
+        function checkVisibleItems() {
+            if ($(".resource-item:visible").length === 0) {
+                $("#noResults").show();
+            } else {
+                $("#noResults").hide();
+            }
+        }
+    });
+</script> 

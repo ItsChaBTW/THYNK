@@ -1117,29 +1117,49 @@
             // Image preview functionality
             $('#modalImage').on('change', function() {
                 const file = this.files[0];
-            if (file) {
+                if (file) {
                     // File size validation
-                if (file.size > 5 * 1024 * 1024) { // 5MB
-                    alert('File size must be less than 5MB');
-                    this.value = '';
+                    if (file.size > 5 * 1024 * 1024) { // 5MB
+                        alert('File size must be less than 5MB');
+                        this.value = '';
                         $('#imagePreview').addClass('d-none');
-                    return;
-                }
+                        return;
+                    }
                     
                     // Preview image
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        $('#imagePreview img').attr('src', e.target.result);
+                        // Make sure the image element exists
+                        let $image = $('#imagePreview img');
+                        if ($image.length === 0) {
+                            // Create the image element if it doesn't exist
+                            $('#imagePreview').html(`
+                                <div class="position-relative d-inline-block">
+                                    <img src="${e.target.result}" alt="Preview" class="img-thumbnail mx-auto" 
+                                         style="max-height: 250px; max-width: 100%; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" 
+                                            id="removeImage" style="margin-right: -10px; margin-top: -10px;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-muted small mt-2">Selected image preview</p>
+                            `);
+                            
+                            // Re-attach the click handler for the remove button
+                            $('#removeImage').on('click', function() {
+                                $('#modalImage').val('');
+                                $('#imagePreview').addClass('d-none');
+                            });
+                        } else {
+                            // Update existing image
+                            $image.attr('src', e.target.result);
+                        }
+                        
+                        // Show the preview container
                         $('#imagePreview').removeClass('d-none');
-                    }
+                    };
                     reader.readAsDataURL(file);
                 }
-            });
-            
-            // Remove image preview and clear file input
-            $('#removeImage').on('click', function() {
-                $('#modalImage').val('');
-                $('#imagePreview').addClass('d-none');
             });
             
             // Geolocation support for post form

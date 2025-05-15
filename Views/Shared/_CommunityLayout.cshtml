@@ -687,7 +687,7 @@
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="bg-secondary">
+<body class="bg-[#FAF7F0]">
     <!-- Hamburger Menu Button -->
     <button id="hamburger" class="hamburger md:hidden">
         <span class="hamburger-line"></span>
@@ -696,7 +696,7 @@
     </button>
 
     <!-- Header Bar -->
-    <header class="fixed top-0 left-0 right-0 shadow-md z-20">
+    <header class="fixed top-0 left-0 right-0 shadow-md z-20 bg-white">
         <div class="container mx-auto relative z-10">
             <div class="flex items-center justify-between px-4 py-3">
                 <div class="md:ml-64 ml-12 flex items-center transition-all duration-300">
@@ -714,7 +714,7 @@
                             <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2 shadow-sm" style="background-color: #1ABC9C; color: white;">
                                 @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
                             </div>
-                            <span class="text-primary text-sm cursor-pointer user-dropdown-trigger">@User.Identity.Name</span>
+                            <span class="text-primary text-sm cursor-pointer user-dropdown-trigger">@(User.Identity != null ? User.Identity.Name : "User")</span>
                             
                             <!-- Dropdown Menu -->
                             <div class="user-dropdown-menu">
@@ -723,8 +723,8 @@
                                         <i class="fas fa-user-cog me-2"></i>Manage Account
                                     </a>
                                     <button type="button" data-logout-trigger class="user-dropdown-item w-full text-left">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </button>
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </button>
                                 </div>
                             </div>
                         </div>
@@ -741,7 +741,7 @@
     <div id="overlay" class="overlay"></div>
     
     <!-- Sidebar -->
-    <nav id="sidebar" class="sidebar sidebar-collapsed">
+    <div class="sidebar sidebar-collapsed md:sidebar-expanded" id="sidebar">
         <div class="sidebar-content">
             <!-- Fixed Header -->
             <div class="pt-12 px-4">
@@ -755,55 +755,66 @@
             <!-- Scrollable Navigation Area -->
             <div class="sidebar-nav">
                 <div class="space-y-1">
-                    <a href="@Url.Action("CommunityFeed", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" || ViewContext.RouteData.Values["Action"].ToString() == "PostUpdate" ? "active" : "")">
+                    <a href="@Url.Action("CommunityFeed", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "CommunityFeed" || ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "PostUpdate" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-users"></i></span>
                         <span class="nav-text">Community Feed</span>
                     </a>
                     
-                    <a href="@Url.Action("SubmitReport", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "SubmitReport" ? "active" : "")">
+                    <a href="@Url.Action("EducationalResources", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "EducationalResources" || ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "ResourceDetails" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-book"></i></span>
+                        <span class="nav-text">Resource Library</span>
+                    </a>
+                    
+                    <a href="@Url.Action("SubmitReport", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "SubmitReport" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-exclamation-triangle"></i></span>
                         <span class="nav-text">Report Incident</span>
                     </a>
                     
-                    <a href="@Url.Action("EducationalResources", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "EducationalResources" || ViewContext.RouteData.Values["Action"].ToString() == "ResourceDetails" ? "active" : "")">
-                        <span class="nav-icon"><i class="fas fa-book"></i></span>
-                        <span class="nav-text">Educational Resources</span>
-                    </a>
-                    
-                    <a href="@Url.Action("Alerts", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
+                    <a href="@Url.Action("Alerts", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-bell"></i></span>
                         <span class="nav-text">Alerts</span>
                     </a>
                     
-                    <a href="@Url.Action("IncidentMap", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
+                    <a href="@Url.Action("IncidentMap", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
                         <span class="nav-text">Incident Map</span>
                     </a>
                     
-                    <a href="@Url.Action("MyReports", "Community")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "MyReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
+                    <a href="@Url.Action("MyReports", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "MyReports" || ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
                         <span class="nav-text">My Reports</span>
                     </a>
                     
-                    <a href="@Url.Action("Index", "Support")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
+                    <a href="@Url.Action("Index", "Support")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
                         <span class="nav-text">Support & FAQs</span>
                     </a>
+                    
+                
                 </div>
             </div>
             
             <!-- User Profile Section -->
-            <div class="profile-section">
+            <div class="sidebar-footer absolute bottom-0 left-0 right-0 p-4 border-t border-primary/20">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <div class="profile-info">
-                        <div class="profile-avatar">
-                            @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
+                    <div class="user-info flex items-center">
+                        <a href="/Identity/Account/Manage" class="flex items-center">
+                            <div class="avatar-circle w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+                                @if (!string.IsNullOrEmpty(User.FindFirst("ProfilePhotoUrl")?.Value))
+                                {
+                                    <img src="@User.FindFirst("ProfilePhotoUrl")?.Value" alt="Profile" class="w-full h-full object-cover rounded-full">
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user"></i>
+                                }
                         </div>
                         <div class="overflow-hidden">
                             <p class="text-sm font-medium truncate text-white">@User.Identity.Name</p>
                             <p class="text-xs text-white opacity-70">Community User</p>
                         </div>
+                        </a>
                     </div>
                     <div class="profile-actions">
                         @if (User.Identity != null)
@@ -812,8 +823,8 @@
                                 <i class="fas fa-user-cog"></i> Manage Account
                             </a>
                             <button type="button" data-logout-trigger class="profile-link w-full text-left">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </button>
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </button>
                         }
                     </div>
                 }
@@ -830,7 +841,7 @@
                 }
             </div>
         </div>
-    </nav>
+    </div>
     
     <!-- Main Content -->
     <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64">
@@ -904,8 +915,8 @@
                 }
             </div>
             
-            <!-- Content -->
-            <div class="bg-white rounded-lg shadow-md p-3 md:p-3 p-0">
+            <!-- Page Content -->
+            <div class="bg-white rounded-lg shadow-md p-6">
                 @RenderBody()
             </div>
         </div>
@@ -913,11 +924,11 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Mapbox JS -->
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
     <script>
-        // Sidebar toggle
+        // Toggle sidebar
+        document.addEventListener('DOMContentLoaded', function() {
         const hamburger = document.getElementById('hamburger');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
@@ -949,89 +960,88 @@
             }
         }
         
-        // Handle responsive sidebar behavior
-        function handleSidebarResponsiveness() {
-            if (window.innerWidth >= 768) {
-                // Desktop: Always show sidebar and adjust main content
-                sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-                mainContent.classList.add('md:ml-64');
-                overlay.classList.remove('active');
-            } else {
-                // Mobile: Check saved state
-                const sidebarState = localStorage.getItem('sidebarState') || 'collapsed';
+            // Toggle sidebar function
+            function toggleSidebar() {
+                hamburger.classList.toggle('active');
                 
-                if (sidebarState === 'expanded') {
-                    sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-                    hamburger.classList.add('active');
-                    overlay.classList.add('active');
+                if (sidebar.classList.contains('sidebar-collapsed')) {
+            sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+            overlay.classList.add('active');
+                    localStorage.setItem('sidebarState', 'expanded');
                 } else {
                     sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
-                    hamburger.classList.remove('active');
                     overlay.classList.remove('active');
+                    localStorage.setItem('sidebarState', 'collapsed');
                 }
                 
-                // Always remove margin adjustment on mobile
-                mainContent.classList.remove('md:ml-64');
+                // Adjust main content margin based on screen size
+            if (window.innerWidth >= 768) {
+                    mainContent.classList.toggle('md:ml-64');
+                }
             }
-        }
-        
-        // Call once on load
-        adjustSidebarHeight();
-        addEntranceAnimations();
-        handleSidebarResponsiveness();
-        
-        // Update on resize
-        window.addEventListener('resize', () => {
-            adjustSidebarHeight();
-            handleSidebarResponsiveness();
-        });
-        
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
             
-            if (sidebar.classList.contains('sidebar-collapsed')) {
-                sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-                overlay.classList.add('active');
-                
-                // Only adjust margin on larger screens
+            // Handle responsive sidebar behavior
+            function handleSidebarResponsiveness() {
                 if (window.innerWidth >= 768) {
+                    // Desktop: Always show sidebar and adjust main content
+                    sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
                     mainContent.classList.add('md:ml-64');
-                }
+                    overlay.classList.remove('active');
+                } else {
+                    // Mobile: Check saved state
+                    const sidebarState = localStorage.getItem('sidebarState') || 'collapsed';
                 
-                localStorage.setItem('sidebarState', 'expanded');
+                    if (sidebarState === 'expanded') {
+                        sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+                        hamburger.classList.add('active');
+                        overlay.classList.add('active');
             } else {
                 sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+                        hamburger.classList.remove('active');
                 overlay.classList.remove('active');
-                
-                // Only adjust margin on mobile
-                if (window.innerWidth < 768) {
-                    mainContent.classList.remove('md:ml-64');
-                }
-                
-                localStorage.setItem('sidebarState', 'collapsed');
-            }
-        });
-        
-        // Close sidebar when clicking overlay
-        overlay.addEventListener('click', () => {
-            sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
-            hamburger.classList.remove('active');
-            overlay.classList.remove('active');
-            
-            if (window.innerWidth < 768) {
+                    }
+                    
+                    // Always remove margin adjustment on mobile
                 mainContent.classList.remove('md:ml-64');
+                }
             }
             
+            // Initialize sidebar state based on screen size
+            function initSidebar() {
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.add('sidebar-expanded');
+                    sidebar.classList.remove('sidebar-collapsed');
+                    mainContent.classList.add('md:ml-64');
+                } else {
+            sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+            overlay.classList.remove('active');
             localStorage.setItem('sidebarState', 'collapsed');
-        });
-        
-        // Close alert messages after 5 seconds
+                }
+            }
+            
+            // Call once on load
+            adjustSidebarHeight();
+            addEntranceAnimations();
+            handleSidebarResponsiveness();
+            
+            // Update on resize
+        window.addEventListener('resize', () => {
+                adjustSidebarHeight();
+                handleSidebarResponsiveness();
+            });
+            
+            // Add event listeners
+            hamburger.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+            
+            // Auto-close alert messages after 5 seconds
         setTimeout(() => {
             document.querySelectorAll('[role="alert"]').forEach(alert => {
                 alert.classList.add('opacity-0', 'transition-opacity', 'duration-500');
                 setTimeout(() => alert.remove(), 500);
             });
         }, 5000);
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
     
@@ -1127,15 +1137,26 @@
             
             // Get all logout buttons
             const logoutBtns = document.querySelectorAll('[data-logout-trigger]');
-            const logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmModal'));
+            const logoutModal = document.getElementById('logoutConfirmModal');
             const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
             const logoutForm = document.getElementById('logoutForm');
+            
+            // Initialize Bootstrap modal
+            let bootstrapModal = null;
+            if (typeof bootstrap !== 'undefined') {
+                bootstrapModal = new bootstrap.Modal(logoutModal);
+            }
             
             // Add click event to all logout buttons
             logoutBtns.forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    logoutModal.show();
+                    if (bootstrapModal) {
+                        bootstrapModal.show();
+                    } else {
+                        // Fallback if bootstrap modal isn't available
+                        logoutForm.submit();
+                    }
                 });
             });
             

@@ -393,8 +393,8 @@
                                 <div>
                                     <h6 class="item-title">
                                         <span class="status-indicator" style="background-color: @(alert.Severity == AlertSeverity.Critical ? "var(--danger)" : 
-                                                                alert.Severity == AlertSeverity.Danger ? "#fd7e14" : 
-                                                                alert.Severity == AlertSeverity.Warning ? "var(--warning)" : "var(--info)")"></span>
+                                          alert.Severity == AlertSeverity.Danger ? "#fd7e14" : 
+                                           alert.Severity == AlertSeverity.Warning ? "var(--warning)" : "var(--info)")"></span>
                                         @alert.Title
                                     </h6>
                                     <p class="item-content">@alert.Message</p>
@@ -480,93 +480,195 @@
                     <p class="empty-text">No recent reports in your area</p>
                     </div>
                 }
-            </div>
         </div>
     </div>
 
     <!-- Community Updates -->
-<div class="dashboard-section">
-    <h6 class="section-title">COMMUNITY UPDATES</h6>
-    <div class="dashboard-card card-accent-community">
+    <div class="dashboard-section">
+        <h6 class="section-title">COMMUNITY UPDATES</h6>
+        <div class="dashboard-card card-accent-community">
                 @if (ViewBag.CommunityUpdates != null && ViewBag.CommunityUpdates.Count > 0)
                 {
-            <div class="p-0">
+                <div class="p-0">
                         @foreach (var update in ViewBag.CommunityUpdates)
                         {
-                    <div class="list-item">
-                        <div class="d-flex w-100 justify-content-between align-items-start">
-                            <div>
-                                <h6 class="item-title">
+                        <div class="list-item">
+                            <div class="d-flex w-100 justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="item-title">
                                         <span class="badge @(update.Type == UpdateType.HelpRequest ? "bg-danger" : 
                                                             update.Type == UpdateType.StatusUpdate ? "bg-info" : 
                                                             update.Type == UpdateType.ResourceSharing ? "bg-success" : 
                                                             update.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
                                             @update.Type
                                         </span>
-                                </h6>
-                                <p class="item-content">@update.Content</p>
-                                <div class="item-footer">
-                                    <i class="fas fa-user me-1" style="font-size: 0.7rem;"></i>
-                                    Posted by @(update.User != null ? update.User.UserName : "Unknown User")
+                                    </h6>
+                                    <p class="item-content">@update.Content</p>
+                                    <div class="item-footer">
+                                        <i class="fas fa-user me-1" style="font-size: 0.7rem;"></i>
+                                        Posted by @(update.User != null ? update.User.UserName : "Unknown User")
+                                    </div>
                                 </div>
+                                <span class="item-date">
+                                    <i class="far fa-clock me-1"></i>
+                                    @update.DatePosted.ToString("MMM dd, HH:mm")
+                                </span>
                             </div>
-                            <span class="item-date">
-                                <i class="far fa-clock me-1"></i>
-                                @update.DatePosted.ToString("MMM dd, HH:mm")
-                            </span>
+                            </div>
+                        }
+                    <div class="p-3 text-end">
+                        <a href="@Url.Action("CommunityFeed", "LGU")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> View Community Feed
+                        </a>
                     </div>
-                    </div>
-                }
-                <div class="p-3 text-end">
-                    <a href="@Url.Action("CommunityFeed", "LGU")" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-arrow-right me-1"></i> View Community Feed
-                    </a>
-                </div>
                     </div>
                 }
                 else
                 {
-            <div class="empty-state">
-                <i class="fas fa-comments empty-icon"></i>
-                <p class="empty-text">No community updates available</p>
+                <div class="empty-state">
+                    <i class="fas fa-comments empty-icon"></i>
+                    <p class="empty-text">No community updates available</p>
                     </div>
                 }
         </div>
     </div>
 
     <!-- Educational Resources -->
-<div class="dashboard-section">
-    <h6 class="section-title">EDUCATIONAL RESOURCES</h6>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="resource-card">
-                <i class="fas fa-plus-circle resource-icon"></i>
-                <h6 class="mb-2">Add New Resource</h6>
-                <p class="small text-muted mb-4">Create new educational content for your community</p>
-                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
-                    <i class="fas fa-plus me-2"></i>Add Resource
-                </a>
-                    </div>
+    <div class="dashboard-section">
+        <h6 class="section-title">EDUCATIONAL RESOURCES</h6>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-plus-circle resource-icon"></i>
+                    <h6 class="mb-2">Add New Resource</h6>
+                    <p class="small text-muted mb-4">Create new educational content for your community</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-plus me-2"></i>Add Resource
+                    </a>
                 </div>
-        <div class="col-md-4">
-            <div class="resource-card">
-                <i class="fas fa-edit resource-icon"></i>
-                <h6 class="mb-2">Edit Resources</h6>
-                <p class="small text-muted mb-4">Update existing educational materials</p>
-                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
-                    <i class="fas fa-edit me-2"></i>Edit Resources
-                </a>
             </div>
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-edit resource-icon"></i>
+                    <h6 class="mb-2">Edit Resources</h6>
+                    <p class="small text-muted mb-4">Update existing educational materials</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-edit me-2"></i>Edit Resources
+                    </a>
                             </div>
-        <div class="col-md-4">
-            <div class="resource-card">
-                <i class="fas fa-chart-line resource-icon"></i>
-                <h6 class="mb-2">View Analytics</h6>
-                <p class="small text-muted mb-4">Monitor resource usage and engagement</p>
-                <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
-                    <i class="fas fa-chart-bar me-2"></i>View Analytics
-                </a>
+                        </div>
+            <div class="col-md-4">
+                <div class="resource-card">
+                    <i class="fas fa-chart-line resource-icon"></i>
+                    <h6 class="mb-2">View Analytics</h6>
+                    <p class="small text-muted mb-4">Monitor resource usage and engagement</p>
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-sm btn-outline-secondary px-3">
+                        <i class="fas fa-chart-bar me-2"></i>View Analytics
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div> 
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Mapbox map
+            if (mapboxgl) {
+                mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+                const map = new mapboxgl.Map({
+                    container: 'map-preview',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [123.0051, 10.3157], // Center on Negros Occidental
+                    zoom: 9 // Closer zoom for Negros Occidental
+                });
+                
+                // Add navigation controls
+                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                
+                // Set bounds to Negros Occidental
+                const negrosBounds = [
+                    [122.2700, 9.8500], // Southwest coordinates of Negros Occidental
+                    [123.5500, 11.0500]  // Northeast coordinates of Negros Occidental
+                ];
+                
+                // Fit map to Negros Occidental bounds
+                map.fitBounds(negrosBounds, { padding: 20 });
+                
+                // Load actual incident data from controller
+                fetch('@Url.Action("GetMapData", "LGU")')
+                    .then(response => response.json())
+                    .then(incidents => {
+                        if (incidents && incidents.length > 0) {
+                            incidents.forEach(incident => {
+                                // Skip if no valid coordinates
+                                if (!incident.latitude || !incident.longitude) return;
+                                
+                                // Set marker color based on status and severity
+                                let color = '#345995'; // Default blue
+                                
+                                if (incident.status === 3) { // Resolved
+                                    color = '#6a8d73'; // Green 
+                                } else if (incident.severity === 3) { // High severity
+                                    color = '#b56357'; // Red
+                                } else if (incident.severity === 2) { // Medium severity
+                                    color = '#e0a458'; // Orange/Yellow
+                                }
+                                
+                                // Add marker with popup
+                                new mapboxgl.Marker({ color: color })
+                                    .setLngLat([incident.longitude, incident.latitude])
+                                    .setPopup(new mapboxgl.Popup({ offset: 25 })
+                                        .setHTML(`
+                                            <h4 class="text-sm font-bold">${incident.title}</h4>
+                                            <p class="text-xs">${incident.location}</p>
+                                            <p class="text-xs">Status: ${getStatusName(incident.status)}</p>
+                                        `))
+                                    .addTo(map);
+                            });
+                        } else {
+                            // If no incidents, add sample markers within Negros Occidental
+                            const sampleIncidents = [
+                                { lng: 122.9389, lat: 10.6713, type: 'Flood', severity: 'High', title: 'Sample: Flood in Bacolod', location: 'Bacolod City' },
+                                { lng: 123.0175, lat: 10.2494, type: 'Fire', severity: 'Medium', title: 'Sample: Fire Incident', location: 'Kabankalan City' },
+                                { lng: 123.1393, lat: 10.7731, type: 'Landslide', severity: 'Low', title: 'Sample: Minor Landslide', location: 'Silay City' }
+                            ];
+                            
+                            sampleIncidents.forEach(incident => {
+                                const color = incident.severity === 'High' ? '#ef4444' : 
+                                            incident.severity === 'Medium' ? '#f59e0b' : '#3b82f6';
+                                
+                                // Add marker with popup
+                                new mapboxgl.Marker({ color: color })
+                                    .setLngLat([incident.lng, incident.lat])
+                                    .setPopup(new mapboxgl.Popup({ offset: 25 })
+                                        .setHTML(`
+                                            <h4 class="text-sm font-bold">${incident.title}</h4>
+                                            <p class="text-xs">${incident.location}</p>
+                                            <p class="text-xs">Type: ${incident.type}</p>
+                                            <p class="text-xs">Severity: ${incident.severity}</p>
+                                            <p class="text-xs text-gray-500 mt-1">This is sample data</p>
+                                        `))
+                                    .addTo(map);
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching map data:', error);
+                        // Show error on map
+                        const mapContainer = document.getElementById('map-preview');
+                        if (mapContainer) {
+                            mapContainer.innerHTML = '<div class="p-4 text-center text-red-500">Error loading incident data</div>';
+                        }
+                    });
+            }
+            
+            // Helper function to get status name
+            function getStatusName(status) {
+                const statuses = ['Pending', 'Verified', 'InProgress', 'Resolved', 'Declined'];
+                return statuses[status] || 'Unknown';
+            }
+        });
+    </script>
+} 

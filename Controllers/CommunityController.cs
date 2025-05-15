@@ -11,6 +11,7 @@ using THYNK.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using THYNK.Services;
 
 namespace THYNK.Controllers
 {
@@ -19,11 +20,13 @@ namespace THYNK.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly PdfService _pdfService;
 
-        public CommunityController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public CommunityController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, PdfService pdfService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _pdfService = pdfService;
         }
 
         // Dashboard main page
@@ -296,6 +299,7 @@ namespace THYNK.Controllers
         public async Task<IActionResult> EducationalResources()
         {
             var resources = await _context.EducationalResources
+                .Where(r => r.ApprovalStatus == ApprovalStatus.Approved)
                 .OrderBy(r => r.Title)
                 .ToListAsync();
                 
@@ -306,7 +310,7 @@ namespace THYNK.Controllers
         public async Task<IActionResult> ResourceDetails(int id)
         {
             var resource = await _context.EducationalResources
-                .FirstOrDefaultAsync(r => r.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id && r.ApprovalStatus == ApprovalStatus.Approved);
                 
             if (resource == null)
             {
@@ -314,6 +318,37 @@ namespace THYNK.Controllers
             }
             
             return View(resource);
+        }
+        
+        // Download educational resource as PDF
+        public async Task<IActionResult> DownloadResourcePdf(int id)
+        {
+            var resource = await _context.EducationalResources
+                .Include(r => r.CreatedBy)
+                .FirstOrDefaultAsync(r => r.Id == id && r.ApprovalStatus == ApprovalStatus.Approved);
+                
+            if (resource == null)
+            {
+                return NotFound();
+            }
+            
+            try
+            {
+                byte[] pdfBytes = _pdfService.GenerateResourcePdf(resource);
+                
+                // Generate a clean filename
+                string safeFileName = resource.Title.Replace(" ", "_").Replace("/", "_").Replace("\\", "_");
+                string fileName = $"{safeFileName}_{DateTime.Now:yyyyMMdd}.pdf";
+                
+                // Return the PDF as a file download
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                // Log error and redirect back to resource details with error
+                TempData["ErrorMessage"] = "Error generating PDF: " + ex.Message;
+                return RedirectToAction(nameof(ResourceDetails), new { id });
+            }
         }
         
         // View alerts

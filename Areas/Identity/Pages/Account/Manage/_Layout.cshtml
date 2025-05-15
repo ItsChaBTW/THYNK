@@ -1,24 +1,41 @@
 ﻿@{
-    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout !=  null)
+    if (ViewData.TryGetValue("ParentLayout", out var parentLayout) && parentLayout != null)
     {
         Layout = parentLayout.ToString();
     }
     else
     {
-        Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+        if (User.IsInRole("Community"))
+        {
+            Layout = "/Views/Shared/_CommunityLayout.cshtml";
+        }
+        else if (User.IsInRole("LGU"))
+        {
+            Layout = "/Views/Shared/_LGULayout.cshtml";
+        }
+        else
+        {
+            Layout = "/Areas/Identity/Pages/_Layout.cshtml";
+        }
     }
 }
 
-<h1>Manage your account</h1>
+@{
+    if (ViewData["Title"] != null)
+    {
+        ViewData["PageTitle"] = ViewData["Title"].ToString();
+    }
+}
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
-    <div class="row">
-        <div class="col-md-3">
-            <partial name="_ManageNav" />
+<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="flex flex-col md:flex-row">
+        <div class="w-full md:w-64 md:border-r border-gray-200 bg-gray-50">
+            <div class="p-4">
+                <partial name="_ManageNav" />
+            </div>
         </div>
-        <div class="col-md-9">
+        
+        <div class="flex-grow p-6">
             @RenderBody()
         </div>
     </div>

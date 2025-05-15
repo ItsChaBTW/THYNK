@@ -3,10 +3,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - THYNK LGU/SLU</title>
+    <title>@ViewData["Title"] - THYNK LGU Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/community.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/lgu-styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/THYNK.styles.css" asp-append-version="true" />
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -379,7 +380,7 @@
     <!-- Overlay for mobile -->
     <div id="overlay" class="overlay"></div>
     
-    <!-- Sidebar -->
+        <!-- Sidebar -->
     <nav id="sidebar" class="sidebar sidebar-collapsed">
         <div class="sidebar-content">
             <!-- Fixed Header -->
@@ -429,12 +430,12 @@
                         <span class="nav-text">Community Feed</span>
                     </a>
                     
-                    <a href="@Url.Action("Support", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
+                    <a href="@Url.Action("ChatSupport", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ChatSupport" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
                         <span class="nav-text">Support & FAQs</span>
-                    </a>
-                </div>
+                </a>
             </div>
+        </div>
             
             <!-- User Profile at Bottom of Sidebar -->
             <div class="mt-auto px-4 py-3 border-t border-sidebar-light">
@@ -457,12 +458,12 @@
                         <button type="button" data-logout-trigger class="nav-item py-1 w-full text-left">
                             <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
                             <span class="nav-text text-xs">Logout</span>
-                        </button>
+                    </button>
                     </div>
                 }
-            </div>
-        </div>
-    </nav>
+                    </div>
+                </div>
+            </nav>
     
     <!-- Main Content -->
     <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64">
