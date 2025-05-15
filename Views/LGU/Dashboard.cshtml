@@ -98,31 +98,8 @@
             <div class="card-body">
                 @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
                 {
-                    <div class="list-group">
-                        @foreach (var report in ViewBag.RecentReports)
-                        {
-                            <a href="@Url.Action("ManageReports", "LGU")" class="list-group-item list-group-item-action">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">@report.Title</h5>
-                                    <small>@report.DateReported.ToString("MMM dd, HH:mm")</small>
-                                </div>
-                                <p class="mb-1 text-truncate">@report.Description</p>
-                                <small>
-                                    <span class="badge bg-secondary">@report.Type</span>
-                                    <span class="badge @(report.Severity == SeverityLevel.Low ? "bg-info" : 
-                                                         report.Severity == SeverityLevel.Medium ? "bg-warning" : 
-                                                         report.Severity == SeverityLevel.High ? "bg-danger" : "bg-dark")">
-                                        @report.Severity
-                                    </span>
-                                    <span class="badge @(report.Status == ReportStatus.Pending ? "bg-warning" : 
-                                                        report.Status == ReportStatus.Verified ? "bg-info" : 
-                                                        report.Status == ReportStatus.InProgress ? "bg-primary" : 
-                                                        report.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
-                                        @report.Status
-                                    </span>
-                                </small>
-                            </a>
-                        }
+                    <div id="lguRecentReportsList">
+                        @await Html.PartialAsync("_LGURecentReports", ViewBag.RecentReports as IEnumerable<THYNK.Models.DisasterReport>)
                     </div>
                     <div class="mt-3">
                         <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-outline-primary">Manage All Reports</a>
@@ -241,4 +218,31 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/adminHub")
+            .withAutomaticReconnect()
+            .build();
+
+        connection.start()
+            .then(() => console.log("SignalR Connected"))
+            .catch(err => console.error("SignalR Connection Error: ", err));
+
+        function reloadRecentReports() {
+            $.get(window.location.pathname, function (data) {
+                const html = $(data);
+                const newList = html.find("#lguRecentReportsList").html();
+                $("#lguRecentReportsList").html(newList);
+            });
+        }
+
+        connection.on("RecentReportUpdated", function(report) {
+            reloadRecentReports();
+        });
+    </script>
+} 

@@ -82,10 +82,107 @@
         </div>
     </div>
 
+    <button id="enableSound" class="btn btn-sm btn-primary" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: block;">Enable Sound</button>
+    <audio id="alarmSound" src="/sounds/alarm.mp3" preload="auto"></audio>
+    <!-- Sound Enable Modal -->
+    <div class="modal fade" id="soundEnableModal" tabindex="-1" aria-labelledby="soundEnableModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="soundEnableModalLabel">Enable Notification Sound</h5>
+          </div>
+          <div class="modal-body">
+            <p>To receive real-time alerts for new incident report assignments, please enable sound notifications.</p>
+            <button id="modalEnableSound" class="btn btn-primary w-100">Enable Sound</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+        // Toggle sidebar
+        $("#menu-toggle").click(function(e) {
+            e.preventDefault();
+            $("#wrapper").toggleClass("toggled");
+        });
+
+        // Check for in-progress reports on page load
+        $(document).ready(function() {
+            checkInProgressReports();
+        });
+
+        function checkInProgressReports() {
+            $.get('/LGU/GetInProgressReportsCount', function(data) {
+                if (data.count > 0) {
+                    // Play alarm if there are in-progress reports
+                    var alarm = document.getElementById('alarmSound');
+                    if (alarm && sessionStorage.getItem('soundEnabled') === 'true') {
+                        alarm.currentTime = 0;
+                        alarm.play().catch(function(error) {
+                            console.log("Error playing alarm:", error);
+                        });
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            // Show modal if sound not enabled
+            if (sessionStorage.getItem('soundEnabled') !== 'true') {
+                var soundModal = new bootstrap.Modal(document.getElementById('soundEnableModal'));
+                soundModal.show();
+                document.getElementById('modalEnableSound').addEventListener('click', function() {
+                    var alarm = document.getElementById('alarmSound');
+                    if (alarm) {
+                        alarm.play().then(() => {
+                            alarm.pause();
+                            alarm.currentTime = 0;
+                            sessionStorage.setItem('soundEnabled', 'true');
+                            soundModal.hide();
+                            document.getElementById('enableSound').style.display = 'none';
+                            alert('Sound enabled! You will now hear alerts for new assignments.');
+                        });
+                    }
+                });
+            } else {
+                document.getElementById('enableSound').style.display = 'none';
+            }
+
+            // Clear soundEnabled on logout
+            document.querySelectorAll('form[action*="/Account/Logout"]').forEach(function(form) {
+                form.addEventListener('submit', function() {
+                    sessionStorage.removeItem('soundEnabled');
+                });
+            });
+
+            // SignalR connection for alarm
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/adminHub")
+                .withAutomaticReconnect()
+                .build();
+
+            connection.start()
+                .then(() => console.log("SignalR Connected (LGU Layout)"))
+                .catch(err => console.error("SignalR Connection Error: ", err));
+
+            // Listen for report assignments
+            connection.on("ReportAssigned", function (report) {
+                // Only play alarm if the report is in progress
+                if (report.status === 'InProgress' && sessionStorage.getItem('soundEnabled') === 'true') {
+                    var alarm = document.getElementById('alarmSound');
+                    if (alarm) {
+                        alarm.currentTime = 0;
+                        alarm.play();
+                    }
+                }
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html> 

@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SignalR;
+using THYNK.Hubs;
 
 namespace THYNK.Controllers
 {
@@ -24,6 +26,7 @@ namespace THYNK.Controllers
         private readonly IEmailSender _emailSender;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<AdminController> _logger;
+        private readonly IHubContext<AdminHub> _hubContext;
 
         public AdminController(
             ApplicationDbContext context, 
@@ -31,7 +34,8 @@ namespace THYNK.Controllers
             RoleManager<IdentityRole> roleManager,
             IEmailSender emailSender,
             IWebHostEnvironment webHostEnvironment,
-            ILogger<AdminController> logger)
+            ILogger<AdminController> logger,
+            IHubContext<AdminHub> hubContext)
         {
             _context = context;
             _userManager = userManager;
@@ -39,34 +43,46 @@ namespace THYNK.Controllers
             _emailSender = emailSender;
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
+            _hubContext = hubContext;
+        }
+
+        private async Task UpdateDashboardStats()
+        {
+            var pendingLGUCount = await _context.Users.OfType<LGUUser>().CountAsync(u => !u.IsApproved);
+            var pendingReportsCount = await _context.DisasterReports.CountAsync(r => r.Status == ReportStatus.Pending);
+            var pendingPostsCount = await _context.CommunityUpdates.CountAsync(p => p.ModerationStatus == ModerationStatus.Pending);
+
+            await _hubContext.Clients.All.SendAsync("ReceiveDashboardStats", pendingLGUCount, pendingReportsCount, pendingPostsCount);
         }
 
         // Dashboard
         public async Task<IActionResult> Dashboard()
         {
-            // Get counts for dashboard
-            ViewBag.PendingLGUCount = await _context.Users
-                .OfType<LGUUser>()
-                .Where(u => !u.IsApproved)
-                .CountAsync();
-                
-            ViewBag.PendingReportsCount = await _context.DisasterReports
-                .Where(r => r.Status == ReportStatus.Pending)
-                .CountAsync();
-                
-            ViewBag.PendingPostsCount = await _context.CommunityUpdates
-                .Where(c => c.ModerationStatus == ModerationStatus.Pending)
-                .CountAsync();
-                
-            ViewBag.ActiveUsersCount = await _context.Users
-                .CountAsync();
-                
+            var pendingLGUCount = await _context.Users.OfType<LGUUser>().CountAsync(u => !u.IsApproved);
+            var pendingReportsCount = await _context.DisasterReports.CountAsync(r => r.Status == ReportStatus.Pending);
+            var pendingPostsCount = await _context.CommunityUpdates.CountAsync(p => p.ModerationStatus == ModerationStatus.Pending);
+            var activeUsersCount = await _context.Users.CountAsync(); // No LastLoginDate, so just count all users
+
+            ViewBag.PendingLGUCount = pendingLGUCount;
+            ViewBag.PendingReportsCount = pendingReportsCount;
+            ViewBag.PendingPostsCount = pendingPostsCount;
+            ViewBag.ActiveUsersCount = activeUsersCount;
+
+            // Get recent reports
             ViewBag.RecentReports = await _context.DisasterReports
                 .OrderByDescending(r => r.DateReported)
                 .Take(5)
                 .ToListAsync();
-                
+
             return View();
+        }
+
+        // Add this method to be called when any of the counts change
+        [HttpPost]
+        public async Task<IActionResult> RefreshDashboardStats()
+        {
+            await UpdateDashboardStats();
+            return Ok();
         }
 
         #region User Account Management
@@ -114,28 +130,15 @@ namespace THYNK.Controllers
             }
             
             lguUser.IsApproved = true;
-            _context.Update(lguUser);
             await _context.SaveChangesAsync();
+
+            // Update dashboard stats
+            await UpdateDashboardStats();
+
+            // Notify clients about the LGU application update
+            await _hubContext.Clients.All.SendAsync("LGUApplicationUpdated", id, true);
             
-            // Send approval email only if email is not null
-            if (!string.IsNullOrEmpty(lguUser.Email))
-            {
-                try
-                {
-                    await _emailSender.SendEmailAsync(
-                        lguUser.Email,
-                        "THYNK - LGU/SLU Account Approved",
-                        $"Dear {lguUser.FirstName},<br><br>Your LGU/SLU account for THYNK has been approved. You can now log in and access the LGU/SLU features.<br><br>Thank you,<br>THYNK Administration Team"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    // Log the error but don't fail the approval process
-                    _logger.LogError($"Failed to send approval email to {lguUser.Email}: {ex.Message}");
-                }
-            }
-            
-            TempData["SuccessMessage"] = "LGU/SLU account has been approved successfully.";
+            TempData["SuccessMessage"] = "LGU/SLU application has been approved successfully.";
             return RedirectToAction(nameof(PendingLGUApplications));
         }
 
@@ -153,18 +156,34 @@ namespace THYNK.Controllers
                 return NotFound();
             }
             
+            // Send rejection email
+            try
+            {
+                await _emailSender.SendEmailAsync(
+                    lguUser.Email,
+                    "THYNK - LGU/SLU Application Rejected",
+                    $"Dear {lguUser.FirstName},<br><br>We regret to inform you that your LGU/SLU application has been rejected.<br><br>" +
+                    $"Reason: {rejectionReason}<br><br>" +
+                    "If you believe this is an error or would like to reapply, please contact our support team.<br><br>" +
+                    "Thank you for your interest in THYNK.<br><br>Best regards,<br>THYNK Administration Team"
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to send rejection email: {ex.Message}");
+            }
+
             // Delete the user account
             _context.Users.Remove(lguUser);
             await _context.SaveChangesAsync();
+
+            // Update dashboard stats
+            await UpdateDashboardStats();
+
+            // Notify clients about the LGU application update
+            await _hubContext.Clients.All.SendAsync("LGUApplicationUpdated", id, false);
             
-            // Send rejection email
-            await _emailSender.SendEmailAsync(
-                lguUser.Email,
-                "THYNK - LGU/SLU Account Application Rejected",
-                $"Dear {lguUser.FirstName},<br><br>We regret to inform you that your LGU/SLU account application for THYNK has been rejected for the following reason:<br><br>{rejectionReason}<br><br>If you believe this is an error or would like to provide additional information, please contact our support team.<br><br>Thank you,<br>THYNK Administration Team"
-            );
-            
-            TempData["SuccessMessage"] = "LGU/SLU account has been rejected and the user has been notified.";
+            TempData["SuccessMessage"] = "LGU/SLU application has been rejected and the account has been deleted.";
             return RedirectToAction(nameof(PendingLGUApplications));
         }
 
@@ -346,64 +365,51 @@ namespace THYNK.Controllers
             return View(report);
         }
 
+        // Helper to format report for SignalR
+        private object ToRecentReportDto(DisasterReport report)
+        {
+            return new {
+                Id = report.Id,
+                Title = report.Title,
+                Type = report.Type.ToString(),
+                Barangay = report.Barangay,
+                City = report.City,
+                DateReported = report.DateReported.ToString("MMM dd, yyyy HH:mm"),
+                Status = report.Status.ToString()
+            };
+        }
+
         // Verify incident report
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyReport(int id)
         {
-            try
+            var report = await _context.DisasterReports.FindAsync(id);
+            if (report == null)
             {
-                var report = await _context.DisasterReports
-                    .Include(r => r.User)
-                    .FirstOrDefaultAsync(r => r.Id == id);
-                    
-                if (report == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                if (report.Status != ReportStatus.Pending)
-                {
-                    TempData["ErrorMessage"] = "Only pending reports can be verified.";
-                    return RedirectToAction(nameof(IncidentReports));
-                }
-                
-                report.Status = ReportStatus.Verified;
-                _context.Update(report);
-                await _context.SaveChangesAsync();
-                
-                // Send email notification to user
-                if (report.User != null && !string.IsNullOrEmpty(report.User.Email))
-                {
-                    try
-                    {
-                        await _emailSender.SendEmailAsync(
-                            report.User.Email,
-                            "THYNK - Incident Report Verified",
-                            $"Dear {report.User.FirstName},<br><br>Your incident report titled '{report.Title}' has been verified by our team.<br><br>Thank you for helping keep our community safe.<br><br>THYNK Administration Team"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Failed to send verification email: {ex.Message}");
-                    }
-                }
-                
-                TempData["SuccessMessage"] = "Report has been verified successfully.";
-                return RedirectToAction(nameof(IncidentReports));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error verifying report: {ex.Message}");
-                TempData["ErrorMessage"] = "An error occurred while verifying the report.";
-                return RedirectToAction(nameof(IncidentReports));
-            }
+            report.Status = ReportStatus.Verified;
+            await _context.SaveChangesAsync();
+
+            // Update dashboard stats
+            await UpdateDashboardStats();
+
+            // Notify clients about the report update
+            await _hubContext.Clients.All.SendAsync("ReportUpdated", id, "Verified");
+
+            // Send real-time update for Recent Reports
+            await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
+
+            TempData["SuccessMessage"] = "Report has been verified successfully.";
+            return RedirectToAction(nameof(ReportDetails), new { id });
         }
 
         // Decline incident report
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeclineReport(int id, string reason)
+        public async Task<IActionResult> DeclineReport(int id, string declineReason)
         {
             var report = await _context.DisasterReports
                 .Include(r => r.User)
@@ -415,84 +421,104 @@ namespace THYNK.Controllers
             }
             
             report.Status = ReportStatus.Declined;
-            _context.Update(report);
             await _context.SaveChangesAsync();
-            
-            // Send email to user
+
+            // Send notification email
             if (report.User != null)
             {
-                await _emailSender.SendEmailAsync(
-                    report.User.Email,
-                    "THYNK - Incident Report Status Update",
-                    $"Dear User,<br><br>Your incident report titled '{report.Title}' has been reviewed and unfortunately could not be verified.<br><br>Reason: {reason}<br><br>If you believe this is an error or would like to provide additional information, please submit a new report.<br><br>Thank you,<br>THYNK Administration Team"
-                );
+                try
+                {
+                    await _emailSender.SendEmailAsync(
+                        report.User.Email,
+                        "THYNK - Incident Report Declined",
+                        $"Dear {report.User.FirstName},<br><br>Your incident report titled '{report.Title}' has been declined.<br><br>" +
+                        $"Reason: {declineReason}<br><br>" +
+                        "If you believe this is an error or would like to submit a new report, please contact our support team.<br><br>" +
+                        "Thank you for your contribution to THYNK.<br><br>Best regards,<br>THYNK Administration Team"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Failed to send decline notification email: {ex.Message}");
+                }
             }
-            
-            TempData["SuccessMessage"] = "Report has been declined successfully.";
-            return RedirectToAction(nameof(ReportDetails), new { id = id });
+
+            // Update dashboard stats
+            await UpdateDashboardStats();
+
+            // Notify clients about the report update
+            await _hubContext.Clients.All.SendAsync("ReportUpdated", id, "Declined");
+
+            // Send real-time update for Recent Reports
+            await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
+
+            TempData["SuccessMessage"] = "Report has been declined and the reporter has been notified.";
+            return RedirectToAction(nameof(ReportDetails), new { id });
         }
 
         // Assign report to LGU
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AssignReportToLGU(int reportId, string lguUserId, string assignmentNote)
+        public async Task<IActionResult> AssignReport(int id, string lguId)
         {
-            try
+            var report = await _context.DisasterReports
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
+                
+            if (report == null)
             {
-                var report = await _context.DisasterReports
-                    .Include(r => r.User)
-                    .FirstOrDefaultAsync(r => r.Id == reportId);
-                    
-                var lguUser = await _context.Users
-                    .OfType<LGUUser>()
-                    .FirstOrDefaultAsync(u => u.Id == lguUserId && u.IsApproved);
-                    
-                if (report == null || lguUser == null)
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
+            
+            var lguUser = await _context.Users
+                .OfType<LGUUser>()
+                .FirstOrDefaultAsync(u => u.Id == lguId);
+                
+            if (lguUser == null)
+            {
+                return NotFound();
+            }
+            
+            report.AssignedToId = lguId;
+            report.Status = ReportStatus.InProgress;
+            await _context.SaveChangesAsync();
 
-                if (report.Status != ReportStatus.Verified)
-                {
-                    TempData["ErrorMessage"] = "Only verified reports can be assigned to LGU users.";
-                    return RedirectToAction(nameof(ReportDetails), new { id = reportId });
-                }
-                
-                report.Status = ReportStatus.InProgress;
-                report.AssignedToId = lguUserId;
-                report.AssignedAt = DateTime.Now;
-                
-                _context.Update(report);
-                await _context.SaveChangesAsync();
-                
-                // Send notification to LGU
-                if (!string.IsNullOrEmpty(lguUser.Email))
-                {
-                    try
-                    {
-                        await _emailSender.SendEmailAsync(
-                            lguUser.Email,
-                            "THYNK - New Incident Report Assignment",
-                            $"Dear {lguUser.FirstName},<br><br>A new incident report titled '{report.Title}' has been assigned to you for action.<br><br>" +
-                            $"Assignment Note: {assignmentNote}<br><br>" +
-                            "Please log in to your LGU dashboard to view the details and take appropriate action.<br><br>Thank you,<br>THYNK Administration Team"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Failed to send assignment email: {ex.Message}");
-                    }
-                }
-                
-                TempData["SuccessMessage"] = "Report has been assigned successfully.";
-                return RedirectToAction(nameof(ReportDetails), new { id = reportId });
-            }
-            catch (Exception ex)
+            // Send notification email
+            if (lguUser != null)
             {
-                _logger.LogError($"Error assigning report: {ex.Message}");
-                TempData["ErrorMessage"] = "An error occurred while assigning the report.";
-                return RedirectToAction(nameof(ReportDetails), new { id = reportId });
+                try
+                {
+                    await _emailSender.SendEmailAsync(
+                        lguUser.Email,
+                        "THYNK - New Incident Report Assigned",
+                        $"Dear {lguUser.FirstName},<br><br>A new incident report has been assigned to your organization.<br><br>" +
+                        $"Title: {report.Title}<br>" +
+                        $"Type: {report.Type}<br>" +
+                        $"Location: {report.Barangay}, {report.City}<br><br>" +
+                        "Please review and take appropriate action.<br><br>" +
+                        "Best regards,<br>THYNK Administration Team"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Failed to send assignment notification email: {ex.Message}");
+                }
             }
+
+            // Update dashboard stats
+            await UpdateDashboardStats();
+
+            // Notify clients about the report update
+            await _hubContext.Clients.All.SendAsync("ReportUpdated", id, "InProgress");
+
+            // Send real-time update for Recent Reports
+            await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
+
+            // Send notification to the assigned LGU
+            await _hubContext.Clients.All.SendAsync("ReportAssigned", ToRecentReportDto(report));
+
+            TempData["SuccessMessage"] = "Report has been assigned to the LGU/SLU successfully.";
+            return RedirectToAction(nameof(IncidentReports));
         }
 
         #endregion
@@ -568,28 +594,53 @@ namespace THYNK.Controllers
             if (action == "approve")
             {
                 post.ModerationStatus = ModerationStatus.Approved;
-                TempData["SuccessMessage"] = "Post has been approved successfully.";
+                await _context.SaveChangesAsync();
+
+                // Update dashboard stats
+                await UpdateDashboardStats();
+
+                // Notify clients about the post update
+                await _hubContext.Clients.All.SendAsync("PostUpdated", postId, true);
+
+                TempData["SuccessMessage"] = "Post has been approved and is now visible in the community feed.";
             }
             else if (action == "reject")
             {
-                post.ModerationStatus = ModerationStatus.Rejected;
-                TempData["SuccessMessage"] = "Post has been rejected successfully.";
-
-                // Send email notification to user
+                var rejectionReason = Request.Form["rejectionReason"].ToString();
+                
+                // Send rejection notification
                 if (post.User != null)
                 {
-                    await _emailSender.SendEmailAsync(
-                        post.User.Email,
-                        "THYNK - Community Post Status Update",
-                        $"Dear User,<br><br>Your community post has been reviewed and could not be approved for public visibility.<br><br>Please review our community guidelines for acceptable content.<br><br>Thank you,<br>THYNK Administration Team"
-                    );
+                    try
+                    {
+                        await _emailSender.SendEmailAsync(
+                            post.User.Email,
+                            "THYNK - Community Post Rejected",
+                            $"Dear {post.User.FirstName},<br><br>Your community post has been rejected.<br><br>" +
+                            $"Reason: {rejectionReason}<br><br>" +
+                            "If you believe this is an error or would like to submit a new post, please contact our support team.<br><br>" +
+                            "Thank you for your contribution to THYNK.<br><br>Best regards,<br>THYNK Administration Team"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Failed to send rejection notification email: {ex.Message}");
+                    }
                 }
+
+                _context.CommunityUpdates.Remove(post);
+                await _context.SaveChangesAsync();
+
+                // Update dashboard stats
+                await UpdateDashboardStats();
+
+                // Notify clients about the post update
+                await _hubContext.Clients.All.SendAsync("PostUpdated", postId, false);
+
+                TempData["SuccessMessage"] = "Post has been rejected and removed from the system.";
             }
 
-            _context.Update(post);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(ManagePosts));
+            return RedirectToAction(nameof(PendingPosts));
         }
 
         #endregion
@@ -674,5 +725,32 @@ namespace THYNK.Controllers
 
         // View community feed
        
+        [HttpGet]
+        public async Task<IActionResult> GetRecentReports()
+        {
+            var recentReports = await _context.DisasterReports
+                .OrderByDescending(r => r.DateReported)
+                .Take(5)
+                .Select(r => new {
+                    Id = r.Id,
+                    Title = r.Title,
+                    Type = r.Type.ToString(),
+                    Barangay = r.Barangay,
+                    City = r.City,
+                    DateReported = r.DateReported.ToString("MMM dd, yyyy HH:mm"),
+                    Status = r.Status.ToString()
+                })
+                .ToListAsync();
+
+            return Json(recentReports);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPendingReportsCount()
+        {
+            var pendingReportsCount = await _context.DisasterReports
+                .CountAsync(r => r.Status == ReportStatus.Pending);
+            return Json(new { count = pendingReportsCount });
+        }
     }
 } 

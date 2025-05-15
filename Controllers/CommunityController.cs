@@ -11,6 +11,9 @@ using THYNK.Models;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
+using THYNK.Hubs;
+using Microsoft.AspNetCore.Identity;
 
 namespace THYNK.Controllers
 {
@@ -18,12 +21,20 @@ namespace THYNK.Controllers
     public class CommunityController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IHubContext<AdminHub> _hubContext;
 
-        public CommunityController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public CommunityController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            IWebHostEnvironment webHostEnvironment,
+            IHubContext<AdminHub> hubContext)
         {
             _context = context;
+            _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
+            _hubContext = hubContext;
         }
 
         // Dashboard main page
@@ -148,6 +159,16 @@ namespace THYNK.Controllers
                 
                 if (recordsAffected > 0)
                 {
+                    // Update dashboard stats after successful report submission
+                    await _hubContext.Clients.All.SendAsync("ReceiveDashboardStats",
+                        await _context.LGUUsers.CountAsync(u => !u.IsApproved),
+                        await _context.DisasterReports.CountAsync(r => r.Status == ReportStatus.Pending),
+                        await _context.CommunityUpdates.CountAsync(p => p.ModerationStatus == ModerationStatus.Pending)
+                    );
+
+                    // Send real-time update for Recent Reports
+                    await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
+
                     TempData["SuccessMessage"] = "Your incident report has been successfully submitted and is pending review.";
                     return RedirectToAction(nameof(Dashboard));
                 }
@@ -167,6 +188,20 @@ namespace THYNK.Controllers
                 }
                 return View(report);
             }
+        }
+        
+        // Helper to format report for SignalR (same as AdminController)
+        private object ToRecentReportDto(DisasterReport report)
+        {
+            return new {
+                Id = report.Id,
+                Title = report.Title,
+                Type = report.Type.ToString(),
+                Barangay = report.Barangay,
+                City = report.City,
+                DateReported = report.DateReported.ToString("MMM dd, yyyy"),
+                Status = report.Status.ToString()
+            };
         }
         
         // View community feed
@@ -257,9 +292,16 @@ namespace THYNK.Controllers
 
                 if (result > 0)
                 {
+                    // Update dashboard stats after successful post creation
+                    await _hubContext.Clients.All.SendAsync("ReceiveDashboardStats",
+                        await _context.LGUUsers.CountAsync(u => !u.IsApproved),
+                        await _context.DisasterReports.CountAsync(r => r.Status == ReportStatus.Pending),
+                        await _context.CommunityUpdates.CountAsync(p => p.ModerationStatus == ModerationStatus.Pending)
+                    );
+
                     TempData["SuccessMessage"] = "Your post has been submitted and is pending approval.";
-                return RedirectToAction(nameof(CommunityFeed));
-            }
+                    return RedirectToAction(nameof(CommunityFeed));
+                }
                 else
                 {
                     TempData["ErrorMessage"] = "Failed to save the post. No records were affected.";
@@ -281,8 +323,8 @@ namespace THYNK.Controllers
                 if (ex.InnerException != null)
                 {
                     TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
-            }
-            return View(update);
+                }
+                return View(update);
             }
         }
         

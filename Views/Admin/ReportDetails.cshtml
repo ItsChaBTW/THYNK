@@ -300,7 +300,7 @@
                     <h5 class="modal-title" id="assignModalLabel">Assign Report to LGU/SLU</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form asp-action="AssignReportToLGU" asp-route-reportId="@Model.Id" method="post">
+                <form asp-action="AssignReport" asp-route-id="@Model.Id" method="post">
                     @Html.AntiForgeryToken()
                     <div class="modal-body">
                         <div class="alert alert-info">
@@ -313,8 +313,8 @@
                             <p class="mb-0"><strong>Date:</strong> @Model.DateReported.ToString("MMM dd, yyyy HH:mm")</p>
                         </div>
                         <div class="mb-3">
-                            <label for="lguUserId" class="form-label">Select LGU/SLU User:</label>
-                            <select id="lguUserId" name="lguUserId" class="form-select" required>
+                            <label for="lguId" class="form-label">Select LGU/SLU User:</label>
+                            <select id="lguId" name="lguId" class="form-select" required>
                                 <option value="">-- Select LGU/SLU --</option>
                                 @if (ViewBag.LGUUsers != null)
                                 {
@@ -324,11 +324,6 @@
                                     }
                                 }
                             </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="assignmentNote" class="form-label">Assignment Note:</label>
-                            <textarea id="assignmentNote" name="assignmentNote" class="form-control" rows="3" 
-                                      placeholder="Provide any specific instructions or context for the LGU/SLU user..."></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">

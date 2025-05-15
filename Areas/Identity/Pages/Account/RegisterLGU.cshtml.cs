@@ -15,6 +15,10 @@ using Microsoft.Extensions.Logging;
 using THYNK.Models;
 using Microsoft.AspNetCore.Http;
 using System.IO;
+using Microsoft.AspNetCore.SignalR;
+using THYNK.Hubs;
+using THYNK.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace THYNK.Areas.Identity.Pages.Account
 {
@@ -29,6 +33,8 @@ namespace THYNK.Areas.Identity.Pages.Account
         private readonly IEmailSender _emailSender;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IWebHostEnvironment _environment;
+        private readonly IHubContext<AdminHub> _hubContext;
+        private readonly ApplicationDbContext _context;
 
         public RegisterLGUModel(
             UserManager<ApplicationUser> userManager,
@@ -37,7 +43,9 @@ namespace THYNK.Areas.Identity.Pages.Account
             ILogger<RegisterLGUModel> logger,
             IEmailSender emailSender,
             RoleManager<IdentityRole> roleManager,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IHubContext<AdminHub> hubContext,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -47,6 +55,8 @@ namespace THYNK.Areas.Identity.Pages.Account
             _emailSender = emailSender;
             _roleManager = roleManager;
             _environment = environment;
+            _hubContext = hubContext;
+            _context = context;
         }
 
         [BindProperty]
@@ -143,7 +153,7 @@ namespace THYNK.Areas.Identity.Pages.Account
                         await Input.IDDocument.CopyToAsync(fileStream);
                     }
 
-                    user.IDDocumentUrl = $"/uploads/id_documents/{uniqueFileName}";
+                    user.IDDocumentUrl = "/uploads/id_documents/" + uniqueFileName;
                 }
 
                 // Generate a 7-character random confirmation code
@@ -158,6 +168,13 @@ namespace THYNK.Areas.Identity.Pages.Account
                     // Add user to LGU role
                     await _userManager.AddToRoleAsync(user, "LGU");
                     _logger.LogInformation("User added to LGU role.");
+
+                    // Update dashboard stats after successful LGU registration
+                    await _hubContext.Clients.All.SendAsync("ReceiveDashboardStats",
+                        await _userManager.Users.OfType<LGUUser>().CountAsync(u => !u.IsApproved),
+                        await _context.DisasterReports.CountAsync(r => r.Status == ReportStatus.Pending),
+                        await _context.CommunityUpdates.CountAsync(p => p.ModerationStatus == ModerationStatus.Pending)
+                    );
 
                     var userId = await _userManager.GetUserIdAsync(user);
 

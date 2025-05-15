@@ -33,159 +33,75 @@
                 </div>
             }
 
+            <div id="postsList">
             @if (!Model.Any())
             {
-                <div class="text-center py-5">
-                    <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
-                    <h5>No Pending Posts</h5>
-                    <p class="text-muted">There are no community posts waiting for approval.</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> There are no pending community posts at this time.
                 </div>
             }
             else
             {
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Content</th>
-                                <th>Type</th>
-                                <th>User</th>
-                                <th>Date Posted</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var post in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            @if (!string.IsNullOrEmpty(post.ImageUrl))
-                                            {
-                                                <img src="@post.ImageUrl" alt="Post Image" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
-                                            }
-                                            <div>
-                                                <p class="mb-0">@(post.Content.Length > 100 ? post.Content.Substring(0, 100) + "..." : post.Content)</p>
-                                                @if (!string.IsNullOrEmpty(post.Location))
+                    foreach (var post in Model)
+                    {
+                        <div class="card shadow-sm border-0 mb-4 post-card" id="post-@post.Id">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="avatar-circle me-3">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0">@(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</h6>
+                                        <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+                                        @if (post.User is LGUUser lguUser)
                                                 {
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-map-marker-alt me-1"></i>@post.Location
-                                                    </small>
+                                            <div><small class="text-info">@lguUser.OrganizationName</small></div>
                                                 }
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-secondary">@post.Type</span>
-                                    </td>
-                                    <td>
-                                        @(post.User?.FirstName + " " + post.User?.LastName ?? "Unknown User")
-                                    </td>
-                                    <td>@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</td>
-                                    <td>
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal@(post.Id)">
-                                                <i class="fas fa-eye me-1"></i>View
+                                        <button type="button" class="btn btn-sm btn-success" onclick="openModal('approveModal@(post.Id)')">
+                                            <i class="fas fa-check"></i> Approve
                                             </button>
-                                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#approveModal@(post.Id)">
-                                                <i class="fas fa-check me-1"></i>Approve
-                                            </button>
-                                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal@(post.Id)">
-                                                <i class="fas fa-times me-1"></i>Reject
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="openModal('rejectModal@(post.Id)')">
+                                            <i class="fas fa-times"></i> Reject
                                             </button>
                                         </div>
-                                    </td>
-                                </tr>
-
-                                <!-- View Modal -->
-                                <div class="modal fade" id="viewModal@(post.Id)" tabindex="-1" aria-labelledby="viewModalLabel@(post.Id)" aria-hidden="true">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="viewModalLabel@(post.Id)">View Post Details</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
-                                            <div class="modal-body">
-                                                <div class="row">
-                                                    @if (!string.IsNullOrEmpty(post.ImageUrl))
-                                                    {
-                                                        <div class="col-md-4 mb-3">
-                                                            <img src="@post.ImageUrl" alt="Post Image" class="img-fluid rounded">
-                                                        </div>
-                                                    }
-                                                    <div class="@(string.IsNullOrEmpty(post.ImageUrl) ? "col-12" : "col-md-8")">
-                                                        <div class="card mb-3">
-                                                            <div class="card-body">
-                                                                <h6 class="card-subtitle mb-2 text-muted">
-                                                                    <span class="badge bg-secondary">@post.Type</span>
-                                                                    <small class="ms-2">Posted on @post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
-                                                                </h6>
-                                                                <p class="card-text">@post.Content</p>
+                                <div class="post-content mb-3">
+                                    <p class="mb-2">@post.Content</p>
                                                                 @if (!string.IsNullOrEmpty(post.Location))
                                                                 {
-                                                                    <p class="card-text">
-                                                                        <small class="text-muted">
-                                                                            <i class="fas fa-map-marker-alt me-1"></i>@post.Location
-                                                                        </small>
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-map-marker-alt me-1"></i> @post.Location
                                                                     </p>
                                                                 }
                                                             </div>
+                                @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                {
+                                    <div class="post-image mb-3">
+                                        <img src="@post.ImageUrl" alt="Post image" class="img-fluid rounded">
                                                         </div>
-                                                        <div class="card">
-                                                            <div class="card-body">
-                                                                <h6 class="card-subtitle mb-2 text-muted">Posted by</h6>
-                                                                <p class="card-text">
-                                                                    @(post.User?.FirstName + " " + post.User?.LastName ?? "Unknown User")
-                                                                    <br>
-                                                                    <small class="text-muted">@post.User?.Email</small>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal@(post.Id)" data-bs-dismiss="modal">
-                                                    <i class="fas fa-check me-2"></i>Approve Post
-                                                </button>
-                                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal@(post.Id)" data-bs-dismiss="modal">
-                                                    <i class="fas fa-times me-2"></i>Reject Post
-                                                </button>
-                                            </div>
-                                        </div>
+                                }
                                     </div>
                                 </div>
 
                                 <!-- Approve Modal -->
-                                <div class="modal fade" id="approveModal@(post.Id)" tabindex="-1" aria-labelledby="approveModalLabel@(post.Id)" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="approveModalLabel@(post.Id)">Approve Post</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="custom-modal" id="approveModal@(post.Id)" style="display: none;">
+                            <div class="custom-modal-dialog">
+                                <div class="custom-modal-content">
+                                    <div class="custom-modal-header">
+                                        <h5 class="custom-modal-title">Approve Post</h5>
+                                        <button type="button" class="custom-modal-close" onclick="closeModal('approveModal@(post.Id)')">&times;</button>
                                             </div>
-                                            <div class="modal-body">
+                                    <div class="custom-modal-body">
                                                 <p>Are you sure you want to approve this post?</p>
-                                                <div class="alert alert-info">
-                                                    <h6 class="mb-2">Post Details:</h6>
-                                                    <p class="mb-1"><strong>Content:</strong> @post.Content</p>
-                                                    <p class="mb-1"><strong>Type:</strong> @post.Type</p>
-                                                    <p class="mb-1"><strong>Posted by:</strong> @(post.User?.FirstName + " " + post.User?.LastName ?? "Unknown User")</p>
-                                                    <p class="mb-1"><strong>Date:</strong> @post.DatePosted.ToString("MMM dd, yyyy HH:mm")</p>
-                                                    @if (!string.IsNullOrEmpty(post.Location))
-                                                    {
-                                                        <p class="mb-0"><strong>Location:</strong> @post.Location</p>
-                                                    }
+                                        <p>Once approved, it will be visible to all users in the community feed.</p>
                                                 </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                <form asp-action="ApprovePost" asp-route-id="@post.Id" method="post">
+                                    <div class="custom-modal-footer">
+                                        <button type="button" class="btn btn-secondary" onclick="closeModal('approveModal@(post.Id)')">Cancel</button>
+                                        <form asp-action="ModeratePost" asp-route-postId="@post.Id" asp-route-action="approve" method="post" class="d-inline">
                                                     @Html.AntiForgeryToken()
-                                                    <button type="submit" class="btn btn-success">
-                                                        <i class="fas fa-check me-2"></i>Approve Post
-                                                    </button>
+                                            <button type="submit" class="btn btn-success">Approve Post</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -193,59 +109,121 @@
                                 </div>
 
                                 <!-- Reject Modal -->
-                                <div class="modal fade" id="rejectModal@(post.Id)" tabindex="-1" aria-labelledby="rejectModalLabel@(post.Id)" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="rejectModalLabel@(post.Id)">Reject Post</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="custom-modal" id="rejectModal@(post.Id)" style="display: none;">
+                            <div class="custom-modal-dialog">
+                                <div class="custom-modal-content">
+                                    <div class="custom-modal-header">
+                                        <h5 class="custom-modal-title">Reject Post</h5>
+                                        <button type="button" class="custom-modal-close" onclick="closeModal('rejectModal@(post.Id)')">&times;</button>
                                             </div>
-                                            <form asp-action="RejectPost" asp-route-id="@post.Id" method="post">
+                                    <form asp-action="ModeratePost" asp-route-postId="@post.Id" asp-route-action="reject" method="post">
                                                 @Html.AntiForgeryToken()
-                                                <div class="modal-body">
+                                        <div class="custom-modal-body">
                                                     <p>Are you sure you want to reject this post?</p>
-                                                    <div class="alert alert-warning">
-                                                        <h6 class="mb-2">Post Details:</h6>
-                                                        <p class="mb-1"><strong>Content:</strong> @post.Content</p>
-                                                        <p class="mb-1"><strong>Type:</strong> @post.Type</p>
-                                                        <p class="mb-1"><strong>Posted by:</strong> @(post.User?.FirstName + " " + post.User?.LastName ?? "Unknown User")</p>
-                                                        <p class="mb-1"><strong>Date:</strong> @post.DatePosted.ToString("MMM dd, yyyy HH:mm")</p>
-                                                        @if (!string.IsNullOrEmpty(post.Location))
-                                                        {
-                                                            <p class="mb-0"><strong>Location:</strong> @post.Location</p>
-                                                        }
-                                                    </div>
+                                            <p>This action will remove the post and notify the user.</p>
                                                     <div class="mb-3">
-                                                        <label for="rejectionReason@(post.Id)" class="form-label">Reason for rejection:</label>
-                                                        <textarea id="rejectionReason@(post.Id)" name="rejectionReason" class="form-control" rows="3" required 
-                                                                placeholder="Please provide a clear reason for rejecting this post..."></textarea>
+                                                <label for="rejectionReason@(post.Id)" class="form-label">Reason for Rejection:</label>
+                                                <textarea id="rejectionReason@(post.Id)" name="rejectionReason" class="form-control" rows="3" required></textarea>
+                                                <div class="form-text">Please provide a reason for rejection that will be included in the notification email.</div>
                                                     </div>
                                                 </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                    <button type="submit" class="btn btn-danger">
-                                                        <i class="fas fa-times me-2"></i>Reject Post
-                                                    </button>
+                                        <div class="custom-modal-footer">
+                                            <button type="button" class="btn btn-secondary" onclick="closeModal('rejectModal@(post.Id)')">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Reject Post</button>
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
                                 </div>
                             }
-                        </tbody>
-                    </table>
+                }
                 </div>
-            }
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
-        // Enable tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+        // Create connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/adminHub")
+            .withAutomaticReconnect([0, 2000, 5000, 10000, 20000]) // Retry connection with increasing delays
+            .build();
+
+        // Start the connection
+        async function startConnection() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected");
+            } catch (err) {
+                console.error("SignalR Connection Error: ", err);
+                setTimeout(startConnection, 5000); // Retry connection after 5 seconds
+            }
+        }
+
+        startConnection();
+
+        // Handle receiving dashboard stats
+        connection.on("ReceiveDashboardStats", (pendingLGUCount, pendingReportsCount, pendingPostsCount) => {
+            console.log("Received dashboard stats:", { pendingLGUCount, pendingReportsCount, pendingPostsCount });
+            // If there are no pending posts, show the "no posts" message
+            if (pendingPostsCount === 0) {
+                const postsList = document.getElementById('postsList');
+                postsList.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> There are no pending community posts at this time.
+                    </div>
+                `;
+            }
         });
+
+        // Handle post updates
+        connection.on("PostUpdated", (postId, isApproved) => {
+            console.log("Post updated:", { postId, isApproved });
+            const postElement = document.getElementById(`post-${postId}`);
+            if (postElement) {
+                // Add fade out effect
+                postElement.style.transition = "opacity 0.3s ease";
+                postElement.style.opacity = "0";
+                
+                setTimeout(() => {
+                    postElement.remove();
+                    
+                    // Check if there are any remaining posts
+                    const remainingPosts = document.querySelectorAll('.post-card');
+                    if (remainingPosts.length === 0) {
+                        const postsList = document.getElementById('postsList');
+                        postsList.innerHTML = `
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> There are no pending community posts at this time.
+                            </div>
+                        `;
+                    }
+                }, 300);
+            }
+        });
+
+        // Connection error handling
+        connection.onclose(async () => {
+            console.log("SignalR Connection Closed");
+            await startConnection();
+        });
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
     </script>
 } 

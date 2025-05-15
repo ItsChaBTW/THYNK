@@ -1,0 +1,48 @@
+@model IEnumerable<THYNK.Models.DisasterReport>
+<div class="table-responsive">
+    <table class="table table-hover admin-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Severity</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Date Reported</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var report in Model)
+            {
+                <tr id="report-@report.Id">
+                    <td>@report.Title</td>
+                    <td>@report.Type</td>
+                    <td>
+                        <span class="badge @(report.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
+                                          report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
+                                          report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                            @report.Severity
+                        </span>
+                    </td>
+                    <td>@report.Barangay, @report.City</td>
+                    <td>
+                        <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
+                                          report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
+                                          report.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
+                                          report.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                            @report.Status
+                        </span>
+                    </td>
+                    <td>@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
+                    <td>
+                        <a href="@Url.Action("ReportDetails", "Admin", new { id = report.Id })" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <!-- Add more actions as needed -->
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div> 

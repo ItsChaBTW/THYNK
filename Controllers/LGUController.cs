@@ -530,5 +530,23 @@ namespace THYNK.Controllers
                 return View(update);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetInProgressReportsCount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return Json(new { count = 0 });
+            }
+
+            var inProgressCount = await _context.DisasterReports
+                .CountAsync(r => (r.AssignedToId == userId || r.AssignedTo.OrganizationName == currentUser.OrganizationName) 
+                                && r.Status == ReportStatus.InProgress);
+            
+            return Json(new { count = inProgressCount });
+        }
     }
 } 

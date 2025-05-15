@@ -1,0 +1,27 @@
+@model IEnumerable<THYNK.Models.DisasterReport>
+<div class="list-group">
+    @foreach (var report in Model)
+    {
+        <a href="@Url.Action("ManageReports", "LGU")" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">@report.Title</h5>
+                <small>@report.DateReported.ToString("MMM dd, HH:mm")</small>
+            </div>
+            <p class="mb-1 text-truncate">@report.Description</p>
+            <small>
+                <span class="badge bg-secondary">@report.Type</span>
+                <span class="badge @(report.Severity == SeverityLevel.Low ? "bg-info" : 
+                                     report.Severity == SeverityLevel.Medium ? "bg-warning" : 
+                                     report.Severity == SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                    @report.Severity
+                </span>
+                <span class="badge @(report.Status == ReportStatus.Pending ? "bg-warning" : 
+                                    report.Status == ReportStatus.Verified ? "bg-info" : 
+                                    report.Status == ReportStatus.InProgress ? "bg-primary" : 
+                                    report.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                    @report.Status
+                </span>
+            </small>
+        </a>
+    }
+</div> 

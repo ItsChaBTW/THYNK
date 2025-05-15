@@ -3,6 +3,85 @@
     Layout = "_AdminLayout";
 }
 
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Create connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/adminHub")
+            .withAutomaticReconnect()
+            .build();
+
+        // Start the connection
+        connection.start()
+            .then(() => console.log("SignalR Connected"))
+            .catch(err => console.error("SignalR Connection Error: ", err));
+
+        // Handle receiving dashboard stats
+        connection.on("ReceiveDashboardStats", (pendingLGUCount, pendingReportsCount, pendingPostsCount) => {
+            // Update the stats with animation
+            updateStatWithAnimation("pendingLGUCount", pendingLGUCount);
+            updateStatWithAnimation("pendingReportsCount", pendingReportsCount);
+            updateStatWithAnimation("pendingPostsCount", pendingPostsCount);
+        });
+
+        function updateStatWithAnimation(elementId, newValue) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                // Add fade out effect
+                element.style.transition = "opacity 0.3s ease";
+                element.style.opacity = "0";
+                
+                setTimeout(() => {
+                    element.textContent = newValue;
+                    // Add fade in effect
+                    element.style.opacity = "1";
+                }, 300);
+            }
+        }
+
+        // Fetch and update recent reports table
+        function fetchRecentReports() {
+            $.get('@Url.Action("GetRecentReports", "Admin")', function(data) {
+                const reportsTable = document.getElementById("recentReportsTableBody");
+                reportsTable.innerHTML = "";
+                if (data && data.length > 0) {
+                    data.forEach(report => {
+                        // Defensive: handle missing or undefined status
+                        const statusText = report.status ? report.status : '';
+                        const statusClass = report.status ? report.status.toLowerCase() : '';
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-report-id', report.id);
+                        row.innerHTML = `
+                            <td>${report.title}</td>
+                            <td>${report.type}</td>
+                            <td>${report.barangay}, ${report.city}</td>
+                            <td>${report.dateReported}</td>
+                            <td><span class='status-badge status-${statusClass}'>${statusText}</span></td>
+                            <td><a href='/Admin/ReportDetails/${report.id}' class='btn btn-sm btn-outline-primary'><i class='fas fa-eye'></i></a></td>
+                        `;
+                        reportsTable.appendChild(row);
+                    });
+                } else {
+                    reportsTable.innerHTML = `<tr><td colspan="6" class="text-center py-3">No recent reports found.</td></tr>`;
+                }
+            });
+        }
+
+        // Update table in real-time when a report is added/updated
+        connection.on("RecentReportUpdated", function(report) {
+            console.log("RecentReportUpdated received:", report);
+            fetchRecentReports();
+        });
+
+        // Fetch once on page load
+        $(document).ready(function() {
+            fetchRecentReports();
+        });
+    </script>
+}
+
 <div class="row mb-4">
     <div class="col-12">
         <div class="alert alert-primary" role="alert">
@@ -24,7 +103,7 @@
             <div class="stats-icon bg-warning text-white">
                 <i class="fas fa-user-shield"></i>
             </div>
-            <div class="stats-number">@ViewBag.PendingLGUCount</div>
+            <div class="stats-number" id="pendingLGUCount">@ViewBag.PendingLGUCount</div>
             <div class="stats-label">Pending LGU Applications</div>
             <a href="@Url.Action("PendingLGUApplications", "Admin")" class="btn btn-sm btn-link p-0 mt-2">View Details <i class="fas fa-arrow-right ms-1"></i></a>
         </div>
@@ -36,7 +115,7 @@
             <div class="stats-icon bg-danger text-white">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <div class="stats-number">@ViewBag.PendingReportsCount</div>
+            <div class="stats-number" id="pendingReportsCount">@ViewBag.PendingReportsCount</div>
             <div class="stats-label">Pending Reports</div>
             <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.Pending })" class="btn btn-sm btn-link p-0 mt-2">View Details <i class="fas fa-arrow-right ms-1"></i></a>
         </div>
@@ -48,7 +127,7 @@
             <div class="stats-icon bg-info text-white">
                 <i class="fas fa-clipboard-list"></i>
             </div>
-            <div class="stats-number">@ViewBag.PendingPostsCount</div>
+            <div class="stats-number" id="pendingPostsCount">@ViewBag.PendingPostsCount</div>
             <div class="stats-label">Pending Posts</div>
             <a href="@Url.Action("PendingPosts", "Admin")" class="btn btn-sm btn-link p-0 mt-2">View Details <i class="fas fa-arrow-right ms-1"></i></a>
         </div>
@@ -90,16 +169,16 @@
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="recentReportsTableBody">
                             @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
                             {
                                 @foreach (var report in ViewBag.RecentReports)
                                 {
-                                    <tr>
+                                    <tr data-report-id="@report.Id">
                                         <td>@report.Title</td>
                                         <td>@report.Type</td>
                                         <td>@report.Barangay, @report.City</td>
-                                        <td>@report.DateReported.ToString("MMM dd, yyyy")</td>
+                                        <td>@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
                                         <td>
                                             <span class="status-badge status-@report.Status.ToString().ToLower()">
                                                 @report.Status

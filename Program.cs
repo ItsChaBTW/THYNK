@@ -34,6 +34,7 @@ builder.Services.AddScoped<IPSGCService, PSGCService>();
 builder.Services.AddHttpClient<IPSGCService, PSGCService>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -56,6 +57,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<THYNK.Hubs.AdminHub>("/adminHub");
 
 app.MapControllerRoute(
     name: "default",
