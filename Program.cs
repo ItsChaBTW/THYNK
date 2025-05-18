@@ -7,6 +7,9 @@ using THYNK.Models;
 using Microsoft.AspNetCore.Authentication.Google;
 using WkHtmlToPdfDotNet;
 using WkHtmlToPdfDotNet.Contracts;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using THYNK.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,12 +27,21 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+// Configure cookie policy
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => true;
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+});
+
 // Add Google Authentication
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
     {
         options.ClientId = "11636115526-jphpfc89sg5tka1gkv86a3166n9j1qd3.apps.googleusercontent.com";
         options.ClientSecret = "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";
+        options.CorrelationCookie.SameSite = SameSiteMode.None;
+        options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 // Add PDF services
@@ -59,12 +71,47 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseCookiePolicy();
+
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHub<THYNK.Hubs.AdminHub>("/adminHub");
+// Add Database Diagnostic Middleware
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/LGU/CreateAlert") && 
+        context.Request.Method == "POST")
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("CreateAlert POST request detected");
+        
+        try
+        {
+            // Check database connection
+            using var scope = context.RequestServices.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            
+            bool canConnect = dbContext.Database.CanConnect();
+            logger.LogInformation($"Database connection test from middleware: {(canConnect ? "SUCCESS" : "FAILED")}");
+            
+            // Check if Alerts table exists and is accessible
+            int alertCount = await dbContext.Alerts.CountAsync();
+            logger.LogInformation($"Current alert count in database: {alertCount}");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Database diagnostic middleware error");
+        }
+    }
+    
+    await next();
+});
+
+// Map SignalR hubs
+app.MapHub<AdminHub>("/adminHub");
+app.MapHub<AlertHub>("/alertHub");
 
 app.MapControllerRoute(
     name: "default",

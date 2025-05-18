@@ -36,6 +36,22 @@ namespace THYNK.Models
         
         [ForeignKey("IssuedByUserId")]
         public ApplicationUser User { get; set; } = null!;
+        
+        // New fields for custom artwork and styling
+        public string ImagePath { get; set; } = string.Empty;
+        
+        public string BackgroundStyle { get; set; } = "standard";
+        
+        public string IconStyle { get; set; } = "standard";
+        
+        public string ColorScheme { get; set; } = "danger";
+        
+        [NotMapped]
+        public bool HasCustomStyling => 
+            !string.IsNullOrEmpty(ImagePath) || 
+            BackgroundStyle != "standard" || 
+            IconStyle != "standard" || 
+            ColorScheme != "danger";
     }
 
     public enum AlertSeverity

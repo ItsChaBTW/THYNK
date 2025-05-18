@@ -45,7 +45,7 @@
         else
         {
             <div class="table-responsive">
-                <table class="table table-hover">
+                                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Title</th>
@@ -54,6 +54,7 @@
                             <th>Area</th>
                             <th>Issued Date</th>
                             <th>Status</th>
+                            <th>Image</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -80,6 +81,28 @@
                                     else
                                     {
                                         <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                    
+                                    @if (alert.HasCustomStyling)
+                                    {
+                                        <span class="badge bg-info ms-1" data-bs-toggle="tooltip" title="Custom styled alert">
+                                            <i class="fas fa-paint-brush"></i>
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(alert.ImagePath))
+                                    {
+                                        <a href="javascript:void(0)" onclick="showImagePreview('@alert.ImagePath', '@alert.Title')" class="position-relative">
+                                            <img src="@alert.ImagePath" class="img-thumbnail" style="max-height: 40px; max-width: 60px;" alt="Alert image" />
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
+                                                <i class="fas fa-check"></i>
+                                            </span>
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">No image</span>
                                     }
                                 </td>
                                 <td>
@@ -188,19 +211,128 @@
     </div>
 </div>
 
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewModalLabel">Alert Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="previewImage" src="" class="img-fluid rounded" alt="Alert image preview" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        // Function to show image preview
+        function showImagePreview(imagePath, title) {
+            $('#previewImage').attr('src', imagePath);
+            $('#imagePreviewModalLabel').text(title + ' - Image');
+            var imageModal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+            imageModal.show();
+        }
+        
         $(document).ready(function() {
-            // Load alert details via AJAX when modal is opened
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+            
+            // Alert details modal loading
+            $('[data-alert-id]').on('click', function(e) {
+                e.preventDefault();
+                var alertId = $(this).data('alert-id');
+                $('#alertDetailsContent').html('<div class="text-center p-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Loading alert details...</p></div>');
+                
+                $.get($(this).attr('href'), function(data) {
+                    $('#alertDetailsContent').html(data);
+                });
+            });
+            
+            // Add error handler for images
+            $('img').on('error', function() {
+                $(this).attr('src', '/images/placeholder-image.png');
+                $(this).closest('.position-relative').find('.badge').removeClass('bg-success').addClass('bg-danger');
+                $(this).closest('.position-relative').find('.badge i').removeClass('fa-check').addClass('fa-exclamation-triangle');
+            });
+            
+            // Alert details modal
             $('#alertDetailsModal').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-                var alertId = button.data('alert-id');
+                var button = $(event.relatedTarget); // Button that triggered the modal
+                var alertId = button.data('alert-id'); // Extract info from data-* attributes
                 var modal = $(this);
                 
+                // Load alert details from server
                 $.get('@Url.Action("GetAlertDetails", "LGU")/' + alertId, function(data) {
                     modal.find('#alertDetailsContent').html(data);
                 });
             });
+            
+            // Image preview modal
+            $('.preview-image-btn').on('click', function() {
+                var imagePath = $(this).data('image-path');
+                $('#previewImage').attr('src', imagePath);
+            });
+            
+            // Deactivate and Delete form submission with loading state
+            $('form[asp-action="DeactivateAlert"], form[asp-action="DeleteAlert"]').on('submit', function() {
+                var btn = $(this).find('button[type="submit"]');
+                var originalText = btn.html();
+                
+                // Show loading state
+                btn.prop('disabled', true);
+                btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+                
+                // Re-enable button after 3 seconds if form hasn't submitted (for some reason)
+                setTimeout(function() {
+                    if (btn.prop('disabled')) {
+                        btn.prop('disabled', false);
+                        btn.html(originalText);
+                    }
+                }, 3000);
+                
+                return true;
+            });
+            
+            // Success message handling
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                // Show toast notification
+                const toastHTML = `
+                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header bg-success text-white">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong class="me-auto">Success</strong>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                @TempData["SuccessMessage"]
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                $('body').append(toastHTML);
+                
+                // Auto-dismiss after 3 seconds
+                setTimeout(function() {
+                    $('.toast').toast('hide');
+                    setTimeout(function() {
+                        $('.toast').parent().remove();
+                    }, 500);
+                }, 3000);
+                </text>
+            }
         });
     </script>
 } 
