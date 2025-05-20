@@ -35,6 +35,7 @@ namespace THYNK.Hubs
                 status = "connected", 
                 timestamp = DateTime.Now.ToString("o"),
                 connectionId = Context.ConnectionId
+                
             });
         }
     }

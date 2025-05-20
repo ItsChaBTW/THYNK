@@ -237,6 +237,7 @@ namespace THYNK.Controllers
             return View();
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateAlert(Alert alert, IFormFile alertImage, string backgroundStyle, string iconStyle, string colorScheme)

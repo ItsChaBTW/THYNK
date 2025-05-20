@@ -16,6 +16,7 @@ namespace THYNK.Migrations
     partial class AddAlertCustomStyling
     {
         /// <inheritdoc />
+        /// 
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

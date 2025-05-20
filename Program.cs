@@ -55,6 +55,7 @@ builder.Services.AddHttpClient<IPSGCService, PSGCService>();
 builder.Services.AddScoped<ISMSService, VonageSMSService>();
 builder.Services.AddScoped<AlertNotificationService>();
 
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 

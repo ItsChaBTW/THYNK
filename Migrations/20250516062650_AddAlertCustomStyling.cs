@@ -17,6 +17,7 @@ namespace THYNK.Migrations
                 nullable: false,
                 defaultValue: "");
 
+
             migrationBuilder.AddColumn<string>(
                 name: "ColorScheme",
                 table: "Alerts",
