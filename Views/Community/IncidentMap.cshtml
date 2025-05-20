@@ -497,9 +497,12 @@
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v11',
+            style: 'mapbox://styles/mapbox/outdoors-v12', // Using outdoors style for better terrain visualization
             center: [120.9842, 14.5995], // Default to Philippines
-            zoom: 9
+            zoom: 9,
+            pitch: 45, // Add default pitch for 3D view
+            bearing: -17.6, // Slight bearing for better perspective
+            antialias: true // Enable antialiasing for smoother rendering
         });
 
         // Add map controls
@@ -512,6 +515,77 @@
             trackUserLocation: true,
             showUserHeading: true
         }), 'top-right');
+
+        // Add 3D terrain and sky when map loads
+        map.on('style.load', () => {
+            // Add 3D terrain
+            map.addSource('mapbox-dem', {
+                'type': 'raster-dem',
+                'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                'tileSize': 512,
+                'maxzoom': 14
+            });
+            
+            // Add the DEM source as a terrain layer with exaggerated height
+            map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+            
+            // Add a sky layer that will show when the map is highly pitched
+            map.addLayer({
+                'id': 'sky',
+                'type': 'sky',
+                'paint': {
+                    'sky-type': 'atmosphere',
+                    'sky-atmosphere-sun': [0.0, 0.0],
+                    'sky-atmosphere-sun-intensity': 15
+                }
+            });
+        });
+        
+        // Add 3D buildings when zoomed in
+        map.on('load', () => {
+            // Add 3D buildings layer
+            const layers = map.getStyle().layers;
+            // Find the index of the first symbol layer in the map style
+            let firstSymbolId;
+            for (const layer of layers) {
+                if (layer.type === 'symbol') {
+                    firstSymbolId = layer.id;
+                    break;
+                }
+            }
+            
+            map.addLayer({
+                'id': '3d-buildings',
+                'source': 'composite',
+                'source-layer': 'building',
+                'filter': ['==', 'extrude', 'true'],
+                'type': 'fill-extrusion',
+                'minzoom': 15,
+                'paint': {
+                    'fill-extrusion-color': '#aaa',
+                    'fill-extrusion-height': [
+                        'interpolate', ['linear'], ['zoom'],
+                        15, 0,
+                        15.05, ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                        'interpolate', ['linear'], ['zoom'],
+                        15, 0,
+                        15.05, ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.6
+                }
+            }, firstSymbolId);
+            
+            // Add loading indicator
+            showMapLoading(true);
+            
+            loadIncidents();
+            
+            // Set up event listeners for filters
+            document.getElementById('apply-filters').addEventListener('click', applyFilters);
+            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+        });
 
         // Store the markers and incidents
         let markers = [];
@@ -2562,33 +2636,36 @@
         
         /* Incident marker */
         .incident-marker {
-            width: 20px;
-            height: 20px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             border: 3px solid white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s ease;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4), 0 5px 5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
             cursor: pointer;
+            transform-origin: center bottom;
+            transform: perspective(500px) rotateX(25deg) translateZ(0);
+            z-index: 2;
         }
         
         .incident-marker:hover {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+            transform: perspective(500px) rotateX(10deg) scale(1.4) translateZ(0);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 0 8px 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
         }
         
         /* Popup styling */
         .mapboxgl-popup {
-            max-width: 300px;
+            z-index: 5;
         }
         
         .incident-popup .mapboxgl-popup-content {
-            padding: 15px;
+            padding: 16px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .incident-popup-content {
-            min-width: 200px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #0d6efd;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
         }
         
         /* Modal styling */

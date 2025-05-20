@@ -627,5 +627,177 @@ namespace THYNK.Controllers
             await _context.SaveChangesAsync();
             return Json(new { success = true });
         }
+
+        // View evacuation sites
+        [AllowAnonymous]
+        public IActionResult EvacuationSite()
+        {
+            // Set the layout based on authentication status
+            if (!User.Identity.IsAuthenticated)
+            {
+                // For anonymous users, use the default layout
+                ViewBag.UseDefaultLayout = true;
+            }
+            // For authenticated users, the _CommunityLayout will be used by default
+            
+            return View();
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> EvacuationSites(string type = null, bool? hasWater = null, bool? hasElectricity = null, 
+            bool? hasMedicalSupplies = null, bool? isWheelchairAccessible = null)
+        {
+            IQueryable<EvacuationSite> sitesQuery = _context.EvacuationSites
+                .Where(e => e.IsActive); // Only show active sites to community users
+            
+            // Filter by type if specified
+            if (!string.IsNullOrEmpty(type) && Enum.TryParse<EvacuationSiteType>(type, out var typeEnum))
+            {
+                sitesQuery = sitesQuery.Where(e => e.Type == typeEnum);
+                ViewBag.CurrentTypeFilter = type;
+            }
+            
+            // Apply facility filters
+            if (hasWater.HasValue && hasWater.Value)
+            {
+                sitesQuery = sitesQuery.Where(e => e.HasWater);
+                ViewBag.HasWaterFilter = true;
+            }
+            
+            if (hasElectricity.HasValue && hasElectricity.Value)
+            {
+                sitesQuery = sitesQuery.Where(e => e.HasElectricity);
+                ViewBag.HasElectricityFilter = true;
+            }
+            
+            if (hasMedicalSupplies.HasValue && hasMedicalSupplies.Value)
+            {
+                sitesQuery = sitesQuery.Where(e => e.HasMedicalSupplies);
+                ViewBag.HasMedicalSuppliesFilter = true;
+            }
+            
+            if (isWheelchairAccessible.HasValue && isWheelchairAccessible.Value)
+            {
+                sitesQuery = sitesQuery.Where(e => e.IsWheelchairAccessible);
+                ViewBag.IsWheelchairAccessibleFilter = true;
+            }
+            
+            var sites = await sitesQuery.OrderBy(e => e.Name).ToListAsync();
+
+            // Set different layout based on authentication status
+            if (!User.Identity.IsAuthenticated)
+            {
+                // For anonymous users, use the default layout
+                ViewBag.UseDefaultLayout = true;
+            }
+
+            return View(sites);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<JsonResult> GetNearbySites(double latitude, double longitude, int maxDistance = 10, string type = null, 
+            bool? hasWater = null, bool? hasElectricity = null, bool? hasMedicalSupplies = null, bool? isWheelchairAccessible = null)
+        {
+            if (latitude == 0 && longitude == 0)
+            {
+                return Json(new { success = false, message = "Invalid coordinates" });
+            }
+
+            // Get all active evacuation sites
+            var sitesQuery = _context.EvacuationSites
+                .Where(s => s.IsActive);
+            
+            // Apply type filter if specified
+            if (!string.IsNullOrEmpty(type) && Enum.TryParse<EvacuationSiteType>(type, out var typeEnum))
+            {
+                sitesQuery = sitesQuery.Where(s => s.Type == typeEnum);
+            }
+            
+            // Apply facility filters
+            if (hasWater.HasValue && hasWater.Value)
+            {
+                sitesQuery = sitesQuery.Where(s => s.HasWater);
+            }
+            
+            if (hasElectricity.HasValue && hasElectricity.Value)
+            {
+                sitesQuery = sitesQuery.Where(s => s.HasElectricity);
+            }
+            
+            if (hasMedicalSupplies.HasValue && hasMedicalSupplies.Value)
+            {
+                sitesQuery = sitesQuery.Where(s => s.HasMedicalSupplies);
+            }
+            
+            if (isWheelchairAccessible.HasValue && isWheelchairAccessible.Value)
+            {
+                sitesQuery = sitesQuery.Where(s => s.IsWheelchairAccessible);
+            }
+            
+            var sites = await sitesQuery.ToListAsync();
+            
+            // Calculate distance to each site and filter by maxDistance (in kilometers)
+            var nearbySites = sites
+                .Select(site => {
+                    // Calculate distance between coordinates using Haversine formula
+                    double distance = CalculateDistance(latitude, longitude, site.Latitude, site.Longitude);
+                    return new { Site = site, Distance = distance };
+                })
+                .Where(item => item.Distance <= maxDistance)
+                .OrderBy(item => item.Distance)
+                .Select(item => new {
+                    id = item.Site.Id,
+                    name = item.Site.Name,
+                    address = item.Site.Address,
+                    city = item.Site.City,
+                    latitude = item.Site.Latitude,
+                    longitude = item.Site.Longitude,
+                    type = item.Site.Type.ToString(),
+                    capacity = item.Site.Capacity,
+                    description = item.Site.Description,
+                    contactPerson = item.Site.ContactPerson,
+                    contactNumber = item.Site.ContactNumber,
+                    facilities = new {
+                        water = item.Site.HasWater,
+                        electricity = item.Site.HasElectricity,
+                        medical = item.Site.HasMedicalSupplies,
+                        internet = item.Site.HasInternet,
+                        wheelchair = item.Site.IsWheelchairAccessible,
+                        bathroom = item.Site.HasBathroomFacilities,
+                        kitchen = item.Site.HasKitchen,
+                        sleeping = item.Site.HasSleepingFacilities
+                    },
+                    distance = Math.Round(item.Distance, 1) // Round to 1 decimal place
+                })
+                .ToList();
+            
+            return Json(new { success = true, sites = nearbySites });
+        }
+
+        // Calculate distance between two GPS coordinates using Haversine formula
+        private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+        {
+            const double EarthRadius = 6371.0; // Earth's radius in kilometers
+            
+            // Convert degrees to radians
+            double dLat = DegreesToRadians(lat2 - lat1);
+            double dLon = DegreesToRadians(lon2 - lon1);
+            
+            // Haversine formula
+            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                       Math.Cos(DegreesToRadians(lat1)) * Math.Cos(DegreesToRadians(lat2)) *
+                       Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            double distance = EarthRadius * c;
+            
+            return distance;
+        }
+
+        private double DegreesToRadians(double degrees)
+        {
+            return degrees * Math.PI / 180.0;
+        }
     }
 } 

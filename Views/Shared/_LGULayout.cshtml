@@ -437,10 +437,17 @@
                         <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
                         <span class="nav-text">Incident Map</span>
                     </a>
+                    
+                    <a href="@Url.Action("EvacuationSites", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "EvacuationSites" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-map-pin"></i></span>
+                        <span class="nav-text">Evacuation Sites</span>
+                    </a>
+                    
                     <a href="@Url.Action("Analytics", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Analytics" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
                         <span class="nav-text">Analytics</span>
                     </a>
+                    
                     <a href="@Url.Action("ManageResources", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ManageResources" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-book"></i></span>
                         <span class="nav-text">Manage Resources</span>
@@ -454,9 +461,9 @@
                     <a href="@Url.Action("ChatSupport", "LGU")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ChatSupport" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
                         <span class="nav-text">Support & FAQs</span>
-                </a>
+                    </a>
+                </div>
             </div>
-        </div>
             
             <!-- User Profile at Bottom of Sidebar -->
             <div class="mt-auto px-4 py-3 border-t border-sidebar-light">
@@ -479,12 +486,12 @@
                         <button type="button" data-logout-trigger class="nav-item py-1 w-full text-left">
                             <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
                             <span class="nav-text text-xs">Logout</span>
-                    </button>
+                        </button>
                     </div>
                 }
-                    </div>
-                </div>
-            </nav>
+            </div>
+        </div>
+    </nav>
     
     <!-- Main Content -->
     <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64">

@@ -916,6 +916,11 @@
                         <span class="nav-text">Resource Library</span>
                     </a>
                     
+                    <a href="@Url.Action("EvacuationSite", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "EvacuationSite" ? "active" : "")">
+                        <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
+                        <span class="nav-text">Evacuation Sites</span>
+                    </a>
+                    
                     <a href="@Url.Action("SubmitReport", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "SubmitReport" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-exclamation-triangle"></i></span>
                         <span class="nav-text">Report Incident</span>
@@ -930,7 +935,6 @@
                         <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
                         <span class="nav-text">Incident Map</span>
                     </a>
-                    
                     <a href="@Url.Action("MyReports", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "MyReports" || ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
                         <span class="nav-text">My Reports</span>

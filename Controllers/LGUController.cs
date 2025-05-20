@@ -2290,5 +2290,294 @@ namespace THYNK.Controllers
             TempData["SuccessMessage"] = "Report has been resolved successfully.";
             return RedirectToAction(nameof(ReportDetails), new { id = id });
         }
+
+        // Evacuation Sites
+        public async Task<IActionResult> EvacuationSites(string type, bool? isActive)
+        {
+            IQueryable<EvacuationSite> sitesQuery = _context.EvacuationSites
+                .Include(e => e.ManagedBy);
+            
+            // Filter by type if specified
+            if (!string.IsNullOrEmpty(type) && Enum.TryParse<EvacuationSiteType>(type, out var typeEnum))
+            {
+                sitesQuery = sitesQuery.Where(e => e.Type == typeEnum);
+                ViewBag.CurrentTypeFilter = type;
+            }
+            
+            // Filter by active status if specified
+            if (isActive.HasValue)
+            {
+                sitesQuery = sitesQuery.Where(e => e.IsActive == isActive.Value);
+                ViewBag.CurrentActiveFilter = isActive.Value;
+            }
+            
+            var sites = await sitesQuery.OrderBy(e => e.Name).ToListAsync();
+            return View(sites);
+        }
+
+        public IActionResult CreateEvacuationSite()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateEvacuationSite(EvacuationSite site)
+        {
+            try
+            {
+                _logger.LogInformation($"Attempting to create evacuation site: {site.Name}, Type: {site.Type}, Lat: {site.Latitude}, Lng: {site.Longitude}");
+                
+                // Clear ModelState errors for ManagedBy and ManagedByUserId since we'll set them manually
+                ModelState.Remove("ManagedBy");
+                ModelState.Remove("ManagedByUserId");
+                
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Model state is invalid for evacuation site creation");
+                    
+                    // Log all model validation errors
+                    foreach (var modelState in ModelState.Values)
+                    {
+                        foreach (var error in modelState.Errors)
+                        {
+                            _logger.LogWarning($"Validation error: {error.ErrorMessage}");
+                        }
+                    }
+                    
+                    ViewBag.ErrorMessage = "Please correct the validation errors below.";
+                    return View(site);
+                }
+                
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                // Explicitly set the required properties
+                site.ManagedByUserId = userId;
+                site.DateAdded = DateTime.Now;
+                site.IsActive = true;
+                
+                // Check if the user exists in the database
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    _logger.LogError($"Failed to create evacuation site: User with ID {userId} not found in the database");
+                    ViewBag.ErrorMessage = "Unable to assign site to current user. Your login session may have expired.";
+                    return View(site);
+                }
+                
+                try 
+                {
+                    // First add the site without tracking ManagedBy
+                    _context.Entry(site).State = EntityState.Added;
+                    _context.Entry(site).Reference(s => s.ManagedBy).IsModified = false;
+                    
+                    // Explicitly log what we're trying to save
+                    _logger.LogInformation($"Saving site to database: ID: {site.Id}, Name: {site.Name}, Address: {site.Address}, City: {site.City}, " +
+                                          $"Coords: ({site.Latitude}, {site.Longitude}), Type: {site.Type}, Managed by: {site.ManagedByUserId}");
+                    
+                    int result = await _context.SaveChangesAsync();
+                    _logger.LogInformation($"SaveChangesAsync result: {result} records affected");
+                    
+                    if (result > 0)
+                    {
+                        TempData["SuccessMessage"] = "Evacuation site has been created successfully.";
+                        return RedirectToAction(nameof(EvacuationSites));
+                    }
+                    else
+                    {
+                        // If SaveChangesAsync returned 0, no records were affected
+                        _logger.LogError("Database save operation did not affect any records");
+                        ViewBag.ErrorMessage = "Failed to save the evacuation site to the database. No records were affected.";
+                        return View(site);
+                    }
+                } 
+                catch (InvalidOperationException ex) 
+                {
+                    _logger.LogError($"Entity Framework operation error: {ex.Message}");
+                    
+                    // Try an alternative approach if EF is having issues
+                    try 
+                    {
+                        // Fallback to a simpler approach
+                        _context.EvacuationSites.Add(site);
+                        int result = await _context.SaveChangesAsync();
+                        
+                        if (result > 0) 
+                        {
+                            TempData["SuccessMessage"] = "Evacuation site has been created successfully.";
+                            return RedirectToAction(nameof(EvacuationSites));
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = "Failed to save evacuation site with fallback approach.";
+                            return View(site);
+                        }
+                    } 
+                    catch (Exception innerEx) 
+                    {
+                        _logger.LogError($"Fallback approach also failed: {innerEx.Message}");
+                        ViewBag.ErrorMessage = $"Could not save evacuation site: {ex.Message}";
+                        return View(site);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error creating evacuation site: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                
+                ViewBag.ErrorMessage = "An unexpected error occurred. Please try again or contact support.";
+                return View(site);
+            }
+        }
+
+        public async Task<IActionResult> EditEvacuationSite(int id)
+        {
+            try 
+            {
+                var site = await _context.EvacuationSites.FindAsync(id);
+                if (site == null)
+                {
+                    _logger.LogWarning($"Evacuation site with ID {id} not found");
+                    return NotFound();
+                }
+                
+                return View(site);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error retrieving evacuation site {id}: {ex.Message}");
+                TempData["ErrorMessage"] = "Error retrieving evacuation site. Please try again.";
+                return RedirectToAction(nameof(EvacuationSites));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditEvacuationSite(int id, EvacuationSite site)
+        {
+            if (id != site.Id)
+            {
+                _logger.LogWarning($"ID mismatch in EditEvacuationSite: URL ID={id}, Model ID={site.Id}");
+                return NotFound();
+            }
+            
+            try
+            {
+                _logger.LogInformation($"Attempting to update evacuation site {id}: {site.Name}, Type: {site.Type}, Lat: {site.Latitude}, Lng: {site.Longitude}");
+                
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Model state is invalid for evacuation site update");
+                    
+                    // Log all model validation errors
+                    foreach (var modelState in ModelState.Values)
+                    {
+                        foreach (var error in modelState.Errors)
+                        {
+                            _logger.LogWarning($"Validation error: {error.ErrorMessage}");
+                        }
+                    }
+                    
+                    ViewBag.ErrorMessage = "Please correct the validation errors below.";
+                    return View(site);
+                }
+                
+                var originalSite = await _context.EvacuationSites.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+                if (originalSite == null)
+                {
+                    _logger.LogWarning($"Original evacuation site with ID {id} not found during update");
+                    return NotFound();
+                }
+                
+                // Preserve the original creation data
+                site.ManagedByUserId = originalSite.ManagedByUserId;
+                site.DateAdded = originalSite.DateAdded;
+                site.LastUpdated = DateTime.Now;
+                
+                _context.Update(site);
+                
+                _logger.LogInformation($"Updating site in database: ID: {site.Id}, Name: {site.Name}, Address: {site.Address}, City: {site.City}, " +
+                                     $"Coords: ({site.Latitude}, {site.Longitude}), Type: {site.Type}, Managed by: {site.ManagedByUserId}");
+                
+                int result = await _context.SaveChangesAsync();
+                _logger.LogInformation($"SaveChangesAsync result: {result} records affected");
+                
+                if (result > 0)
+                {
+                    TempData["SuccessMessage"] = "Evacuation site has been updated successfully.";
+                    return RedirectToAction(nameof(EvacuationSites));
+                }
+                else
+                {
+                    // If SaveChangesAsync returned 0, no records were affected
+                    _logger.LogError("Database update operation did not affect any records");
+                    ViewBag.ErrorMessage = "Failed to update the evacuation site. No records were affected.";
+                    return View(site);
+                }
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                if (!EvacuationSiteExists(site.Id))
+                {
+                    _logger.LogWarning($"Evacuation site {site.Id} not found during concurrency check");
+                    return NotFound();
+                }
+                else
+                {
+                    _logger.LogError($"Concurrency exception updating evacuation site {id}: {ex.Message}");
+                    ViewBag.ErrorMessage = "The evacuation site was modified by another user. Please try again.";
+                    return View(site);
+                }
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError($"Database error updating evacuation site {id}: {ex.Message}");
+                _logger.LogError($"Inner exception: {ex.InnerException?.Message}");
+                
+                // Get detailed entity validation errors if available
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError($"SQL error details: {ex.InnerException.Message}");
+                }
+                
+                ViewBag.ErrorMessage = $"Database error: {ex.Message}. Please check your input and try again.";
+                return View(site);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error updating evacuation site {id}: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                
+                ViewBag.ErrorMessage = "An unexpected error occurred. Please try again or contact support.";
+                return View(site);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleEvacuationSiteStatus(int id)
+        {
+            var site = await _context.EvacuationSites.FindAsync(id);
+            if (site == null)
+            {
+                return NotFound();
+            }
+            
+            site.IsActive = !site.IsActive;
+            site.LastUpdated = DateTime.Now;
+            
+            await _context.SaveChangesAsync();
+            
+            string status = site.IsActive ? "active" : "inactive";
+            TempData["SuccessMessage"] = $"Evacuation site has been marked as {status}.";
+            
+            return RedirectToAction(nameof(EvacuationSites));
+        }
+
+        private bool EvacuationSiteExists(int id)
+        {
+            return _context.EvacuationSites.Any(e => e.Id == id);
+        }
     }
 } 

@@ -1,0 +1,552 @@
+@model EvacuationSite
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Create Evacuation Site";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Create Evacuation Site</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="LGU" asp-action="Dashboard">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="EvacuationSites">Evacuation Sites</a></li>
+                    <li class="breadcrumb-item active">Create</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Add New Evacuation Site</h3>
+            </div>
+            <form asp-action="CreateEvacuationSite" method="post">
+                <div class="card-body">
+                    @if (ViewBag.ErrorMessage != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                            <p>@ViewBag.ErrorMessage</p>
+                            
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="mt-2">
+                                    <strong>Validation errors:</strong>
+                                    <ul>
+                                    @foreach (var modelState in ViewData.ModelState.Values)
+                                    {
+                                        foreach (var error in modelState.Errors)
+                                        {
+                                            <li>@error.ErrorMessage</li>
+                                        }
+                                    }
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    }
+                    
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    
+                    <!-- Add hidden IsActive field with default value true -->
+                    <input type="hidden" name="IsActive" value="true" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Name" class="control-label">Site Name</label>
+                                <input asp-for="Name" class="form-control" required />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Type" class="control-label">Site Type</label>
+                                <select asp-for="Type" class="form-control" required>
+                                    @foreach (var type in Enum.GetValues(typeof(EvacuationSiteType)))
+                                    {
+                                        <option value="@type">@type.ToString().Replace("Evacuation", " Evacuation")</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Type" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Capacity" class="control-label">Capacity (people)</label>
+                                <input asp-for="Capacity" class="form-control" type="number" min="1" required />
+                                <span asp-validation-for="Capacity" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Description" class="control-label">Description</label>
+                                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Address" class="control-label">Address</label>
+                                <input asp-for="Address" class="form-control" required />
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="City" class="control-label">City</label>
+                                <input asp-for="City" class="form-control" required />
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Latitude" class="control-label">Latitude</label>
+                                        <input asp-for="Latitude" class="form-control" required />
+                                        <span asp-validation-for="Latitude" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Longitude" class="control-label">Longitude</label>
+                                        <input asp-for="Longitude" class="form-control" required />
+                                        <span asp-validation-for="Longitude" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Select Location on Map</label>
+                                <div class="alert alert-info mb-2">
+                                    <i class="fas fa-info-circle"></i> Fill in the site name, address, and city first, then click on the map to place the evacuation site marker.
+                                </div>
+                                <div id="map" style="height: 250px; width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card card-primary">
+                                <div class="card-header">
+                                    <h3 class="card-title">Facilities & Accessibility</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input asp-for="HasWater" class="form-check-input" />
+                                                <label asp-for="HasWater" class="form-check-label">Water Supply</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input asp-for="HasElectricity" class="form-check-input" />
+                                                <label asp-for="HasElectricity" class="form-check-label">Electricity</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input asp-for="HasMedicalSupplies" class="form-check-input" />
+                                                <label asp-for="HasMedicalSupplies" class="form-check-label">Medical Supplies</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input asp-for="HasInternet" class="form-check-input" />
+                                                <label asp-for="HasInternet" class="form-check-label">Internet</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input asp-for="IsWheelchairAccessible" class="form-check-input" />
+                                                <label asp-for="IsWheelchairAccessible" class="form-check-label">Wheelchair Accessible</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input asp-for="HasBathroomFacilities" class="form-check-input" />
+                                                <label asp-for="HasBathroomFacilities" class="form-check-label">Bathroom Facilities</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input asp-for="HasKitchen" class="form-check-input" />
+                                                <label asp-for="HasKitchen" class="form-check-label">Kitchen</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-check">
+                                                <input asp-for="HasSleepingFacilities" class="form-check-input" />
+                                                <label asp-for="HasSleepingFacilities" class="form-check-label">Sleeping Facilities</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ContactPerson" class="control-label">Contact Person</label>
+                                <input asp-for="ContactPerson" class="form-control" />
+                                <span asp-validation-for="ContactPerson" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ContactNumber" class="control-label">Contact Number</label>
+                                <input asp-for="ContactNumber" class="form-control" />
+                                <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Create Evacuation Site</button>
+                    <a asp-action="EvacuationSites" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <script>
+        // Add client-side validation to check form before submission
+        $(document).ready(function() {
+            // Add form data diagnostic output
+            console.log("Form ready, attaching diagnostics");
+            
+            // Display serialized form data to help with debugging
+            function debugFormValues() {
+                const formData = {};
+                $('form').find('input, select, textarea').each(function() {
+                    const input = $(this);
+                    if (input.attr('name')) {
+                        formData[input.attr('name')] = input.val();
+                    }
+                });
+                console.log("Current Form Values:", formData);
+                return formData;
+            }
+            
+            // Run diagnostics on page load
+            debugFormValues();
+            
+            $('form').on('submit', function(e) {
+                // Log form values for debugging
+                console.log("Form submission attempt with values:");
+                const formData = debugFormValues();
+                
+                // Check for common issues
+                if (!formData.ManagedByUserId) {
+                    console.error("WARNING: ManagedByUserId is missing!");
+                }
+                
+                // Additional validation for required fields
+                let valid = true;
+                let errorMessages = [];
+                
+                if (!$('#Name').val()) {
+                    errorMessages.push("Site name is required");
+                    valid = false;
+                }
+                
+                if (!$('#Address').val()) {
+                    errorMessages.push("Address is required");
+                    valid = false;
+                }
+                
+                if (!$('#City').val()) {
+                    errorMessages.push("City is required");
+                    valid = false;
+                }
+                
+                if (!$('#Latitude').val() || isNaN(parseFloat($('#Latitude').val()))) {
+                    errorMessages.push("Valid latitude is required");
+                    valid = false;
+                }
+                
+                if (!$('#Longitude').val() || isNaN(parseFloat($('#Longitude').val()))) {
+                    errorMessages.push("Valid longitude is required");
+                    valid = false;
+                }
+                
+                if (!$('#Capacity').val() || parseInt($('#Capacity').val()) <= 0) {
+                    errorMessages.push("Capacity must be a positive number");
+                    valid = false;
+                }
+                
+                if (!valid) {
+                    e.preventDefault();
+                    alert("Please fix the following errors:\n- " + errorMessages.join("\n- "));
+                    console.error("Form validation failed:", errorMessages);
+                    return false;
+                }
+                
+                console.log("Form validation passed, submitting...");
+                return true;
+            });
+        });
+
+        let map;
+        let marker;
+        const mapboxToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your actual Mapbox token
+
+        function initMap() {
+            // Default center (Philippines)
+            const defaultPosition = { lng: 120.9842, lat: 14.5995 };
+            
+            mapboxgl.accessToken = mapboxToken;
+            map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [defaultPosition.lng, defaultPosition.lat],
+                zoom: 12,
+                pitch: 45, // 3D pitch angle
+                bearing: 0
+            });
+            
+            // Add navigation controls
+            map.addControl(new mapboxgl.NavigationControl());
+            
+            // Enable 3D buildings
+            map.on('load', () => {
+                // Add 3D building layer
+                map.addLayer({
+                    'id': '3d-buildings',
+                    'source': 'composite',
+                    'source-layer': 'building',
+                    'filter': ['==', 'extrude', 'true'],
+                    'type': 'fill-extrusion',
+                    'minzoom': 15,
+                    'paint': {
+                        'fill-extrusion-color': '#aaa',
+                        'fill-extrusion-height': [
+                            'interpolate', ['linear'], ['zoom'],
+                            15, 0,
+                            15.05, ['get', 'height']
+                        ],
+                        'fill-extrusion-base': [
+                            'interpolate', ['linear'], ['zoom'],
+                            15, 0,
+                            15.05, ['get', 'min_height']
+                        ],
+                        'fill-extrusion-opacity': 0.6
+                    }
+                });
+            });
+            
+            // Try to get user's current location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+                        
+                        // Update map
+                        map.flyTo({
+                            center: [pos.lng, pos.lat],
+                            essential: true
+                        });
+                        
+                        createMarker(pos);
+                        
+                        // Update form fields
+                        document.getElementById("Latitude").value = pos.lat;
+                        document.getElementById("Longitude").value = pos.lng;
+                    },
+                    () => {
+                        // If user denies location, use default
+                        createMarker(defaultPosition);
+                    }
+                );
+            } else {
+                // Browser doesn't support geolocation
+                createMarker(defaultPosition);
+            }
+            
+            // Add click event for selecting location
+            map.on("click", (event) => {
+                const pos = {
+                    lng: event.lngLat.lng,
+                    lat: event.lngLat.lat
+                };
+                
+                // Update marker
+                createMarker(pos);
+                
+                // Update form fields
+                document.getElementById("Latitude").value = pos.lat;
+                document.getElementById("Longitude").value = pos.lng;
+            });
+        }
+        
+        function createMarker(position) {
+            // Remove existing marker if any
+            if (marker) marker.remove();
+            
+            // Create custom marker element with pin styling
+            const el = document.createElement('div');
+            el.className = 'custom-marker';
+            el.style.width = '30px';
+            el.style.height = '30px';
+            el.style.backgroundImage = 'url(https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678111-map-marker-512.png)';
+            el.style.backgroundSize = 'cover';
+            el.style.cursor = 'pointer';
+            
+            // Force read current form values - don't use cached values
+            const siteName = document.getElementById("Name").value || "New Evacuation Site";
+            const siteAddress = document.getElementById("Address").value || "Address not set";
+            const siteCity = document.getElementById("City").value || "City not set";
+            
+            // Create popup with site info
+            const popup = new mapboxgl.Popup({
+                closeButton: true,
+                closeOnClick: true,
+                offset: [0, -20]
+            }).setHTML(`
+                <div class="site-info-popup">
+                    <h5>${siteName}</h5>
+                    <p><strong>Address:</strong> ${siteAddress}</p>
+                    <p><strong>City:</strong> ${siteCity}</p>
+                    <p><strong>Coordinates:</strong><br>Lat: ${position.lat.toFixed(6)}<br>Lng: ${position.lng.toFixed(6)}</p>
+                </div>
+            `);
+            
+            // Create and add new marker
+            marker = new mapboxgl.Marker({
+                element: el,
+                draggable: true,
+                color: '#FF0000', // Make the marker red if icon doesn't load
+                scale: 1.2 // Make the marker slightly larger
+            })
+                .setLngLat([position.lng, position.lat])
+                .setPopup(popup)
+                .addTo(map);
+            
+            // Show popup immediately to display site info
+            marker.togglePopup();
+            
+            // Update form fields when marker is dragged
+            marker.on("dragend", () => {
+                const lngLat = marker.getLngLat();
+                document.getElementById("Latitude").value = lngLat.lat;
+                document.getElementById("Longitude").value = lngLat.lng;
+                
+                // Update popup content after drag
+                const updatedSiteName = document.getElementById("Name").value || "New Evacuation Site";
+                const updatedSiteAddress = document.getElementById("Address").value || "Address not set";
+                const updatedSiteCity = document.getElementById("City").value || "City not set";
+                
+                popup.setHTML(`
+                    <div class="site-info-popup">
+                        <h5>${updatedSiteName}</h5>
+                        <p><strong>Address:</strong> ${updatedSiteAddress}</p>
+                        <p><strong>City:</strong> ${updatedSiteCity}</p>
+                        <p><strong>Coordinates:</strong><br>Lat: ${lngLat.lat.toFixed(6)}<br>Lng: ${lngLat.lng.toFixed(6)}</p>
+                    </div>
+                `);
+            });
+            
+            // Update popup when site name/address/city changes
+            function updatePopupContent() {
+                const updatedSiteName = document.getElementById("Name").value || "New Evacuation Site";
+                const updatedSiteAddress = document.getElementById("Address").value || "Address not set";
+                const updatedSiteCity = document.getElementById("City").value || "City not set";
+                const lngLat = marker.getLngLat();
+                
+                popup.setHTML(`
+                    <div class="site-info-popup">
+                        <h5>${updatedSiteName}</h5>
+                        <p><strong>Address:</strong> ${updatedSiteAddress}</p>
+                        <p><strong>City:</strong> ${updatedSiteCity}</p>
+                        <p><strong>Coordinates:</strong><br>Lat: ${lngLat.lat.toFixed(6)}<br>Lng: ${lngLat.lng.toFixed(6)}</p>
+                    </div>
+                `);
+            }
+            
+            // Make the update more responsive by using the input event
+            document.getElementById("Name").addEventListener("input", function() {
+                if (marker && marker.getPopup()) updatePopupContent();
+            });
+            document.getElementById("Address").addEventListener("input", function() {
+                if (marker && marker.getPopup()) updatePopupContent();
+            });
+            document.getElementById("City").addEventListener("input", function() {
+                if (marker && marker.getPopup()) updatePopupContent();
+            });
+        }
+
+        // Initialize the map when the page loads
+        document.addEventListener('DOMContentLoaded', initMap);
+    </script>
+    <style>
+        .mapboxgl-marker {
+            cursor: move;
+        }
+        /* Custom pin animation */
+        .custom-marker {
+            animation: bounce 1s ease infinite alternate;
+            filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.4));
+        }
+        @@keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+        
+        /* Make the marker more visible */
+        .mapboxgl-marker {
+            z-index: 1000 !important;
+        }
+        
+        /* Site info popup styling */
+        .site-info-popup {
+            padding: 5px;
+        }
+        
+        .site-info-popup h5 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+            color: #545454;
+            font-weight: 600;
+        }
+        
+        .site-info-popup p {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .mapboxgl-popup-content {
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+        
+        .mapboxgl-popup-close-button {
+            font-size: 16px;
+            padding: 5px;
+            right: 5px;
+            top: 5px;
+        }
+    </style>
+} 
