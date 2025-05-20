@@ -1,3 +1,13 @@
+@using Microsoft.AspNetCore.Identity
+@using THYNK.Models
+@using System.Security.Claims
+@using Microsoft.AspNetCore.SignalR
+@using THYNK.Hubs
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IHubContext<CommunityHub> CommunityHubContext
+@inject IHubContext<AdminHub> HubContext
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +18,6 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/community.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/lgu-styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/lgu-notification.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/THYNK.styles.css" asp-append-version="true" />
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -366,6 +375,14 @@
                                     <a href="@Url.Action("Profile", "LGU")" class="user-dropdown-item">
                                         <i class="fas fa-user-cog me-2"></i>Profile
                                     </a>
+                                    <div class="user-dropdown-item sound-toggle-item">
+                                        <i class="fas fa-volume-up me-2"></i>
+                                        <span>Sound Notifications</span>
+                                        <label class="switch ml-auto">
+                                            <input type="checkbox" id="soundToggleCheckbox" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
                                     <button type="button" data-logout-trigger class="user-dropdown-item w-full text-left">
                                         <i class="fas fa-sign-out-alt me-2"></i>Logout
                                     </button>
@@ -482,7 +499,8 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <!-- Add SignalR client library -->
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
         // Sidebar toggle
         const hamburger = document.getElementById('hamburger');
@@ -620,9 +638,7 @@
     </div>
     
     <!-- Logout Form (Hidden) -->
-    <form id="logoutForm" class="d-none" action="/Identity/Account/Logout" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="ReturnUrl" value="~/" />
+    <form id="logoutForm" class="d-none" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
     </form>
     
     <!-- Notification Sound Element -->
@@ -631,162 +647,312 @@
     </audio>
     
     <script>
-        // Logout confirmation handling
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get all logout buttons
-            const logoutBtns = document.querySelectorAll('[data-logout-trigger]');
-            const logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmModal'));
-            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
-            const logoutForm = document.getElementById('logoutForm');
-            
-            // Add click event to all logout buttons
-            logoutBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    logoutModal.show();
-                });
-            });
-            
-            // Confirm logout button event
-            confirmLogoutBtn.addEventListener('click', function() {
-                logoutForm.submit();
-            });
+        let connection = null;
+        let isInitialized = false;
+        let isConnecting = false;
+        let retryCount = 0;
+        const maxRetries = 5;
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false'; // Default to true
+        let hasUserInteracted = false;
+        let hasCheckedInProgress = false;
 
-            // In-progress reports notification system
-            const notificationSound = document.getElementById('notificationSound');
-            let soundEnabled = localStorage.getItem('soundEnabled') === 'true';
-            let soundPermissionGranted = localStorage.getItem('soundPermissionGranted') === 'true';
-            
-            // Ask for sound permission if not yet set
-            function askSoundPermission() {
-                if (soundPermissionGranted === false && soundEnabled === true) {
-                    if (confirm("Allow sound notifications for in-progress reports?")) {
-                        soundPermissionGranted = true;
-                        localStorage.setItem('soundPermissionGranted', 'true');
-                    } else {
-                        soundEnabled = false;
-                        localStorage.setItem('soundEnabled', 'false');
-                        // Update UI state
-                        const soundToggleCheckbox = document.getElementById('soundToggleCheckbox');
-                        if (soundToggleCheckbox) {
-                            soundToggleCheckbox.checked = false;
-                        }
-                    }
+        // Function to play notification sound with retry
+        async function playNotificationSound(retryCount = 0) {
+            if (!soundEnabled) {
+                console.log('Sound notifications are disabled');
+                return;
+            }
+
+            const sound = document.getElementById('notificationSound');
+            if (!sound) {
+                console.error('Sound element not found');
+                return;
+            }
+
+            try {
+                // Reset the sound to the beginning
+                sound.currentTime = 0;
+                
+                // Try to play the sound
+                const playPromise = sound.play();
+                if (playPromise !== undefined) {
+                    await playPromise;
+                    console.log('Sound played successfully');
+                }
+            } catch (err) {
+                console.error('Error playing sound:', err);
+                
+                // If we haven't retried too many times and it's a user interaction error
+                if (retryCount < 3 && err.name === 'NotAllowedError') {
+                    console.log('Retrying sound playback...');
+                    // Wait a bit and try again
+                    setTimeout(() => playNotificationSound(retryCount + 1), 1000);
+                } else {
+                    // If there's an error, try to reload the sound
+                    sound.load();
                 }
             }
+        }
+
+        // Function to handle notifications with sound
+        async function handleNotification(message, type = 'info', playSound = true) {
+            console.log('Handling notification:', { message, type, playSound });
+            showToast(message, type);
             
-            // Check for in-progress reports periodically
-            function checkInProgressReports() {
-                $.get('@Url.Action("GetInProgressReportsCount", "LGU")', function(data) {
-                    if (data.count > 0) {
-                        // Show notification indicator
-                        showNotificationBadge(data.count);
-                        
-                        // Play sound if enabled and permission granted
-                        if (soundEnabled && soundPermissionGranted && notificationSound) {
-                            try {
-                                notificationSound.play().catch(e => console.log('Sound play prevented by browser policy:', e));
-                            } catch (e) {
-                                console.error('Error playing notification sound:', e);
-                            }
+            if (playSound) {
+                // For important notifications, try to play sound even if user hasn't interacted
+                if (type === 'warning' || type === 'error' || type === 'info') {
+                    await playNotificationSound();
+                }
+            }
+        }
+
+        // Function to show toast notification
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+
+            toastContainer.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+
+            // Remove toast after it's hidden
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        // Function to toggle sound notifications
+        function toggleSoundNotifications(enabled) {
+            soundEnabled = enabled;
+            localStorage.setItem('soundEnabled', enabled);
+            
+            // If enabling sound, try to play a test sound
+            if (enabled && hasUserInteracted) {
+                playNotificationSound();
+            }
+        }
+
+        // Function to check in-progress reports
+        async function checkInProgressReports() {
+            if (hasCheckedInProgress) return; // Only check once per page load
+            
+            try {
+                console.log('Checking for in-progress reports...');
+                const response = await fetch('@Url.Action("GetInProgressReportsCount", "LGU")');
+                if (!response.ok) throw new Error('Failed to fetch report count');
+                
+                const data = await response.json();
+                console.log('In-progress reports count:', data.count);
+                
+                if (data.count > 0) {
+                    const message = `You have ${data.count} in-progress report${data.count > 1 ? 's' : ''} that need${data.count > 1 ? '' : 's'} attention`;
+                    showToast(message, 'warning');
+                    
+                    // Try to play sound even if user hasn't interacted yet
+                    // This is important for in-progress reports on page load
+                    try {
+                        const sound = document.getElementById('notificationSound');
+                        if (sound) {
+                            sound.currentTime = 0;
+                            await sound.play();
+                            console.log('In-progress reports sound played');
                         }
-                    } else {
-                        // Hide notification indicator
-                        hideNotificationBadge();
-                        
-                        // Stop sound if playing
-                        if (notificationSound && !notificationSound.paused) {
-                            notificationSound.pause();
-                            notificationSound.currentTime = 0;
-                        }
+                    } catch (err) {
+                        console.log('Could not play in-progress reports sound:', err.message);
                     }
+                }
+            } catch (error) {
+                console.error('Error checking in-progress reports:', error);
+            } finally {
+                hasCheckedInProgress = true;
+            }
+        }
+
+        // Initialize sound toggle checkbox and user interaction detection
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing sound notifications...');
+            
+            const soundToggle = document.getElementById('soundToggleCheckbox');
+            if (soundToggle) {
+                soundToggle.checked = soundEnabled;
+                soundToggle.addEventListener('change', (e) => {
+                    console.log('Sound notifications:', e.target.checked ? 'enabled' : 'disabled');
+                    toggleSoundNotifications(e.target.checked);
                 });
             }
-            
-            // Sound toggle control - add to user menu
-            const userDropdownContent = document.querySelector('.user-dropdown-content');
-            if (userDropdownContent) {
-                // Create toggle button for sound
-                const soundToggle = document.createElement('div');
-                soundToggle.className = 'user-dropdown-item';
-                soundToggle.innerHTML = `
-                    <i class="fas ${soundEnabled ? 'fa-volume-up' : 'fa-volume-mute'} me-2"></i>
-                    <span>Sound: ${soundEnabled ? 'On' : 'Off'}</span>
-                    <label class="switch ml-auto">
-                        <input type="checkbox" id="soundToggleCheckbox" ${soundEnabled ? 'checked' : ''}>
-                        <span class="slider round"></span>
-                    </label>
-                `;
-                userDropdownContent.appendChild(soundToggle);
-                
-                // Add event listener to toggle
-                const soundToggleCheckbox = document.getElementById('soundToggleCheckbox');
-                if (soundToggleCheckbox) {
-                    soundToggleCheckbox.addEventListener('change', function() {
-                        soundEnabled = this.checked;
-                        localStorage.setItem('soundEnabled', soundEnabled);
-                        
-                        // Ask for permission when enabling sound
-                        if (soundEnabled && !soundPermissionGranted) {
-                            askSoundPermission();
-                        }
-                        
-                        // Update icon
-                        const icon = soundToggle.querySelector('i');
-                        if (icon) {
-                            icon.className = `fas ${soundEnabled ? 'fa-volume-up' : 'fa-volume-mute'} me-2`;
-                        }
-                        
-                        // Update text
-                        const span = soundToggle.querySelector('span');
-                        if (span) {
-                            span.textContent = `Sound: ${soundEnabled ? 'On' : 'Off'}`;
-                        }
-                        
-                        // If disabled, stop any playing sound
-                        if (!soundEnabled && notificationSound && !notificationSound.paused) {
-                            notificationSound.pause();
-                            notificationSound.currentTime = 0;
+
+            // Mark user interaction for sound playback
+            const enableSound = () => {
+                if (!hasUserInteracted) {
+                    hasUserInteracted = true;
+                    console.log('User interaction detected, sound notifications enabled');
+                    // Check in-progress reports again after user interaction
+                    checkInProgressReports();
+                }
+            };
+
+            document.addEventListener('click', enableSound, { once: true });
+            document.addEventListener('keydown', enableSound, { once: true });
+
+            // Preload the sound
+            const sound = document.getElementById('notificationSound');
+            if (sound) {
+                sound.load();
+                console.log('Sound file preloaded');
+            }
+        });
+
+        // Update SignalR initialization with improved event handlers
+        async function initializeSignalR() {
+            if (isInitialized || isConnecting) return;
+            isConnecting = true;
+
+            try {
+                if (!connection) {
+                    connection = new signalR.HubConnectionBuilder()
+                        .withUrl("/communityHub")
+                        .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
+                        .configureLogging(signalR.LogLevel.Information)
+                        .build();
+
+                    // Handle connection state changes
+                    connection.onreconnecting(error => {
+                        console.log('SignalR Reconnecting:', error);
+                        handleNotification('Connection lost. Attempting to reconnect...', 'warning', false);
+                    });
+
+                    connection.onreconnected(connectionId => {
+                        console.log('SignalR Reconnected:', connectionId);
+                        handleNotification('Connection restored', 'success', false);
+                        // Rejoin user group after reconnection
+                        const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                        if (userId) {
+                            connection.invoke("JoinUserGroup", userId)
+                                .catch(err => console.error('Error rejoining group:', err));
                         }
                     });
+
+                    connection.onclose(error => {
+                        console.log('SignalR Connection Closed:', error);
+                        if (retryCount < maxRetries) {
+                            retryCount++;
+                            setTimeout(initializeSignalR, 5000);
+                        } else {
+                            handleNotification('Connection lost. Please refresh the page.', 'error', false);
+                        }
+                    });
+
+                    // Define client methods that the server can call
+                    connection.on("JoinedGroup", (groupId) => {
+                        console.log('Joined group:', groupId);
+                    });
+
+                    connection.on("NewReportAssigned", async (reportId, reportTitle) => {
+                        console.log('New report assigned:', reportId, reportTitle);
+                        // Dispatch custom event
+                        document.dispatchEvent(new CustomEvent('reportAssigned', {
+                            detail: { reportId, reportTitle }
+                        }));
+                        // Show notification and play sound
+                        await handleNotification(`New report assigned: ${reportTitle}`, 'info', true);
+                    });
+
+                    connection.on("ReportStatusUpdated", (reportId, status, reportTitle) => {
+                        console.log('Report status updated:', reportId, status, reportTitle);
+                        // Dispatch custom event
+                        document.dispatchEvent(new CustomEvent('reportStatusUpdated', {
+                            detail: { reportId, status, reportTitle }
+                        }));
+                        // Show notification without sound for status updates
+                        handleNotification(`Report "${reportTitle}" status updated to ${status}`, 'info', false);
+                    });
+
+                    connection.on("NewIncidentReport", async (reportId, reportTitle) => {
+                        console.log('New incident report:', reportId, reportTitle);
+                        // Dispatch custom event
+                        document.dispatchEvent(new CustomEvent('newIncidentReport', {
+                            detail: { reportId, reportTitle }
+                        }));
+                        // Show notification and play sound
+                        await handleNotification(`New incident report: ${reportTitle}`, 'info', true);
+                    });
+
+                    connection.on("NotificationReceived", async (notification) => {
+                        console.log('Notification received:', notification);
+                        // Show notification and play sound for important notifications
+                        await handleNotification(
+                            notification.message, 
+                            notification.notificationType || 'info',
+                            notification.notificationType === 'warning' || 
+                            notification.notificationType === 'error' || 
+                            notification.notificationType === 'info'
+                        );
+                    });
                 }
-            }
-            
-            // Ask for permission on initial load if needed
-            if (soundEnabled && !soundPermissionGranted) {
-                askSoundPermission();
-            }
-            
-            // Helper functions for notification indicator
-            function showNotificationBadge(count) {
-                // Select all nav items that should show notifications
-                const reportsNavItem = document.querySelector('.nav-item[href*="ManageReports"]');
-                if (reportsNavItem) {
-                    // Check if badge already exists
-                    let badge = reportsNavItem.querySelector('.notification-badge');
-                    if (!badge) {
-                        badge = document.createElement('span');
-                        badge.className = 'notification-badge';
-                        reportsNavItem.appendChild(badge);
-                    }
-                    badge.textContent = count;
-                    badge.style.display = 'flex';
+
+                await connection.start();
+                console.log('SignalR Connected');
+
+                // Join user group
+                const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                if (userId) {
+                    await connection.invoke("JoinUserGroup", userId);
+                    console.log('Joined user group:', userId);
                 }
+
+                isInitialized = true;
+                retryCount = 0;
+
+                // Check for in-progress reports after connection
+                await checkInProgressReports();
+
+            } catch (err) {
+                console.error('SignalR Connection Error:', err);
+                isConnecting = false;
+                if (retryCount < maxRetries) {
+                    retryCount++;
+                    setTimeout(initializeSignalR, 5000);
+                } else {
+                    handleNotification('Failed to establish real-time connection. Please refresh the page.', 'error', false);
+                }
+            } finally {
+                isConnecting = false;
             }
-            
-            function hideNotificationBadge() {
-                const badges = document.querySelectorAll('.notification-badge');
-                badges.forEach(badge => {
-                    badge.style.display = 'none';
-                });
+        }
+
+        // Initialize SignalR when the document is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSignalR();
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (connection) {
+                connection.stop();
             }
-            
-            // Initial check and start periodic checking
-            checkInProgressReports();
-            setInterval(checkInProgressReports, 30000); // Check every 30 seconds
         });
     </script>
     
+    <!-- Add toast container -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- Notification Badge Styles -->
     <style>
         /* Notification Badge Styles */
         .notification-badge {
@@ -806,8 +972,6 @@
             box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
             animation: pulse 2s infinite;
         }
-        
-        /* Define the pulse animation in an external CSS file */
         
         /* Toggle Switch Styles */
         .switch {
@@ -866,5 +1030,30 @@
             border-radius: 50%;
         }
     </style>
+    
+    <!-- Add logout confirmation script -->
+    <script>
+        // Logout confirmation handling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all logout buttons
+            const logoutBtns = document.querySelectorAll('[data-logout-trigger]');
+            const logoutModal = new bootstrap.Modal(document.getElementById('logoutConfirmModal'));
+            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+            const logoutForm = document.getElementById('logoutForm');
+            
+            // Add click event to all logout buttons
+            logoutBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logoutModal.show();
+                });
+            });
+            
+            // Confirm logout button event
+            confirmLogoutBtn.addEventListener('click', function() {
+                logoutForm.submit();
+            });
+        });
+    </script>
 </body>
 </html> 

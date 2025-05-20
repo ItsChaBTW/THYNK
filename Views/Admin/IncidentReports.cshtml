@@ -35,7 +35,7 @@
         <div class="row mb-3">
             <div class="col-md-6">
                 <form method="get" class="d-flex">
-                    <input type="text" name="search" class="form-control me-2" placeholder="Search reports..." value="@Context.Request.Query["search"]" />
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search by incident type (e.g. Flood, Fire, Earthquake, Landslide, Storm, Accident, Other)..." value="@ViewBag.CurrentSearch" />
                     <button type="submit" class="btn btn-primary">Search</button>
                 </form>
             </div>
@@ -49,6 +49,34 @@
                 </div>
             </div>
         </div>
+
+        @if (ViewBag.CurrentFilter == THYNK.Models.ReportStatus.InProgress)
+        {
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card bg-light">
+                        <div class="card-body py-2">
+                            <p class="mb-1"><strong>Priority Filters:</strong> Filter In Progress reports by severity level</p>
+                            <div class="btn-group btn-group-sm">
+                                <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.InProgress })" class="btn @(ViewBag.CurrentSeverity == null ? "btn-dark" : "btn-outline-dark")">All Severity Levels</a>
+                                <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.InProgress, severity = "Critical" })" class="btn @(ViewBag.CurrentSeverity == "Critical" ? "btn-dark" : "btn-outline-dark")">
+                                    <span class="badge bg-dark me-1">1</span> Critical
+                                </a>
+                                <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.InProgress, severity = "High" })" class="btn @(ViewBag.CurrentSeverity == "High" ? "btn-danger" : "btn-outline-danger")">
+                                    <span class="badge bg-danger me-1">2</span> High
+                                </a>
+                                <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.InProgress, severity = "Medium" })" class="btn @(ViewBag.CurrentSeverity == "Medium" ? "btn-warning" : "btn-outline-warning")">
+                                    <span class="badge bg-warning me-1">3</span> Medium
+                                </a>
+                                <a href="@Url.Action("IncidentReports", "Admin", new { status = THYNK.Models.ReportStatus.InProgress, severity = "Low" })" class="btn @(ViewBag.CurrentSeverity == "Low" ? "btn-info" : "btn-outline-info")">
+                                    <span class="badge bg-info me-1">4</span> Low
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
 
         @if (!Model.Any())
         {

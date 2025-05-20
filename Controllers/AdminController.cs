@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR;
 using THYNK.Hubs;
 using System.Security.Claims;
+using TimeZoneConverter;
 
 namespace THYNK.Controllers
 {
@@ -28,6 +29,7 @@ namespace THYNK.Controllers
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<AdminController> _logger;
         private readonly IHubContext<AdminHub> _hubContext;
+        private readonly IHubContext<CommunityHub> _communityHubContext;
 
         public AdminController(
             ApplicationDbContext context, 
@@ -36,7 +38,8 @@ namespace THYNK.Controllers
             IEmailSender emailSender,
             IWebHostEnvironment webHostEnvironment,
             ILogger<AdminController> logger,
-            IHubContext<AdminHub> hubContext)
+            IHubContext<AdminHub> hubContext,
+            IHubContext<CommunityHub> communityHubContext)
         {
             _context = context;
             _userManager = userManager;
@@ -45,6 +48,7 @@ namespace THYNK.Controllers
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
             _hubContext = hubContext;
+            _communityHubContext = communityHubContext;
         }
 
         private async Task UpdateDashboardStats()
@@ -54,6 +58,12 @@ namespace THYNK.Controllers
             var pendingPostsCount = await _context.CommunityUpdates.CountAsync(p => p.ModerationStatus == ModerationStatus.Pending);
 
             await _hubContext.Clients.All.SendAsync("ReceiveDashboardStats", pendingLGUCount, pendingReportsCount, pendingPostsCount);
+        }
+
+        private DateTime GetPhilippineTime()
+        {
+            var phTimeZone = TZConvert.GetTimeZoneInfo("Asia/Manila");
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, phTimeZone);
         }
 
         // Dashboard
@@ -320,8 +330,14 @@ namespace THYNK.Controllers
 
         #region Incident Report Oversight
 
+        // Redirect Reports to IncidentReports
+        public IActionResult Reports()
+        {
+            return RedirectToAction("IncidentReports");
+        }
+
         // View all reports
-        public async Task<IActionResult> IncidentReports(ReportStatus? status = null)
+        public async Task<IActionResult> IncidentReports(ReportStatus? status = null, string severity = null, DisasterType? type = null, string search = null)
         {
             IQueryable<DisasterReport> reportsQuery = _context.DisasterReports;
             
@@ -329,10 +345,52 @@ namespace THYNK.Controllers
             {
                 reportsQuery = reportsQuery.Where(r => r.Status == status.Value);
             }
+
+            if (type.HasValue)
+            {
+                reportsQuery = reportsQuery.Where(r => r.Type == type.Value);
+            }
             
-            var reports = await reportsQuery
-                .OrderByDescending(r => r.DateReported)
-                .ToListAsync();
+            // Handle search
+            if (!string.IsNullOrEmpty(search))
+            {
+                search = search.ToLower();
+                // Try to parse the search term as a disaster type
+                if (Enum.TryParse<DisasterType>(search, true, out var disasterType))
+                {
+                    reportsQuery = reportsQuery.Where(r => r.Type == disasterType);
+                }
+                else
+                {
+                    // If not a valid disaster type, return no results
+                    reportsQuery = reportsQuery.Where(r => false);
+                }
+            }
+            
+            // Special handling for InProgress reports with severity filtering
+            if (status == ReportStatus.InProgress)
+            {
+                if (severity != null)
+                {
+                    if (Enum.TryParse<SeverityLevel>(severity, out var severityLevel))
+                    {
+                        reportsQuery = reportsQuery.Where(r => r.Severity == severityLevel);
+                    }
+                }
+                
+                // Order by severity (Critical first, then High, Medium, Low)
+                reportsQuery = reportsQuery.OrderBy(r => r.Severity == SeverityLevel.Critical ? 0 :
+                                              r.Severity == SeverityLevel.High ? 1 :
+                                              r.Severity == SeverityLevel.Medium ? 2 : 3)
+                                        .ThenByDescending(r => r.DateReported);
+            }
+            else
+            {
+                // For other statuses, use the default ordering
+                reportsQuery = reportsQuery.OrderByDescending(r => r.DateReported);
+            }
+            
+            var reports = await reportsQuery.ToListAsync();
                 
             // Get available LGU/SLU users for assignment
             ViewBag.AvailableUsers = await _context.Users
@@ -341,6 +399,9 @@ namespace THYNK.Controllers
                 .ToListAsync();
                 
             ViewBag.CurrentFilter = status;
+            ViewBag.CurrentSeverity = severity;
+            ViewBag.CurrentType = type;
+            ViewBag.CurrentSearch = search;
             return View(reports);
         }
 
@@ -385,26 +446,211 @@ namespace THYNK.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyReport(int id)
         {
-            var report = await _context.DisasterReports.FindAsync(id);
+            var report = await _context.DisasterReports
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
             if (report == null)
             {
                 return NotFound();
             }
 
             report.Status = ReportStatus.Verified;
+            report.DateVerified = GetPhilippineTime();
             await _context.SaveChangesAsync();
 
             // Update dashboard stats
             await UpdateDashboardStats();
 
-            // Notify clients about the report update
+            // Notify admin clients about the report update
             await _hubContext.Clients.All.SendAsync("ReportUpdated", id, "Verified");
 
-            // Send real-time update for Recent Reports
-            await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
+            // Send real-time update for Recent Reports in admin dashboard
+            await _hubContext.Clients.All.SendAsync("RefreshRecentReports");
 
-            TempData["SuccessMessage"] = "Report has been verified successfully.";
-            return RedirectToAction(nameof(ReportDetails), new { id });
+            // Send notification to the report owner
+            if (report.User != null)
+            {
+                // Create a notification
+                var notification = new UserNotification
+                {
+                    UserId = report.UserId,
+                    Title = "Report Verified",
+                    Message = $"Your report '{report.Title}' has been verified and is now being processed.",
+                    NotificationType = "success",
+                    RelatedEntityId = report.Id,
+                    RelatedEntityType = "Report",
+                    IsRead = false,
+                    CreatedAt = GetPhilippineTime()
+                };
+
+                _context.UserNotifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Push notification to user's browser
+                await _hubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("NotificationReceived", notification);
+
+                // Send report status update notification
+                await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("ReportStatusUpdated", report.Id, "Verified", report.Title);
+            }
+
+            // Return to reports list
+            return RedirectToAction("IncidentReports");
+        }
+
+        // Update report status
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateReportStatus(int id, ReportStatus status, string? assignedTo)
+        {
+            var report = await _context.DisasterReports
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (report == null)
+            {
+                return NotFound();
+            }
+
+            report.Status = status;
+            string notificationTitle = "";
+            string notificationMessage = "";
+            string notificationType = "info";
+
+            // Set assigned user if provided
+            if (!string.IsNullOrEmpty(assignedTo))
+            {
+                report.AssignedToId = assignedTo;
+                report.AssignedAt = GetPhilippineTime();
+                notificationTitle = "Report Assigned";
+                notificationMessage = $"Your report '{report.Title}' has been assigned to local authorities.";
+                notificationType = "info";
+            }
+
+            // Update timestamp and notification based on status
+            switch (status)
+            {
+                case ReportStatus.InProgress:
+                    report.DateInProgress = GetPhilippineTime();
+                    notificationTitle = "Report In Progress";
+                    notificationMessage = $"Your report '{report.Title}' is now being addressed by local authorities.";
+                    notificationType = "info";
+                    break;
+
+                case ReportStatus.Resolved:
+                    report.ResolvedAt = GetPhilippineTime();
+                    notificationTitle = "Report Resolved";
+                    notificationMessage = $"Your report '{report.Title}' has been successfully resolved.";
+                    notificationType = "success";
+                    break;
+
+                case ReportStatus.Verified:
+                    report.DateVerified = GetPhilippineTime();
+                    notificationTitle = "Report Verified";
+                    notificationMessage = $"Your report '{report.Title}' has been verified and is now being processed.";
+                    notificationType = "success";
+                    break;
+            }
+
+            // Create notification if we have a title and message
+            if (!string.IsNullOrEmpty(notificationTitle) && report.User != null)
+            {
+                var notification = new UserNotification
+                {
+                    UserId = report.UserId,
+                    Title = notificationTitle,
+                    Message = notificationMessage,
+                    NotificationType = notificationType,
+                    RelatedEntityId = report.Id,
+                    RelatedEntityType = "Report",
+                    IsRead = false,
+                    CreatedAt = GetPhilippineTime()
+                };
+
+                _context.UserNotifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Push notification to user's browser
+                await _hubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("NotificationReceived", notification);
+
+                // Send report status update notification
+                await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("ReportStatusUpdated", report.Id, status.ToString(), report.Title);
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Update dashboard stats
+            await UpdateDashboardStats();
+
+            // Notify admin clients about the report update
+            await _hubContext.Clients.All.SendAsync("ReportUpdated", id, status.ToString());
+
+            // Send real-time update for Recent Reports
+            await _hubContext.Clients.All.SendAsync("RefreshRecentReports");
+
+            return RedirectToAction("IncidentReports");
+        }
+
+        // Resolve reported incident
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResolveReport(int id, string resolution)
+        {
+            var report = await _context.DisasterReports
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (report == null)
+            {
+                return NotFound();
+            }
+
+            report.Status = ReportStatus.Resolved;
+            report.Resolution = resolution;
+            report.ResolvedAt = GetPhilippineTime();
+            await _context.SaveChangesAsync();
+
+            // Update dashboard stats
+            await UpdateDashboardStats();
+
+            // Notify admin clients about the report update
+            await _hubContext.Clients.All.SendAsync("ReportUpdated", id, "Resolved");
+
+            // Send real-time update for Recent Reports
+            await _hubContext.Clients.All.SendAsync("RefreshRecentReports");
+
+            // Create notification for report resolution
+            if (report.User != null)
+            {
+                var notification = new UserNotification
+                {
+                    UserId = report.UserId,
+                    Title = "Report Resolved",
+                    Message = $"Your report '{report.Title}' has been successfully resolved.",
+                    NotificationType = "success",
+                    RelatedEntityId = report.Id,
+                    RelatedEntityType = "Report",
+                    IsRead = false,
+                    CreatedAt = GetPhilippineTime()
+                };
+
+                _context.UserNotifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Push notification to user's browser
+                await _hubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("NotificationReceived", notification);
+
+                // Send report status update notification
+                await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("ReportStatusUpdated", report.Id, "Resolved", report.Title);
+            }
+
+            // Return to reports list
+            return RedirectToAction("IncidentReports");
         }
 
         // Decline incident report
@@ -482,41 +728,83 @@ namespace THYNK.Controllers
             
             report.AssignedToId = lguId;
             report.Status = ReportStatus.InProgress;
+            report.DateInProgress = GetPhilippineTime();
             await _context.SaveChangesAsync();
 
-            // Send notification email
-            if (lguUser != null)
+            // Create notification for the report owner
+            if (report.User != null)
             {
-                try
+                var ownerNotification = new UserNotification
                 {
-                    await _emailSender.SendEmailAsync(
-                        lguUser.Email,
-                        "THYNK - New Incident Report Assigned",
-                        $"Dear {lguUser.FirstName},<br><br>A new incident report has been assigned to your organization.<br><br>" +
-                        $"Title: {report.Title}<br>" +
-                        $"Type: {report.Type}<br>" +
-                        $"Location: {report.Barangay}, {report.City}<br><br>" +
-                        "Please review and take appropriate action.<br><br>" +
-                        "Best regards,<br>THYNK Administration Team"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Failed to send assignment notification email: {ex.Message}");
-                }
+                    UserId = report.UserId,
+                    Title = "Report Assigned",
+                    Message = $"Your report '{report.Title}' has been assigned to {lguUser.OrganizationName} and is now being processed.",
+                    NotificationType = "info",
+                    RelatedEntityId = report.Id,
+                    RelatedEntityType = "Report",
+                    IsRead = false,
+                    CreatedAt = GetPhilippineTime()
+                };
+
+                _context.UserNotifications.Add(ownerNotification);
+                await _context.SaveChangesAsync();
+
+                // Send real-time notification to report owner
+                await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("NotificationReceived", ownerNotification);
+                await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("ReportStatusUpdated", report.Id, "InProgress", report.Title);
+            }
+
+            // Create notification for the LGU user
+            var lguNotification = new UserNotification
+            {
+                UserId = lguId,
+                Title = "New Report Assignment",
+                Message = $"You have been assigned to handle the report '{report.Title}'.",
+                NotificationType = "info",
+                RelatedEntityId = report.Id,
+                RelatedEntityType = "Report",
+                IsRead = false,
+                CreatedAt = GetPhilippineTime()
+            };
+
+            _context.UserNotifications.Add(lguNotification);
+            await _context.SaveChangesAsync();
+
+            // Send real-time notification to LGU user
+            await _communityHubContext.Clients.Group($"user_{lguId}")
+                .SendAsync("NotificationReceived", lguNotification);
+
+            // Notify LGU about the new report assignment using the new hub method
+            await _communityHubContext.Clients.Group($"user_{lguId}")
+                .SendAsync("NewReportAssigned", report);
+
+            // Send email notification to LGU
+            try
+            {
+                await _emailSender.SendEmailAsync(
+                    lguUser.Email,
+                    "THYNK - New Incident Report Assigned",
+                    $"Dear {lguUser.FirstName},<br><br>A new incident report has been assigned to your organization.<br><br>" +
+                    $"Title: {report.Title}<br>" +
+                    $"Type: {report.Type}<br>" +
+                    $"Location: {report.Barangay}, {report.City}<br><br>" +
+                    "Please review and take appropriate action.<br><br>" +
+                    "Best regards,<br>THYNK Administration Team"
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to send assignment notification email: {ex.Message}");
             }
 
             // Update dashboard stats
             await UpdateDashboardStats();
 
-            // Notify clients about the report update
+            // Notify all clients about the report update
             await _hubContext.Clients.All.SendAsync("ReportUpdated", id, "InProgress");
-
-            // Send real-time update for Recent Reports
             await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
-
-            // Send notification to the assigned LGU
-            await _hubContext.Clients.All.SendAsync("ReportAssigned", ToRecentReportDto(report));
 
             TempData["SuccessMessage"] = "Report has been assigned to the LGU/SLU successfully.";
             return RedirectToAction(nameof(IncidentReports));
@@ -603,6 +891,42 @@ namespace THYNK.Controllers
                 // Notify clients about the post update
                 await _hubContext.Clients.All.SendAsync("PostUpdated", postId, true);
 
+                // Send notification to the post author
+                if (post.User != null)
+                {
+                    await _communityHubContext.Clients.Group($"user_{post.UserId}")
+                        .SendAsync("PostModerationUpdate", new {
+                            postId = post.Id,
+                            isApproved = true,
+                            timestamp = GetPhilippineTime()
+                        });
+
+                    // Create a notification record
+                    var notification = new UserNotification
+                    {
+                        UserId = post.UserId,
+                        Title = "Post Approved",
+                        Message = "Your community post has been approved and is now visible in the community feed.",
+                        NotificationType = "success",
+                        RelatedEntityId = post.Id,
+                        RelatedEntityType = "CommunityPost",
+                        CreatedAt = GetPhilippineTime(),
+                        IsRead = false
+                    };
+                    _context.UserNotifications.Add(notification);
+                    await _context.SaveChangesAsync();
+
+                    // Send real-time notification
+                    await _communityHubContext.Clients.Group($"user_{post.UserId}")
+                        .SendAsync("NotificationReceived", new {
+                            id = notification.Id,
+                            title = notification.Title,
+                            message = notification.Message,
+                            type = notification.NotificationType,
+                            createdAt = notification.CreatedAt.ToLocalTime()
+                        });
+                }
+
                 TempData["SuccessMessage"] = "Post has been approved and is now visible in the community feed.";
             }
             else if (action == "reject")
@@ -612,6 +936,40 @@ namespace THYNK.Controllers
                 // Send rejection notification
                 if (post.User != null)
                 {
+                    // Send real-time notification
+                    await _communityHubContext.Clients.Group($"user_{post.UserId}")
+                        .SendAsync("PostModerationUpdate", new {
+                            postId = post.Id,
+                            isApproved = false,
+                            reason = rejectionReason,
+                            timestamp = GetPhilippineTime()
+                        });
+
+                    // Create a notification record
+                    var notification = new UserNotification
+                    {
+                        UserId = post.UserId,
+                        Title = "Post Rejected",
+                        Message = $"Your community post has been rejected. Reason: {rejectionReason}",
+                        NotificationType = "warning",
+                        RelatedEntityId = post.Id,
+                        RelatedEntityType = "CommunityPost",
+                        CreatedAt = GetPhilippineTime(),
+                        IsRead = false
+                    };
+                    _context.UserNotifications.Add(notification);
+                    await _context.SaveChangesAsync();
+
+                    // Send real-time notification
+                    await _communityHubContext.Clients.Group($"user_{post.UserId}")
+                        .SendAsync("NotificationReceived", new {
+                            id = notification.Id,
+                            title = notification.Title,
+                            message = notification.Message,
+                            type = notification.NotificationType,
+                            createdAt = notification.CreatedAt.ToLocalTime()
+                        });
+
                     try
                     {
                         await _emailSender.SendEmailAsync(
@@ -661,7 +1019,7 @@ namespace THYNK.Controllers
         {
             if (ModelState.IsValid)
             {
-                alert.DateIssued = DateTime.Now;
+                alert.DateIssued = GetPhilippineTime();
                 alert.IsActive = true;
                 
                 _context.Add(alert);
@@ -698,7 +1056,7 @@ namespace THYNK.Controllers
             }
             
             alert.IsActive = false;
-            alert.ExpiresAt = DateTime.Now;
+            alert.ExpiresAt = GetPhilippineTime();
             
             _context.Update(alert);
             await _context.SaveChangesAsync();
@@ -797,7 +1155,7 @@ namespace THYNK.Controllers
             
             // Update status
             resource.ApprovalStatus = ApprovalStatus.Approved;
-            resource.ApprovedDate = DateTime.Now;
+            resource.ApprovedDate = GetPhilippineTime();
             resource.RejectionReason = null;
             
             // Save changes

@@ -22,6 +22,15 @@ namespace THYNK.Models
         [Required]
         public required DateTime DateReported { get; set; } = DateTime.Now;
 
+        // When the report was verified
+        public DateTime? DateVerified { get; set; }
+        
+        // When the report was marked as in progress
+        public DateTime? DateInProgress { get; set; }
+
+        // Whether the report was submitted anonymously
+        public bool IsAnonymous { get; set; } = false;
+
         [Required]
         public required string Location { get; set; }
 
@@ -72,6 +81,13 @@ namespace THYNK.Models
         
         // When the report was resolved
         public DateTime? ResolvedAt { get; set; }
+
+        // Resolution details
+        public string? Resolution { get; set; }
+        
+        // Alias for ResolvedAt to maintain compatibility
+        [NotMapped]
+        public DateTime? DateResolved => ResolvedAt;
     }
 
     public enum DisasterType

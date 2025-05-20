@@ -1,4 +1,5 @@
 @model IEnumerable<THYNK.Models.DisasterReport>
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Manage Reports";
     Layout = "_LGULayout";
@@ -545,6 +546,202 @@
             max-height: calc(100vh - 300px);
         }
     }
+
+    .highlight-new {
+        animation: highlight 2s ease-in-out;
+    }
+
+    @@keyframes highlight {
+        0% { background-color: rgba(255, 193, 7, 0.2); }
+        100% { background-color: transparent; }
+    }
+
+    .table-container {
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    tr[data-report-id] {
+        transition: background-color 0.3s ease-in-out;
+    }
+
+    /* Priority section headers */
+    .priority-section-header {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    
+    .priority-section-title {
+        font-weight: 500;
+        color: var(--dark);
+        padding: 0.75rem 1.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .empty-category-message {
+        text-align: center;
+        padding: 1.5rem;
+        color: var(--dark-alt);
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+    
+    /* Priority section specific styles */
+    tr[data-priority="critical"] {
+        border-left: 3px solid #dc3545;
+    }
+    
+    tr[data-priority="high"] {
+        border-left: 3px solid #fd7e14;
+    }
+    
+    tr[data-priority="medium"] {
+        border-left: 3px solid #ffc107;
+    }
+    
+    tr[data-priority="low"] {
+        border-left: 3px solid #0dcaf0;
+    }
+    
+    /* Styling for the priority section headers */
+    .priority-section-header:nth-of-type(1) {
+        background-color: rgba(220, 53, 69, 0.05);
+        border-left: 3px solid #dc3545;
+    }
+    
+    .priority-section-header:nth-of-type(3) {
+        background-color: rgba(253, 126, 20, 0.05);
+        border-left: 3px solid #fd7e14;
+    }
+    
+    .priority-section-header:nth-of-type(5) {
+        background-color: rgba(255, 193, 7, 0.05);
+        border-left: 3px solid #ffc107;
+    }
+    
+    .priority-section-header:nth-of-type(7) {
+        background-color: rgba(13, 202, 240, 0.05);
+        border-left: 3px solid #0dcaf0;
+    }
+    
+    /* Enhanced priority view styles */
+    .priority-view .priority-section-header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .priority-view .priority-section-header:nth-of-type(1) {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    .priority-view .priority-section-header:nth-of-type(3) {
+        background-color: rgba(253, 126, 20, 0.1);
+    }
+    
+    .priority-view .priority-section-header:nth-of-type(5) {
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+    
+    .priority-view .priority-section-header:nth-of-type(7) {
+        background-color: rgba(13, 202, 240, 0.1);
+    }
+    
+    .priority-view tr[data-priority] {
+        transition: all 0.3s ease;
+    }
+    
+    .sort-indicator {
+        font-size: 0.65rem;
+        background-color: rgba(255, 255, 255, 0.25);
+        color: rgba(0, 0, 0, 0.7);
+        padding: 0.25rem 0.5rem;
+        border-radius: 3px;
+        margin-left: 0.75rem;
+        font-weight: normal;
+        vertical-align: middle;
+    }
+    
+    .priority-section-header:nth-of-type(1) .sort-indicator {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    .priority-section-header:nth-of-type(3) .sort-indicator {
+        background-color: rgba(253, 126, 20, 0.1);
+    }
+    
+    .priority-section-header:nth-of-type(5) .sort-indicator {
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+    
+    .priority-section-header:nth-of-type(7) .sort-indicator {
+        background-color: rgba(13, 202, 240, 0.1);
+    }
+
+    /* Severity view specific styles */
+    .severity-view tr[data-priority="critical"] {
+        background-color: rgba(220, 53, 69, 0.03);
+        border-left: 3px solid #dc3545;
+    }
+    
+    .severity-view tr[data-priority="high"] {
+        background-color: rgba(253, 126, 20, 0.03);
+        border-left: 3px solid #fd7e14;
+    }
+    
+    .severity-view tr[data-priority="medium"] {
+        background-color: rgba(255, 193, 7, 0.03);
+        border-left: 3px solid #ffc107;
+    }
+    
+    .severity-view tr[data-priority="low"] {
+        background-color: rgba(13, 202, 240, 0.03);
+        border-left: 3px solid #0dcaf0;
+    }
+    
+    /* Severity level badges */
+    .severity-view .severity-badge.bg-dark::before {
+        content: "Critical "; 
+        font-weight: bold;
+    }
+    
+    .severity-view .severity-badge.bg-danger::before {
+        content: "High ";
+        font-weight: bold;
+    }
+    
+    .severity-view .severity-badge.bg-warning::before {
+        content: "Medium ";
+        font-weight: bold;
+    }
+    
+    .severity-view .severity-badge.bg-info::before {
+        content: "Low ";
+        font-weight: bold;
+    }
+
+    .priority-notice {
+        background-color: rgba(13, 110, 253, 0.05);
+        border-left: 3px solid #0d6efd;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        color: var(--dark-alt);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    .priority-notice i {
+        color: #0d6efd;
+    }
+    
+    .priority-notice .badge {
+        margin-left: 5px;
+    }
 </style>
 
 <div class="reports-container">
@@ -559,11 +756,23 @@
         <i class="fas fa-info-circle me-2"></i> As an LGU/SLU, your role is to respond to and manage incident reports assigned to your department.
     </div>
     
+    @if (ViewBag.CurrentFilter != null && ViewBag.CurrentFilter.ToString() == "InProgress")
+    {
+        <div class="priority-notice">
+            <i class="fas fa-sort-amount-down-alt me-2"></i>
+            <strong>Priority Order:</strong> Incidents are automatically sorted by severity level regardless of when they were reported:
+            <span class="badge bg-dark">1. Critical</span>
+            <span class="badge bg-danger">2. High</span>
+            <span class="badge bg-warning">3. Medium</span>
+            <span class="badge bg-info">4. Low</span>
+        </div>
+    }
+    
     <div class="controls-section">
         <div class="controls-row">
             <div class="filter-group">
                 <a href="@Url.Action("ManageReports", "LGU")" class="filter-link @(ViewBag.CurrentFilter == null ? "active" : "")">All</a>
-                <a href="@Url.Action("ManageReports", "LGU", new { status = THYNK.Models.ReportStatus.InProgress })" class="filter-link @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.InProgress ? "active" : "")">In Progress</a>
+                <a href="@Url.Action("ManageReports", "LGU", new { status = THYNK.Models.ReportStatus.InProgress })" class="filter-link @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.InProgress && ViewBag.IsPrioritySorted != true ? "active" : "")">In Progress/Priority</a>
                 <a href="@Url.Action("ManageReports", "LGU", new { status = THYNK.Models.ReportStatus.Resolved })" class="filter-link @(ViewBag.CurrentFilter == THYNK.Models.ReportStatus.Resolved ? "active" : "")">Resolved</a>
             </div>
             
@@ -609,9 +818,9 @@
                                     <span class="badge bg-secondary">@report.Type</span>
                                 </td>
                                 <td>
-                                    <span class="badge severity-badge @(report.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
-                                                       report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
-                                                       report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                                    <span class="badge severity-badge @(report.Severity == THYNK.Models.SeverityLevel.Critical ? "bg-dark" : 
+                                                                   report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : 
+                                                                   report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : "bg-info")">
                                         @report.Severity
                                     </span>
                                 </td>
@@ -619,19 +828,19 @@
                                 <td class="date-cell">@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
                                 <td>
                                     <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
-                                                       report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
-                                                       report.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
-                                                       report.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                                                   report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
+                                                   report.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
+                                                   report.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
                                         @report.Status
                                     </span>
                                 </td>
                                 <td class="actions-cell">
                                     <a href="@Url.Action("ReportDetails", "LGU", new { id = report.Id })" class="action-button action-view">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
                                     <button type="button" class="action-button action-update" data-bs-toggle="modal" data-bs-target="#updateStatusModal@(report.Id)">
-                                            <i class="fas fa-edit"></i> Update
-                                        </button>
+                                        <i class="fas fa-edit"></i> Update
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -680,3 +889,391 @@
                                 </div>
                             </div>
                         }
+
+@section Scripts {
+    <script>
+        // Function to reload the reports table with a fade effect
+        async function reloadReportsTable() {
+            const container = document.querySelector('.table-container');
+            if (!container) {
+                console.error('Table container not found');
+                return;
+            }
+
+            try {
+                // Get current filter values from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const status = urlParams.get('status') || '';
+                const search = urlParams.get('search') || '';
+                const priority = urlParams.get('priority') || '';
+
+                // Show loading state
+                container.style.opacity = '0.5';
+                container.style.pointerEvents = 'none';
+
+                // Fetch updated table content
+                // Controller Implementation Note:
+                // public async Task<IActionResult> ManageReports(string status, string search, string priority)
+                // {
+                //     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                //     var reports = await _context.DisasterReports
+                //                    .Where(r => r.AssignedDepartmentId == CurrentUserDepartmentId)
+                //                    .ToListAsync();
+                //
+                //     // Apply status filter if specified
+                //     if (!string.IsNullOrEmpty(status) && Enum.TryParse<ReportStatus>(status, out var statusEnum))
+                //     {
+                //         reports = reports.Where(r => r.Status == statusEnum).ToList();
+                //         ViewBag.CurrentFilter = statusEnum;
+                //     }
+                //
+                //     // Priority-based severity sorting
+                //     if (priority == "severity") 
+                //     {
+                //         ViewBag.IsPrioritySorted = true;
+                //         
+                //         // If no status filter is applied but priority=severity, force InProgress status
+                //         if (string.IsNullOrEmpty(status))
+                //         {
+                //             reports = reports.Where(r => r.Status == ReportStatus.InProgress).ToList();
+                //             ViewBag.CurrentFilter = ReportStatus.InProgress;
+                //         }
+                //         
+                //         // CRITICAL REQUIREMENT: 
+                //         // Always display incidents in strict severity order, regardless of report time:
+                //         //   1. Critical incidents ALWAYS first (even if older)
+                //         //   2. High incidents ALWAYS second (even if older)
+                //         //   3. Medium incidents ALWAYS third (even if older)
+                //         //   4. Low incidents ALWAYS last (even if older)
+                //         // This ensures newest Medium incidents never appear above older High incidents
+                //         
+                //         reports = reports
+                //                   .OrderBy(r => (int)r.Severity)                  // PRIMARY SORT: by severity level (Critical=0, High=1, Medium=2, Low=3)
+                //                   .ThenByDescending(r => r.DateReported)          // SECONDARY SORT: by date within each severity level
+                //                   .ToList();
+                //         
+                //         // No section headers needed - just a single list sorted by severity
+                //     }
+                //     else 
+                //     {
+                //         // For regular views (not severity-sorted), sort by most recent first
+                //         reports = reports.OrderByDescending(r => r.DateReported).ToList();
+                //     }
+                //     
+                //     return View(reports);
+                // }
+                const response = await fetch(`@Url.Action("GetReportsTable", "LGU")?status=${status}&search=${encodeURIComponent(search)}&priority=${priority}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const html = await response.text();
+                
+                // Create a temporary container to parse the HTML
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = html;
+
+                // Get the table from the response
+                const newTable = tempContainer.querySelector('.reports-table');
+                if (!newTable) {
+                    throw new Error('Table not found in response');
+                }
+
+                // Update the table content with fade effect
+                container.style.opacity = '0';
+                setTimeout(() => {
+                    const currentTable = container.querySelector('.reports-table');
+                    if (currentTable) {
+                        currentTable.replaceWith(newTable);
+                    } else {
+                        container.appendChild(newTable);
+                    }
+                    container.style.opacity = '1';
+
+                    // Add highlight effect to new items
+                    const newRows = container.querySelectorAll('tr[data-report-id]');
+                    newRows.forEach(row => {
+                        row.classList.add('highlight-new');
+                        setTimeout(() => row.classList.remove('highlight-new'), 2000);
+                    });
+                    
+                    // Apply priority view class if using severity filter
+                    if (priority === 'severity') {
+                        container.classList.add('severity-view');
+                    } else {
+                        container.classList.remove('severity-view');
+                    }
+
+                    // Reinitialize action buttons
+                    initializeActionButtons();
+                }, 300);
+
+            } catch (error) {
+                console.error('Error reloading reports table:', error);
+                showToast('Error updating reports', 'error');
+            } finally {
+                // Restore container state
+                container.style.pointerEvents = 'auto';
+            }
+        }
+
+        // Function to initialize action buttons
+        function initializeActionButtons() {
+            // Initialize view buttons
+            document.querySelectorAll('.action-view').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const reportId = e.target.closest('tr').dataset.reportId;
+                    window.location.href = `@Url.Action("ReportDetails", "LGU")/${reportId}`;
+                });
+            });
+
+            // Initialize update status buttons
+            document.querySelectorAll('.action-update').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const reportId = e.target.closest('tr').dataset.reportId;
+                    const modal = document.querySelector(`#updateStatusModal${reportId}`);
+                    if (modal) {
+                        const bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+                    }
+                });
+            });
+
+            // Initialize status update forms
+            document.querySelectorAll('form[asp-action="UpdateReportStatus"]').forEach(form => {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const reportId = form.getAttribute('asp-route-id');
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        // Close the modal
+                        const modal = bootstrap.Modal.getInstance(document.querySelector(`#updateStatusModal${reportId}`));
+                        modal?.hide();
+
+                        // Reload the table
+                        await reloadReportsTable();
+                        showToast('Report status updated successfully', 'success');
+                    } catch (error) {
+                        console.error('Error updating report status:', error);
+                        showToast(error.message || 'Error updating report status', 'error');
+                    }
+                });
+            });
+        }
+
+        // Set up periodic refresh
+        const refreshInterval = setInterval(reloadReportsTable, 30000);
+
+        // Listen for custom events from SignalR
+        document.addEventListener('reportAssigned', (event) => {
+            console.log('Report assigned event received:', event.detail);
+            reloadReportsTable();
+        });
+
+        document.addEventListener('reportStatusUpdated', (event) => {
+            console.log('Report status updated event received:', event.detail);
+            reloadReportsTable();
+        });
+
+        document.addEventListener('newIncidentReport', (event) => {
+            console.log('New incident report event received:', event.detail);
+            reloadReportsTable();
+        });
+
+        // Initialize action buttons on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeActionButtons();
+            reloadReportsTable(); // Initial load
+            
+            // Check if severity filter is active
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('priority') === 'severity') {
+                document.querySelector('.table-container')?.classList.add('severity-view');
+            }
+        });
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            clearInterval(refreshInterval);
+        });
+
+        // Handle filter changes
+        document.querySelectorAll('.filter-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const url = new URL(e.target.closest('a').href);
+                
+                // Preserve search parameter when clicking filter
+                const currentUrl = new URL(window.location.href);
+                const currentSearch = currentUrl.searchParams.get('search');
+                
+                if (currentSearch && !url.searchParams.has('search')) {
+                    url.searchParams.set('search', currentSearch);
+                }
+                
+                window.location.href = url.toString();
+            });
+        });
+
+        // Handle search form submission
+        document.querySelector('.search-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchInput = e.target.querySelector('input[name="search"]');
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('search', searchInput.value);
+            
+            // Preserve status and priority parameters when searching
+            const status = new URLSearchParams(window.location.search).get('status');
+            const priority = new URLSearchParams(window.location.search).get('priority');
+            
+            if (status) {
+                currentUrl.searchParams.set('status', status);
+            }
+            
+            if (priority) {
+                currentUrl.searchParams.set('priority', priority);
+            }
+            
+            window.location.href = currentUrl.toString();
+        });
+    </script>
+
+    <style>
+        .table-container {
+            transition: opacity 0.3s ease;
+        }
+
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        .reports-table th,
+        .reports-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .reports-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .reports-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            margin: 0 0.25rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .action-view {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .action-update {
+            background-color: #198754;
+            color: white;
+        }
+
+        .action-button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .action-button i {
+            margin-right: 0.5rem;
+        }
+
+        .modal-container {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            resize: vertical;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+
+        .btn-cancel:hover,
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        @@keyframes highlight {
+            0% { background-color: #fff3cd; }
+            100% { background-color: transparent; }
+        }
+
+        .highlight-new {
+            animation: highlight 2s ease-out;
+        }
+
+        .severity-badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+        }
+
+        .actions-cell {
+            white-space: nowrap;
+            text-align: right;
+        }
+    </style>
+}

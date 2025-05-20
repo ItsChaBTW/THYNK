@@ -1,89 +1,148 @@
 @model IEnumerable<THYNK.Models.DisasterReport>
-<div class="table-responsive">
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Severity</th>
-                <th>Location</th>
-                <th>Date Reported</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var report in Model)
+
+<table class="reports-table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Type</th>   
+            <th>Severity</th>
+            <th>Location</th>
+            <th>Date Reported</th>
+            <th>Status</th>
+            <th style="text-align: right">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var report in Model)
+        {
+            var priorityNumber = "";
+            var priorityClass = "";
+            
+            if (report.Status == THYNK.Models.ReportStatus.InProgress)
             {
-                <tr>
-                    <td>@report.Title</td>
-                    <td>
-                        <span class="badge bg-secondary">@report.Type</span>
-                    </td>
-                    <td>
-                        <span class="badge @(report.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
-                                           report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
-                                           report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
-                            @report.Severity
-                        </span>
-                    </td>
-                    <td>@(string.IsNullOrEmpty(report.Location) ? "Not specified" : report.Location)</td>
-                    <td>@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
-                    <td>
-                        <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
-                                           report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
-                                           report.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
-                                           report.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
-                            @report.Status
-                        </span>
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            <a href="@Url.Action("ReportDetails", "LGU", new { id = report.Id })" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-eye"></i> View
-                            </a>
-                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#updateStatusModal@(report.Id)">
-                                <i class="fas fa-edit"></i> Update
-                            </button>
+                if (report.Severity == THYNK.Models.SeverityLevel.Critical)
+                {
+                    priorityNumber = "<span class='priority-number'>1</span> ";
+                    priorityClass = "priority-critical";
+                }
+                else if (report.Severity == THYNK.Models.SeverityLevel.High)
+                {
+                    priorityNumber = "<span class='priority-number'>2</span> ";
+                    priorityClass = "priority-high";
+                }
+                else if (report.Severity == THYNK.Models.SeverityLevel.Medium)
+                {
+                    priorityNumber = "<span class='priority-number'>3</span> ";
+                    priorityClass = "priority-medium";
+                }
+                else
+                {
+                    priorityNumber = "<span class='priority-number'>4</span> ";
+                    priorityClass = "priority-low";
+                }
+            }
+
+            <tr data-report-id="@report.Id" class="@priorityClass">
+                <td>@report.Title</td>
+                <td>
+                    <span class="badge bg-secondary">@report.Type</span>
+                </td>
+                <td>
+                    <span class="badge severity-badge @(report.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
+                                       report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
+                                       report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
+                        @Html.Raw(priorityNumber)@report.Severity
+                    </span>
+                </td>
+                <td>@(string.IsNullOrEmpty(report.Location) ? "Not specified" : report.Location)</td>
+                <td class="date-cell">@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
+                <td>
+                    <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
+                                       report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
+                                       report.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
+                                       report.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                        @report.Status
+                    </span>
+                </td>
+                <td class="actions-cell">
+                    <a href="@Url.Action("ReportDetails", "LGU", new { id = report.Id })" class="action-button action-view">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <button type="button" class="action-button action-update" data-bs-toggle="modal" data-bs-target="#updateStatusModal@(report.Id)">
+                        <i class="fas fa-edit"></i> Update
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@foreach (var report in Model)
+{
+    <!-- Status Update Modal -->
+    <div class="modal fade" id="updateStatusModal@(report.Id)" tabindex="-1" aria-labelledby="updateStatusModalLabel@(report.Id)" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content modal-container">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateStatusModalLabel@(report.Id)">Update Report Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-action="UpdateReportStatus" asp-route-id="@report.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="status@(report.Id)" class="form-label">Status</label>
+                            <select id="status@(report.Id)" name="status" class="form-select" required>
+                                @{
+                                    var inProgressSelected = report.Status == THYNK.Models.ReportStatus.InProgress ? "selected" : "";
+                                    var resolvedSelected = report.Status == THYNK.Models.ReportStatus.Resolved ? "selected" : "";
+                                }
+                                @Html.Raw($"<option value=\"2\" {inProgressSelected}>In Progress</option>")
+                                @Html.Raw($"<option value=\"3\" {resolvedSelected}>Resolved</option>")
+                            </select>
                         </div>
-                    </td>
-                </tr>
-                <!-- Status Update Modal -->
-                <div class="modal fade" id="updateStatusModal@(report.Id)" tabindex="-1" aria-labelledby="updateStatusModalLabel@(report.Id)" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="updateStatusModalLabel@(report.Id)">Update Report Status</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <form asp-action="UpdateReportStatus" asp-route-id="@report.Id" method="post">
-                                @Html.AntiForgeryToken()
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label for="status@(report.Id)" class="form-label">Status</label>
-                                        <select id="status@(report.Id)" name="status" class="form-select" required>
-                                            @{
-                                                var inProgressSelected = report.Status == THYNK.Models.ReportStatus.InProgress ? "selected" : "";
-                                                var resolvedSelected = report.Status == THYNK.Models.ReportStatus.Resolved ? "selected" : "";
-                                            }
-                                            @Html.Raw($"<option value=\"2\" {inProgressSelected}>In Progress</option>")
-                                            @Html.Raw($"<option value=\"3\" {resolvedSelected}>Resolved</option>")
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="notes@(report.Id)" class="form-label">Response Notes</label>
-                                        <textarea id="notes@(report.Id)" name="notes" class="form-control" rows="4" required placeholder="Describe the actions taken or resolution details..."></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-primary">Update Status</button>
-                                </div>
-                            </form>
+                        <div class="form-group">
+                            <label for="notes@(report.Id)" class="form-label">Response Notes</label>
+                            <textarea id="notes@(report.Id)" name="notes" class="form-textarea" required placeholder="Describe the actions taken or resolution details..."></textarea>
                         </div>
                     </div>
-                </div>
-            }
-        </tbody>
-    </table>
-</div> 
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-submit">Update Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .priority-number {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        text-align: center;
+        line-height: 18px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        font-size: 10px;
+        font-weight: bold;
+        margin-right: 3px;
+    }
+    
+    .priority-critical {
+        border-left: 3px solid #212529;
+    }
+    
+    .priority-high {
+        border-left: 3px solid #dc3545;
+    }
+    
+    .priority-medium {
+        border-left: 3px solid #ffc107;
+    }
+    
+    .priority-low {
+        border-left: 3px solid #0dcaf0;
+    }
+</style> 

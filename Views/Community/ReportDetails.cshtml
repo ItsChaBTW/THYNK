@@ -75,6 +75,18 @@
                             <p class="text-muted mb-0 fs-7">
                                 <i class="fas fa-clock me-1"></i> @Model.DateReported.ToString("hh:mm tt")
                             </p>
+                            @if (Model.IsAnonymous)
+                            {
+                                <p class="text-muted mb-0 fs-7">
+                                    <i class="fas fa-user-secret me-1"></i> Anonymous
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0 fs-7">
+                                    <i class="fas fa-user me-1"></i> @(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")
+                                </p>
+                            }
                         </div>
                         <div class="d-flex gap-2 align-items-center">
                             <div class="incident-type">
@@ -230,15 +242,83 @@
                             </div>
                         </div>
                     }
+
+                    <!-- Status History Section -->
+                    <div class="content-section mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-history me-2 text-primary"></i>Status History
+                        </h6>
+                        <div class="section-content">
+                            <div class="timeline">
+                                @if (Model.DateVerified.HasValue)
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-info"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-0 fw-bold fs-7">Report Verified</h6>
+                                            <small class="text-muted">@Model.DateVerified.Value.ToString("yyyy-MM-dd HH:mm")</small>
+                                        </div>
+                                    </div>
+                                }
+                                @if (Model.AssignedAt.HasValue && Model.AssignedTo != null)
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-primary"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-0 fw-bold fs-7">Assigned to @Model.AssignedTo.OrganizationName</h6>
+                                            <small class="text-muted">@Model.AssignedAt.Value.ToString("yyyy-MM-dd HH:mm")</small>
+                                        </div>
+                                    </div>
+                                }
+                                @if (Model.DateInProgress.HasValue)
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-primary"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-0 fw-bold fs-7">Response Started</h6>
+                                            <small class="text-muted">@Model.DateInProgress.Value.ToString("yyyy-MM-dd HH:mm")</small>
+                                        </div>
+                                    </div>
+                                }
+                                @if (Model.ResolvedAt.HasValue)
+                                {
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-success"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-0 fw-bold fs-7">Report Resolved</h6>
+                                            <small class="text-muted">@Model.ResolvedAt.Value.ToString("yyyy-MM-dd HH:mm")</small>
+                                            @if (!String.IsNullOrEmpty(Model.Resolution))
+                                            {
+                                                <p class="mb-0 mt-1 text-description">@Model.Resolution</p>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Action Buttons -->
                     <div class="d-flex flex-wrap gap-3 justify-content-between mt-4 action-buttons-container">
-                        <a asp-action="MyReports" class="btn btn-back">
-                            <i class="fas fa-arrow-left me-2"></i>Back to My Reports
-                        </a>
-                        <a asp-action="IncidentMap" class="btn btn-map">
-                            <i class="fas fa-map-marked-alt me-1"></i>View on Map
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a asp-action="MyReports" class="btn btn-back">
+                                <i class="fas fa-arrow-left me-2"></i>Back to My Reports
+                            </a>
+                            <a asp-action="IncidentMap" class="btn btn-map">
+                                <i class="fas fa-map-marked-alt me-1"></i>View on Map
+                            </a>
+                        </div>
+                        <div class="d-flex gap-2 share-buttons">
+                            <button type="button" class="btn btn-share btn-facebook" onclick="shareToFacebook()">
+                                <i class="fab fa-facebook-f me-1"></i>Share
+                            </button>
+                            <button type="button" class="btn btn-share btn-twitter" onclick="shareToTwitter()">
+                                <i class="fab fa-twitter me-1"></i>Tweet
+                            </button>
+                            <button type="button" class="btn btn-share btn-general" onclick="shareGeneral()">
+                                <i class="fas fa-share-alt me-1"></i>Share
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -451,6 +531,53 @@
             </div>
           `)
           .addTo(map);
+
+        // Social Media Sharing Functions
+        function getShareUrl() {
+            return window.location.href;
+        }
+        
+        function getShareTitle() {
+            return '@Model.Title';
+        }
+        
+        function getShareDescription() {
+            return '@Model.Description'.substring(0, 200) + '...';
+        }
+        
+        function shareToFacebook() {
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl())}`;
+            window.open(url, '_blank', 'width=600,height=400');
+        }
+        
+        function shareToTwitter() {
+            const text = `${getShareTitle()} - Check out this incident report on THYNK`;
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(getShareUrl())}`;
+            window.open(url, '_blank', 'width=600,height=400');
+        }
+        
+        function shareToLinkedIn() {
+            const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(getShareUrl())}`;
+            window.open(url, '_blank', 'width=600,height=400');
+        }
+        
+        function shareGeneral() {
+            if (navigator.share) {
+                navigator.share({
+                    title: getShareTitle(),
+                    text: getShareDescription(),
+                    url: getShareUrl()
+                }).catch(console.error);
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const shareUrl = getShareUrl();
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('Link copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            }
+        }
     </script>
 }
 
@@ -830,41 +957,43 @@
             border-top: 1px solid var(--border-color);
         }
         
-        /* Adjusted timeline for modal */
+        /* Timeline styles */
         .timeline {
             position: relative;
-            padding-left: 25px;
-            margin: 0;
+            padding-left: 30px;
         }
         
         .timeline-item {
             position: relative;
-            padding-bottom: 20px;
+            padding-bottom: 1.5rem;
         }
         
         .timeline-item:last-child {
             padding-bottom: 0;
         }
         
-        .timeline-marker {
-            position: absolute;
-            left: -25px;
-            top: 4px;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 0 3px rgba(0,0,0,0.2);
-        }
-        
-        .timeline:before {
+        .timeline-item:not(:last-child)::before {
             content: '';
             position: absolute;
-            left: -18px;
-            top: 10px;
-            bottom: 10px;
-            width: 1px;
-            background-color: var(--border-color);
+            left: -24px;
+            top: 24px;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -30px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px currentColor;
+        }
+        
+        .timeline-content {
+            padding-left: 0;
         }
         
         /* Emergency info section */
@@ -1021,6 +1150,22 @@
             .key-info-section .d-flex.gap-2 {
                 flex-wrap: wrap;
             }
+            
+            .action-buttons-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .share-buttons {
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+            
+            .btn-share {
+                flex: 1;
+                min-width: 120px;
+                justify-content: center;
+            }
         }
         
         /* Gradient backgrounds */
@@ -1135,6 +1280,57 @@
         .lb-image {
             max-width: 90vw !important;
             max-height: 80vh !important;
+        }
+        
+        /* Share buttons styling */
+        .share-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-share {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.25s ease;
+            border: none;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn-facebook {
+            background: linear-gradient(135deg, #1877f2 0%, #166fe5 100%);
+        }
+        
+        .btn-facebook:hover {
+            background: linear-gradient(135deg, #166fe5 0%, #1464d1 100%);
+            color: white;
+        }
+        
+        .btn-twitter {
+            background: linear-gradient(135deg, #1da1f2 0%, #1a91da 100%);
+        }
+        
+        .btn-twitter:hover {
+            background: linear-gradient(135deg, #1a91da 0%, #1781c3 100%);
+            color: white;
+        }
+        
+        .btn-general {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+        
+        .btn-general:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+            color: white;
         }
     </style>
 } 

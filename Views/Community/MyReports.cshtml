@@ -179,6 +179,96 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            // Load user notifications
+            function loadNotifications() {
+                console.log("Loading user notifications");
+                fetch('/api/Notifications/GetRecent')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Received notifications:", data);
+                        const notificationList = document.getElementById('notificationList');
+                        if (!notificationList) {
+                            console.error("Notification list element not found");
+                            return;
+                        }
+                        
+                        // Clear loading message
+                        notificationList.innerHTML = '';
+                        
+                        if (data && data.length > 0) {
+                            data.forEach(notification => {
+                                const notificationItem = document.createElement('div');
+                                notificationItem.className = notification.isRead ? 
+                                    'dropdown-item notification-item p-3 border-b hover:bg-gray-50' : 
+                                    'dropdown-item notification-item unread p-3 border-b hover:bg-gray-50';
+                                notificationItem.dataset.id = notification.id;
+                                
+                                const iconType = notification.notificationType === 'success' ? 'check-circle text-success' : 
+                                               notification.notificationType === 'warning' ? 'exclamation-circle text-warning' : 
+                                               notification.notificationType === 'info' ? 'info-circle text-info' : 
+                                               'bell text-primary';
+                                               
+                                notificationItem.innerHTML = `
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-shrink-0 mt-1">
+                                            <i class="fas fa-${iconType}"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <p class="mb-0 font-semibold text-primary">${notification.title}</p>
+                                            <p class="mb-0 text-sm text-gray-600">${notification.message}</p>
+                                            <small class="text-gray-500">${notification.createdAtFormatted}</small>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                notificationList.appendChild(notificationItem);
+                            });
+                            
+                            // Update badge if there are unread notifications
+                            const unreadCount = data.filter(n => !n.isRead).length;
+                            updateNotificationBadge(unreadCount);
+                        } else {
+                            notificationList.innerHTML = `
+                                <div class="dropdown-item p-3 text-center">
+                                    <span class="text-muted">No new notifications</span>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error loading notifications:", err);
+                        const notificationList = document.getElementById('notificationList');
+                        if (notificationList) {
+                            notificationList.innerHTML = `
+                                <div class="dropdown-item p-3 text-center">
+                                    <span class="text-danger">Failed to load notifications</span>
+                                </div>
+                            `;
+                        }
+                    });
+            }
+            
+            // Update notification badge
+            function updateNotificationBadge(count) {
+                const badge = document.getElementById('notificationBadge');
+                if (!badge) {
+                    console.error("Notification badge element not found");
+                    return;
+                }
+                
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.style.display = 'flex';
+                    console.log("Updated notification badge count to:", count);
+                } else {
+                    badge.style.display = 'none';
+                    console.log("Hiding notification badge (no unread notifications)");
+                }
+            }
+            
+            // Call the function on page load
+            setTimeout(loadNotifications, 1000);
+
             // Function to filter the table rows
             function filterReports() {
                 const searchTerm = $('#live-search').val().toLowerCase().trim();

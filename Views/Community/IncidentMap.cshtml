@@ -65,20 +65,20 @@
         <div class="card dashboard-card border-0 shadow-sm">
             <div class="card-header bg-primary text-white">
                 <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-primary">
-                        <i class="fas fa-map-marked-alt"></i>
+                    <div class="d-flex align-items-center">
+                        <div class="card-icon bg-white text-primary">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <div>
+                            <h5 class="m-0">Incident Map</h5>
+                            <small>View all reported incidents on the map</small>
+                        </div>
                     </div>
-                    <div>
-                        <h5 class="m-0">Incident Map</h5>
-                        <small>View all reported incidents on the map</small>
-                    </div>
-                </div>
                     <div>
                         <button class="btn btn-light btn-sm" id="filter-toggle" data-bs-toggle="modal" data-bs-target="#filter-modal">
                             <i class="fas fa-filter me-1"></i><span class="d-none d-md-inline">Filter</span>
                         </button>
-            </div>
+                    </div>
                 </div>
             </div>
             
@@ -88,6 +88,26 @@
                     <div class="row g-2 align-items-center">
                         <div class="col-auto d-none d-md-block">
                             <span class="quick-filter-label text-primary fw-bold"><i class="fas fa-bolt me-1"></i>Quick Filters:</span>
+                        </div>
+                        <div class="col-md-auto col-12">
+                            <div class="quick-filter-section">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="incident-type-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-tags me-1"></i>Incident Type
+                                    </button>
+                                    <ul class="dropdown-menu incident-type-dropdown" aria-labelledby="incident-type-dropdown">
+                                        <li><a class="dropdown-item type-filter-item active" href="#" data-type="all"><i class="fas fa-check me-2 text-success"></i>All Types</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item type-filter-item" href="#" data-type="0"><i class="fas fa-house-damage me-2 text-danger"></i>Earthquake</a></li>
+                                        <li><a class="dropdown-item type-filter-item" href="#" data-type="1"><i class="fas fa-water me-2 text-primary"></i>Flood</a></li>
+                                        <li><a class="dropdown-item type-filter-item" href="#" data-type="2"><i class="fas fa-fire me-2 text-warning"></i>Fire</a></li>
+                                        <li><a class="dropdown-item type-filter-item" href="#" data-type="3"><i class="fas fa-mountain me-2 text-secondary"></i>Landslide</a></li>
+                                        <li><a class="dropdown-item type-filter-item" href="#" data-type="4"><i class="fas fa-cloud-showers-heavy me-2 text-info"></i>Storm</a></li>
+                                        <li><a class="dropdown-item type-filter-item" href="#" data-type="5"><i class="fas fa-car-crash me-2 text-dark"></i>Accident</a></li>
+                                        <li><a class="dropdown-item type-filter-item" href="#" data-type="6"><i class="fas fa-question me-2 text-secondary"></i>Other</a></li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-auto col-12">
                             <div class="quick-filter-section">
@@ -203,14 +223,14 @@
                 <!-- No Incidents Alert -->
                 <div id="no-incidents-alert" class="position-absolute alert alert-warning d-none">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <i class="fas fa-exclamation-triangle me-2 fa-2x"></i>
                         <div>
-                            <h6 class="alert-heading mb-1">No Incidents Found</h6>
-                            <p class="mb-0 small">No incidents match your current filter criteria.</p>
+                            <h5 class="alert-heading mb-1">No Incidents Found</h5>
+                            <p class="mb-2">No incidents match your current filter criteria.</p>
                         </div>
                     </div>
-                    <button id="reset-filters-alert" class="btn btn-sm btn-warning mt-2">
-                        <i class="fas fa-undo-alt me-1"></i>Reset Filters
+                    <button id="reset-filters-alert" class="btn btn-warning mt-2">
+                        <i class="fas fa-undo-alt me-1"></i>Reset All Filters
                     </button>
                 </div>
             </div>
@@ -536,17 +556,598 @@
             }
         }
 
+        // Initialize incident data to track active filters
+        let allIncidents = [];
+        let filteredIncidents = [];
+        let activeTypeFilters = [0, 1, 2, 3, 4, 5, 6]; // Start with all types active
+
         // Load incidents when map is ready
         map.on('load', function() {
             // Add loading indicator
             showMapLoading(true);
             
-            loadIncidents();
+            console.log('***** LOADING INCIDENTS *****');
             
-            // Set up event listeners for filters
-            document.getElementById('apply-filters').addEventListener('click', applyFilters);
-            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+            // Load incidents and log the data
+            fetch('@Url.Action("GetMapData", "Community")')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('***** RAW DATA RECEIVED *****');
+                    console.log(`Received ${data.length} incidents`);
+                    
+                    // Show the exact raw data before any processing
+                    console.log('SAMPLE RAW INCIDENTS (BEFORE ANY PROCESSING):');
+                    data.slice(0, 5).forEach((inc, idx) => {
+                        console.log(`Incident ${idx+1}:`, {
+                            title: inc.title,
+                            type: inc.type, 
+                            typeType: typeof inc.type,
+                            typeAsNumber: Number(inc.type)
+                        });
+                    });
+                    
+                    // Store the full data set
+                    incidents = data;     // Update the global incidents array
+                    
+                    // Log the first incident for debugging
+                    if (data.length > 0) {
+                        console.log('Sample incident:', data[0]);
+                        console.log('Incident type:', data[0].type, typeof data[0].type);
+                    }
+                    
+                    // Normalize all incident types to numeric values
+                    // This is critical for consistent filtering
+                    console.log('***** NORMALIZING INCIDENT TYPES *****');
+                    incidents = incidents.map(incident => {
+                        // Make a copy to avoid modifying the original object
+                        const normalizedIncident = {...incident};
+                        
+                        // Store original type for debugging
+                        const originalType = normalizedIncident.type;
+                        const originalTypeOf = typeof originalType;
+                        
+                        // Convert string types to numbers if needed
+                        if (typeof normalizedIncident.type === 'string') {
+                            // If it's a numeric string (like "1"), convert it directly
+                            if (!isNaN(Number(normalizedIncident.type))) {
+                                normalizedIncident.type = Number(normalizedIncident.type);
+                            } else {
+                                // Handle text type names
+                                switch(normalizedIncident.type.toLowerCase()) {
+                                    case 'earthquake': normalizedIncident.type = 0; break;
+                                    case 'flood': normalizedIncident.type = 1; break;
+                                    case 'fire': normalizedIncident.type = 2; break;
+                                    case 'landslide': normalizedIncident.type = 3; break;
+                                    case 'storm': normalizedIncident.type = 4; break;
+                                    case 'accident': normalizedIncident.type = 5; break;
+                                    case 'other': normalizedIncident.type = 6; break;
+                                    default: normalizedIncident.type = 6; // Default to Other
+                                }
+                            }
+                            
+                            // Debug incident conversion if type was modified
+                            if (Math.random() < 0.2) { // Only show ~20% of conversions to avoid flooding console
+                                console.log(`Converted: "${normalizedIncident.title}" type from ${originalType} (${originalTypeOf}) to ${normalizedIncident.type} (${typeof normalizedIncident.type})`);
+                            }
+                        }
+                        return normalizedIncident;
+                    });
+                    
+                    // Store a copy for filtering operations
+                    allIncidents = [...incidents];
+                    filteredIncidents = [...incidents];
+                    
+                    // Count by type for verification
+                    const typeCounts = {};
+                    incidents.forEach(incident => {
+                        const type = Number(incident.type);
+                        typeCounts[type] = (typeCounts[type] || 0) + 1;
+                    });
+                    console.log('***** INCIDENT COUNTS BY TYPE *****');
+                    console.log(typeCounts);
+                    
+                    // Show a final verification of processed incidents
+                    console.log('***** SAMPLE PROCESSED INCIDENTS *****');
+                    incidents.slice(0, 5).forEach((inc, idx) => {
+                        console.log(`Processed Incident ${idx+1}:`, {
+                            title: inc.title,
+                            type: inc.type, 
+                            typeType: typeof inc.type,
+                            typeAsNumber: Number(inc.type),
+                            typeName: getIncidentTypeName(inc.type)
+                        });
+                    });
+                    
+                    // Hide loading indicator
+                    showMapLoading(false);
+                    
+                    // Update incident count
+                    updateIncidentCount(filteredIncidents.length);
+                    
+                    // Render all markers initially
+                    renderMarkers(filteredIncidents);
+                    
+                    // Populate recent incidents list
+                    populateRecentIncidents(filteredIncidents);
+                })
+                .catch(error => {
+                    console.error('Error loading incidents:', error);
+                    showMapLoading(false);
+                });
         });
+
+        // Helper function to get type name from type number
+        function getIncidentTypeName(typeNum) {
+            const types = {
+                0: 'Earthquake',
+                1: 'Flood',
+                2: 'Fire',
+                3: 'Landslide',
+                4: 'Storm',
+                5: 'Accident',
+                6: 'Other'
+            };
+            return types[typeNum] || 'Unknown';
+        }
+
+        // Helper function to get color for type
+        function getTypeColor(typeNum) {
+            const colors = {
+                0: '#dc3545', // Earthquake - Red
+                1: '#0d6efd', // Flood - Blue
+                2: '#ffc107', // Fire - Yellow
+                3: '#6c757d', // Landslide - Gray
+                4: '#6610f2', // Storm - Purple
+                5: '#fd7e14', // Accident - Orange
+                6: '#343a40'  // Other - Dark
+            };
+            return colors[typeNum] || '#343a40';
+        }
+
+        // Helper function to get icon for type
+        function getTypeIcon(typeNum) {
+            const icons = {
+                0: 'fa-house-damage',
+                1: 'fa-water',
+                2: 'fa-fire',
+                3: 'fa-mountain',
+                4: 'fa-cloud-showers-heavy',
+                5: 'fa-car-crash',
+                6: 'fa-exclamation-triangle'
+            };
+            return icons[typeNum] || 'fa-exclamation-triangle';
+        }
+
+        // Function to apply all active filters
+        function applyFilters() {
+            // Show loading indicator
+            showMapLoading(true);
+            
+            console.log('----- STARTING FILTER APPLICATION -----');
+            console.log('Total incident count:', allIncidents.length);
+            console.log('Active type filters:', activeTypeFilters);
+            
+            // Create a completely new filtered array from scratch
+            let filteredResults = [];
+            
+            // DIRECT FILTERING - No complex logic, just strict equality
+            for (let i = 0; i < allIncidents.length; i++) {
+                const incident = allIncidents[i];
+                
+                // Force incident type to be a number
+                const incidentType = Number(incident.type);
+                
+                // For type filtering
+                let typeMatches = true;
+                if (activeTypeFilters.length < 7) { // If not showing all types
+                    typeMatches = activeTypeFilters.includes(incidentType);
+                }
+                
+                // If all filters match, add to results
+                if (typeMatches) {
+                    // Add a copy with normalized type
+                    const normalized = {...incident};
+                    normalized.type = incidentType; // Ensure type is numeric
+                    filteredResults.push(normalized);
+                }
+            }
+            
+            console.log(`FILTERED RESULT: ${filteredResults.length} of ${allIncidents.length} incidents`);
+            
+            // Count types in filtered results
+            const typeCount = {};
+            filteredResults.forEach(inc => {
+                const t = Number(inc.type);
+                typeCount[t] = (typeCount[t] || 0) + 1;
+            });
+            console.log('Types in filtered results:', typeCount);
+            
+            // DATE FILTERING
+            const dateFromFilter = document.getElementById('filter-date-from').value;
+            const dateToFilter = document.getElementById('filter-date-to').value;
+            
+            if (dateFromFilter) {
+                const fromDate = new Date(dateFromFilter);
+                fromDate.setHours(0, 0, 0, 0); // Set to start of day
+                const beforeCount = filteredResults.length;
+                
+                filteredResults = filteredResults.filter(incident => {
+                    const incidentDate = new Date(incident.dateModified || incident.dateReported);
+                    return incidentDate >= fromDate;
+                });
+                
+                console.log(`DATE FROM FILTER: ${beforeCount} → ${filteredResults.length} incidents`);
+            }
+            
+            if (dateToFilter) {
+                const toDate = new Date(dateToFilter);
+                toDate.setHours(23, 59, 59, 999); // Set to end of day
+                const beforeCount = filteredResults.length;
+                
+                filteredResults = filteredResults.filter(incident => {
+                    const incidentDate = new Date(incident.dateModified || incident.dateReported);
+                    return incidentDate <= toDate;
+                });
+                
+                console.log(`DATE TO FILTER: ${beforeCount} → ${filteredResults.length} incidents`);
+            }
+            
+            // Update our filtered incidents variable
+            filteredIncidents = filteredResults;
+            
+            console.log(`FINAL: Filtered to ${filteredIncidents.length} incidents`);
+            
+            // Update the map with filtered incidents
+            renderMarkers(filteredIncidents);
+            
+            // Update the incident list
+            populateRecentIncidents(filteredIncidents);
+            
+            // Update the count
+            updateIncidentCount(filteredIncidents.length);
+            
+            // Show/hide no incidents alert
+            if (filteredIncidents.length === 0) {
+                document.getElementById('no-incidents-alert').classList.remove('d-none');
+            } else {
+                document.getElementById('no-incidents-alert').classList.add('d-none');
+            }
+            
+            // Hide loading indicator
+            showMapLoading(false);
+            
+            // Show filter toast with accurate count
+            showFilterToast(filteredIncidents.length, allIncidents.length);
+            console.log('----- FILTER APPLICATION COMPLETE -----');
+        }
+
+        // Function to show toast notification for filter results
+        function showFilterToast(count, total, isReset = false) {
+            // Remove any existing toast
+            const existingToast = document.querySelector('.map-filter-toast');
+            if (existingToast) existingToast.remove();
+            
+            // Create toast container if not exists
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            // Create toast
+            const toast = document.createElement('div');
+            toast.className = 'toast map-filter-toast show';
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            // Check if filtering by type
+            const isTypeFiltering = activeTypeFilters.length === 1;
+            
+            let toastClass, icon, message;
+            if (isReset) {
+                toastClass = 'bg-info text-white';
+                icon = 'fa-undo';
+                message = `Filters reset. Showing all ${total} incidents.`;
+            } else if (count === 0) {
+                toastClass = 'bg-warning text-dark';
+                icon = 'fa-exclamation-triangle';
+                message = `No incidents match your filter criteria.`;
+            } else if (isTypeFiltering) {
+                // When filtering by a single type
+                const typeNum = activeTypeFilters[0];
+                const typeName = getIncidentTypeName(typeNum);
+                toastClass = 'bg-success text-white';
+                icon = 'fa-filter';
+                message = `Showing ${count} ${typeName} incident${count !== 1 ? 's' : ''}.`;
+            } else {
+                toastClass = 'bg-success text-white';
+                icon = 'fa-check';
+                message = `Showing ${count} of ${total} incidents.`;
+            }
+            
+            toast.innerHTML = `
+                <div class="toast-header ${toastClass}">
+                    <i class="fas ${icon} me-2"></i>
+                    <strong class="me-auto">Filter Results</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Event handlers for filters
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up type filter dropdown
+            document.querySelectorAll('.type-filter-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Get the selected type before any UI changes
+                    const selectedType = this.getAttribute('data-type');
+                    console.log('------- TYPE FILTER CLICK -------');
+                    console.log('User clicked incident type:', selectedType);
+                    
+                    // Update active state
+                    document.querySelectorAll('.type-filter-item').forEach(i => {
+                        i.classList.remove('active');
+                        i.querySelector('i').classList.remove('text-success');
+                    });
+                    
+                    this.classList.add('active');
+                    this.querySelector('i').classList.add('text-success');
+                    
+                    // Update dropdown button text
+                    const typeText = selectedType === 'all' 
+                        ? 'Incident Type' 
+                        : this.textContent.trim();
+                    
+                    document.getElementById('incident-type-dropdown').innerHTML = 
+                        `<i class="fas fa-tags me-1"></i>${typeText}`;
+                    
+                    // Update activeTypeFilters based on selection
+                    if (selectedType === 'all') {
+                        // If "All Types" selected, include all type numbers
+                        activeTypeFilters = [0, 1, 2, 3, 4, 5, 6];
+                        console.log('Set to show ALL incident types');
+                        
+                        // Show all incidents
+                        filteredIncidents = [...allIncidents];
+                    } else {
+                        // If specific type selected, include only that type as a number
+                        const typeNum = Number(selectedType);
+                        activeTypeFilters = [typeNum];
+                        console.log(`Set to show only ${getIncidentTypeName(typeNum)} incidents (type ${typeNum})`);
+                        
+                        // DIRECT FILTERING - Don't rely on the applyFilters function
+                        // Filter incidents to only those matching the selected type
+                        filteredIncidents = allIncidents.filter(incident => {
+                            const incidentType = Number(incident.type);
+                            return incidentType === typeNum;
+                        });
+                    }
+                    
+                    console.log('Updated activeTypeFilters:', activeTypeFilters);
+                    console.log(`DIRECT FILTERING: Selected ${filteredIncidents.length} of ${allIncidents.length} incidents`);
+                    
+                    // Type count of filtered incidents
+                    const typeCount = {};
+                    filteredIncidents.forEach(inc => {
+                        const t = Number(inc.type);
+                        typeCount[t] = (typeCount[t] || 0) + 1;
+                    });
+                    console.log('Types in filtered results:', typeCount);
+                    
+                    // Directly update the map and list with filtered incidents
+                    renderMarkers(filteredIncidents);
+                    populateRecentIncidents(filteredIncidents);
+                    updateIncidentCount(filteredIncidents.length);
+                    
+                    // Show filter toast with accurate count
+                    showFilterToast(filteredIncidents.length, allIncidents.length);
+                });
+            });
+            
+            // Add event listener for the reset button
+            document.getElementById('reset-filters-quick').addEventListener('click', function() {
+                resetAllFilters();
+            });
+            
+            // Function to reset all filters
+            function resetAllFilters() {
+                // Reset type filter to "All Types"
+                document.querySelectorAll('.type-filter-item').forEach(item => {
+                    item.classList.remove('active');
+                    item.querySelector('i').classList.remove('text-success');
+                });
+                
+                const allTypesItem = document.querySelector('.type-filter-item[data-type="all"]');
+                allTypesItem.classList.add('active');
+                allTypesItem.querySelector('i').classList.add('text-success');
+                
+                // Reset dropdown button text
+                document.getElementById('incident-type-dropdown').innerHTML = 
+                    '<i class="fas fa-tags me-1"></i>Incident Type';
+                
+                // Reset date filters
+                document.getElementById('quick-filter-date-from').value = '';
+                document.getElementById('quick-filter-date-to').value = '';
+                document.getElementById('filter-date-from').value = '';
+                document.getElementById('filter-date-to').value = '';
+                
+                // Reset activeTypeFilters to include all types
+                activeTypeFilters = [0, 1, 2, 3, 4, 5, 6];
+                console.log('Reset activeTypeFilters:', activeTypeFilters);
+                
+                // Apply filters to show all incidents
+                filteredIncidents = [...allIncidents];
+                renderMarkers(filteredIncidents);
+                populateRecentIncidents(filteredIncidents);
+                updateIncidentCount(filteredIncidents.length);
+            }
+        });
+
+        // Function to render markers on the map
+        function renderMarkers(data) {
+            console.log('------- RENDERING MARKERS -------');
+            console.log(`Received ${data.length} incidents to render`);
+            
+            // EMERGENCY TYPE VERIFICATION - Ensure all incidents have numeric types
+            const verifiedData = data.map(incident => {
+                const copy = {...incident};
+                if (typeof copy.type !== 'number') {
+                    copy.type = Number(copy.type);
+                    console.log(`Emergency conversion: Fixed type for "${copy.title}" to ${copy.type}`);
+                }
+                return copy;
+            });
+            
+            // Remove existing markers
+            for (let marker of markers) {
+                marker.remove();
+            }
+            markers = [];
+            
+            // Hide the no incidents alert by default
+            document.getElementById('no-incidents-alert').classList.add('d-none');
+            
+            // If no incidents, show alert
+            if (verifiedData.length === 0) {
+                document.getElementById('no-incidents-alert').classList.remove('d-none');
+                return;
+            }
+            
+            console.log(`Rendering ${verifiedData.length} markers on map`);
+            
+            // Create bounds object to fit all markers
+            const bounds = new mapboxgl.LngLatBounds();
+            
+            // Track type counts for verification
+            const typeCountsInMarkers = {};
+            
+            // Add new markers
+            for (let incident of verifiedData) {
+                // Always ensure type is a number, not a string
+                const typeNum = Number(incident.type);
+                
+                // Track type counts
+                typeCountsInMarkers[typeNum] = (typeCountsInMarkers[typeNum] || 0) + 1;
+                
+                // Create marker with appropriate color
+                const markerColor = getTypeColor(typeNum);
+                const markerIcon = getTypeIcon(typeNum);
+                
+                // Create custom HTML element for marker
+                const el = document.createElement('div');
+                el.className = 'incident-marker';
+                el.style.backgroundColor = markerColor;
+                
+                // Set status outline
+                let statusColor = '#6c757d'; // Default gray
+                switch(incident.status) {
+                    case 'InProgress': statusColor = '#0d6efd'; break; // Blue
+                    case 'Resolved': statusColor = '#198754'; break; // Green
+                    case 'Pending': statusColor = '#ffc107'; break; // Yellow
+                    case 'Declined': statusColor = '#dc3545'; break; // Red
+                }
+                el.style.borderColor = statusColor;
+                
+                // Create marker
+                const marker = new mapboxgl.Marker(el)
+                    .setLngLat([incident.longitude, incident.latitude])
+                    .addTo(map);
+                
+                // Store incident ID for reference
+                marker.incidentId = incident.id;
+                
+                // Extend bounds to include this marker
+                bounds.extend([incident.longitude, incident.latitude]);
+                
+                // Add popup information
+                const popup = new mapboxgl.Popup({
+                    offset: 25,
+                    closeButton: false,
+                    className: 'incident-popup'
+                }).setHTML(`
+                    <div class="incident-popup-content">
+                        <h6 class="mb-1">${incident.title}</h6>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-secondary">${getIncidentTypeName(typeNum)}</span>
+                            <span class="badge ${getStatusClass(incident.status)}">${formatStatus(incident.status)}</span>
+                        </div>
+                        <p class="small mb-2 text-truncate">${incident.location}</p>
+                        <button class="btn btn-sm btn-primary w-100">View Details</button>
+                    </div>
+                `);
+                
+                marker.setPopup(popup);
+                
+                // Show popup on hover
+                marker.getElement().addEventListener('mouseenter', () => marker.togglePopup());
+                marker.getElement().addEventListener('mouseleave', () => marker.togglePopup());
+                
+                // Add click event
+                marker.getElement().addEventListener('click', () => showIncidentDetails(incident));
+                
+                // Also add click event to the popup button
+                marker.getElement().addEventListener('click', function() {
+                    setTimeout(() => {
+                        const button = document.querySelector('.incident-popup button');
+                        if (button) {
+                            button.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                showIncidentDetails(incident);
+                            });
+                        }
+                    }, 100);
+                });
+                
+                markers.push(marker);
+            }
+            
+            // Log marker type counts to verify filtering worked
+            console.log('Marker type counts:', typeCountsInMarkers);
+            
+            // Check if markers match active filters
+            if (activeTypeFilters.length < 7) {
+                // We should only be showing specific types
+                let matchingMarkers = 0;
+                let nonMatchingMarkers = 0;
+                
+                for (const [type, count] of Object.entries(typeCountsInMarkers)) {
+                    if (activeTypeFilters.includes(Number(type))) {
+                        matchingMarkers += count;
+                    } else {
+                        nonMatchingMarkers += count;
+                    }
+                }
+                
+                if (nonMatchingMarkers > 0) {
+                    console.error(`FILTER ERROR: Showing ${nonMatchingMarkers} markers that don't match the active filter!`);
+                }
+                
+                console.log(`Rendered ${matchingMarkers} matching markers and ${nonMatchingMarkers} non-matching markers`);
+            }
+            
+            // Fit map to bounds if we have markers
+            if (verifiedData.length > 0) {
+                const padding = { top: 50, bottom: 50, left: 50, right: 50 };
+                map.fitBounds(bounds, { padding: padding, maxZoom: 15 });
+            }
+            
+            console.log('------- RENDERING COMPLETE -------');
+        }
 
         // Show/hide loading indicator
         function showMapLoading(show) {
@@ -624,6 +1225,17 @@
         // Update incident count
         function updateIncidentCount(count) {
             const countElement = document.getElementById('incident-count');
+            
+            // If filtering by a specific type, show that in the count
+            if (activeTypeFilters.length === 1) {
+                const typeName = getIncidentTypeName(activeTypeFilters[0]);
+                countElement.innerHTML = `
+                    <span class="badge bg-primary me-1">${count} ${typeName} Incident${count !== 1 ? 's' : ''}</span>
+                `;
+                return;
+            }
+            
+            // Otherwise show the regular count with status breakdown
             const inProgressCount = incidents.filter(i => {
                 let statusNum = i.status;
                 if (typeof statusNum === 'string') {
@@ -642,154 +1254,6 @@
                 <span class="badge bg-primary me-1">${inProgressCount} In Progress</span>
                 <span class="badge bg-success">${resolvedCount} Resolved</span>
             `;
-        }
-
-        // Modified renderMarkers function to handle no incidents scenario
-        function renderMarkers(data) {
-            // Remove existing markers
-            for (let marker of markers) {
-                marker.remove();
-            }
-            markers = [];
-
-            // Update incident count
-            updateIncidentCount(data.length);
-            
-            // Hide the no incidents alert by default
-            document.getElementById('no-incidents-alert').classList.add('d-none');
-
-            // If no incidents, show alert only if filters were applied
-            if (data.length === 0) {
-                // Check if filters are active
-                const dateFrom = document.getElementById('filter-date-from').value;
-                const dateTo = document.getElementById('filter-date-to').value;
-                const allTypesSelected = document.querySelectorAll('.type-filter:checked').length === document.querySelectorAll('.type-filter').length;
-                const allStatusesSelected = document.querySelectorAll('.status-filter:checked').length === document.querySelectorAll('.status-filter').length;
-                const allSeveritiesSelected = document.querySelectorAll('.severity-filter:checked').length === document.querySelectorAll('.severity-filter').length;
-                
-                const filtersApplied = dateFrom || dateTo || !allTypesSelected || !allStatusesSelected || !allSeveritiesSelected;
-                
-                if (filtersApplied) {
-                    // Show the no incidents alert
-                    document.getElementById('no-incidents-alert').classList.remove('d-none');
-                }
-                
-                // We don't create the map-no-data-message anymore to avoid duplication
-                return;
-            } else {
-                // Remove any existing no data message
-                const noDataMsg = document.querySelector('.map-no-data-message');
-                if (noDataMsg) noDataMsg.remove();
-            }
-
-            // Create bounds object to fit all markers
-            const bounds = new mapboxgl.LngLatBounds();
-
-            // Add new markers
-            for (let incident of data) {
-                // Set marker color based on incident type
-                let markerColor, markerIcon;
-                switch(incident.type) {
-                    case 'Earthquake': 
-                        markerColor = '#dc3545'; 
-                        markerIcon = 'fa-house-damage';
-                        break;
-                    case 'Flood': 
-                        markerColor = '#0d6efd'; 
-                        markerIcon = 'fa-water';
-                        break;
-                    case 'Fire': 
-                        markerColor = '#ffc107'; 
-                        markerIcon = 'fa-fire';
-                        break;
-                    case 'Landslide': 
-                        markerColor = '#6c757d'; 
-                        markerIcon = 'fa-mountain';
-                        break;
-                    case 'Storm': 
-                        markerColor = '#6610f2'; 
-                        markerIcon = 'fa-cloud-showers-heavy';
-                        break;
-                    case 'Accident': 
-                        markerColor = '#fd7e14'; 
-                        markerIcon = 'fa-car-crash';
-                        break;
-                    default: 
-                        markerColor = '#343a40';
-                        markerIcon = 'fa-exclamation-triangle';
-                }
-
-                // Create custom HTML element for marker
-                const el = document.createElement('div');
-                el.className = 'incident-marker';
-                el.style.backgroundColor = markerColor;
-                
-                // Set status outline
-                let statusColor = '#6c757d'; // Default gray
-                switch(incident.status) {
-                    case 'InProgress': statusColor = '#0d6efd'; break; // Blue
-                    case 'Resolved': statusColor = '#198754'; break; // Green
-                    case 'Pending': statusColor = '#ffc107'; break; // Yellow
-                    case 'Declined': statusColor = '#dc3545'; break; // Red
-                }
-                el.style.borderColor = statusColor;
-                
-                // Create marker
-                const marker = new mapboxgl.Marker(el)
-                    .setLngLat([incident.longitude, incident.latitude])
-                    .addTo(map);
-                
-                // Extend bounds to include this marker
-                bounds.extend([incident.longitude, incident.latitude]);
-                
-                // Add popup information
-                const popup = new mapboxgl.Popup({
-                    offset: 25,
-                    closeButton: false,
-                    className: 'incident-popup'
-                }).setHTML(`
-                    <div class="incident-popup-content">
-                        <h6 class="mb-1">${incident.title}</h6>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-secondary">${incident.type}</span>
-                            <span class="badge ${getStatusClass(incident.status)}">${formatStatus(incident.status)}</span>
-                        </div>
-                        <p class="small mb-2 text-truncate">${incident.location}</p>
-                        <button class="btn btn-sm btn-primary w-100">View Details</button>
-                    </div>
-                `);
-                
-                marker.setPopup(popup);
-                
-                // Show popup on hover
-                marker.getElement().addEventListener('mouseenter', () => marker.togglePopup());
-                marker.getElement().addEventListener('mouseleave', () => marker.togglePopup());
-                
-                // Add click event
-                marker.getElement().addEventListener('click', () => showIncidentDetails(incident));
-                
-                // Also add click event to the popup button
-                marker.getElement().addEventListener('click', function() {
-                    setTimeout(() => {
-                        const button = document.querySelector('.incident-popup button');
-                        if (button) {
-                            button.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                showIncidentDetails(incident);
-                            });
-                        }
-                    }, 100);
-                });
-                
-                markers.push(marker);
-            }
-
-            // Fit map to bounds if we have markers
-            if (data.length > 0) {
-                // Add padding to the bounds
-                const padding = { top: 50, bottom: 50, left: 50, right: 50 };
-                map.fitBounds(bounds, { padding: padding, maxZoom: 15 });
-            }
         }
 
         // Get status class for badges
@@ -850,12 +1314,15 @@
             document.getElementById('modal-location').textContent = incident.location;
             document.getElementById('modal-id').textContent = `Incident ID: ${incident.id}`;
             
-            // Set type and icon
-            document.getElementById('modal-type').textContent = incident.type;
+            // Ensure incident type is numeric for display consistency
+            const incidentTypeNum = Number(incident.type);
+            
+            // Set type and icon - using the numeric type and proper label
+            document.getElementById('modal-type').textContent = getIncidentTypeName(incidentTypeNum);
             const typeIcon = document.getElementById('modal-type-icon');
-            typeIcon.innerHTML = `<i class="fas ${getTypeIcon(incident.type)}"></i>`;
-            typeIcon.style.backgroundColor = `${getTypeColor(incident.type)}20`;
-            typeIcon.style.color = getTypeColor(incident.type);
+            typeIcon.innerHTML = `<i class="fas ${getTypeIcon(incidentTypeNum)}"></i>`;
+            typeIcon.style.backgroundColor = `${getTypeColor(incidentTypeNum)}20`;
+            typeIcon.style.color = getTypeColor(incidentTypeNum);
             
             // Set detailed location if available
             let detailedLocation = '';
@@ -1129,12 +1596,20 @@
             const container = document.getElementById('active-filters-container');
             const noFiltersMsg = document.getElementById('no-filters-message');
             
+            // If elements don't exist, just return without logging an error
+            if (!container || !noFiltersMsg) {
+                // Elements don't exist, silently return
+                return;
+            }
+            
+            // Continue with the rest of the function as before
             // Check if any filters are applied
             const hasDateFilters = activeFilters.dateFrom || activeFilters.dateTo;
             const hasTypeFilters = activeFilters.types.length > 0 && activeFilters.types.length < 6; // Not all types
             const hasStatusFilters = activeFilters.statuses.length > 0 && activeFilters.statuses.length < 5; // Not all statuses
             const hasSeverityFilters = activeFilters.severities.length > 0 && activeFilters.severities.length < 4; // Not all severities
             
+            // Rest of the function remains unchanged
             if (hasDateFilters || hasTypeFilters || hasStatusFilters || hasSeverityFilters) {
                 // Hide the no filters message
                 noFiltersMsg.classList.add('d-none');
@@ -1283,6 +1758,9 @@
             toast.setAttribute('aria-live', 'assertive');
             toast.setAttribute('aria-atomic', 'true');
             
+            // Check if we're filtering (count should be less than total)
+            const isFiltering = !isReset && activeTypeFilters.length < 7;
+            
             let toastClass, icon, message;
             if (isReset) {
                 toastClass = 'bg-info text-white';
@@ -1292,6 +1770,12 @@
                 toastClass = 'bg-warning text-dark';
                 icon = 'fa-exclamation-triangle';
                 message = `No incidents match your filter criteria.`;
+            } else if (isFiltering && activeTypeFilters.length === 1) {
+                // When filtering by a single type
+                const typeLabel = getIncidentTypeName(activeTypeFilters[0]);
+                toastClass = 'bg-success text-white';
+                icon = 'fa-filter';
+                message = `Showing ${count} ${typeLabel} incidents.`;
             } else {
                 toastClass = 'bg-success text-white';
                 icon = 'fa-check';
@@ -1319,7 +1803,36 @@
         }
 
         // Add event listener for the reset button in the alert
-        document.getElementById('reset-filters-alert').addEventListener('click', resetFilters);
+        document.getElementById('reset-filters-alert').addEventListener('click', function() {
+            console.log('Resetting all filters');
+            
+            // Reset all type filter buttons to active
+            document.querySelectorAll('.type-filter-btn').forEach(btn => {
+                btn.classList.add('active');
+            });
+            
+            // Reset active types to include all types
+            activeTypeFilters = [0, 1, 2, 3, 4, 5, 6];
+            
+            // Reset date filters
+            const dateFrom = document.getElementById('quick-filter-date-from');
+            const dateTo = document.getElementById('quick-filter-date-to');
+            if(dateFrom) dateFrom.value = '';
+            if(dateTo) dateTo.value = '';
+            
+            // Reset the incidents to show all
+            filteredIncidents = [...allIncidents];
+            
+            // Update the display
+            renderMarkers(filteredIncidents);
+            populateRecentIncidents(filteredIncidents);
+            updateIncidentCount(filteredIncidents.length);
+            
+            // Hide the no incidents alert
+                document.getElementById('no-incidents-alert').classList.add('d-none');
+            
+            console.log('Filters reset, showing all incidents:', filteredIncidents.length);
+        });
 
         // Function to get an appropriate status icon
         function getStatusIcon(status) {
@@ -1377,12 +1890,17 @@
             });
         }
         
-        // Function to create recent incident item with enhanced details
+        // Function to create recent incident item with better type display
         function createRecentIncidentItem(incident) {
             const item = document.createElement('a');
             item.href = '#';
             item.className = 'list-group-item list-group-item-action p-3 border-start-0 border-end-0';
             item.setAttribute('data-incident-id', incident.id);
+            
+            // Make sure we have a numeric type for consistent display
+            const typeNum = Number(incident.type);
+            const typeName = getIncidentTypeName(typeNum);
+            
             item.addEventListener('click', function(e) {
                 e.preventDefault();
                 
@@ -1411,8 +1929,8 @@
                 }
             });
             
-            const typeIconClass = getTypeIcon(incident.type);
-            const typeColor = getTypeColor(incident.type);
+            const typeIconClass = getTypeIcon(typeNum);
+            const typeColor = getTypeColor(typeNum);
             
             // Format the date and time
             const displayDate = incident.dateModified || incident.dateReported;
@@ -1436,6 +1954,7 @@
                 locationDetails += `, ${incident.city}`;
             }
             
+            // Make the incident type more prominent in the list item
             item.innerHTML = `
                 <div class="d-flex">
                     <div class="incident-list-icon me-3" style="color: ${typeColor}">
@@ -1447,8 +1966,8 @@
                                 <span class="badge ${getStatusClass(incident.status)} mb-1">
                                     <i class="${getStatusIcon(incident.status)} me-1"></i>${mapStatus(incident.status)}
                                 </span>
-                                <span class="badge" style="background-color: ${typeColor}20; color: ${typeColor}; border: 1px solid ${typeColor}">
-                                    <i class="${getTypeIcon(incident.type)} me-1"></i>${mapType(incident.type)}
+                                <span class="badge bg-primary mb-1 fw-bold" style="background-color: ${typeColor}!important;">
+                                    <i class="${typeIconClass} me-1"></i>${typeName}
                                 </span>
                                 <span class="badge ms-1 ${getSeverityClass(incident.severity)}">
                                     <i class="${getSeverityIcon(incident.severity)} me-1"></i>${getSeverityLabel(incident.severity)}
@@ -1695,7 +2214,7 @@
             // Apply the reset
             setTimeout(() => {
             renderMarkers(incidents);
-                showMapLoading(false);
+            showMapLoading(false);
                 showFilterToast(incidents.length, incidents.length, true);
             }, 300);
         }
@@ -1797,6 +2316,29 @@
                 dateFrom: document.getElementById('quick-filter-date-from').value,
                 dateTo: this.value
             });
+        });
+
+        // Add type filter handling
+        let activeTypes = new Set([0, 1, 2, 3, 4, 5, 6]); // Store numeric types
+        
+        // Fix for SignalR "joinedgroup" warning - make sure the method is available
+        if (typeof connection !== 'undefined') {
+            // Check if the connection already has this method to avoid adding it twice
+            if (!connection._methods || !connection._methods['joinedgroup']) {
+                // Add the lowercase version of the method to handle case-sensitivity issue
+                connection.on("joinedgroup", (groupId) => {
+                    console.log("Joined group (lowercase handler):", groupId);
+                });
+            }
+        }
+
+        // Initialize the map when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure the All Types button is active by default
+            document.getElementById('show-all-types').classList.add('active');
+            
+            // Set initial active types to include all
+            activeTypeFilters = [0, 1, 2, 3, 4, 5, 6];
         });
     </script>
 }
@@ -2427,5 +2969,69 @@
                 padding: 0.25rem 0.5rem;
             }
         }
+
+        /* Quick type filters styling */
+        .quick-type-filters {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .type-filter-btn {
+            transition: all 0.2s ease;
+            font-weight: 500;
+            padding: 0.4rem 0.8rem;
+            border-width: 2px;
+        }
+        
+        .type-filter-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .type-filter-btn.active {
+            font-weight: 600;
+        }
+        
+        .type-filter-btn.btn-outline-danger.active {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .type-filter-btn.btn-outline-primary.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        
+        .type-filter-btn.btn-outline-warning.active {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .type-filter-btn.btn-outline-secondary.active {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .type-filter-btn.btn-outline-info.active {
+            background-color: #0dcaf0;
+            color: #212529;
+        }
+        
+        .type-filter-btn.btn-outline-dark.active {
+            background-color: #212529;
+            color: white;
+        }
+        
+        @@media (max-width: 768px) {
+            .quick-type-filters {
+                padding: 0.75rem !important;
+            }
+            
+            .type-filter-btn {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.8rem;
+            }
+        }
     </style>
+} 
 } 

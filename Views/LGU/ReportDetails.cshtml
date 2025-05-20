@@ -515,12 +515,30 @@
                 <div class="card-body">
                     <div class="info-group">
                         <div class="info-label">Name</div>
-                        <div class="info-value">@(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")</div>
+                        <div class="info-value">
+                            @if (Model.IsAnonymous)
+                            {
+                                <span><i class="fas fa-user-secret me-1"></i> Anonymous</span>
+                            }
+                            else
+                            {
+                                @(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")
+                            }
+                        </div>
                     </div>
                     
                     <div class="info-group">
                         <div class="info-label">Email</div>
-                        <div class="info-value">@(Model.User?.Email ?? "Not available")</div>
+                        <div class="info-value">
+                            @if (Model.IsAnonymous)
+                            {
+                                <span class="text-muted">Hidden for anonymous reports</span>
+                            }
+                            else
+                            {
+                                @(Model.User?.Email ?? "Not available")
+                            }
+                        </div>
                     </div>
                 </div>
             </div>

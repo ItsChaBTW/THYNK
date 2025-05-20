@@ -128,41 +128,30 @@
                     <div class="faq-container">
                         @if (ViewBag.GroupedFaqs != null && ViewBag.GroupedFaqs.Count > 0)
                         {
-                            <div class="accordion" id="faqAccordion">
+                            <div class="custom-accordion" id="faqAccordion">
                                 @foreach (var faqGroup in ViewBag.GroupedFaqs)
                                 {
-                                    <div class="accordion-item border-0 mb-3">
-                                        <h2 class="accordion-header" id="heading-@faqGroup.Key.Replace(" ", "-")">
-                                            <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" 
-                                                data-bs-target="#collapse-@faqGroup.Key.Replace(" ", "-")" aria-expanded="false" 
-                                                aria-controls="collapse-@faqGroup.Key.Replace(" ", "-")">
-                                                <i class="fas fa-folder me-2 text-primary"></i>
-                                                <strong>@(string.IsNullOrEmpty(faqGroup.Key) ? "General Questions" : faqGroup.Key)</strong>
-                                            </button>
-                                        </h2>
-                                        <div id="collapse-@faqGroup.Key.Replace(" ", "-")" class="accordion-collapse collapse" 
-                                             aria-labelledby="heading-@faqGroup.Key.Replace(" ", "-")" data-bs-parent="#faqAccordion">
-                                            <div class="accordion-body pt-0">
-                                                <div class="accordion" id="subAccordion-@faqGroup.Key.Replace(" ", "-")">
-                                                    @foreach (var faq in faqGroup)
-                                                    {
-                                                        <div class="accordion-item border-0 border-bottom border-light">
-                                                            <h3 class="accordion-header" id="subHeading-@faq.Id">
-                                                                <button class="accordion-button collapsed bg-white" type="button" 
-                                                                    data-bs-toggle="collapse" data-bs-target="#subCollapse-@faq.Id" 
-                                                                    aria-expanded="false" aria-controls="subCollapse-@faq.Id">
-                                                                    @faq.Question
-                                                                </button>
-                                                            </h3>
-                                                            <div id="subCollapse-@faq.Id" class="accordion-collapse collapse" 
-                                                                 aria-labelledby="subHeading-@faq.Id" data-bs-parent="#subAccordion-@faqGroup.Key.Replace(" ", "-")">
-                                                                <div class="accordion-body bg-light rounded-3">
-                                                                    @Html.Raw(faq.Answer)
-                                                                </div>
-                                                            </div>
+                                    var safeKey = faqGroup.Key?.Replace("/", "-").Replace(" ", "-") ?? "general";
+                                    <div class="faq-group">
+                                        <button class="faq-header" data-target="group-@safeKey">
+                                            <i class="fas fa-folder me-2 text-primary"></i>
+                                            <strong>@(string.IsNullOrEmpty(faqGroup.Key) ? "General Questions" : faqGroup.Key)</strong>
+                                            <i class="fas fa-chevron-down ms-auto"></i>
+                                        </button>
+                                        <div class="faq-content" id="group-@safeKey">
+                                            <div class="custom-accordion">
+                                                @foreach (var faq in faqGroup)
+                                                {
+                                                    <div class="faq-item">
+                                                        <button class="faq-header" data-target="faq-@faq.Id">
+                                                            @faq.Question
+                                                            <i class="fas fa-chevron-down ms-auto"></i>
+                                                        </button>
+                                                        <div class="faq-content" id="faq-@faq.Id">
+                                                            @Html.Raw(faq.Answer)
                                                         </div>
-                                                    }
-                                                </div>
+                                                    </div>
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -390,12 +379,115 @@
             border-color: #0d6efd;
             transform: translateY(-2px);
         }
+
+        /* Custom FAQ Styles */
+        .custom-accordion {
+            width: 100%;
+        }
+
+        .faq-group {
+            margin-bottom: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-header {
+            width: 100%;
+            padding: 1rem;
+            background: #fff;
+            border: none;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .faq-header:hover {
+            background-color: #f8f9fa;
+        }
+
+        .faq-header.active {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+        }
+
+        .faq-header.active .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        .faq-content {
+            display: none;
+            padding: 1rem;
+            background-color: #fff;
+        }
+
+        .faq-content.show {
+            display: block;
+        }
+
+        .fa-chevron-down {
+            transition: transform 0.2s ease-in-out;
+        }
     </style>
 }
 
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize FAQ functionality
+            function initializeFAQ() {
+                const headers = document.querySelectorAll('.faq-header');
+                
+                headers.forEach(header => {
+                    header.addEventListener('click', function() {
+                        const targetId = this.getAttribute('data-target');
+                        const content = document.getElementById(targetId);
+                        
+                        if (!content) return;
+
+                        // Toggle current section
+                        const isActive = this.classList.contains('active');
+                        
+                        if (isActive) {
+                            // Close current section
+                            this.classList.remove('active');
+                            content.classList.remove('show');
+                        } else {
+                            // Close other sections in the same parent
+                            const parent = this.closest('.custom-accordion');
+                            const activeHeaders = parent.querySelectorAll('.faq-header.active');
+                            activeHeaders.forEach(activeHeader => {
+                                if (activeHeader !== this) {
+                                    activeHeader.classList.remove('active');
+                                    const activeContent = document.getElementById(activeHeader.getAttribute('data-target'));
+                                    if (activeContent) {
+                                        activeContent.classList.remove('show');
+                                    }
+                                }
+                            });
+
+                            // Open current section
+                            this.classList.add('active');
+                            content.classList.add('show');
+                        }
+                    });
+                });
+            }
+
+            // Initialize FAQ functionality
+            initializeFAQ();
+
             // Auto-resize textarea
             const textarea = document.querySelector('textarea[name="message"]');
             if (textarea) {

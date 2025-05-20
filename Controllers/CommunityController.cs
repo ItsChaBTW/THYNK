@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.SignalR;
 using THYNK.Hubs;
 using Microsoft.AspNetCore.Identity;
 using THYNK.Services;
+using Microsoft.Extensions.Logging;
 
 namespace THYNK.Controllers
 {
@@ -25,20 +26,26 @@ namespace THYNK.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IHubContext<AdminHub> _hubContext;
+        private readonly IHubContext<CommunityHub> _communityHubContext;
         private readonly PdfService _pdfService;
+        private readonly ILogger<CommunityController> _logger;
 
         public CommunityController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             IWebHostEnvironment webHostEnvironment,
             IHubContext<AdminHub> hubContext,
-            PdfService pdfService)
+            IHubContext<CommunityHub> communityHubContext,
+            PdfService pdfService,
+            ILogger<CommunityController> logger)
         {
             _context = context;
             _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
             _hubContext = hubContext;
+            _communityHubContext = communityHubContext;
             _pdfService = pdfService;
+            _logger = logger;
         }
 
         // Dashboard main page
@@ -395,21 +402,36 @@ namespace THYNK.Controllers
         }
         
         // View alerts
-        public async Task<IActionResult> Alerts(string severity = null)
+        public async Task<IActionResult> Alerts(string type = null)
         {
-            var query = _context.DisasterReports.AsQueryable()
-                .Where(r => r.Status == ReportStatus.Verified);
-
-            if (!string.IsNullOrEmpty(severity))
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
             {
-                if (Enum.TryParse<SeverityLevel>(severity, out var severityLevel))
-                {
-                    query = query.Where(r => r.Severity == severityLevel);
-                }
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
             }
 
-            var alerts = await query.OrderByDescending(r => r.DateReported).ToListAsync();
-            return View(alerts);
+            // Get user notifications
+            var query = _context.UserNotifications
+                .Where(n => n.UserId == userId);
+
+            // Filter by notification type if specified
+            if (!string.IsNullOrEmpty(type))
+            {
+                query = query.Where(n => n.NotificationType == type);
+            }
+
+            var notifications = await query
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
+            // Mark all as read
+            foreach (var notification in notifications.Where(n => !n.IsRead))
+            {
+                notification.IsRead = true;
+            }
+            await _context.SaveChangesAsync();
+
+            return View(notifications);
         }
         
         // View incident map
@@ -478,28 +500,132 @@ namespace THYNK.Controllers
         // My reports (view user's own reports)
         public async Task<IActionResult> MyReports()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+
+            // Get user reports
             var reports = await _context.DisasterReports
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.DateReported)
                 .ToListAsync();
-                
+
+            // Get unread notifications count
+            var unreadCount = await _context.UserNotifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
+
+            ViewBag.UnreadNotificationsCount = unreadCount;
+            _logger.LogInformation($"User {userId} viewing their reports. Unread notifications: {unreadCount}");
+
             return View(reports);
         }
         
         // View report details
         public async Task<IActionResult> ReportDetails(int id)
         {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+
             var report = await _context.DisasterReports
-                .FirstOrDefaultAsync(r => r.Id == id);
-                
+                .Include(r => r.User)
+                .Include(r => r.AssignedTo)
+                .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
+
             if (report == null)
             {
                 return NotFound();
             }
-            
+
+            // Get unread notifications count
+            var unreadCount = await _context.UserNotifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
+
+            ViewBag.UnreadNotificationsCount = unreadCount;
+            _logger.LogInformation($"User {userId} viewing report {id}. Unread notifications: {unreadCount}");
+
             return View(report);
+        }
+
+        // Get notifications for the current user
+        [HttpGet]
+        public async Task<JsonResult> GetNotifications()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { notifications = new List<object>(), unreadCount = 0 });
+            }
+
+            var notifications = await _context.UserNotifications
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(10)
+                .Select(n => new {
+                    n.Id,
+                    n.Title,
+                    n.Message,
+                    n.NotificationType,
+                    n.IsRead,
+                    n.CreatedAt,
+                    n.RelatedEntityId,
+                    n.RelatedEntityType
+                })
+                .ToListAsync();
+
+            var unreadCount = await _context.UserNotifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
+
+            return Json(new { notifications, unreadCount });
+        }
+
+        // Mark a notification as read
+        [HttpPost]
+        public async Task<JsonResult> MarkNotificationRead(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false });
+            }
+
+            var notification = await _context.UserNotifications
+                .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
+
+            if (notification != null)
+            {
+                notification.IsRead = true;
+                await _context.SaveChangesAsync();
+            }
+
+            return Json(new { success = true });
+        }
+
+        // Mark all notifications as read
+        [HttpPost]
+        public async Task<JsonResult> MarkAllNotificationsRead()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false });
+            }
+
+            var notifications = await _context.UserNotifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .ToListAsync();
+
+            foreach (var notification in notifications)
+            {
+                notification.IsRead = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
         }
     }
 } 

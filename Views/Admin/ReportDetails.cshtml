@@ -235,7 +235,17 @@
                         <p class="mb-1"><strong>Type:</strong> @Model.Type</p>
                         <p class="mb-1"><strong>Severity:</strong> @Model.Severity</p>
                         <p class="mb-1"><strong>Location:</strong> @Model.Location</p>
-                        <p class="mb-1"><strong>Reported by:</strong> @(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")</p>
+                        <p class="mb-1">
+                            <strong>Reported by:</strong> 
+                            @if (Model.IsAnonymous)
+                            {
+                                <span><i class="fas fa-user-secret me-1"></i> Anonymous</span>
+                            }
+                            else
+                            {
+                                @(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")
+                            }
+                        </p>
                         <p class="mb-0"><strong>Date:</strong> @Model.DateReported.ToString("MMM dd, yyyy HH:mm")</p>
                     </div>
                 </div>
@@ -270,7 +280,17 @@
                             <p class="mb-1"><strong>Type:</strong> @Model.Type</p>
                             <p class="mb-1"><strong>Severity:</strong> @Model.Severity</p>
                             <p class="mb-1"><strong>Location:</strong> @Model.Location</p>
-                            <p class="mb-1"><strong>Reported by:</strong> @(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")</p>
+                            <p class="mb-1">
+                                <strong>Reported by:</strong> 
+                                @if (Model.IsAnonymous)
+                                {
+                                    <span><i class="fas fa-user-secret me-1"></i> Anonymous</span>
+                                }
+                                else
+                                {
+                                    @(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")
+                                }
+                            </p>
                             <p class="mb-0"><strong>Date:</strong> @Model.DateReported.ToString("MMM dd, yyyy HH:mm")</p>
                         </div>
                         <div class="mb-3">
@@ -309,7 +329,17 @@
                             <p class="mb-1"><strong>Type:</strong> @Model.Type</p>
                             <p class="mb-1"><strong>Severity:</strong> @Model.Severity</p>
                             <p class="mb-1"><strong>Location:</strong> @Model.Location</p>
-                            <p class="mb-1"><strong>Reported by:</strong> @(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")</p>
+                            <p class="mb-1">
+                                <strong>Reported by:</strong> 
+                                @if (Model.IsAnonymous)
+                                {
+                                    <span><i class="fas fa-user-secret me-1"></i> Anonymous</span>
+                                }
+                                else
+                                {
+                                    @(Model.User?.FirstName + " " + Model.User?.LastName ?? "Unknown")
+                                }
+                            </p>
                             <p class="mb-0"><strong>Date:</strong> @Model.DateReported.ToString("MMM dd, yyyy HH:mm")</p>
                         </div>
                         <div class="mb-3">

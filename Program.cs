@@ -65,6 +65,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<THYNK.Hubs.AdminHub>("/adminHub");
+app.MapHub<THYNK.Hubs.CommunityHub>("/communityHub");
 
 app.MapControllerRoute(
     name: "default",

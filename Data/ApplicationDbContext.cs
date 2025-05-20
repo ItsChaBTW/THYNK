@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ChatMessage> ChatMessages { get; set; }
     public DbSet<SupportChat> SupportChats { get; set; }
     public DbSet<NotificationPreferences> NotificationPreferences { get; set; }
+    public DbSet<UserNotification> UserNotifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

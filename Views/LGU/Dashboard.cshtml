@@ -1,3 +1,4 @@
+@using System.Security.Claims
 @{
     ViewData["Title"] = "LGU Dashboard";
     Layout = "_LGULayout";
@@ -331,6 +332,29 @@
     .dashboard-section:nth-child(5) {
         animation-delay: 0.4s;
     }
+
+    /* Animation styles */
+    .count-updated {
+        animation: pulse 1s ease-in-out;
+    }
+    @@keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    #recentReportsContainer {
+        transition: opacity 0.3s ease-in-out;
+    }
+    .highlight-new {
+        animation: highlight 2s ease-in-out;
+    }
+    @@keyframes highlight {
+        0% { background-color: rgba(255, 193, 7, 0.2); }
+        100% { background-color: transparent; }
+    }
+    .list-item {
+        transition: background-color 0.3s ease-in-out;
+    }
 </style>
 
 <!-- Stats Summary -->
@@ -341,7 +365,7 @@
             <div class="stat-label">Active Alerts</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value">@(ViewBag.RecentReports?.Count ?? 0)</div>
+            <div class="stat-value" id="recentReportsCount">@(ViewBag.RecentReports?.Count ?? 0)</div>
             <div class="stat-label">Recent Reports</div>
         </div>
         <div class="stat-card">
@@ -436,44 +460,13 @@
         <div class="dashboard-card card-accent-reports">
                 @if (ViewBag.RecentReports != null && ViewBag.RecentReports.Count > 0)
                 {
-                    <div id="lguRecentReportsList">
+                    <div id="recentReportsContainer">
                         @await Html.PartialAsync("_LGURecentReports", ViewBag.RecentReports as IEnumerable<THYNK.Models.DisasterReport>)
                     </div>
-                    <div class="p-0">
-                        @foreach (var report in ViewBag.RecentReports)
-                        {
-                            <a href="@Url.Action("ManageReports", "LGU")" class="list-item d-block text-decoration-none">
-                                <div class="d-flex w-100 justify-content-between align-items-start">
-                                    <div>
-                                        <h6 class="item-title">@report.Title</h6>
-                                        <p class="item-content text-truncate">@report.Description</p>
-                                        <div class="item-footer">
-                                            <span class="badge bg-secondary">@report.Type</span>
-                                            <span class="badge @(report.Severity == SeverityLevel.Low ? "bg-info" : 
-                                                               report.Severity == SeverityLevel.Medium ? "bg-warning" : 
-                                                               report.Severity == SeverityLevel.High ? "bg-danger" : "bg-dark")">
-                                                @report.Severity
-                                            </span>
-                                            <span class="badge @(report.Status == ReportStatus.Pending ? "bg-warning" : 
-                                                              report.Status == ReportStatus.Verified ? "bg-info" : 
-                                                              report.Status == ReportStatus.InProgress ? "bg-primary" : 
-                                                              report.Status == ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
-                                                @report.Status
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <span class="item-date">
-                                        <i class="far fa-calendar-alt me-1"></i>
-                                        @report.DateReported.ToString("MMM dd, HH:mm")
-                                    </span>
-                                </div>
-                            </a>
-                        }
-                        <div class="p-3 text-end">
-                            <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-arrow-right me-1"></i> View All Reports
-                            </a>
-                        </div>
+                    <div class="p-3 text-end">
+                        <a href="@Url.Action("ManageReports", "LGU")" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-1"></i> View All Reports
+                        </a>
                     </div>
                 }
                 else
@@ -575,125 +568,99 @@
 </div>
 
 @section Scripts {
-    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/adminHub")
-            .withAutomaticReconnect()
-            .build();
-
-        connection.start()
-            .then(() => console.log("SignalR Connected"))
-            .catch(err => console.error("SignalR Connection Error: ", err));
-
-        function reloadRecentReports() {
-            $.get(window.location.pathname, function (data) {
-                const html = $(data);
-                const newList = html.find("#lguRecentReportsList").html();
-                $("#lguRecentReportsList").html(newList);
-            });
+        // Function to update recent reports count
+        async function updateRecentReportsCount() {
+            try {
+                const response = await fetch('@Url.Action("GetRecentReportsCount", "LGU")');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                const countElement = document.getElementById('recentReportsCount');
+                if (countElement) {
+                    countElement.textContent = data.count;
+                    countElement.classList.add('count-updated');
+                    setTimeout(() => countElement.classList.remove('count-updated'), 1000);
+                }
+            } catch (error) {
+                console.error('Error updating recent reports count:', error);
+            }
         }
 
-        connection.on("RecentReportUpdated", function(report) {
-            reloadRecentReports();
-        });
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Mapbox map
-            if (mapboxgl) {
-                mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
-                const map = new mapboxgl.Map({
-                    container: 'map-preview',
-                    style: 'mapbox://styles/mapbox/streets-v12',
-                    center: [123.0051, 10.3157], // Center on Negros Occidental
-                    zoom: 9 // Closer zoom for Negros Occidental
-                });
+        // Function to reload recent reports with fade effect
+        async function reloadRecentReports() {
+            const container = document.getElementById('recentReportsContainer');
+            if (!container) return;
+
+            try {
+                const response = await fetch('@Url.Action("GetRecentReports", "LGU")');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const html = await response.text();
                 
-                // Add navigation controls
-                map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                // Create a temporary container to parse the HTML
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = html;
                 
-                // Set bounds to Negros Occidental
-                const negrosBounds = [
-                    [122.2700, 9.8500], // Southwest coordinates of Negros Occidental
-                    [123.5500, 11.0500]  // Northeast coordinates of Negros Occidental
-                ];
+                // Add fade out effect
+                container.style.opacity = '0';
+                container.style.transition = 'opacity 0.3s ease-in-out';
                 
-                // Fit map to Negros Occidental bounds
-                map.fitBounds(negrosBounds, { padding: 20 });
-                
-                // Load actual incident data from controller
-                fetch('@Url.Action("GetMapData", "LGU")')
-                    .then(response => response.json())
-                    .then(incidents => {
-                        if (incidents && incidents.length > 0) {
-                            incidents.forEach(incident => {
-                                // Skip if no valid coordinates
-                                if (!incident.latitude || !incident.longitude) return;
-                                
-                                // Set marker color based on status and severity
-                                let color = '#345995'; // Default blue
-                                
-                                if (incident.status === 3) { // Resolved
-                                    color = '#6a8d73'; // Green 
-                                } else if (incident.severity === 3) { // High severity
-                                    color = '#b56357'; // Red
-                                } else if (incident.severity === 2) { // Medium severity
-                                    color = '#e0a458'; // Orange/Yellow
-                                }
-                                
-                                // Add marker with popup
-                                new mapboxgl.Marker({ color: color })
-                                    .setLngLat([incident.longitude, incident.latitude])
-                                    .setPopup(new mapboxgl.Popup({ offset: 25 })
-                                        .setHTML(`
-                                            <h4 class="text-sm font-bold">${incident.title}</h4>
-                                            <p class="text-xs">${incident.location}</p>
-                                            <p class="text-xs">Status: ${getStatusName(incident.status)}</p>
-                                        `))
-                                    .addTo(map);
-                            });
-                        } else {
-                            // If no incidents, add sample markers within Negros Occidental
-                            const sampleIncidents = [
-                                { lng: 122.9389, lat: 10.6713, type: 'Flood', severity: 'High', title: 'Sample: Flood in Bacolod', location: 'Bacolod City' },
-                                { lng: 123.0175, lat: 10.2494, type: 'Fire', severity: 'Medium', title: 'Sample: Fire Incident', location: 'Kabankalan City' },
-                                { lng: 123.1393, lat: 10.7731, type: 'Landslide', severity: 'Low', title: 'Sample: Minor Landslide', location: 'Silay City' }
-                            ];
-                            
-                            sampleIncidents.forEach(incident => {
-                                const color = incident.severity === 'High' ? '#ef4444' : 
-                                            incident.severity === 'Medium' ? '#f59e0b' : '#3b82f6';
-                                
-                                // Add marker with popup
-                                new mapboxgl.Marker({ color: color })
-                                    .setLngLat([incident.lng, incident.lat])
-                                    .setPopup(new mapboxgl.Popup({ offset: 25 })
-                                        .setHTML(`
-                                            <h4 class="text-sm font-bold">${incident.title}</h4>
-                                            <p class="text-xs">${incident.location}</p>
-                                            <p class="text-xs">Type: ${incident.type}</p>
-                                            <p class="text-xs">Severity: ${incident.severity}</p>
-                                            <p class="text-xs text-gray-500 mt-1">This is sample data</p>
-                                        `))
-                                    .addTo(map);
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching map data:', error);
-                        // Show error on map
-                        const mapContainer = document.getElementById('map-preview');
-                        if (mapContainer) {
-                            mapContainer.innerHTML = '<div class="p-4 text-center text-red-500">Error loading incident data</div>';
-                        }
+                // Update content after fade out
+                setTimeout(() => {
+                    container.innerHTML = tempContainer.innerHTML;
+                    container.style.opacity = '1';
+                    
+                    // Add highlight effect to new items
+                    const newItems = container.querySelectorAll('.report-item');
+                    newItems.forEach(item => {
+                        item.classList.add('highlight-new');
+                        setTimeout(() => item.classList.remove('highlight-new'), 2000);
                     });
+                }, 300);
+            } catch (error) {
+                console.error('Error reloading recent reports:', error);
             }
-            
-            // Helper function to get status name
-            function getStatusName(status) {
-                const statuses = ['Pending', 'Verified', 'InProgress', 'Resolved', 'Declined'];
-                return statuses[status] || 'Unknown';
+        }
+
+        // Set up periodic refresh
+        let refreshInterval = setInterval(() => {
+            updateRecentReportsCount();
+            reloadRecentReports();
+        }, 30000);
+
+        // Listen for real-time updates
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial load
+            updateRecentReportsCount();
+            reloadRecentReports();
+
+            // Listen for real-time events
+            window.addEventListener('reportAssigned', (event) => {
+                console.log('Report assigned event received:', event.detail);
+                updateRecentReportsCount();
+                reloadRecentReports();
+            });
+
+            window.addEventListener('reportStatusUpdated', (event) => {
+                console.log('Report status updated event received:', event.detail);
+                updateRecentReportsCount();
+                reloadRecentReports();
+            });
+
+            window.addEventListener('newIncidentReport', (event) => {
+                console.log('New incident report event received:', event.detail);
+                updateRecentReportsCount();
+                reloadRecentReports();
+            });
+        });
+
+        // Clean up interval when leaving the page
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
             }
         });
     </script>

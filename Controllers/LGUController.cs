@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authentication;
 using System.Text.Json;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
+using THYNK.Hubs;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace THYNK.Controllers
 {
@@ -19,12 +22,21 @@ namespace THYNK.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<LGUController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IHubContext<CommunityHub> _hubContext;
+        private readonly IEmailSender _emailSender;
 
-        public LGUController(ApplicationDbContext context, ILogger<LGUController> logger, UserManager<ApplicationUser> userManager)
+        public LGUController(
+            ApplicationDbContext context, 
+            ILogger<LGUController> logger, 
+            UserManager<ApplicationUser> userManager, 
+            IHubContext<CommunityHub> hubContext, 
+            IEmailSender emailSender)
         {
             _context = context;
             _logger = logger;
             _userManager = userManager;
+            _hubContext = hubContext;
+            _emailSender = emailSender;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -111,44 +123,104 @@ namespace THYNK.Controllers
         }
 
         // Manage disaster reports with filtering
-        public async Task<IActionResult> ManageReports(ReportStatus? status = null, string search = null)
+        public async Task<IActionResult> ManageReports(string status, string search)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            _logger.LogInformation($"----------- DEBUG START: ManageReports -----------");
+            _logger.LogInformation($"Parameters: status={status}, search={search}");
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(currentUserId) as LGUUser;
             
             if (currentUser == null)
             {
                 return NotFound();
             }
 
-            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports
-                .Include(r => r.AssignedTo)
-                .Where(r => r.AssignedToId == userId || 
-                           (r.Status == ReportStatus.InProgress && r.AssignedTo.OrganizationName == currentUser.OrganizationName));
-            
-            // Filter by status if provided
-            if (status.HasValue)
+            _logger.LogInformation($"Current user: {currentUser.Id}, Organization: {currentUser.OrganizationName}");
+
+            // Get reports
+            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports;
+
+            // Default behavior - only get specific reports
+            reportsQuery = reportsQuery.Where(r => 
+                r.AssignedToId == currentUserId || 
+                (r.Status == ReportStatus.InProgress && r.AssignedTo.OrganizationName == currentUser.OrganizationName)
+            );
+
+            var reports = await reportsQuery.ToListAsync();
+            _logger.LogInformation($"STEP 1: Retrieved {reports.Count} reports after initial query");
+            foreach (var r in reports)
             {
-                reportsQuery = reportsQuery.Where(r => r.Status == status.Value);
+                _logger.LogInformation($"Report ID: {r.Id}, Title: {r.Title}, Status: {r.Status}, Severity: {r.Severity} ({(int)r.Severity}), Date: {r.DateReported:yyyy-MM-dd HH:mm}");
             }
-            
-            // Filter by search text if provided
+
+            // Apply status filter if specified
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<ReportStatus>(status, out var statusEnum))
+            {
+                _logger.LogInformation($"STEP 2: Applying status filter: {statusEnum}");
+                reports = reports.Where(r => r.Status == statusEnum).ToList();
+                ViewBag.CurrentFilter = statusEnum;
+                _logger.LogInformation($"After status filter: {reports.Count} reports remain");
+                foreach (var r in reports)
+                {
+                    _logger.LogInformation($"Report ID: {r.Id}, Title: {r.Title}, Status: {r.Status}, Severity: {r.Severity} ({(int)r.Severity}), Date: {r.DateReported:yyyy-MM-dd HH:mm}");
+                }
+            }
+
+            // Apply search filter if specified
             if (!string.IsNullOrEmpty(search))
             {
-                search = search.ToLower();
-                reportsQuery = reportsQuery.Where(r => 
-                    r.Title.ToLower().Contains(search) || 
-                    r.Description.ToLower().Contains(search) || 
-                    r.Location.ToLower().Contains(search));
+                _logger.LogInformation($"STEP 3: Applying search filter: '{search}'");
+                reports = reports.Where(r =>
+                    r.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    r.Description.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    r.Location.Contains(search, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+                ViewBag.CurrentSearch = search;
+                _logger.LogInformation($"After search filter: {reports.Count} reports remain");
             }
-            
-            // Get reports, ordered by date
-            var reports = await reportsQuery
-                .OrderByDescending(r => r.DateReported)
-                .ToListAsync();
+
+            // IMPORTANT: Apply sorting AFTER all filters
+            // Special handling for InProgress reports - sort by severity level (Critical first)
+            if (status == "InProgress" || (!string.IsNullOrEmpty(status) && Enum.TryParse<ReportStatus>(status, out var statusEnumValue) && statusEnumValue == ReportStatus.InProgress))
+            {
+                _logger.LogInformation("STEP 4: Applying SEVERITY SORTING for InProgress reports");
                 
-            ViewBag.CurrentFilter = status;
-            ViewBag.CurrentSearch = search;
+                // First separate reports by severity
+                var criticalReports = reports.Where(r => r.Severity == SeverityLevel.Critical).OrderByDescending(r => r.DateReported).ToList();
+                var highReports = reports.Where(r => r.Severity == SeverityLevel.High).OrderByDescending(r => r.DateReported).ToList();
+                var mediumReports = reports.Where(r => r.Severity == SeverityLevel.Medium).OrderByDescending(r => r.DateReported).ToList();
+                var lowReports = reports.Where(r => r.Severity == SeverityLevel.Low).OrderByDescending(r => r.DateReported).ToList();
+                
+                // Combine them in priority order
+                reports = criticalReports.Concat(highReports).Concat(mediumReports).Concat(lowReports).ToList();
+                
+                _logger.LogInformation("After severity sort:");
+                int idx = 1;
+                foreach (var r in reports)
+                {
+                    _logger.LogInformation($"{idx++}. Report ID: {r.Id}, Title: {r.Title}, Status: {r.Status}, Severity: {r.Severity} ({(int)r.Severity}), Date: {r.DateReported:yyyy-MM-dd HH:mm}");
+                }
+            }
+            else
+            {
+                // Sort by most recent first for non-InProgress reports
+                _logger.LogInformation("STEP 4: Applying DATE SORTING for non-InProgress reports");
+                reports = reports.OrderByDescending(r => r.DateReported).ToList();
+                foreach (var report in reports)
+                {
+                    _logger.LogInformation($"After date sort: Report ID {report.Id}, Title: {report.Title}, Status: {report.Status}, Severity: {report.Severity} ({(int)report.Severity}), Date: {report.DateReported:yyyy-MM-dd HH:mm}");
+                }
+            }
+
+            _logger.LogInformation($"FINAL: Returning {reports.Count} reports to view");
+            _logger.LogInformation("FINAL ORDER OF REPORTS:");
+            int index = 1;
+            foreach (var r in reports)
+            {
+                _logger.LogInformation($"{index++}. ID: {r.Id}, Title: {r.Title}, Status: {r.Status}, Severity: {r.Severity} ({(int)r.Severity}), Date: {r.DateReported:yyyy-MM-dd HH:mm}");
+            }
+            _logger.LogInformation($"----------- DEBUG END: ManageReports -----------");
             
             return View(reports);
         }
@@ -169,26 +241,42 @@ namespace THYNK.Controllers
             return View(report);
         }
         
+        // Helper method to convert report to DTO for SignalR
+        private object ToRecentReportDto(DisasterReport report)
+        {
+            return new
+            {
+                Id = report.Id,
+                Title = report.Title,
+                Type = report.Type.ToString(),
+                Barangay = report.Barangay,
+                City = report.City,
+                DateReported = report.DateReported.ToString("MMM dd, yyyy HH:mm"),
+                Status = report.Status.ToString()
+            };
+        }
+
         // Update report status
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateReportStatus(int id, int status, string notes)
         {
-            var report = await _context.DisasterReports.FindAsync(id);
+            var report = await _context.DisasterReports
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
             
             if (report == null)
             {
                 return NotFound();
             }
             
-            // Update report status
+            var oldStatus = report.Status;
             report.Status = (ReportStatus)status;
             
-            // Add response log entry (if we had a ResponseLog table)
-            // Instead we can store in the AdditionalInfo field for now as JSON
-            var currentUser = await _userManager.GetUserAsync(User);
+            // Add response log entry
+            var currentUser = await _userManager.GetUserAsync(User) as LGUUser;
             string responderName = $"{currentUser?.FirstName ?? "Unknown"} {currentUser?.LastName ?? "User"}";
-            string responseNote = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] Status updated to {report.Status} by {responderName}. Notes: {notes}";
+            string responseNote = $"[{DateTime.Now:yyyy-MM-dd HH:mm}] Status updated to {report.Status} by {responderName} ({currentUser?.OrganizationName}). Notes: {notes}";
             
             // Append to existing info with a separator
             if (!string.IsNullOrEmpty(report.AdditionalInfo))
@@ -197,23 +285,90 @@ namespace THYNK.Controllers
             }
             report.AdditionalInfo += responseNote;
             
-            // If resolved, set the resolution date
-            if (report.Status == ReportStatus.Resolved)
+            // Update timestamps based on status
+            switch (report.Status)
             {
-                // We would have a ResolutionDate field, but for now we'll just use AdditionalInfo
-                report.AdditionalInfo += $"\n\nResolved on: {DateTime.Now:yyyy-MM-dd HH:mm}";
-                report.ResolvedAt = DateTime.Now;
+                case ReportStatus.InProgress:
+                    report.DateInProgress = DateTime.Now;
+                    break;
+                case ReportStatus.Resolved:
+                    report.ResolvedAt = DateTime.Now;
+                    break;
             }
             
             _context.Update(report);
             await _context.SaveChangesAsync();
             
-            // Notify the reporter if user info is available
-            if (report.User != null && !string.IsNullOrEmpty(report.User.Email))
+            // Create notification for the report owner
+            if (report.User != null)
             {
-                // This would use the email service in a real app
-                _logger.LogInformation($"Would send email to {report.User.Email} about status update for report {report.Id}");
+                string notificationTitle = "";
+                string notificationMessage = "";
+                string notificationType = "info";
+
+                switch (report.Status)
+                {
+                    case ReportStatus.InProgress:
+                        notificationTitle = "Report In Progress";
+                        notificationMessage = $"Your report '{report.Title}' is now being addressed by {currentUser?.OrganizationName}.";
+                        notificationType = "info";
+                        break;
+                    case ReportStatus.Resolved:
+                        notificationTitle = "Report Resolved";
+                        notificationMessage = $"Your report '{report.Title}' has been resolved by {currentUser?.OrganizationName}.";
+                        notificationType = "success";
+                        break;
+                }
+
+                var notification = new UserNotification
+                {
+                    UserId = report.UserId,
+                    Title = notificationTitle,
+                    Message = notificationMessage,
+                    NotificationType = notificationType,
+                    RelatedEntityId = report.Id,
+                    RelatedEntityType = "Report",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.UserNotifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Send real-time notification to report owner
+                await _hubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("NotificationReceived", notification);
+                await _hubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("ReportStatusUpdated", report.Id, report.Status.ToString(), report.Title);
+
+                // Get notification preferences
+                var notificationPreferences = await _context.NotificationPreferences
+                    .FirstOrDefaultAsync(np => np.UserId == report.UserId);
+
+                // Send email notification if enabled
+                if (notificationPreferences?.EmailEnabled == true && !string.IsNullOrEmpty(report.User.Email))
+                {
+                    try
+                    {
+                        await _emailSender.SendEmailAsync(
+                            report.User.Email,
+                            $"THYNK - Report Status Update: {notificationTitle}",
+                            $"Dear {report.User.FirstName},<br><br>" +
+                            $"{notificationMessage}<br><br>" +
+                            $"Response Notes: {notes}<br><br>" +
+                            $"Best regards,<br>THYNK Team"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Failed to send status update email: {ex.Message}");
+                    }
+                }
             }
+
+            // Notify all clients about the report update
+            await _hubContext.Clients.All.SendAsync("ReportUpdated", id, report.Status.ToString());
+            await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
             
             TempData["SuccessMessage"] = "Report status has been updated successfully.";
             return RedirectToAction(nameof(ReportDetails), new { id = id });
@@ -1209,22 +1364,58 @@ namespace THYNK.Controllers
             }
         }
 
+        // Get recent reports for partial view update
+        [HttpGet]
+        public async Task<IActionResult> GetRecentReports()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var reports = await _context.DisasterReports
+                .Where(r => r.AssignedToId == userId)
+                .OrderByDescending(r => r.DateReported)
+                .Take(5)
+                .ToListAsync();
+
+            return PartialView("_LGURecentReports", reports);
+        }
+
+        // Get count of recent reports
+        [HttpGet]
+        public async Task<IActionResult> GetRecentReportsCount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var count = await _context.DisasterReports
+                .Where(r => r.AssignedToId == userId)
+                .OrderByDescending(r => r.DateReported)
+                .Take(5)
+                .CountAsync();
+
+            return Json(new { count });
+        }
+
+        // Get count of in-progress reports
         [HttpGet]
         public async Task<IActionResult> GetInProgressReportsCount()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
-            
-            if (currentUser == null)
+            if (string.IsNullOrEmpty(userId))
             {
-                return Json(new { count = 0 });
+                return Unauthorized();
             }
 
-            var inProgressCount = await _context.DisasterReports
-                .CountAsync(r => (r.AssignedToId == userId || r.AssignedTo.OrganizationName == currentUser.OrganizationName) 
-                                && r.Status == ReportStatus.InProgress);
-            
-            return Json(new { count = inProgressCount });
+            var count = await _context.DisasterReports
+                .CountAsync(r => r.AssignedToId == userId && r.Status == ReportStatus.InProgress);
+
+            return Json(new { count });
         }
 
         // Analytics dashboard
@@ -1644,6 +1835,63 @@ namespace THYNK.Controllers
             }
             
             return Json(result);
+        }
+
+        // Get reports table for partial view update
+        [HttpGet]
+        public async Task<IActionResult> GetReportsTable(ReportStatus? status = null, string search = null)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return Unauthorized();
+            }
+
+            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports
+                .Include(r => r.AssignedTo)
+                .Where(r => r.AssignedToId == userId || 
+                           (r.Status == ReportStatus.InProgress && r.AssignedTo.OrganizationName == currentUser.OrganizationName));
+            
+            // Filter by status if provided
+            if (status.HasValue)
+            {
+                reportsQuery = reportsQuery.Where(r => r.Status == status.Value);
+            }
+            
+            // Filter by search text if provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                search = search.ToLower();
+                reportsQuery = reportsQuery.Where(r => 
+                    r.Title.ToLower().Contains(search) || 
+                    r.Description.ToLower().Contains(search) || 
+                    r.Location.ToLower().Contains(search));
+            }
+            
+            // Get reports
+            var reports = await reportsQuery.ToListAsync();
+            
+            // Special handling for InProgress reports - sort by severity level (Critical first)
+            if (status == ReportStatus.InProgress)
+            {
+                // First separate reports by severity
+                var criticalReports = reports.Where(r => r.Severity == SeverityLevel.Critical).OrderByDescending(r => r.DateReported).ToList();
+                var highReports = reports.Where(r => r.Severity == SeverityLevel.High).OrderByDescending(r => r.DateReported).ToList();
+                var mediumReports = reports.Where(r => r.Severity == SeverityLevel.Medium).OrderByDescending(r => r.DateReported).ToList();
+                var lowReports = reports.Where(r => r.Severity == SeverityLevel.Low).OrderByDescending(r => r.DateReported).ToList();
+                
+                // Combine them in priority order
+                reports = criticalReports.Concat(highReports).Concat(mediumReports).Concat(lowReports).ToList();
+            }
+            else
+            {
+                // For other report types, sort by date
+                reports = reports.OrderByDescending(r => r.DateReported).ToList();
+            }
+
+            return PartialView("_LGUReportsTable", reports);
         }
     }
 } 

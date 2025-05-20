@@ -1,3 +1,4 @@
+@using System.Security.Claims
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +11,8 @@
     <link rel="stylesheet" href="~/THYNK.styles.css" asp-append-version="true" />
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
     <!-- Mapbox CSS -->
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
     @await RenderSectionAsync("Styles", required: false)
@@ -165,6 +168,9 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <!-- Mapbox JS -->
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -196,13 +202,120 @@
             });
         }
 
+        // Sound handling functions
+        function playNotificationSound() {
+            if (sessionStorage.getItem('soundEnabled') === 'true') {
+                const alarm = document.getElementById('alarmSound');
+                if (alarm) {
+                    alarm.currentTime = 0;
+                    alarm.play().catch(error => console.log("Error playing alarm:", error));
+                }
+            }
+        }
+
+        function showToastNotification(title, message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <strong class="ms-2">${title}</strong>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Initialize SignalR connection
+        @if (User.IsInRole("Admin"))
+        {
+            <text>
+            const adminConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/adminHub")
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // Set up event handlers before starting the connection
+            adminConnection.on("NewIncidentReport", (report) => {
+                console.log('New incident report received:', report);
+                playNotificationSound();
+                showToastNotification(
+                    'New Incident Report',
+                    `New incident reported: ${report.title}`,
+                    'warning'
+                );
+            });
+
+            adminConnection.on("ReceiveDashboardStats", (pendingLGUCount, pendingReportsCount, pendingPostsCount) => {
+                console.log('Dashboard stats updated:', { pendingLGUCount, pendingReportsCount, pendingPostsCount });
+                if (pendingReportsCount > 0) {
+                    playNotificationSound();
+                    showToastNotification(
+                        'Pending Reports',
+                        `You have ${pendingReportsCount} pending incident report(s) to review.`,
+                        'warning'
+                    );
+                }
+            });
+
+            adminConnection.on("ReportUpdated", (reportId, newStatus) => {
+                console.log('Report updated:', { reportId, newStatus });
+                if (newStatus === 'Pending') {
+                    playNotificationSound();
+                    showToastNotification(
+                        'New Incident Report',
+                        'A new incident report requires your attention.',
+                        'warning'
+                    );
+                }
+            });
+
+            // Start the connection
+            adminConnection.start()
+                .then(() => {
+                    console.log("Admin SignalR Connected");
+                    const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                    if (userId) {
+                        return adminConnection.invoke("JoinUserGroup", userId);
+                    }
+                })
+                .then(() => {
+                    console.log('Successfully joined admin user group');
+                })
+                .catch(err => console.error("Admin SignalR Connection Error: ", err));
+
+            // Handle reconnection
+            adminConnection.onreconnecting((error) => {
+                console.log("Reconnecting to SignalR...", error);
+            });
+
+            adminConnection.onreconnected((connectionId) => {
+                console.log("Reconnected to SignalR with connection ID:", connectionId);
+                const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                if (userId) {
+                    adminConnection.invoke("JoinUserGroup", userId)
+                        .catch(err => console.error('Error rejoining admin user group:', err));
+                }
+            });
+            </text>
+        }
+
+        // Sound enable modal handling
         window.addEventListener('DOMContentLoaded', function() {
-            // Show modal if sound not enabled
             if (sessionStorage.getItem('soundEnabled') !== 'true') {
-                var soundModal = new bootstrap.Modal(document.getElementById('soundEnableModal'));
+                const soundModal = new bootstrap.Modal(document.getElementById('soundEnableModal'));
                 soundModal.show();
+                
                 document.getElementById('modalEnableSound').addEventListener('click', function() {
-                    var alarm = document.getElementById('alarmSound');
+                    const alarm = document.getElementById('alarmSound');
                     if (alarm) {
                         alarm.play().then(() => {
                             alarm.pause();
@@ -210,7 +323,10 @@
                             sessionStorage.setItem('soundEnabled', 'true');
                             soundModal.hide();
                             document.getElementById('enableSound').style.display = 'none';
-                            alert('Sound enabled! You will now hear alerts for new reports.');
+                            showToastNotification('Sound Enabled', 'You will now receive sound alerts for new reports.', 'success');
+                        }).catch(error => {
+                            console.error('Error playing test sound:', error);
+                            showToastNotification('Sound Error', 'Could not enable sound. Please check your browser settings.', 'error');
                         });
                     }
                 });
@@ -218,60 +334,11 @@
                 document.getElementById('enableSound').style.display = 'none';
             }
 
-            // Clear soundEnabled on logout
+            // Clear sound preferences on logout
             document.querySelectorAll('form[action*="/Account/Logout"]').forEach(function(form) {
                 form.addEventListener('submit', function() {
                     sessionStorage.removeItem('soundEnabled');
                 });
-            });
-
-            // SignalR connection for alarm
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/adminHub")
-                .withAutomaticReconnect()
-                .build();
-
-            connection.start()
-                .then(() => console.log("SignalR Connected (Layout)"))
-                .catch(err => console.error("SignalR Connection Error: ", err));
-
-            // Listen for report updates
-            connection.on("ReportUpdated", function (reportId, status) {
-                // Refresh the page if we're on the reports page
-                if (window.location.pathname.includes('/Admin/IncidentReports')) {
-                    location.reload();
-                }
-            });
-
-            // Listen for recent report updates
-            connection.on("RecentReportUpdated", function (report) {
-                if (sessionStorage.getItem('soundEnabled') === 'true') {
-                    var alarm = document.getElementById('alarmSound');
-                    if (alarm) {
-                        alarm.currentTime = 0;
-                        alarm.play();
-                    }
-                }
-
-                // Refresh the recent reports list if it exists
-                var recentReportsList = document.getElementById('recentReportsList');
-                if (recentReportsList) {
-                    $.get('/Admin/GetRecentReports', function(data) {
-                        recentReportsList.innerHTML = '';
-                        data.forEach(function(report) {
-                            recentReportsList.innerHTML += `
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">${report.title}</h6>
-                                        <small>${report.dateReported}</small>
-                                    </div>
-                                    <p class="mb-1">${report.type} - ${report.barangay}, ${report.city}</p>
-                                    <small class="text-muted">Status: ${report.status}</small>
-                                </div>
-                            `;
-                        });
-                    });
-                }
             });
         });
     </script>
@@ -285,12 +352,108 @@
                     <h5 class="modal-title" id="soundEnableModalLabel">Enable Notification Sound</h5>
                 </div>
                 <div class="modal-body">
-                    <p>To receive real-time alerts for new incident reports, please enable sound notifications.</p>
+                    <p>To receive real-time sound alerts for new incident reports, please enable sound notifications.</p>
                     <button id="modalEnableSound" class="btn btn-primary w-100">Enable Sound</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Notification Sound Element -->
+    <audio id="notificationSound" preload="auto">
+        <source src="~/sounds/alarm.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Sound Toggle Button -->
+    <button id="toggleSound" class="btn btn-sm btn-primary position-fixed" style="top: 20px; right: 20px; z-index: 9999; display: none;">
+        <i class="fas fa-volume-up"></i>
+    </button>
+
     @await RenderSectionAsync("Scripts", required: false)
+
+    <style>
+        /* Toast Notification Styles */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            max-width: 400px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            z-index: 9999;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: toast-enter 0.3s forwards;
+        }
+
+        .toast-notification.hide {
+            animation: toast-exit 0.3s forwards;
+        }
+
+        .toast-notification .toast-header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .toast-notification .toast-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .toast-notification.success .toast-header i {
+            color: var(--success);
+        }
+
+        .toast-notification.warning .toast-header i {
+            color: var(--warning);
+        }
+
+        .toast-notification.info .toast-header i {
+            color: var(--primary);
+        }
+
+        @@keyframes toast-enter {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes toast-exit {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Sound Toggle Button Styles */
+        #toggleSound {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #toggleSound:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </body>
 </html> 

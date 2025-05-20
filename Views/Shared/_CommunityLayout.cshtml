@@ -1,3 +1,8 @@
+@using THYNK.Models
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -684,6 +689,128 @@
             margin-right: 8px;
             font-size: 0.9em;
         }
+
+        .notification-dropdown {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .notification-item {
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+        .notification-item.unread:hover {
+            background-color: #e6f2ff;
+        }
+
+        .notification-item i {
+            font-size: 1.25rem;
+        }
+
+        #notificationBadge {
+            transform: translate(25%, -25%);
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dropdown-header {
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .notification-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .notification-list::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+        }
+        
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            max-width: 400px;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            z-index: 9999;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: toast-enter 0.3s forwards;
+        }
+        
+        .toast-notification.hide {
+            animation: toast-exit 0.3s forwards;
+        }
+        
+        .toast-notification .toast-header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .toast-notification .toast-body {
+            padding: 0.75rem 1rem;
+        }
+        
+        .toast-notification.success .toast-header i {
+            color: var(--success);
+        }
+        
+        .toast-notification.warning .toast-header i {
+            color: var(--warning);
+        }
+        
+        .toast-notification.info .toast-header i {
+            color: var(--primary);
+        }
+        
+        /* Animations */
+        @@keyframes toast-enter {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @@keyframes toast-exit {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -710,6 +837,33 @@
                 <div class="flex items-center space-x-3">
                     @if (User.Identity.IsAuthenticated)
                     {
+                        <!-- Notification Bell -->
+                        <div class="nav-item dropdown">
+                            <button class="btn btn-link nav-link position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell"></i>
+                                <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                                    0
+                                </span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown" style="width: 350px; max-height: 400px; overflow-y: auto;">
+                                <div class="dropdown-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Notifications</h6>
+                                    <button id="markAllRead" class="btn btn-link btn-sm text-decoration-none p-0">
+                                        Mark all as read
+                                    </button>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <div id="notificationList" class="notification-list">
+                                    <div class="text-center py-3">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="text-muted mb-0 mt-2">Loading notifications...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="hidden md:flex items-center border-l border-gray-200 pl-3 user-dropdown-container">
                             <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2 shadow-sm" style="background-color: #1ABC9C; color: white;">
                                 @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
@@ -729,9 +883,6 @@
                             </div>
                         </div>
                     }
-                    <a href="@Url.Action("Alerts", "Community")" class="header-alert-btn relative p-2 text-primary">
-                        <i class="fas fa-bell"></i>
-                    </a>
                 </div>
             </div>
         </div>
@@ -926,47 +1077,49 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <!-- Add SignalR client library -->
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
-        // Toggle sidebar
+        // Sidebar initialization
         document.addEventListener('DOMContentLoaded', function() {
-        const hamburger = document.getElementById('hamburger');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const mainContent = document.getElementById('main-content');
-        const sidebarNav = document.querySelector('.sidebar-nav');
-        
-        // Add entrance animations to content elements
-        function addEntranceAnimations() {
-            const contentElements = document.querySelectorAll('.bg-white > *');
-            contentElements.forEach((el, index) => {
-                el.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`;
-                el.style.opacity = '0';
-            });
-        }
-        
-        // Responsive sidebar height adjustments
-        function adjustSidebarHeight() {
-            const windowHeight = window.innerHeight;
+            const hamburger = document.getElementById('hamburger');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const mainContent = document.getElementById('main-content');
+            const sidebarNav = document.querySelector('.sidebar-nav');
             
-            if (windowHeight <= 480) {
-                sidebarNav.classList.add('sidebar-nav-small');
-                sidebarNav.classList.remove('sidebar-nav-medium');
-            } else if (windowHeight <= 580) {
-                sidebarNav.classList.add('sidebar-nav-medium');
-                sidebarNav.classList.remove('sidebar-nav-small');
-            } else {
-                sidebarNav.classList.remove('sidebar-nav-medium');
-                sidebarNav.classList.remove('sidebar-nav-small');
+            // Add entrance animations to content elements
+            function addEntranceAnimations() {
+                const contentElements = document.querySelectorAll('.bg-white > *');
+                contentElements.forEach((el, index) => {
+                    el.style.animation = `fadeIn 0.5s ease forwards ${index * 0.1}s`;
+                    el.style.opacity = '0';
+                });
             }
-        }
-        
+            
+            // Responsive sidebar height adjustments
+            function adjustSidebarHeight() {
+                const windowHeight = window.innerHeight;
+                
+                if (windowHeight <= 480) {
+                    sidebarNav.classList.add('sidebar-nav-small');
+                    sidebarNav.classList.remove('sidebar-nav-medium');
+                } else if (windowHeight <= 580) {
+                    sidebarNav.classList.add('sidebar-nav-medium');
+                    sidebarNav.classList.remove('sidebar-nav-small');
+                } else {
+                    sidebarNav.classList.remove('sidebar-nav-medium');
+                    sidebarNav.classList.remove('sidebar-nav-small');
+                }
+            }
+            
             // Toggle sidebar function
             function toggleSidebar() {
                 hamburger.classList.toggle('active');
                 
                 if (sidebar.classList.contains('sidebar-collapsed')) {
-            sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
-            overlay.classList.add('active');
+                    sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+                    overlay.classList.add('active');
                     localStorage.setItem('sidebarState', 'expanded');
                 } else {
                     sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
@@ -975,7 +1128,7 @@
                 }
                 
                 // Adjust main content margin based on screen size
-            if (window.innerWidth >= 768) {
+                if (window.innerWidth >= 768) {
                     mainContent.classList.toggle('md:ml-64');
                 }
             }
@@ -995,14 +1148,14 @@
                         sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
                         hamburger.classList.add('active');
                         overlay.classList.add('active');
-            } else {
-                sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+                    } else {
+                        sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
                         hamburger.classList.remove('active');
-                overlay.classList.remove('active');
+                        overlay.classList.remove('active');
                     }
                     
                     // Always remove margin adjustment on mobile
-                mainContent.classList.remove('md:ml-64');
+                    mainContent.classList.remove('md:ml-64');
                 }
             }
             
@@ -1013,9 +1166,9 @@
                     sidebar.classList.remove('sidebar-collapsed');
                     mainContent.classList.add('md:ml-64');
                 } else {
-            sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
-            overlay.classList.remove('active');
-            localStorage.setItem('sidebarState', 'collapsed');
+                    sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+                    overlay.classList.remove('active');
+                    localStorage.setItem('sidebarState', 'collapsed');
                 }
             }
             
@@ -1025,7 +1178,7 @@
             handleSidebarResponsiveness();
             
             // Update on resize
-        window.addEventListener('resize', () => {
+            window.addEventListener('resize', () => {
                 adjustSidebarHeight();
                 handleSidebarResponsiveness();
             });
@@ -1035,12 +1188,270 @@
             overlay.addEventListener('click', toggleSidebar);
             
             // Auto-close alert messages after 5 seconds
-        setTimeout(() => {
-            document.querySelectorAll('[role="alert"]').forEach(alert => {
-                alert.classList.add('opacity-0', 'transition-opacity', 'duration-500');
-                setTimeout(() => alert.remove(), 500);
+            setTimeout(() => {
+                document.querySelectorAll('[role="alert"]').forEach(alert => {
+                    alert.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                    setTimeout(() => alert.remove(), 500);
+                });
+            }, 5000);
+        });
+
+        // Global connection variable for SignalR
+        let connection = null;
+        let retryCount = 0;
+        const maxRetries = 5;
+        let isInitialized = false;
+
+        // Function to ensure SignalR is initialized
+        async function ensureSignalRInitialized() {
+            if (isInitialized) return connection;
+            
+            return new Promise((resolve, reject) => {
+                if (connection) {
+                    isInitialized = true;
+                    resolve(connection);
+                    return;
+                }
+
+                initializeSignalR()
+                    .then(conn => {
+                        connection = conn;
+                        isInitialized = true;
+                        resolve(connection);
+                    })
+                    .catch(err => {
+                        console.error('Failed to initialize SignalR:', err);
+                        reject(err);
+                    });
             });
-        }, 5000);
+        }
+
+        // Initialize SignalR connection
+        async function initializeSignalR() {
+            try {
+                const conn = new signalR.HubConnectionBuilder()
+                    .withUrl("/communityHub")
+                    .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
+                    .configureLogging(signalR.LogLevel.Information)
+                    .build();
+
+                // Set up connection event handlers
+                conn.onreconnecting(error => {
+                    console.log('Reconnecting to SignalR...', error);
+                    retryCount++;
+                });
+
+                conn.onreconnected(connectionId => {
+                    console.log('Reconnected to SignalR');
+                    retryCount = 0;
+                    // Rejoin user group on reconnection
+                    const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                    if (userId) {
+                        conn.invoke("JoinUserGroup", userId)
+                            .then(() => {
+                                console.log('Rejoined user group after reconnection');
+                                loadNotifications();
+                            })
+                            .catch(err => console.error('Error rejoining user group:', err));
+                    }
+                });
+
+                conn.onclose(error => {
+                    console.log('SignalR connection closed', error);
+                    isInitialized = false;
+                    if (retryCount < maxRetries) {
+                        setTimeout(() => initializeSignalR(), 5000);
+                    }
+                });
+
+                // Set up notification handlers
+                conn.on("NotificationReceived", function (notification) {
+                    console.log('New notification received:', notification);
+                    loadNotifications();
+                    // Show toast notification
+                    showToastNotification(notification.title, notification.message, notification.notificationType);
+                });
+
+                conn.on("PostModerationUpdate", function (data) {
+                    console.log('Post moderation update received:', data);
+                    // Show toast notification
+                    if (data.isApproved) {
+                        showToastNotification(
+                            'Post Approved',
+                            'Your community post has been approved and is now visible in the community feed.',
+                            'success'
+                        );
+                    } else {
+                        showToastNotification(
+                            'Post Rejected',
+                            data.reason ? `Your post was rejected. Reason: ${data.reason}` : 'Your post was rejected.',
+                            'error'
+                        );
+                    }
+                    // Reload notifications and update badge
+                    loadNotifications().then(() => {
+                        // Force a badge update after notifications are loaded
+                        fetch('/Community/GetNotifications')
+                            .then(response => response.json())
+                            .then(data => {
+                                updateNotificationBadge(data.unreadCount);
+                            })
+                            .catch(error => console.error('Error updating notification badge:', error));
+                    });
+                });
+
+                conn.on("ReportStatusUpdated", function (reportId, status, title) {
+                    console.log('Report status updated:', { reportId, status, title });
+                    loadNotifications();
+                    // Show toast notification for status update
+                    showToastNotification(
+                        'Report Status Updated',
+                        `Report "${title}" has been ${status.toLowerCase()}`,
+                        status === 'Verified' ? 'success' : 'info'
+                    );
+                });
+
+                // Start the connection
+                await conn.start();
+                console.log('SignalR Connected');
+
+                // Join user group after connection is established
+                const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                if (userId) {
+                    await conn.invoke("JoinUserGroup", userId);
+                    console.log('Joined user group:', userId);
+                }
+
+                retryCount = 0;
+                await loadNotifications();
+                return conn;
+            } catch (err) {
+                console.error('SignalR Connection Error:', err);
+                if (retryCount < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    return initializeSignalR();
+                }
+                throw err;
+            }
+        }
+
+        // Function to show toast notification
+        function showToastNotification(title, message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <strong class="ms-2">${title}</strong>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            // Remove toast after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Function to load notifications
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/Community/GetNotifications');
+                const data = await response.json();
+                console.log('Loading notifications:', data);
+                
+                const notificationList = document.getElementById('notificationList');
+                if (!notificationList) return;
+                
+                // Clear loading message
+                notificationList.innerHTML = '';
+                
+                if (data.notifications && data.notifications.length > 0) {
+                    data.notifications.forEach(notification => {
+                        const notificationItem = document.createElement('div');
+                        notificationItem.className = `dropdown-item notification-item p-3 border-bottom ${notification.isRead ? '' : 'unread'}`;
+                        notificationItem.dataset.id = notification.id;
+                        
+                        const iconType = notification.notificationType === 'success' ? 'check-circle text-success' : 
+                                       notification.notificationType === 'warning' ? 'exclamation-circle text-warning' : 
+                                       notification.notificationType === 'info' ? 'info-circle text-info' : 
+                                       'bell text-primary';
+                                       
+                        notificationItem.innerHTML = `
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0 mt-1">
+                                    <i class="fas fa-${iconType}"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h6 class="mb-1">${notification.title}</h6>
+                                        <small class="text-muted">${new Date(notification.createdAt).toLocaleString()}</small>
+                                    </div>
+                                    <p class="mb-1 small">${notification.message}</p>
+                                    ${notification.relatedEntityId ? `
+                                        <a href="${notification.relatedEntityType === 'Report' ? 
+                                            '/Community/ReportDetails/' + notification.relatedEntityId : 
+                                            '/Community/CommunityFeed'}" 
+                                            class="btn btn-sm btn-outline-primary mt-1">
+                                            <i class="fas fa-${notification.relatedEntityType === 'Report' ? 'eye' : 'comments'} me-1"></i>
+                                            View ${notification.relatedEntityType === 'Report' ? 'Report' : 'Post'}
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                        
+                        notificationList.appendChild(notificationItem);
+                    });
+                } else {
+                    notificationList.innerHTML = `
+                        <div class="text-center py-3">
+                            <i class="fas fa-bell-slash text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No notifications</p>
+                        </div>
+                    `;
+                }
+                
+                // Update badge
+                updateNotificationBadge(data.unreadCount);
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+                const notificationList = document.getElementById('notificationList');
+                if (notificationList) {
+                    notificationList.innerHTML = `
+                        <div class="text-center py-3">
+                            <i class="fas fa-exclamation-circle text-danger mb-2"></i>
+                            <p class="text-danger mb-0">Failed to load notifications</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Function to update notification badge
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notificationBadge');
+            if (!badge) return;
+            
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // Initialize SignalR when the page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await ensureSignalRInitialized();
+            } catch (error) {
+                console.error('Failed to initialize SignalR:', error);
+            }
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
