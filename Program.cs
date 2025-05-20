@@ -51,6 +51,10 @@ builder.Services.AddScoped<PdfService>();
 builder.Services.AddScoped<IPSGCService, PSGCService>();
 builder.Services.AddHttpClient<IPSGCService, PSGCService>();
 
+// Add SMS notification services
+builder.Services.AddScoped<ISMSService, VonageSMSService>();
+builder.Services.AddScoped<AlertNotificationService>();
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
 

@@ -15,6 +15,7 @@
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
     <PackageReference Include="DinkToPdf.Standard" Version="1.1.0" />
     <PackageReference Include="Haukcode.WkHtmlToPdfDotNet" Version="1.5.95" />
+    <PackageReference Include="Infobip.Api.Client" Version="2.1.1" />
     <PackageReference Include="itext7" Version="7.2.5" />
     <PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.7.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.0" />
@@ -33,7 +34,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client" Version="4.61.3.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0" />
+    <PackageReference Include="Vonage" Version="6.0.0" />
     <PackageReference Include="Wkhtmltopdf.NetCore" Version="3.0.2" />
+    <PackageReference Include="Twilio" Version="6.15.2" />
   </ItemGroup>
 
 </Project>

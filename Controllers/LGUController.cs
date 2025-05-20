@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.SignalR;
 using THYNK.Hubs;
+using Microsoft.Extensions.Logging;
+using THYNK.Services;
 
 namespace THYNK.Controllers
 {
@@ -25,14 +27,16 @@ namespace THYNK.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IHubContext<AlertHub> _alertHubContext;
+        private readonly AlertNotificationService _alertNotificationService;
 
-        public LGUController(ApplicationDbContext context, ILogger<LGUController> logger, UserManager<ApplicationUser> userManager, IWebHostEnvironment webHostEnvironment, IHubContext<AlertHub> alertHubContext)
+        public LGUController(ApplicationDbContext context, ILogger<LGUController> logger, UserManager<ApplicationUser> userManager, IWebHostEnvironment webHostEnvironment, IHubContext<AlertHub> alertHubContext, AlertNotificationService alertNotificationService)
         {
             _context = context;
             _logger = logger;
             _userManager = userManager;
             _webHostEnvironment = webHostEnvironment;
             _alertHubContext = alertHubContext;
+            _alertNotificationService = alertNotificationService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -401,12 +405,25 @@ namespace THYNK.Controllers
                         }
 
                         TempData["SuccessMessage"] = "Alert has been created successfully and broadcast to all users.";
-                return RedirectToAction(nameof(ManageAlerts));
-            }
+                        
+                        // Send SMS notifications to users
+                        try
+                        {
+                            await _alertNotificationService.SendAlertNotifications(alert);
+                            _logger.LogInformation($"SMS notifications sent for alert {alert.Id}");
+                        }
+                        catch (Exception smsEx)
+                        {
+                            // Log but don't fail the operation if SMS sending fails
+                            _logger.LogError(smsEx, "Error sending SMS notifications for alert");
+                        }
+                        
+                        return RedirectToAction(nameof(ManageAlerts));
+                    }
                     else
                     {
                         TempData["ErrorMessage"] = "Database reported success but no records were inserted.";
-            return View(alert);
+                        return View(alert);
                     }
                 }
                 catch (DbUpdateException dbEx)
