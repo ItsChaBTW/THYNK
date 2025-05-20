@@ -151,17 +151,37 @@ namespace THYNK.Controllers
         // GET: /SupportAdmin/ViewSession/5
         public async Task<IActionResult> ViewSession(int id)
         {
-            var chatSession = await _context.ChatSessions
-                .Include(c => c.User)
-                .Include(c => c.Messages.OrderBy(m => m.Timestamp))
-                .FirstOrDefaultAsync(c => c.Id == id);
-            
-            if (chatSession == null)
+            var session = await _context.ChatSessions
+                .Include(s => s.User)
+                .Include(s => s.AssignedTo)
+                .Include(s => s.Messages)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (session == null)
             {
                 return NotFound();
             }
-            
-            return View(chatSession);
+
+            // Check if user has permission to view this chat
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+            var isLGU = User.IsInRole("LGU");
+
+            if (!isAdmin && !(isLGU && session.AssignedToId == userId))
+            {
+                return Forbid();
+            }
+
+            // Get list of LGU users for assignment dropdown
+            if (isAdmin)
+            {
+                ViewBag.LGUUsers = await _context.Users
+                    .OfType<LGUUser>()
+                    .Where(u => u.UserRole == UserRoleType.LGU)
+                    .ToListAsync();
+            }
+
+            return View(session);
         }
         
         // POST: /SupportAdmin/SendMessage
@@ -234,29 +254,29 @@ namespace THYNK.Controllers
         // POST: /SupportAdmin/AssignChat
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AssignChat(int sessionId, string assignedToId)
         {
-            var session = await _context.ChatSessions
-                .FirstOrDefaultAsync(c => c.Id == sessionId);
-            
+            var session = await _context.ChatSessions.FindAsync(sessionId);
             if (session == null)
             {
                 return NotFound();
             }
-            
-            session.AssignedToId = assignedToId;
-            
-            var assignmentMessage = new ChatMessage
+
+            // Verify the assigned user is an LGU user
+            var assignedUser = await _context.Users
+                .OfType<LGUUser>()
+                .FirstOrDefaultAsync(u => u.Id == assignedToId && u.UserRole == UserRoleType.LGU);
+
+            if (assignedUser == null)
             {
-                ChatSessionId = sessionId,
-                SenderId = null,
-                Content = $"Chat assigned to support staff.",
-                Timestamp = DateTime.Now
-            };
-            
-            _context.ChatMessages.Add(assignmentMessage);
+                return BadRequest("Invalid LGU user selected");
+            }
+
+            session.AssignedToId = assignedToId;
             await _context.SaveChangesAsync();
-            
+
+            TempData["SuccessMessage"] = "Chat assigned successfully";
             return RedirectToAction(nameof(ViewSession), new { id = sessionId });
         }
         
