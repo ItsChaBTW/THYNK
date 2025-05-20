@@ -1,0 +1,123 @@
+@model IEnumerable<THYNK.Models.ChatSession>
+@{
+    ViewData["Title"] = "Chat History";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">Chat History</h4>
+            <p class="text-muted mb-0">View and manage past support conversations</p>
+        </div>
+        <a href="@Url.Action("ActiveChats", "SupportAdmin")" class="btn btn-outline-primary rounded-pill">
+            <i class="fas fa-headset me-1"></i>Active Chats
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Assigned To</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var chat in Model)
+                        {
+                            <tr>
+                                <td>@chat.Id</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-2">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium">@($"{chat.User?.FirstName} {chat.User?.LastName}")</div>
+                                            <small class="text-muted">@chat.User?.Email</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@(string.IsNullOrEmpty(chat.Title) ? "Chat #" + chat.Id : chat.Title)</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(chat.Category))
+                                    {
+                                        <span class="badge rounded-pill bg-info">@chat.Category</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (chat.Status == ChatStatus.Active)
+                                    {
+                                        <span class="badge rounded-pill bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge rounded-pill bg-secondary">Closed</span>
+                                    }
+                                </td>
+                                <td>@chat.StartTime.ToString("MMM dd, yyyy HH:mm")</td>
+                                <td>
+                                    @(chat.EndTime.HasValue ? chat.EndTime.Value.ToString("MMM dd, yyyy HH:mm") : "-")
+                                </td>
+                                <td>
+                                    @if (chat.AssignedTo != null)
+                                    {
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                <i class="fas fa-user-tie"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">@($"{chat.AssignedTo.FirstName} {chat.AssignedTo.LastName}")</div>
+                                                @if (chat.AssignedTo is THYNK.Models.LGUUser lguUser)
+                                                {
+                                                    <small class="text-muted">@lguUser.OrganizationName</small>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not assigned</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a href="@Url.Action("ViewSession", "SupportAdmin", new { id = chat.Id })" 
+                                       class="btn btn-sm btn-primary rounded-pill">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('table').DataTable({
+                order: [[5, 'desc']], // Sort by start time by default
+                pageLength: 25,
+                language: {
+                    search: "Search chats:",
+                    lengthMenu: "Show _MENU_ chats per page",
+                    info: "Showing _START_ to _END_ of _TOTAL_ chats"
+                }
+            });
+        });
+    </script>
+} 

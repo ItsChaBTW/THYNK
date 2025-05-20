@@ -4,6 +4,8 @@
     ViewData["Title"] = "Chat Session";
     Layout = "_AdminLayout";
     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var isAdmin = User.IsInRole("Admin");
+    var isLGU = User.IsInRole("LGU");
 }
 
 <div class="container-fluid px-4 py-4">
@@ -183,7 +185,7 @@
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body p-4">
                     <h6 class="card-title d-flex align-items-center mb-3">
-                        <span class="icon-circle bg-success bg-opacity-10 text-success rounded-circle p-1 me-2">
+                        <span class="icon-circle bg-primary bg-opacity-10 text-primary rounded-circle p-1 me-2">
                             <i class="fas fa-user"></i>
                         </span>
                         User Information
@@ -226,6 +228,70 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Assignment Section -->
+            @if (isAdmin && Model.Status != ChatStatus.Closed)
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h6 class="card-title d-flex align-items-center mb-3">
+                            <span class="icon-circle bg-success bg-opacity-10 text-success rounded-circle p-1 me-2">
+                                <i class="fas fa-user-tie"></i>
+                            </span>
+                            Assign to LGU
+                        </h6>
+
+                        <form asp-action="AssignChat" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="sessionId" value="@Model.Id" />
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Select LGU Staff</label>
+                                <select name="assignedToId" class="form-select" required>
+                                    <option value="">-- Select LGU Staff --</option>
+                                    @foreach (var lguUser in ViewBag.LGUUsers)
+                                    {
+                                        var isSelected = Model.AssignedToId == lguUser.Id;
+                                        <option value="@lguUser.Id" selected="@isSelected">
+                                            @($"{lguUser.FirstName} {lguUser.LastName} - {lguUser.OrganizationName}")
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-user-plus me-1"></i>Assign Chat
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+            else if (Model.AssignedTo != null)
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h6 class="card-title d-flex align-items-center mb-3">
+                            <span class="icon-circle bg-success bg-opacity-10 text-success rounded-circle p-1 me-2">
+                                <i class="fas fa-user-tie"></i>
+                            </span>
+                            Assigned To
+                        </h6>
+
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-3">
+                                <i class="fas fa-user-tie fa-lg"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">@($"{Model.AssignedTo.FirstName} {Model.AssignedTo.LastName}")</h6>
+                                @if (Model.AssignedTo is THYNK.Models.LGUUser lguUser)
+                                {
+                                    <small class="text-muted">@lguUser.OrganizationName</small>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
             
             <!-- Quick Responses -->
             <div class="card shadow-sm border-0">
