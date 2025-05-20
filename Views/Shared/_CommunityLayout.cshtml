@@ -1196,171 +1196,36 @@
             }, 5000);
         });
 
-        // Global connection variable for SignalR
+        // Global variables
         let connection = null;
         let retryCount = 0;
         const maxRetries = 5;
         let isInitialized = false;
+        let isNotificationLoading = false;
 
-        // Function to ensure SignalR is initialized
-        async function ensureSignalRInitialized() {
-            if (isInitialized) return connection;
-            
-            return new Promise((resolve, reject) => {
-                if (connection) {
-                    isInitialized = true;
-                    resolve(connection);
-                    return;
-                }
-
-                initializeSignalR()
-                    .then(conn => {
-                        connection = conn;
-                        isInitialized = true;
-                        resolve(connection);
-                    })
-                    .catch(err => {
-                        console.error('Failed to initialize SignalR:', err);
-                        reject(err);
-                    });
-            });
-        }
-
-        // Initialize SignalR connection
-        async function initializeSignalR() {
-            try {
-                const conn = new signalR.HubConnectionBuilder()
-                    .withUrl("/communityHub")
-                    .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
-                    .configureLogging(signalR.LogLevel.Information)
-                    .build();
-
-                // Set up connection event handlers
-                conn.onreconnecting(error => {
-                    console.log('Reconnecting to SignalR...', error);
-                    retryCount++;
-                });
-
-                conn.onreconnected(connectionId => {
-                    console.log('Reconnected to SignalR');
-                    retryCount = 0;
-                    // Rejoin user group on reconnection
-                    const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
-                    if (userId) {
-                        conn.invoke("JoinUserGroup", userId)
-                            .then(() => {
-                                console.log('Rejoined user group after reconnection');
-                                loadNotifications();
-                            })
-                            .catch(err => console.error('Error rejoining user group:', err));
-                    }
-                });
-
-                conn.onclose(error => {
-                    console.log('SignalR connection closed', error);
-                    isInitialized = false;
-                    if (retryCount < maxRetries) {
-                        setTimeout(() => initializeSignalR(), 5000);
-                    }
-                });
-
-                // Set up notification handlers
-                conn.on("NotificationReceived", function (notification) {
-                    console.log('New notification received:', notification);
-                    loadNotifications();
-                    // Show toast notification
-                    showToastNotification(notification.title, notification.message, notification.notificationType);
-                });
-
-                conn.on("PostModerationUpdate", function (data) {
-                    console.log('Post moderation update received:', data);
-                    // Show toast notification
-                    if (data.isApproved) {
-                        showToastNotification(
-                            'Post Approved',
-                            'Your community post has been approved and is now visible in the community feed.',
-                            'success'
-                        );
-                    } else {
-                        showToastNotification(
-                            'Post Rejected',
-                            data.reason ? `Your post was rejected. Reason: ${data.reason}` : 'Your post was rejected.',
-                            'error'
-                        );
-                    }
-                    // Reload notifications and update badge
-                    loadNotifications().then(() => {
-                        // Force a badge update after notifications are loaded
-                        fetch('/Community/GetNotifications')
-                            .then(response => response.json())
-                            .then(data => {
-                                updateNotificationBadge(data.unreadCount);
-                            })
-                            .catch(error => console.error('Error updating notification badge:', error));
-                    });
-                });
-
-                conn.on("ReportStatusUpdated", function (reportId, status, title) {
-                    console.log('Report status updated:', { reportId, status, title });
-                    loadNotifications();
-                    // Show toast notification for status update
-                    showToastNotification(
-                        'Report Status Updated',
-                        `Report "${title}" has been ${status.toLowerCase()}`,
-                        status === 'Verified' ? 'success' : 'info'
-                    );
-                });
-
-                // Start the connection
-                await conn.start();
-                console.log('SignalR Connected');
-
-                // Join user group after connection is established
-                const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
-                if (userId) {
-                    await conn.invoke("JoinUserGroup", userId);
-                    console.log('Joined user group:', userId);
-                }
-
-                retryCount = 0;
-                await loadNotifications();
-                return conn;
-            } catch (err) {
-                console.error('SignalR Connection Error:', err);
-                if (retryCount < maxRetries) {
-                    await new Promise(resolve => setTimeout(resolve, 5000));
-                    return initializeSignalR();
-                }
-                throw err;
-            }
-        }
-
-        // Function to show toast notification
-        function showToastNotification(title, message, type = 'info') {
-            const toast = document.createElement('div');
-            toast.className = `toast-notification ${type}`;
-            toast.innerHTML = `
-                <div class="toast-header">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'}"></i>
-                    <strong class="ms-2">${title}</strong>
-                </div>
-                <div class="toast-body">
-                    ${message}
-                </div>
-            `;
-            document.body.appendChild(toast);
-
-            // Remove toast after 5 seconds
-            setTimeout(() => {
-                toast.classList.add('hide');
-                setTimeout(() => toast.remove(), 300);
-            }, 5000);
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
 
         // Function to load notifications
         async function loadNotifications() {
+            if (isNotificationLoading) return;
+            
             try {
+                isNotificationLoading = true;
                 const response = await fetch('/Community/GetNotifications');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
                 console.log('Loading notifications:', data);
                 
@@ -1376,11 +1241,15 @@
                         notificationItem.className = `dropdown-item notification-item p-3 border-bottom ${notification.isRead ? '' : 'unread'}`;
                         notificationItem.dataset.id = notification.id;
                         
-                        const iconType = notification.notificationType === 'success' ? 'check-circle text-success' : 
-                                       notification.notificationType === 'warning' ? 'exclamation-circle text-warning' : 
-                                       notification.notificationType === 'info' ? 'info-circle text-info' : 
-                                       'bell text-primary';
-                                       
+                        let iconType = 'bell text-primary';
+                        if (notification.notificationType === 'success') {
+                            iconType = 'check-circle text-success';
+                        } else if (notification.notificationType === 'warning') {
+                            iconType = 'exclamation-circle text-warning';
+                        } else if (notification.notificationType === 'info') {
+                            iconType = 'info-circle text-info';
+                        }
+                        
                         notificationItem.innerHTML = `
                             <div class="d-flex align-items-start">
                                 <div class="flex-shrink-0 mt-1">
@@ -1426,10 +1295,146 @@
                         <div class="text-center py-3">
                             <i class="fas fa-exclamation-circle text-danger mb-2"></i>
                             <p class="text-danger mb-0">Failed to load notifications</p>
+                            <button onclick="loadNotifications()" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="fas fa-sync-alt me-1"></i>Retry
+                            </button>
                         </div>
                     `;
                 }
+            } finally {
+                isNotificationLoading = false;
             }
+        }
+
+        // Create debounced version of loadNotifications
+        const debouncedLoadNotifications = debounce(loadNotifications, 300);
+
+        // Initialize SignalR connection
+        async function initializeSignalR() {
+            try {
+                const conn = new signalR.HubConnectionBuilder()
+                    .withUrl("/communityHub")
+                    .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
+                    .configureLogging(signalR.LogLevel.Information)
+                    .build();
+
+                // Set up connection event handlers
+                conn.onreconnecting(error => {
+                    console.log('Reconnecting to SignalR...', error);
+                    retryCount++;
+                });
+
+                conn.onreconnected(connectionId => {
+                    console.log('Reconnected to SignalR');
+                    retryCount = 0;
+                    // Rejoin user group on reconnection
+                    const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                    if (userId) {
+                        conn.invoke("JoinUserGroup", userId)
+                            .then(() => {
+                                console.log('Rejoined user group after reconnection');
+                                debouncedLoadNotifications();
+                            })
+                            .catch(err => console.error('Error rejoining user group:', err));
+                    }
+                });
+
+                conn.onclose(error => {
+                    console.log('SignalR connection closed', error);
+                    isInitialized = false;
+                    if (retryCount < maxRetries) {
+                        setTimeout(() => initializeSignalR(), 5000);
+                    }
+                });
+
+                // Set up notification handlers with correct case
+                conn.on("JoinedGroup", function (userId) {
+                    console.log('Joined group:', userId);
+                    debouncedLoadNotifications();
+                });
+
+                conn.on("NotificationReceived", function (notification) {
+                    console.log('New notification received:', notification);
+                    debouncedLoadNotifications();
+                });
+
+                conn.on("ForceReloadNotifications", function () {
+                    console.log('Force reloading notifications');
+                    loadNotifications(); // Use non-debounced version for immediate reload
+                });
+
+                conn.on("ReportStatusUpdated", function (reportId, status, title) {
+                    console.log('Report status updated:', { reportId, status, title });
+                    
+                    // Show toast notification
+                    let toastType = 'info';
+                    let statusText = status.toLowerCase();
+                    
+                    if (status === 'Resolved') {
+                        toastType = 'success';
+                        statusText = 'resolved';
+                    } else if (status === 'InProgress') {
+                        toastType = 'warning';
+                        statusText = 'in progress';
+                    } else if (status === 'Verified') {
+                        toastType = 'success';
+                        statusText = 'verified';
+                    }
+                    
+                    showToastNotification(
+                        'Report Status Updated',
+                        `Report "${title}" has been ${statusText}`,
+                        toastType
+                    );
+
+                    // Force immediate reload of notifications
+                    loadNotifications();
+                });
+
+                // Start the connection
+                await conn.start();
+                console.log('SignalR Connected');
+
+                // Join user group after connection is established
+                const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
+                if (userId) {
+                    await conn.invoke("JoinUserGroup", userId);
+                    console.log('Joined user group:', userId);
+                }
+
+                retryCount = 0;
+                await debouncedLoadNotifications();
+                return conn;
+            } catch (err) {
+                console.error('SignalR Connection Error:', err);
+                if (retryCount < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    return initializeSignalR();
+                }
+                throw err;
+            }
+        }
+
+        // Function to show toast notification
+        function showToastNotification(title, message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <strong class="ms-2">${title}</strong>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            // Remove toast after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
         }
 
         // Function to update notification badge
@@ -1448,7 +1453,7 @@
         // Initialize SignalR when the page loads
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                await ensureSignalRInitialized();
+                await initializeSignalR();
             } catch (error) {
                 console.error('Failed to initialize SignalR:', error);
             }

@@ -15,52 +15,25 @@
     <tbody>
         @foreach (var report in Model)
         {
-            var priorityNumber = "";
-            var priorityClass = "";
-            
-            if (report.Status == THYNK.Models.ReportStatus.InProgress)
-            {
-                if (report.Severity == THYNK.Models.SeverityLevel.Critical)
-                {
-                    priorityNumber = "<span class='priority-number'>1</span> ";
-                    priorityClass = "priority-critical";
-                }
-                else if (report.Severity == THYNK.Models.SeverityLevel.High)
-                {
-                    priorityNumber = "<span class='priority-number'>2</span> ";
-                    priorityClass = "priority-high";
-                }
-                else if (report.Severity == THYNK.Models.SeverityLevel.Medium)
-                {
-                    priorityNumber = "<span class='priority-number'>3</span> ";
-                    priorityClass = "priority-medium";
-                }
-                else
-                {
-                    priorityNumber = "<span class='priority-number'>4</span> ";
-                    priorityClass = "priority-low";
-                }
-            }
-
-            <tr data-report-id="@report.Id" class="@priorityClass">
+            <tr data-report-id="@report.Id">
                 <td>@report.Title</td>
                 <td>
                     <span class="badge bg-secondary">@report.Type</span>
                 </td>
                 <td>
-                    <span class="badge severity-badge @(report.Severity == THYNK.Models.SeverityLevel.Low ? "bg-info" : 
-                                       report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : 
-                                       report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : "bg-dark")">
-                        @Html.Raw(priorityNumber)@report.Severity
+                    <span class="badge severity-badge @(report.Severity == THYNK.Models.SeverityLevel.Critical ? "bg-dark" : 
+                                                   report.Severity == THYNK.Models.SeverityLevel.High ? "bg-danger" : 
+                                                   report.Severity == THYNK.Models.SeverityLevel.Medium ? "bg-warning" : "bg-info")">
+                        @report.Severity
                     </span>
                 </td>
                 <td>@(string.IsNullOrEmpty(report.Location) ? "Not specified" : report.Location)</td>
                 <td class="date-cell">@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
                 <td>
                     <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
-                                       report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
-                                       report.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
-                                       report.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
+                                   report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
+                                   report.Status == THYNK.Models.ReportStatus.InProgress ? "bg-primary" : 
+                                   report.Status == THYNK.Models.ReportStatus.Resolved ? "bg-success" : "bg-secondary")">
                         @report.Status
                     </span>
                 </td>

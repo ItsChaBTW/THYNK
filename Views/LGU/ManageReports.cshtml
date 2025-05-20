@@ -208,7 +208,6 @@
         overflow: hidden;
         box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
         background-color: #fff;
-        animation: fadeIn 0.5s ease;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -218,6 +217,7 @@
         width: 100%;
         border-collapse: separate;
         border-spacing: 0;
+        animation: fadeInTable 0.7s ease;
     }
     
     .reports-table th {
@@ -812,7 +812,7 @@
                     <tbody>
                         @foreach (var report in Model)
                         {
-                            <tr>
+                            <tr data-report-id="@report.Id">
                                 <td>@report.Title</td>
                                 <td>
                                     <span class="badge bg-secondary">@report.Type</span>
@@ -911,58 +911,12 @@
                 container.style.opacity = '0.5';
                 container.style.pointerEvents = 'none';
 
-                // Fetch updated table content
-                // Controller Implementation Note:
-                // public async Task<IActionResult> ManageReports(string status, string search, string priority)
-                // {
-                //     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                //     var reports = await _context.DisasterReports
-                //                    .Where(r => r.AssignedDepartmentId == CurrentUserDepartmentId)
-                //                    .ToListAsync();
-                //
-                //     // Apply status filter if specified
-                //     if (!string.IsNullOrEmpty(status) && Enum.TryParse<ReportStatus>(status, out var statusEnum))
-                //     {
-                //         reports = reports.Where(r => r.Status == statusEnum).ToList();
-                //         ViewBag.CurrentFilter = statusEnum;
-                //     }
-                //
-                //     // Priority-based severity sorting
-                //     if (priority == "severity") 
-                //     {
-                //         ViewBag.IsPrioritySorted = true;
-                //         
-                //         // If no status filter is applied but priority=severity, force InProgress status
-                //         if (string.IsNullOrEmpty(status))
-                //         {
-                //             reports = reports.Where(r => r.Status == ReportStatus.InProgress).ToList();
-                //             ViewBag.CurrentFilter = ReportStatus.InProgress;
-                //         }
-                //         
-                //         // CRITICAL REQUIREMENT: 
-                //         // Always display incidents in strict severity order, regardless of report time:
-                //         //   1. Critical incidents ALWAYS first (even if older)
-                //         //   2. High incidents ALWAYS second (even if older)
-                //         //   3. Medium incidents ALWAYS third (even if older)
-                //         //   4. Low incidents ALWAYS last (even if older)
-                //         // This ensures newest Medium incidents never appear above older High incidents
-                //         
-                //         reports = reports
-                //                   .OrderBy(r => (int)r.Severity)                  // PRIMARY SORT: by severity level (Critical=0, High=1, Medium=2, Low=3)
-                //                   .ThenByDescending(r => r.DateReported)          // SECONDARY SORT: by date within each severity level
-                //                   .ToList();
-                //         
-                //         // No section headers needed - just a single list sorted by severity
-                //     }
-                //     else 
-                //     {
-                //         // For regular views (not severity-sorted), sort by most recent first
-                //         reports = reports.OrderByDescending(r => r.DateReported).ToList();
-                //     }
-                //     
-                //     return View(reports);
-                // }
-                const response = await fetch(`@Url.Action("GetReportsTable", "LGU")?status=${status}&search=${encodeURIComponent(search)}&priority=${priority}`);
+                // Fetch updated table content using the existing ManageReports action
+                const response = await fetch(`@Url.Action("ManageReports", "LGU")?status=${status}&search=${encodeURIComponent(search)}&priority=${priority}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'  // This makes it an AJAX request
+                    }
+                });
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -990,6 +944,7 @@
                         container.appendChild(newTable);
                     }
                     container.style.opacity = '1';
+                    container.style.pointerEvents = 'auto';
 
                     // Add highlight effect to new items
                     const newRows = container.querySelectorAll('tr[data-report-id]');
@@ -1012,8 +967,7 @@
             } catch (error) {
                 console.error('Error reloading reports table:', error);
                 showToast('Error updating reports', 'error');
-            } finally {
-                // Restore container state
+                container.style.opacity = '1';
                 container.style.pointerEvents = 'auto';
             }
         }
@@ -1151,6 +1105,21 @@
             
             window.location.href = currentUrl.toString();
         });
+
+        // Real-time updates for new assignments via /adminHub
+        const adminConnection = new signalR.HubConnectionBuilder()
+            .withUrl("/adminHub")
+            .withAutomaticReconnect()
+            .build();
+
+        adminConnection.on("RecentReportUpdated", function(report) {
+            console.log("[adminHub] RecentReportUpdated event received:", report);
+            reloadReportsTable();
+        });
+
+        adminConnection.start()
+            .then(() => console.log("[adminHub] SignalR Connected for real-time assignments"))
+            .catch(err => console.error("[adminHub] SignalR Connection Error: ", err));
     </script>
 
     <style>

@@ -1,4 +1,4 @@
-s@{
+@{
     ViewData["Title"] = "Incident Map";
     Layout = "_LGULayout";
 }
@@ -98,8 +98,25 @@ s@{
             <div class="quick-filters-bar p-2 bg-light border-bottom">
                 <div class="container-fluid px-1">
                     <div class="row g-2 align-items-center">
-                        <div class="col-auto d-none d-md-block">
-                            <span class="quick-filter-label text-primary fw-bold"><i class="fas fa-bolt me-1"></i>Quick Filters:</span>
+                        <div class="col-md-auto col-12">
+                            <div class="quick-filter-section">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="incident-type-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-tags me-1"></i>Incident Type
+                                    </button>
+                                    <ul class="dropdown-menu incident-type-dropdown" aria-labelledby="incident-type-dropdown">
+                                        <li><a class="dropdown-item lgu-type-filter-item active" href="#" data-type="all"><i class="fas fa-check me-2 text-success"></i>All Types</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Earthquake"><i class="fas fa-house-damage me-2 text-danger"></i>Earthquake</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Flood"><i class="fas fa-water me-2 text-primary"></i>Flood</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Fire"><i class="fas fa-fire me-2 text-warning"></i>Fire</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Landslide"><i class="fas fa-mountain me-2 text-secondary"></i>Landslide</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Storm"><i class="fas fa-cloud-showers-heavy me-2 text-info"></i>Storm</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Accident"><i class="fas fa-car-crash me-2 text-dark"></i>Accident</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Other"><i class="fas fa-question me-2 text-secondary"></i>Other</a></li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-auto col-12">
                             <div class="quick-filter-section">
@@ -1611,6 +1628,55 @@ s@{
         
         // Make showIncidentDetails available globally for popup buttons
         window.showIncidentDetails = showIncidentDetails;
+
+        // Incident type dropdown filter logic (Community-style)
+        document.addEventListener('DOMContentLoaded', function() {
+            let selectedType = 'all';
+            document.querySelectorAll('.lgu-type-filter-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Remove active from all
+                    document.querySelectorAll('.lgu-type-filter-item').forEach(i => {
+                        i.classList.remove('active');
+                        i.querySelector('i').classList.remove('text-success');
+                    });
+                    // Set active on this
+                    this.classList.add('active');
+                    this.querySelector('i').classList.add('text-success');
+                    // Update dropdown button text
+                    const typeText = this.getAttribute('data-type') === 'all' ? 'Incident Type' : this.textContent.trim();
+                    document.getElementById('incident-type-dropdown').innerHTML = `<i class='fas fa-tags me-1'></i>${typeText}`;
+                    // Filter incidents
+                    selectedType = this.getAttribute('data-type');
+                    applyTypeDropdownFilter(selectedType);
+                });
+            });
+        });
+
+        function applyTypeDropdownFilter(type) {
+            let filtered = incidents;
+            if (type !== 'all') {
+                // Map type string to number if needed
+                const typeMap = {
+                    'Earthquake': 0,
+                    'Flood': 1,
+                    'Fire': 2,
+                    'Landslide': 3,
+                    'Storm': 4,
+                    'Accident': 5,
+                    'Other': 6
+                };
+                filtered = incidents.filter(incident => {
+                    if (typeof incident.type === 'number') {
+                        return incident.type === typeMap[type];
+                    } else {
+                        return (incident.type || '').toLowerCase() === type.toLowerCase();
+                    }
+                });
+            }
+            renderMarkers(filtered);
+            populateRecentIncidents(filtered);
+        }
     </script>
 }
 
