@@ -883,6 +883,14 @@
                             </div>
                         </div>
                     }
+                    <a href="@Url.Action("Alerts", "Community")" class="header-alert-btn relative p-2 text-primary">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                    
+                    <!-- Sound permissions button -->
+                    <button id="enableSoundPermission" class="header-alert-btn relative p-2 text-primary">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1081,10 +1089,73 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
-    <!-- Add SignalR client library -->
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
-        // Sidebar initialization
+        // Initialize sound on page load or first interaction based on saved preference
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if sound was previously enabled
+            if (localStorage.getItem('soundEnabled') === 'true') {
+                console.log('Sound was previously enabled, attempting to initialize automatically');
+                initSound(true);
+            } else {
+                // Wait for first interaction to initialize sound
+                document.addEventListener('click', function() { initSound(false); }, { once: true });
+                document.addEventListener('keydown', function() { initSound(false); }, { once: true });
+                document.addEventListener('touchstart', function() { initSound(false); }, { once: true });
+            }
+        });
+
+        function initSound(fromPreference = false) {
+            const sound = document.getElementById('alertSound');
+            if (sound) {
+                // Unmute the audio
+                sound.muted = false;
+                
+                // Try to play and stop immediately to initialize audio
+                sound.play()
+                    .then(() => {
+                        sound.pause();
+                        sound.currentTime = 0;
+                        console.log('Audio initialized successfully');
+                        
+                        // If called from a preference, save it permanently
+                        if (!fromPreference) {
+                            localStorage.setItem('soundEnabled', 'true');
+                        }
+                        
+                        // Update sound button appearance to indicate sound is enabled
+                        updateSoundButtonStatus(true);
+                    })
+                    .catch(error => {
+                        console.warn('Audio could not be initialized automatically:', error);
+                        localStorage.removeItem('soundEnabled'); // Clear preference if failed
+                        updateSoundButtonStatus(false);
+                    });
+                
+                // Request notification permission which can help with audio
+                if (Notification && Notification.permission !== "granted") {
+                    Notification.requestPermission();
+                }
+            }
+        }
+        
+        // Update sound button appearance based on status
+        function updateSoundButtonStatus(enabled) {
+            const soundBtn = document.getElementById('enableSoundPermission');
+            if (soundBtn) {
+                if (enabled) {
+                    soundBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    soundBtn.classList.add('sound-enabled');
+                    soundBtn.title = "Sound notifications are enabled";
+                } else {
+                    soundBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    soundBtn.classList.remove('sound-enabled');
+                    soundBtn.title = "Click to enable sound notifications";
+                }
+            }
+        }
+
+        // Toggle sidebar
         document.addEventListener('DOMContentLoaded', function() {
             const hamburger = document.getElementById('hamburger');
             const sidebar = document.getElementById('sidebar');
