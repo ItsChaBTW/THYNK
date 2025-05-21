@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.SignalR;
 using THYNK.Hubs;
 using System.Security.Claims;
 using TimeZoneConverter;
+using THYNK.Services;
 
 namespace THYNK.Controllers
 {
@@ -30,6 +31,7 @@ namespace THYNK.Controllers
         private readonly ILogger<AdminController> _logger;
         private readonly IHubContext<AdminHub> _hubContext;
         private readonly IHubContext<CommunityHub> _communityHubContext;
+        private readonly AlertNotificationService _alertNotificationService;
 
         public AdminController(
             ApplicationDbContext context, 
@@ -40,6 +42,7 @@ namespace THYNK.Controllers
             ILogger<AdminController> logger,
             IHubContext<AdminHub> hubContext,
             IHubContext<CommunityHub> communityHubContext)
+            AlertNotificationService alertNotificationService)
         {
             _context = context;
             _userManager = userManager;
@@ -49,6 +52,7 @@ namespace THYNK.Controllers
             _logger = logger;
             _hubContext = hubContext;
             _communityHubContext = communityHubContext;
+            _alertNotificationService = alertNotificationService;
         }
 
         private async Task UpdateDashboardStats()
@@ -1019,13 +1023,28 @@ namespace THYNK.Controllers
         {
             if (ModelState.IsValid)
             {
-                alert.DateIssued = GetPhilippineTime();
+                // Set the current user ID as the issuer
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                alert.IssuedByUserId = userId;
+                alert.DateIssued = DateTime.Now;
                 alert.IsActive = true;
                 
                 _context.Add(alert);
                 await _context.SaveChangesAsync();
                 
-                TempData["SuccessMessage"] = "Alert has been created successfully.";
+                // Send SMS notifications
+                try
+                {
+                    await _alertNotificationService.SendAlertNotifications(alert);
+                    _logger.LogInformation($"SMS notifications sent for alert {alert.Id}");
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail the operation if SMS sending fails
+                    _logger.LogError(ex, "Error sending SMS notifications for alert: {Message}", ex.Message);
+                }
+                
+                TempData["SuccessMessage"] = "Alert has been created successfully and SMS notifications have been sent.";
                 return RedirectToAction(nameof(ManageAlerts));
             }
             

@@ -10,9 +10,6 @@ using Microsoft.AspNetCore.Authentication;
 using System.Text.Json;
 using System.IO;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
-using THYNK.Hubs;
-using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace THYNK.Controllers
 {
@@ -22,21 +19,12 @@ namespace THYNK.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<LGUController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IHubContext<CommunityHub> _hubContext;
-        private readonly IEmailSender _emailSender;
 
-        public LGUController(
-            ApplicationDbContext context, 
-            ILogger<LGUController> logger, 
-            UserManager<ApplicationUser> userManager, 
-            IHubContext<CommunityHub> hubContext, 
-            IEmailSender emailSender)
+        public LGUController(ApplicationDbContext context, ILogger<LGUController> logger, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _logger = logger;
             _userManager = userManager;
-            _hubContext = hubContext;
-            _emailSender = emailSender;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -380,21 +368,217 @@ namespace THYNK.Controllers
             return View();
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateAlert(Alert alert)
+        public async Task<IActionResult> CreateAlert(Alert alert, IFormFile alertImage, string backgroundStyle, string iconStyle, string colorScheme)
         {
-            if (ModelState.IsValid)
+            // Clear ModelState errors for fields we'll handle manually
+            if (ModelState.ContainsKey("User"))
             {
+                ModelState.Remove("User");
+            }
+            if (ModelState.ContainsKey("alertImage"))
+            {
+                ModelState.Remove("alertImage");
+            }
+            if (ModelState.ContainsKey("IssuedByUserId"))
+            {
+                ModelState.Remove("IssuedByUserId");
+            }
+            
+            // Show specific validation errors instead of a generic message
+            if (!ModelState.IsValid)
+            {
+                var errorMessages = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                
+                // Log the specific errors
+                foreach (var error in errorMessages)
+                {
+                    _logger.LogWarning($"Validation error: {error}");
+                }
+                
+                if (errorMessages.Any())
+                {
+                    TempData["ErrorMessage"] = $"Validation errors: {string.Join(", ", errorMessages)}";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Please correct the form errors and try again.";
+                }
+                
+                return View(alert);
+            }
+            
+            try
+            {
+                // Get current user ID and explicitly set it
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                {
+                    TempData["ErrorMessage"] = "User not authenticated. Please log in again.";
+                    return View(alert);
+                }
+                
+                // Ensure required fields have values
+                if (string.IsNullOrEmpty(alert.Title))
+                {
+                    alert.Title = "Emergency Alert";
+                    _logger.LogWarning("Alert Title was empty, using default value");
+                }
+                
+                if (string.IsNullOrEmpty(alert.Message))
+                {
+                    alert.Message = "Please standby for further information.";
+                    _logger.LogWarning("Alert Message was empty, using default value");
+                }
+                
+                if (string.IsNullOrEmpty(alert.AffectedArea))
+                {
+                    alert.AffectedArea = "All areas";
+                    _logger.LogWarning("AffectedArea was empty, using default value");
+                }
+                
+                // Set required properties directly
                 alert.DateIssued = DateTime.UtcNow;
                 alert.IsActive = true;
-                alert.IssuedByUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+                alert.IssuedByUserId = userId;
+                
+                // Set customization options if provided
+                if (!string.IsNullOrEmpty(backgroundStyle)) alert.BackgroundStyle = backgroundStyle;
+                if (!string.IsNullOrEmpty(iconStyle)) alert.IconStyle = iconStyle;
+                if (!string.IsNullOrEmpty(colorScheme)) alert.ColorScheme = colorScheme;
+                
+                // Handle image - required field from model validation
+                if (alertImage != null && alertImage.Length > 0)
+                {
+                    var webRootPath = _webHostEnvironment.WebRootPath;
+                    var uploadsFolder = Path.Combine(webRootPath, "uploads", "alerts");
+                    
+                    // Create directory if it doesn't exist
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+                        
+                        // Generate unique filename
+                    var uniqueFileName = $"{DateTime.Now.Ticks}_{Path.GetFileName(alertImage.FileName)}";
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                        
+                    // Save the file
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await alertImage.CopyToAsync(fileStream);
+                        }
+                        
+                    // Store the path
+                    alert.ImagePath = $"/uploads/alerts/{uniqueFileName}";
+                }
+                else 
+                {
+                    // If no image is provided, set a default image path
+                    alert.ImagePath = "/images/default-alert.png";
+                }
+                
+                // Add to context without tracking the User navigation property
+                _context.Entry(alert).State = EntityState.Detached;
+                var alertEntry = _context.Alerts.Add(alert);
+                alertEntry.Reference(a => a.User).IsModified = false;
+                
+                try
+                {
+                    // Use synchronous SaveChanges as in TestDatabaseConnection
+                    int result = _context.SaveChanges();
+                    
+                    if (result > 0)
+                    {
+                        // Broadcast the new alert to all connected clients using SignalR
+                        try
+                        {
+                            // Fetch the complete alert with user details for broadcasting
+                            var alertWithUser = _context.Alerts
+                                .Include(a => a.User)
+                                .FirstOrDefault(a => a.Id == alert.Id);
 
-                _context.Alerts.Add(alert);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(ManageAlerts));
+                            // Create a broadcast-safe version of the alert (to avoid serialization issues)
+                            var broadcastAlert = new 
+                            {
+                                alertWithUser.Id,
+                                alertWithUser.Title,
+                                alertWithUser.Message,
+                                alertWithUser.Severity,
+                                alertWithUser.DateIssued,
+                                alertWithUser.ExpiresAt,
+                                alertWithUser.IsActive,
+                                alertWithUser.AffectedArea,
+                                alertWithUser.ImagePath,
+                                alertWithUser.BackgroundStyle,
+                                alertWithUser.IconStyle,
+                                alertWithUser.ColorScheme,
+                                User = new 
+                                {
+                                    Id = alertWithUser.User?.Id,
+                                    Name = alertWithUser.User != null 
+                                        ? $"{alertWithUser.User.FirstName} {alertWithUser.User.LastName}"
+                                        : "System"
+                                }
+                            };
+
+                            await _alertHubContext.Clients.All.SendAsync("ReceiveAlert", broadcastAlert);
+                            _logger.LogInformation($"Alert {alert.Id} broadcast to all connected clients");
+                        }
+                        catch (Exception signalREx)
+                        {
+                            // Log but don't fail the operation if SignalR broadcasting fails
+                            _logger.LogError(signalREx, "Error broadcasting alert via SignalR");
+                        }
+
+                        TempData["SuccessMessage"] = "Alert has been created successfully and broadcast to all users.";
+                        
+                        // Send SMS notifications to users
+                        try
+                        {
+                            await _alertNotificationService.SendAlertNotifications(alert);
+                            _logger.LogInformation($"SMS notifications sent for alert {alert.Id}");
+                        }
+                        catch (Exception smsEx)
+                        {
+                            // Log but don't fail the operation if SMS sending fails
+                            _logger.LogError(smsEx, "Error sending SMS notifications for alert");
+                        }
+                        
+                        return RedirectToAction(nameof(ManageAlerts));
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Database reported success but no records were inserted.";
+                        return View(alert);
+                    }
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    _logger.LogError(dbEx, "Database error creating alert");
+                    if (dbEx.InnerException != null)
+                    {
+                        TempData["ErrorMessage"] = $"Database error: {dbEx.InnerException.Message}";
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = $"Database error: {dbEx.Message}";
+                    }
+                    return View(alert);
+                }
             }
-            return View(alert);
+            catch (Exception ex)
+            {
+                // Log exception
+                _logger.LogError(ex, "Error creating alert");
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+                return View(alert);
+            }
         }
 
         // Manage alerts
@@ -442,6 +626,52 @@ namespace THYNK.Controllers
                 {
                     _context.Update(alert);
                     await _context.SaveChangesAsync();
+                    
+                    // Broadcast the updated alert to all connected clients
+                    try
+                    {
+                        // Fetch the complete alert with user details for broadcasting
+                        var alertWithUser = await _context.Alerts
+                            .Include(a => a.User)
+                            .FirstOrDefaultAsync(a => a.Id == alert.Id);
+
+                        if (alertWithUser != null)
+                        {
+                            // Create a broadcast-safe version of the alert
+                            var broadcastAlert = new 
+                            {
+                                alertWithUser.Id,
+                                alertWithUser.Title,
+                                alertWithUser.Message,
+                                alertWithUser.Severity,
+                                alertWithUser.DateIssued,
+                                alertWithUser.ExpiresAt,
+                                alertWithUser.IsActive,
+                                alertWithUser.AffectedArea,
+                                alertWithUser.ImagePath,
+                                alertWithUser.BackgroundStyle,
+                                alertWithUser.IconStyle,
+                                alertWithUser.ColorScheme,
+                                User = new 
+                                {
+                                    Id = alertWithUser.User?.Id,
+                                    Name = alertWithUser.User != null 
+                                        ? $"{alertWithUser.User.FirstName} {alertWithUser.User.LastName}"
+                                        : "System"
+                                }
+                            };
+
+                            await _alertHubContext.Clients.All.SendAsync("AlertUpdated", broadcastAlert);
+                            _logger.LogInformation($"Alert {alert.Id} update broadcast to all connected clients");
+                        }
+                    }
+                    catch (Exception signalREx)
+                    {
+                        // Log but don't fail the operation if SignalR broadcasting fails
+                        _logger.LogError(signalREx, "Error broadcasting alert update via SignalR");
+                    }
+                    
+                    TempData["SuccessMessage"] = "Alert has been updated successfully.";
                     return RedirectToAction(nameof(ManageAlerts));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -468,7 +698,86 @@ namespace THYNK.Controllers
             {
                 _context.Alerts.Remove(alert);
                 await _context.SaveChangesAsync();
+                
+                // Broadcast the alert deletion to all connected clients
+                try
+                {
+                    await _alertHubContext.Clients.All.SendAsync("AlertDeleted", id);
+                    _logger.LogInformation($"Alert {id} deletion broadcast to all connected clients");
+                }
+                catch (Exception signalREx)
+                {
+                    // Log but don't fail the operation if SignalR broadcasting fails
+                    _logger.LogError(signalREx, "Error broadcasting alert deletion via SignalR");
+                }
+                
+                TempData["SuccessMessage"] = "Alert has been deleted successfully.";
             }
+            return RedirectToAction(nameof(ManageAlerts));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeactivateAlert(int id)
+        {
+            var alert = await _context.Alerts.FindAsync(id);
+            if (alert == null)
+            {
+                return NotFound();
+            }
+            
+            // Update alert status to inactive
+            alert.IsActive = false;
+            alert.ExpiresAt = DateTime.Now;
+            
+            _context.Update(alert);
+            await _context.SaveChangesAsync();
+            
+            // Broadcast the updated alert to all connected clients
+            try
+            {
+                // Fetch the complete alert with user details for broadcasting
+                var alertWithUser = await _context.Alerts
+                    .Include(a => a.User)
+                    .FirstOrDefaultAsync(a => a.Id == alert.Id);
+
+                if (alertWithUser != null)
+                {
+                    // Create a broadcast-safe version of the alert
+                    var broadcastAlert = new 
+                    {
+                        alertWithUser.Id,
+                        alertWithUser.Title,
+                        alertWithUser.Message,
+                        alertWithUser.Severity,
+                        alertWithUser.DateIssued,
+                        alertWithUser.ExpiresAt,
+                        alertWithUser.IsActive,
+                        alertWithUser.AffectedArea,
+                        alertWithUser.ImagePath,
+                        alertWithUser.BackgroundStyle,
+                        alertWithUser.IconStyle,
+                        alertWithUser.ColorScheme,
+                        User = new 
+                        {
+                            Id = alertWithUser.User?.Id,
+                            Name = alertWithUser.User != null 
+                                ? $"{alertWithUser.User.FirstName} {alertWithUser.User.LastName}"
+                                : "System"
+                        }
+                    };
+
+                    await _alertHubContext.Clients.All.SendAsync("AlertUpdated", broadcastAlert);
+                    _logger.LogInformation($"Alert {alert.Id} update (deactivation) broadcast to all connected clients");
+                }
+            }
+            catch (Exception signalREx)
+            {
+                // Log but don't fail the operation if SignalR broadcasting fails
+                _logger.LogError(signalREx, "Error broadcasting alert deactivation via SignalR");
+            }
+            
+            TempData["SuccessMessage"] = "Alert has been deactivated successfully.";
             return RedirectToAction(nameof(ManageAlerts));
         }
 
@@ -1835,63 +2144,6 @@ namespace THYNK.Controllers
             }
             
             return Json(result);
-        }
-
-        // Get reports table for partial view update
-        [HttpGet]
-        public async Task<IActionResult> GetReportsTable(ReportStatus? status = null, string search = null)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
-            
-            if (currentUser == null)
-            {
-                return Unauthorized();
-            }
-
-            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports
-                .Include(r => r.AssignedTo)
-                .Where(r => r.AssignedToId == userId || 
-                           (r.Status == ReportStatus.InProgress && r.AssignedTo.OrganizationName == currentUser.OrganizationName));
-            
-            // Filter by status if provided
-            if (status.HasValue)
-            {
-                reportsQuery = reportsQuery.Where(r => r.Status == status.Value);
-            }
-            
-            // Filter by search text if provided
-            if (!string.IsNullOrEmpty(search))
-            {
-                search = search.ToLower();
-                reportsQuery = reportsQuery.Where(r => 
-                    r.Title.ToLower().Contains(search) || 
-                    r.Description.ToLower().Contains(search) || 
-                    r.Location.ToLower().Contains(search));
-            }
-            
-            // Get reports
-            var reports = await reportsQuery.ToListAsync();
-            
-            // Special handling for InProgress reports - sort by severity level (Critical first)
-            if (status == ReportStatus.InProgress)
-            {
-                // First separate reports by severity
-                var criticalReports = reports.Where(r => r.Severity == SeverityLevel.Critical).OrderByDescending(r => r.DateReported).ToList();
-                var highReports = reports.Where(r => r.Severity == SeverityLevel.High).OrderByDescending(r => r.DateReported).ToList();
-                var mediumReports = reports.Where(r => r.Severity == SeverityLevel.Medium).OrderByDescending(r => r.DateReported).ToList();
-                var lowReports = reports.Where(r => r.Severity == SeverityLevel.Low).OrderByDescending(r => r.DateReported).ToList();
-                
-                // Combine them in priority order
-                reports = criticalReports.Concat(highReports).Concat(mediumReports).Concat(lowReports).ToList();
-            }
-            else
-            {
-                // For other report types, sort by date
-                reports = reports.OrderByDescending(r => r.DateReported).ToList();
-            }
-
-            return PartialView("_LGUReportsTable", reports);
         }
     }
 } 

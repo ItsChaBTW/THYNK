@@ -1,1 +1,368 @@
- 
+@model THYNK.Models.Alert
+@{
+    ViewData["Title"] = "Create Alert";
+    Layout = "_LGULayout";
+}
+
+<div class="card mb-4">
+    <div class="card-header bg-danger text-white">
+        <div class="d-flex align-items-center">
+            <div class="card-icon bg-white text-danger">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div>
+                <h5 class="m-0">Create Community Alert</h5>
+                <small>Notify your community about important events or hazards</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info mb-4">
+            <i class="fas fa-info-circle me-2"></i> Create alerts with custom visuals to effectively communicate important information to your community.
+        </div>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mb-4">
+                <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+            </div>
+        }
+        
+        <div id="databaseError" class="alert alert-danger mb-4" style="display: none;">
+            <i class="fas fa-database me-2"></i> <strong>Database Error:</strong> <span id="databaseErrorMessage">Unable to save the alert to the database. Please try again or contact support.</span>
+        </div>
+
+        <form asp-action="CreateAlert" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Basic Alert Information -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Alert Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label asp-for="Title" class="form-label">Alert Title <span class="text-danger">*</span></label>
+                                <input asp-for="Title" class="form-control" placeholder="Enter a descriptive title" required />
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                                <div class="form-text">Keep titles concise and descriptive (100 characters max)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Message" class="form-label">Alert Message <span class="text-danger">*</span></label>
+                                <textarea asp-for="Message" class="form-control" rows="4" placeholder="Provide detailed information about the alert" required></textarea>
+                                <span asp-validation-for="Message" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="AffectedArea" class="form-label">Affected Area <span class="text-danger">*</span></label>
+                                <input asp-for="AffectedArea" class="form-control" placeholder="Specify the areas affected by this alert" required />
+                                <span asp-validation-for="AffectedArea" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label asp-for="Severity" class="form-label">Alert Severity <span class="text-danger">*</span></label>
+                                <select asp-for="Severity" asp-items="Html.GetEnumSelectList<THYNK.Models.AlertSeverity>()" class="form-select" required>
+                                    <option selected disabled value="">Select severity level</option>
+                                </select>
+                                <span asp-validation-for="Severity" class="text-danger"></span>
+                                <div class="form-text">
+                                    <span class="badge bg-info me-1">Info</span> General information
+                                    <span class="badge bg-warning mx-1">Warning</span> Potential concern
+                                    <span class="badge bg-danger mx-1">Danger</span> Significant risk
+                                    <span class="badge bg-dark mx-1">Critical</span> Immediate threat
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- Visual Customization -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Visual Customization</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Background Style</label>
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="backgroundStyle" id="bgStyle1" value="standard" checked>
+                                        <label class="form-check-label" for="bgStyle1">Standard</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="backgroundStyle" id="bgStyle2" value="warning-pattern">
+                                        <label class="form-check-label" for="bgStyle2">Warning Pattern</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="backgroundStyle" id="bgStyle3" value="info-gradient">
+                                        <label class="form-check-label" for="bgStyle3">Info Gradient</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Icon Style</label>
+                                <select class="form-select" name="iconStyle">
+                                    <option value="standard">Standard Icons</option>
+                                    <option value="animated">Animated Icons</option>
+                                    <option value="outlined">Outlined Icons</option>
+                                    <option value="minimal">Minimal Icons</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Color Scheme</label>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <div class="color-option" style="background-color: #dc3545;" data-color="danger"></div>
+                                    <div class="color-option" style="background-color: #ffc107;" data-color="warning"></div>
+                                    <div class="color-option" style="background-color: #0dcaf0;" data-color="info"></div>
+                                    <div class="color-option" style="background-color: #212529;" data-color="dark"></div>
+                                    <div class="color-option" style="background-color: #6c757d;" data-color="secondary"></div>
+                                    <input type="hidden" name="colorScheme" id="colorScheme" value="danger">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Custom Image (Optional)</label>
+                                <input type="file" class="form-control" name="alertImage" accept="image/*">
+                                <div class="form-text">Upload an image to display with your alert (max 2MB)</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alert Preview -->
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Preview</h6>
+                            
+                        </div>
+                        <div class="card-body">
+                            <div id="alertPreview" class="alert alert-danger">
+                                <div class="d-flex">
+                                    <div class="alert-icon me-3">
+                                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="alert-heading">Alert Preview</h5>
+                                        <p class="mb-0">Your alert message will appear here</p>
+                                        <small class="text-muted">Affected area information</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshPreview">
+                                    <i class="fas fa-sync-alt me-1"></i> Refresh Preview
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <a href="@Url.Action("ManageAlerts", "LGU")" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Alerts
+                </a>
+                <button type="submit" class="btn btn-danger" id="submitButton">
+                    <i class="fas fa-bell me-2"></i> Issue Alert
+                </button>
+            </div>
+            
+            <!-- Processing indicator (hidden by default) -->
+            <div id="processingIndicator" class="alert alert-info mt-3" style="display: none;">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    <div>Processing your alert submission... Please wait.</div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Ajax error handling for database errors
+        $(document).ajaxError(function(event, xhr, settings) {
+            console.error("Ajax error:", xhr.status, xhr.statusText);
+            if (xhr.status === 500) {
+                $("#databaseError").show();
+                $("#databaseErrorMessage").text("Server error occurred. Please try again later.");
+            }
+        });
+        
+        $(document).ready(function() {
+            // Check for submission errors
+            $("form").on("submit", function(e) {
+                // Show processing indicator
+                $("#processingIndicator").show();
+                // Disable submit button to prevent double submission
+                $("#submitButton").prop("disabled", true);
+                
+                // Clear any previous errors
+                $("#databaseError").hide();
+                
+                // Store form data to check if we need to display error
+                var formData = {
+                    title: $("#Title").val(),
+                    message: $("#Message").val(),
+                    severity: $("#Severity").val(),
+                    affectedArea: $("#AffectedArea").val()
+                };
+                console.log("Form data:", formData);
+                
+                // Add form submission failure handler with a slight delay
+                setTimeout(function() {
+                    // If we're still on the same page after submission, something likely failed
+                    if ($("form").length > 0) {
+                        console.log("Form submission may have failed - still on same page");
+                        
+                        // Get any validation errors
+                        var hasValidationErrors = $(".validation-summary-errors").length > 0 || 
+                                                $(".field-validation-error").length > 0;
+                        
+                        if (!hasValidationErrors) {
+                            console.log("No validation errors found - likely a database issue");
+                            $("#databaseErrorMessage").text("Alert could not be saved to the database. This might be due to a database connection issue or server problem.");
+                            $("#databaseError").show();
+                        }
+                    }
+                }, 1500);
+            });
+            
+            // Color scheme selection
+            $('.color-option').click(function() {
+                $('.color-option').removeClass('selected');
+                $(this).addClass('selected');
+                $('#colorScheme').val($(this).data('color'));
+                updatePreview();
+            });
+            
+            // Add selected class to default color
+            $('.color-option[data-color="danger"]').addClass('selected');
+            
+            // Background style change
+            $('input[name="backgroundStyle"]').change(updatePreview);
+            
+            // Icon style change
+            $('select[name="iconStyle"]').change(updatePreview);
+            
+            // Title and message preview
+            $('#Title').on('input', updatePreview);
+            $('#Message').on('input', updatePreview);
+            $('#AffectedArea').on('input', updatePreview);
+            
+            // Refresh preview button
+            $('#refreshPreview').click(updatePreview);
+            
+            // Initial preview
+            updatePreview();
+            
+            // Update preview function
+            function updatePreview() {
+                const title = $('#Title').val() || 'Alert Preview';
+                const message = $('#Message').val() || 'Your alert message will appear here';
+                const area = $('#AffectedArea').val() || 'Affected area information';
+                const colorScheme = $('#colorScheme').val();
+                const bgStyle = $('input[name="backgroundStyle"]:checked').val();
+                const iconStyle = $('select[name="iconStyle"]').val();
+                
+                // Update alert class
+                $('#alertPreview').removeClass (function (index, className) {
+                    return (className.match (/(^|\s)alert-\S+/g) || []).join(' ');
+                }).addClass('alert-' + colorScheme);
+                
+                // Add background style
+                $('#alertPreview').removeClass('bg-pattern bg-gradient');
+                if (bgStyle === 'warning-pattern') {
+                    $('#alertPreview').addClass('bg-pattern');
+                } else if (bgStyle === 'info-gradient') {
+                    $('#alertPreview').addClass('bg-gradient');
+                }
+                
+                // Update icon based on style and severity
+                let iconClass = 'fas fa-exclamation-triangle';
+                if (colorScheme === 'info') iconClass = 'fas fa-info-circle';
+                if (colorScheme === 'warning') iconClass = 'fas fa-exclamation-circle';
+                if (colorScheme === 'dark') iconClass = 'fas fa-skull-crossbones';
+                
+                if (iconStyle === 'outlined') {
+                    iconClass = iconClass.replace('fas', 'far');
+                } else if (iconStyle === 'minimal') {
+                    iconClass = iconClass.split(' ')[0] + ' fa-' + iconClass.split('-')[1];
+                }
+                
+                // Add animation class if needed
+                if (iconStyle === 'animated') {
+                    $('.alert-icon i').attr('class', iconClass + ' fa-2x animated-icon');
+                } else {
+                    $('.alert-icon i').attr('class', iconClass + ' fa-2x');
+                }
+                
+                // Update content
+                $('#alertPreview h5').text(title);
+                $('#alertPreview p').text(message);
+                $('#alertPreview small').text(area);
+            }
+        });
+    </script>
+    
+    <style>
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .color-option.selected {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #0d6efd;
+        }
+        
+        #alertPreview {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        
+        .bg-pattern {
+            background-image: repeating-linear-gradient(
+                45deg,
+                rgba(255,255,255,0.1),
+                rgba(255,255,255,0.1) 10px,
+                rgba(255,255,255,0.2) 10px,
+                rgba(255,255,255,0.2) 20px
+            );
+        }
+        
+        .bg-gradient {
+            background-image: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.2) 0%,
+                rgba(255,255,255,0) 100%
+            );
+        }
+        
+        .alert-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Animation for animated icons */
+        .animated-icon {
+            animation: pulse 2s infinite;
+        }
+        
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+} 

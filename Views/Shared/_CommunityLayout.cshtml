@@ -883,6 +883,14 @@
                             </div>
                         </div>
                     }
+                    <a href="@Url.Action("Alerts", "Community")" class="header-alert-btn relative p-2 text-primary">
+                        <i class="fas fa-bell"></i>
+                    </a>
+                    
+                    <!-- Sound permissions button -->
+                    <button id="enableSoundPermission" class="header-alert-btn relative p-2 text-primary">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1073,14 +1081,82 @@
         </div>
     </main>
 
+    <!-- Notification Sound Element -->
+    <audio id="alertSound" preload="auto" muted>
+        <source src="~/sounds/alert.mp3" type="audio/mpeg">
+    </audio>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
-    <!-- Add SignalR client library -->
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
-        // Sidebar initialization
+        // Initialize sound on page load or first interaction based on saved preference
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if sound was previously enabled
+            if (localStorage.getItem('soundEnabled') === 'true') {
+                console.log('Sound was previously enabled, attempting to initialize automatically');
+                initSound(true);
+            } else {
+                // Wait for first interaction to initialize sound
+                document.addEventListener('click', function() { initSound(false); }, { once: true });
+                document.addEventListener('keydown', function() { initSound(false); }, { once: true });
+                document.addEventListener('touchstart', function() { initSound(false); }, { once: true });
+            }
+        });
+
+        function initSound(fromPreference = false) {
+            const sound = document.getElementById('alertSound');
+            if (sound) {
+                // Unmute the audio
+                sound.muted = false;
+                
+                // Try to play and stop immediately to initialize audio
+                sound.play()
+                    .then(() => {
+                        sound.pause();
+                        sound.currentTime = 0;
+                        console.log('Audio initialized successfully');
+                        
+                        // If called from a preference, save it permanently
+                        if (!fromPreference) {
+                            localStorage.setItem('soundEnabled', 'true');
+                        }
+                        
+                        // Update sound button appearance to indicate sound is enabled
+                        updateSoundButtonStatus(true);
+                    })
+                    .catch(error => {
+                        console.warn('Audio could not be initialized automatically:', error);
+                        localStorage.removeItem('soundEnabled'); // Clear preference if failed
+                        updateSoundButtonStatus(false);
+                    });
+                
+                // Request notification permission which can help with audio
+                if (Notification && Notification.permission !== "granted") {
+                    Notification.requestPermission();
+                }
+            }
+        }
+        
+        // Update sound button appearance based on status
+        function updateSoundButtonStatus(enabled) {
+            const soundBtn = document.getElementById('enableSoundPermission');
+            if (soundBtn) {
+                if (enabled) {
+                    soundBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    soundBtn.classList.add('sound-enabled');
+                    soundBtn.title = "Sound notifications are enabled";
+                } else {
+                    soundBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    soundBtn.classList.remove('sound-enabled');
+                    soundBtn.title = "Click to enable sound notifications";
+                }
+            }
+        }
+
+        // Toggle sidebar
         document.addEventListener('DOMContentLoaded', function() {
             const hamburger = document.getElementById('hamburger');
             const sidebar = document.getElementById('sidebar');
@@ -1453,7 +1529,134 @@
                 console.error('Failed to initialize SignalR:', error);
             }
         });
+
+        // Global alert notification variables and functions
+        let alertHubConnection = null;
+        let alertSound = null;
+        let alertBroadcastChannel = null;
+        
+        // Initialize broadcast channel for cross-tab alert synchronization
+        try {
+            alertBroadcastChannel = new BroadcastChannel('thynk-alerts');
+            console.log('Alert broadcast channel initialized');
+            
+            // Listen for alerts from other tabs/windows
+            alertBroadcastChannel.onmessage = function(event) {
+                console.log('Received alert broadcast from another tab:', event.data);
+                
+                if (event.data.type === 'new-alert') {
+                    // Display the alert
+                    showAlertNotification(event.data.alert);
+                    
+                    // Play sound (if it's been enabled on this tab)
+                    if (localStorage.getItem('soundEnabled') === 'true') {
+                        playAlertSound();
+                    }
+                }
+                else if (event.data.type === 'update-alert') {
+                    // Update the alert if it's displayed
+                    const existingAlert = document.querySelector(`.real-time-alert[data-alert-id="${event.data.alert.id}"]`);
+                    if (existingAlert) {
+                        if (!event.data.alert.isActive) {
+                            existingAlert.remove();
+                        } else {
+                            updateAlertNotification(existingAlert, event.data.alert);
+                        }
+                    } else if (event.data.alert.isActive) {
+                        // If alert is active but not displayed, show it
+                        showAlertNotification(event.data.alert);
+                        
+                        // Play sound for new critical alerts
+                        if (event.data.alert.severity >= 2 && localStorage.getItem('soundEnabled') === 'true') {
+                            playAlertSound();
+                        }
+                    }
+                }
+                else if (event.data.type === 'delete-alert') {
+                    // Remove the alert from display if it exists
+                    const existingAlert = document.querySelector(`.real-time-alert[data-alert-id="${event.data.alertId}"]`);
+                    if (existingAlert) {
+                        existingAlert.remove();
+                    }
+                }
+                else if (event.data.type === 'new-tab-opened') {
+                    // Send active alerts to the new tab
+                    const activeAlerts = JSON.parse(localStorage.getItem('activeAlerts') || '[]');
+                    if (activeAlerts.length > 0) {
+                        console.log('Broadcasting active alerts to new tab:', activeAlerts.length);
+                        activeAlerts.forEach(alert => {
+                            // Small delay to avoid overwhelming
+                            setTimeout(() => {
+                                alertBroadcastChannel.postMessage({
+                                    type: 'new-alert',
+                                    alert: alert,
+                                    timestamp: new Date().toISOString(),
+                                    source: 'sync-response'
+                                });
+                            }, 500);
+                        });
+                    }
+                }
+            };
+            
+            // Announce this tab to other tabs to get synced
+            setTimeout(() => {
+                alertBroadcastChannel.postMessage({
+                    type: 'new-tab-opened',
+                    tabId: Date.now().toString(36) + Math.random().toString(36).substr(2),
+                    timestamp: new Date().toISOString()
+                });
+            }, 1000);
+        } catch (error) {
+            console.warn('BroadcastChannel API not supported in this browser:', error);
+            alertBroadcastChannel = null;
+        }
     </script>
+    <style>
+        /* Animation for alerts */
+        @@keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @@keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        /* Alert styling */
+        .real-time-alert {
+            transition: all 0.3s ease;
+        }
+        
+        .alert-info {
+            background-color: #0dcaf0;
+        }
+        
+        .alert-warning {
+            background-color: #ffc107;
+        }
+        
+        .alert-danger {
+            background-color: #dc3545;
+        }
+        
+        .alert-dark {
+            background-color: #212529;
+        }
+        
+        /* Sound button styling */
+        .sound-enabled {
+            background-color: rgba(29, 185, 84, 0.8) !important;
+            color: white !important;
+            box-shadow: 0 2px 6px rgba(29, 185, 84, 0.3) !important;
+        }
+        
+        .sound-enabled:hover {
+            background-color: rgba(29, 185, 84, 0.9) !important;
+            color: white !important;
+        }
+    </style>
     @await RenderSectionAsync("Scripts", required: false)
     
     <!-- Logout Confirmation Modal -->

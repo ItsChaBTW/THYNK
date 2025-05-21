@@ -137,13 +137,13 @@
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label asp-for="Purok" class="form-label small text-muted">Purok/Street</label>
-                                    <input asp-for="Purok" id="purok" class="form-control bg-light border-0" 
+                                    <input type="hidden" asp-for="Purok" id="purok" class="form-control bg-light border-0" 
                                            placeholder="Purok or Street number" />
                                     <span asp-validation-for="Purok" class="text-danger"></span>
                                 </div>
                                 <div class="col-md-6">
                                     <label asp-for="Barangay" class="form-label small text-muted">Barangay</label>
-                                    <input asp-for="Barangay" id="barangay" class="form-control bg-light border-0" 
+                                    <input type="hidden" asp-for="Barangay" id="barangay" class="form-control bg-light border-0" 
                                            placeholder="Barangay name" />
                                     <span asp-validation-for="Barangay" class="text-danger"></span>
                                 </div>
@@ -152,13 +152,13 @@
                             <div class="row mb-4">
                                 <div class="col-md-6">
                                     <label asp-for="City" class="form-label small text-muted">City/Municipality</label>
-                                    <input asp-for="City" id="city" class="form-control bg-light border-0" 
+                                    <input type="hidden" asp-for="City" id="city" class="form-control bg-light border-0" 
                                            placeholder="City or Municipality" />
                                     <span asp-validation-for="City" class="text-danger"></span>
                                 </div>
                                 <div class="col-md-6">
                                     <label asp-for="Country" class="form-label small text-muted">Country</label>
-                                    <input asp-for="Country" id="country" class="form-control bg-light border-0" 
+                                    <input type="hidden" asp-for="Country" id="country" class="form-control bg-light border-0" 
                                            placeholder="Country" value="Philippines" />
                                     <span asp-validation-for="Country" class="text-danger"></span>
                                 </div>

@@ -344,6 +344,279 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <!-- Add SignalR client library -->
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+        // SignalR Alert Notifications
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize SignalR connection
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/alertHub")
+                .withAutomaticReconnect()
+                .build();
+                
+            // Start the connection
+            connection.start()
+                .then(() => {
+                    console.log("Connected to AlertHub");
+                })
+                .catch(err => {
+                    console.error("Error connecting to AlertHub:", err);
+                });
+                
+            // Handle receiving a new alert
+            connection.on("ReceiveAlert", function(alert) {
+                console.log("New alert received:", alert);
+                showAlertNotification(alert);
+            });
+            
+            // Handle alert updates
+            connection.on("AlertUpdated", function(alert) {
+                console.log("Alert updated:", alert);
+                // If we have an alert display on screen with this ID, update it
+                const existingAlert = document.querySelector(`.real-time-alert[data-alert-id="${alert.id}"]`);
+                if (existingAlert) {
+                    // Update the alert or remove it if it's no longer active
+                    if (!alert.isActive) {
+                        existingAlert.remove();
+                    } else {
+                        updateAlertNotification(existingAlert, alert);
+                    }
+                } else if (alert.isActive) {
+                    // If alert is active but not displayed, show it
+                    showAlertNotification(alert);
+                }
+            });
+            
+            // Handle alert deletion
+            connection.on("AlertDeleted", function(alertId) {
+                console.log("Alert deleted:", alertId);
+                // Remove the alert from display if it exists
+                const existingAlert = document.querySelector(`.real-time-alert[data-alert-id="${alertId}"]`);
+                if (existingAlert) {
+                    existingAlert.remove();
+                }
+            });
+            
+            // Function to display alert notification
+            function showAlertNotification(alert) {
+                // Only show active alerts
+                if (!alert.isActive) return;
+                
+                // Create alert element
+                const alertElement = document.createElement('div');
+                alertElement.className = `real-time-alert alert-${getSeverityClass(alert.severity)}`;
+                alertElement.setAttribute('data-alert-id', alert.id);
+                alertElement.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    max-width: 400px;
+                    z-index: 9999;
+                    padding: 15px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    color: white;
+                    animation: slideIn 0.5s ease-out forwards;
+                `;
+                
+                // Add background styling based on alert properties
+                if (alert.backgroundStyle === 'warning-pattern') {
+                    alertElement.style.backgroundImage = `repeating-linear-gradient(
+                        45deg,
+                        rgba(255,255,255,0.1),
+                        rgba(255,255,255,0.1) 10px,
+                        rgba(255,255,255,0.2) 10px,
+                        rgba(255,255,255,0.2) 20px
+                    )`;
+                } else if (alert.backgroundStyle === 'info-gradient') {
+                    alertElement.style.backgroundImage = `linear-gradient(
+                        135deg,
+                        rgba(255,255,255,0.2) 0%,
+                        rgba(255,255,255,0) 100%
+                    )`;
+                }
+                
+                // Create alert content
+                alertElement.innerHTML = `
+                    <div class="d-flex">
+                        <div class="alert-icon me-3">
+                            ${getAlertIcon(alert.severity, alert.iconStyle)}
+                        </div>
+                        <div>
+                            <h5 class="alert-heading mb-1">${alert.title}</h5>
+                            <p class="mb-1">${alert.message}</p>
+                            <small class="text-light">${alert.affectedArea}</small>
+                            <div class="mt-2 d-flex justify-content-between align-items-center">
+                                <small class="text-light">
+                                    ${new Date(alert.dateIssued).toLocaleString()}
+                                </small>
+                                <button type="button" class="btn-close btn-close-white" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add close button handler
+                alertElement.querySelector('.btn-close').addEventListener('click', function() {
+                    alertElement.style.animation = 'slideOut 0.3s ease-in forwards';
+                    setTimeout(() => {
+                        alertElement.remove();
+                    }, 300);
+                });
+                
+                // Auto-dismiss after 10 seconds for non-critical alerts
+                if (alert.severity !== 3) { // 3 = Critical in AlertSeverity enum
+                    setTimeout(() => {
+                        if (document.body.contains(alertElement)) {
+                            alertElement.style.animation = 'slideOut 0.3s ease-in forwards';
+                            setTimeout(() => {
+                                alertElement.remove();
+                            }, 300);
+                        }
+                    }, 10000);
+                }
+                
+                // Append to body
+                document.body.appendChild(alertElement);
+                
+                // Play notification sound for critical and danger alerts
+                if (alert.severity >= 2) { // 2 = Danger, 3 = Critical
+                    playAlertSound();
+                }
+            }
+            
+            // Function to update an existing alert notification
+            function updateAlertNotification(alertElement, alert) {
+                // Update class based on severity
+                alertElement.className = `real-time-alert alert-${getSeverityClass(alert.severity)}`;
+                
+                // Update content
+                const contentDiv = alertElement.querySelector('.alert-icon + div');
+                if (contentDiv) {
+                    contentDiv.querySelector('h5').textContent = alert.title;
+                    contentDiv.querySelector('p').textContent = alert.message;
+                    contentDiv.querySelector('small').textContent = alert.affectedArea;
+                    contentDiv.querySelector('.mt-2 small').textContent = new Date(alert.dateIssued).toLocaleString();
+                }
+                
+                // Update icon
+                const iconDiv = alertElement.querySelector('.alert-icon');
+                if (iconDiv) {
+                    iconDiv.innerHTML = getAlertIcon(alert.severity, alert.iconStyle);
+                }
+                
+                // Update background style
+                if (alert.backgroundStyle === 'warning-pattern') {
+                    alertElement.style.backgroundImage = `repeating-linear-gradient(
+                        45deg,
+                        rgba(255,255,255,0.1),
+                        rgba(255,255,255,0.1) 10px,
+                        rgba(255,255,255,0.2) 10px,
+                        rgba(255,255,255,0.2) 20px
+                    )`;
+                } else if (alert.backgroundStyle === 'info-gradient') {
+                    alertElement.style.backgroundImage = `linear-gradient(
+                        135deg,
+                        rgba(255,255,255,0.2) 0%,
+                        rgba(255,255,255,0) 100%
+                    )`;
+                } else {
+                    alertElement.style.backgroundImage = 'none';
+                }
+            }
+            
+            // Helper function to get severity class
+            function getSeverityClass(severity) {
+                switch(severity) {
+                    case 0: return 'info';    // Info
+                    case 1: return 'warning'; // Warning
+                    case 2: return 'danger';  // Danger
+                    case 3: return 'dark';    // Critical
+                    default: return 'info';
+                }
+            }
+            
+            // Helper function to get alert icon
+            function getAlertIcon(severity, iconStyle) {
+                let iconClass = 'fas fa-exclamation-triangle';
+                
+                if (severity === 0) iconClass = 'fas fa-info-circle';
+                if (severity === 1) iconClass = 'fas fa-exclamation-circle';
+                if (severity === 3) iconClass = 'fas fa-skull-crossbones';
+                
+                if (iconStyle === 'outlined') {
+                    iconClass = iconClass.replace('fas', 'far');
+                } else if (iconStyle === 'minimal') {
+                    iconClass = iconClass.split(' ')[0] + ' fa-' + iconClass.split('-')[1];
+                }
+                
+                const animationClass = iconStyle === 'animated' ? 'animated-icon' : '';
+                
+                return `<i class="${iconClass} fa-2x ${animationClass}"></i>`;
+            }
+            
+            // Function to play alert sound
+            function playAlertSound() {
+                // Create audio element if it doesn't exist
+                let alertSound = document.getElementById('alertSound');
+                if (!alertSound) {
+                    alertSound = document.createElement('audio');
+                    alertSound.id = 'alertSound';
+                    alertSound.src = '/sounds/alert.mp3'; // Make sure this file exists
+                    alertSound.style.display = 'none';
+                    document.body.appendChild(alertSound);
+                }
+                
+                // Play the sound
+                alertSound.play().catch(e => console.log('Error playing alert sound:', e));
+            }
+        });
+    </script>
+    <style>
+        /* Animation for alerts */
+        @@keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @@keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        /* Animation for animated icons */
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .animated-icon {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Alert styling */
+        .real-time-alert {
+            transition: all 0.3s ease;
+        }
+        
+        .alert-info {
+            background-color: #0dcaf0;
+        }
+        
+        .alert-warning {
+            background-color: #ffc107;
+        }
+        
+        .alert-danger {
+            background-color: #dc3545;
+        }
+        
+        .alert-dark {
+            background-color: #212529;
+        }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Add active class to nav item on scroll
