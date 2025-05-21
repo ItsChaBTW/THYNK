@@ -15,6 +15,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<CommunityUpdate> CommunityUpdates { get; set; }
     public DbSet<EducationalResource> EducationalResources { get; set; }
     public DbSet<Alert> Alerts { get; set; }
+    public DbSet<EvacuationSite> EvacuationSites { get; set; }
     public DbSet<LGUUser> LGUUsers { get; set; }
     public DbSet<FAQ> FAQs { get; set; }
     public DbSet<ChatSession> ChatSessions { get; set; }

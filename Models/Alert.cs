@@ -30,28 +30,20 @@ namespace THYNK.Models
         [Required]
         public string AffectedArea { get; set; } = string.Empty;
 
+        // Image path for the alert
+        public string ImagePath { get; set; } = string.Empty;
+
+        // UI customization options
+        public string BackgroundStyle { get; set; } = string.Empty;
+        public string IconStyle { get; set; } = string.Empty;
+        public string ColorScheme { get; set; } = string.Empty;
+
         // Reference to the LGU user who created the alert
         [Required]
         public string IssuedByUserId { get; set; } = string.Empty;
         
         [ForeignKey("IssuedByUserId")]
         public ApplicationUser User { get; set; } = null!;
-        
-        // New fields for custom artwork and styling
-        public string ImagePath { get; set; } = string.Empty;
-        
-        public string BackgroundStyle { get; set; } = "standard";
-        
-        public string IconStyle { get; set; } = "standard";
-        
-        public string ColorScheme { get; set; } = "danger";
-        
-        [NotMapped]
-        public bool HasCustomStyling => 
-            !string.IsNullOrEmpty(ImagePath) || 
-            BackgroundStyle != "standard" || 
-            IconStyle != "standard" || 
-            ColorScheme != "danger";
     }
 
     public enum AlertSeverity

@@ -663,6 +663,16 @@
                 clearInterval(refreshInterval);
             }
         });
+
+        if (typeof connection !== 'undefined') {
+            connection.on("RecentReportUpdated", function(report) {
+                if (typeof reloadReportsTable === 'function') {
+                    reloadReportsTable();
+                } else if (typeof fetchRecentReports === 'function') {
+                    fetchRecentReports();
+                }
+            });
+        }
     </script>
 }
 </div> 

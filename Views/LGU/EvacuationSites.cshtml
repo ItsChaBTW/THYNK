@@ -1,0 +1,178 @@
+@model IEnumerable<EvacuationSite>
+@{
+    ViewData["Title"] = "Evacuation Sites";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Manage Evacuation Sites</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a asp-controller="LGU" asp-action="Dashboard">Home</a></li>
+                    <li class="breadcrumb-item active">Evacuation Sites</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                @TempData["ErrorMessage"]
+            </div>
+        }
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Evacuation Site Management</h3>
+                <div class="card-tools">
+                    <a asp-action="CreateEvacuationSite" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Site
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form method="get" class="form-inline">
+                                <div class="form-group mr-2">
+                                    <label class="mr-2">Type:</label>
+                                    <select name="type" class="form-control" onchange="this.form.submit()">
+                                        @{
+                                            var optionsHtml = new System.Text.StringBuilder();
+                                            optionsHtml.AppendLine("<option value=\"\">All Types</option>");
+                                            
+                                            foreach (var type in Enum.GetValues(typeof(EvacuationSiteType)))
+                                            {
+                                                var typeStr = type.ToString();
+                                                var selected = ViewBag.CurrentTypeFilter == typeStr ? "selected" : "";
+                                                var displayText = typeStr.Replace("Evacuation", " Evacuation");
+                                                optionsHtml.AppendLine($"<option value=\"{typeStr}\" {selected}>{displayText}</option>");
+                                            }
+                                        }
+                                        @Html.Raw(optionsHtml.ToString())
+                                    </select>
+                                </div>
+                                <div class="form-group mr-2">
+                                    <label class="mr-2">Status:</label>
+                                    <select name="isActive" class="form-control" onchange="this.form.submit()">
+                                        @{
+                                            var statusHtml = new System.Text.StringBuilder();
+                                            statusHtml.AppendLine("<option value=\"\">All</option>");
+                                            
+                                            var activeSelected = ViewBag.CurrentActiveFilter == true ? "selected" : "";
+                                            var inactiveSelected = ViewBag.CurrentActiveFilter == false ? "selected" : "";
+                                            
+                                            statusHtml.AppendLine($"<option value=\"true\" {activeSelected}>Active</option>");
+                                            statusHtml.AppendLine($"<option value=\"false\" {inactiveSelected}>Inactive</option>");
+                                        }
+                                        @Html.Raw(statusHtml.ToString())
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Capacity</th>
+                                <th>Status</th>
+                                <th>Facilities</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Any())
+                            {
+                                @foreach (var site in Model)
+                                {
+                                    <tr>
+                                        <td>@site.Name</td>
+                                        <td>@site.Type.ToString().Replace("Evacuation", "")</td>
+                                        <td>@site.Address, @site.City</td>
+                                        <td>@site.Capacity people</td>
+                                        <td>
+                                            @if (site.IsActive)
+                                            {
+                                                <span class="badge badge-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="d-flex flex-wrap">
+                                                @if (site.HasWater)
+                                                {
+                                                    <span class="badge badge-info mr-1 mb-1" title="Water"><i class="fas fa-tint"></i></span>
+                                                }
+                                                @if (site.HasElectricity)
+                                                {
+                                                    <span class="badge badge-warning mr-1 mb-1" title="Electricity"><i class="fas fa-bolt"></i></span>
+                                                }
+                                                @if (site.HasMedicalSupplies)
+                                                {
+                                                    <span class="badge badge-danger mr-1 mb-1" title="Medical"><i class="fas fa-first-aid"></i></span>
+                                                }
+                                                @if (site.HasInternet)
+                                                {
+                                                    <span class="badge badge-primary mr-1 mb-1" title="Internet"><i class="fas fa-wifi"></i></span>
+                                                }
+                                                @if (site.IsWheelchairAccessible)
+                                                {
+                                                    <span class="badge badge-success mr-1 mb-1" title="Wheelchair Accessible"><i class="fas fa-wheelchair"></i></span>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a asp-action="EditEvacuationSite" asp-route-id="@site.Id" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form asp-action="ToggleEvacuationSiteStatus" asp-route-id="@site.Id" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm @(site.IsActive ? "btn-warning" : "btn-success")" 
+                                                            title="@(site.IsActive ? "Deactivate" : "Activate")">
+                                                        <i class="fas @(site.IsActive ? "fa-times-circle" : "fa-check-circle")"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center">No evacuation sites found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section> 

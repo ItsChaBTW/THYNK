@@ -10,6 +10,11 @@ using Microsoft.AspNetCore.Authentication;
 using System.Text.Json;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Hosting;
+using THYNK.Hubs;
+using THYNK.Services;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace THYNK.Controllers
 {
@@ -19,12 +24,33 @@ namespace THYNK.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<LGUController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IHubContext<AdminHub> _hubContext;
+        private readonly IHubContext<CommunityHub> _communityHubContext;
+        private readonly IHubContext<AlertHub> _alertHubContext;
+        private readonly IEmailSender _emailSender;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly AlertNotificationService _alertNotificationService;
 
-        public LGUController(ApplicationDbContext context, ILogger<LGUController> logger, UserManager<ApplicationUser> userManager)
+        public LGUController(
+            ApplicationDbContext context, 
+            ILogger<LGUController> logger, 
+            UserManager<ApplicationUser> userManager, 
+            IHubContext<AdminHub> hubContext,
+            IHubContext<CommunityHub> communityHubContext,
+            IHubContext<AlertHub> alertHubContext,
+            IEmailSender emailSender,
+            IWebHostEnvironment webHostEnvironment,
+            AlertNotificationService alertNotificationService)
         {
             _context = context;
             _logger = logger;
             _userManager = userManager;
+            _hubContext = hubContext;
+            _communityHubContext = communityHubContext;
+            _alertHubContext = alertHubContext;
+            _emailSender = emailSender;
+            _webHostEnvironment = webHostEnvironment;
+            _alertNotificationService = alertNotificationService;
         }
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -145,60 +171,34 @@ namespace THYNK.Controllers
             // Apply status filter if specified
             if (!string.IsNullOrEmpty(status) && Enum.TryParse<ReportStatus>(status, out var statusEnum))
             {
-                _logger.LogInformation($"STEP 2: Applying status filter: {statusEnum}");
                 reports = reports.Where(r => r.Status == statusEnum).ToList();
                 ViewBag.CurrentFilter = statusEnum;
-                _logger.LogInformation($"After status filter: {reports.Count} reports remain");
-                foreach (var r in reports)
-                {
-                    _logger.LogInformation($"Report ID: {r.Id}, Title: {r.Title}, Status: {r.Status}, Severity: {r.Severity} ({(int)r.Severity}), Date: {r.DateReported:yyyy-MM-dd HH:mm}");
-                }
             }
 
             // Apply search filter if specified
             if (!string.IsNullOrEmpty(search))
             {
-                _logger.LogInformation($"STEP 3: Applying search filter: '{search}'");
+                search = search.ToLower();
                 reports = reports.Where(r =>
-                    r.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                    r.Description.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                    r.Location.Contains(search, StringComparison.OrdinalIgnoreCase)
+                    r.Title.ToLower().Contains(search) ||
+                    r.Description.ToLower().Contains(search) ||
+                    r.Location.ToLower().Contains(search) ||
+                    r.Type.ToString().ToLower().Contains(search)
                 ).ToList();
                 ViewBag.CurrentSearch = search;
-                _logger.LogInformation($"After search filter: {reports.Count} reports remain");
             }
 
-            // IMPORTANT: Apply sorting AFTER all filters
-            // Special handling for InProgress reports - sort by severity level (Critical first)
-            if (status == "InProgress" || (!string.IsNullOrEmpty(status) && Enum.TryParse<ReportStatus>(status, out var statusEnumValue) && statusEnumValue == ReportStatus.InProgress))
+            // Sort reports by severity if in progress
+            if (ViewBag.CurrentFilter == ReportStatus.InProgress)
             {
-                _logger.LogInformation("STEP 4: Applying SEVERITY SORTING for InProgress reports");
-                
-                // First separate reports by severity
-                var criticalReports = reports.Where(r => r.Severity == SeverityLevel.Critical).OrderByDescending(r => r.DateReported).ToList();
-                var highReports = reports.Where(r => r.Severity == SeverityLevel.High).OrderByDescending(r => r.DateReported).ToList();
-                var mediumReports = reports.Where(r => r.Severity == SeverityLevel.Medium).OrderByDescending(r => r.DateReported).ToList();
-                var lowReports = reports.Where(r => r.Severity == SeverityLevel.Low).OrderByDescending(r => r.DateReported).ToList();
-                
-                // Combine them in priority order
-                reports = criticalReports.Concat(highReports).Concat(mediumReports).Concat(lowReports).ToList();
-                
-                _logger.LogInformation("After severity sort:");
-                int idx = 1;
-                foreach (var r in reports)
-                {
-                    _logger.LogInformation($"{idx++}. Report ID: {r.Id}, Title: {r.Title}, Status: {r.Status}, Severity: {r.Severity} ({(int)r.Severity}), Date: {r.DateReported:yyyy-MM-dd HH:mm}");
-                }
+                reports = reports
+                    .OrderBy(r => (int)r.Severity)  // Primary sort by severity
+                    .ThenByDescending(r => r.DateReported)  // Secondary sort by date
+                    .ToList();
             }
             else
             {
-                // Sort by most recent first for non-InProgress reports
-                _logger.LogInformation("STEP 4: Applying DATE SORTING for non-InProgress reports");
                 reports = reports.OrderByDescending(r => r.DateReported).ToList();
-                foreach (var report in reports)
-                {
-                    _logger.LogInformation($"After date sort: Report ID {report.Id}, Title: {report.Title}, Status: {report.Status}, Severity: {report.Severity} ({(int)report.Severity}), Date: {report.DateReported:yyyy-MM-dd HH:mm}");
-                }
             }
 
             _logger.LogInformation($"FINAL: Returning {reports.Count} reports to view");
@@ -210,20 +210,53 @@ namespace THYNK.Controllers
             }
             _logger.LogInformation($"----------- DEBUG END: ManageReports -----------");
             
+            // Return partial view for AJAX requests
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("_LGUReportsTable", reports);
+            }
+            
             return View(reports);
         }
         
         // View report details
-        public async Task<IActionResult> ReportDetails(int id)
+        public async Task<IActionResult> ReportDetails(int? id)
         {
+            if (!id.HasValue)
+            {
+                TempData["ErrorMessage"] = "Invalid report ID.";
+                return RedirectToAction(nameof(ManageReports));
+            }
+
             var report = await _context.DisasterReports
                 .Include(r => r.User)
                 .Include(r => r.AssignedTo)
-                .FirstOrDefaultAsync(r => r.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id.Value);
                 
             if (report == null)
             {
+                TempData["ErrorMessage"] = "Report not found.";
+                return RedirectToAction(nameof(ManageReports));
+            }
+
+            // Verify this LGU user has jurisdiction over this report
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
                 return NotFound();
+            }
+
+            bool hasJurisdiction = report.AssignedToId == userId || 
+                (report.Status == ReportStatus.InProgress && 
+                 report.AssignedTo != null && 
+                 report.AssignedTo.OrganizationName == currentUser.OrganizationName);
+
+            if (!hasJurisdiction)
+            {
+                TempData["ErrorMessage"] = "You don't have access to this report as it's not in your jurisdiction.";
+                return RedirectToAction(nameof(ManageReports));
             }
             
             return View(report);
@@ -329,6 +362,16 @@ namespace THYNK.Controllers
                 await _hubContext.Clients.Group($"user_{report.UserId}")
                     .SendAsync("ReportStatusUpdated", report.Id, report.Status.ToString(), report.Title);
 
+                // Also send through community hub
+                await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("NotificationReceived", notification);
+                await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                    .SendAsync("ReportStatusUpdated", report.Id, report.Status.ToString(), report.Title);
+
+                // Force reload notifications for all clients
+                await _hubContext.Clients.All.SendAsync("ForceReloadNotifications");
+                await _communityHubContext.Clients.All.SendAsync("ForceReloadNotifications");
+
                 // Get notification preferences
                 var notificationPreferences = await _context.NotificationPreferences
                     .FirstOrDefaultAsync(np => np.UserId == report.UserId);
@@ -357,6 +400,8 @@ namespace THYNK.Controllers
             // Notify all clients about the report update
             await _hubContext.Clients.All.SendAsync("ReportUpdated", id, report.Status.ToString());
             await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
+            await _communityHubContext.Clients.All.SendAsync("ReportUpdated", id, report.Status.ToString());
+            await _communityHubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
             
             TempData["SuccessMessage"] = "Report status has been updated successfully.";
             return RedirectToAction(nameof(ReportDetails), new { id = id });
@@ -550,12 +595,12 @@ namespace THYNK.Controllers
                             _logger.LogError(smsEx, "Error sending SMS notifications for alert");
                         }
                         
-                        return RedirectToAction(nameof(ManageAlerts));
-                    }
+                return RedirectToAction(nameof(ManageAlerts));
+            }
                     else
                     {
                         TempData["ErrorMessage"] = "Database reported success but no records were inserted.";
-                        return View(alert);
+            return View(alert);
                     }
                 }
                 catch (DbUpdateException dbEx)
@@ -2144,6 +2189,395 @@ namespace THYNK.Controllers
             }
             
             return Json(result);
+        }
+
+        private DateTime GetPhilippineTime()
+        {
+            return DateTime.UtcNow.AddHours(8); // Convert UTC to Philippine Time (UTC+8)
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResolveReport(int id, string resolution)
+        {
+            var report = await _context.DisasterReports
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (report == null)
+            {
+                return NotFound();
+            }
+
+            report.Status = ReportStatus.Resolved;
+            report.Resolution = resolution;
+            report.ResolvedAt = GetPhilippineTime();
+            await _context.SaveChangesAsync();
+
+            // Create notification for report resolution
+            if (report.User != null)
+            {
+                var notification = new UserNotification
+                {
+                    UserId = report.UserId,
+                    Title = "Report Resolved",
+                    Message = $"Your report '{report.Title}' has been successfully resolved.",
+                    NotificationType = "success",
+                    RelatedEntityId = report.Id,
+                    RelatedEntityType = "Report",
+                    IsRead = false,
+                    CreatedAt = GetPhilippineTime()
+                };
+
+                _context.UserNotifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Send notifications through both hubs to ensure real-time updates
+                try
+                {
+                    // Send through admin hub
+                    await _hubContext.Clients.Group($"user_{report.UserId}")
+                        .SendAsync("NotificationReceived", notification);
+
+                    // Send through community hub
+                    await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                        .SendAsync("NotificationReceived", notification);
+
+                    // Send status update through both hubs
+                    await _hubContext.Clients.Group($"user_{report.UserId}")
+                        .SendAsync("ReportStatusUpdated", report.Id, "Resolved", report.Title);
+                    await _communityHubContext.Clients.Group($"user_{report.UserId}")
+                        .SendAsync("ReportStatusUpdated", report.Id, "Resolved", report.Title);
+
+                    // Notify all clients about the report update
+                    await _hubContext.Clients.All.SendAsync("ReportUpdated", id, "Resolved");
+                    await _communityHubContext.Clients.All.SendAsync("ReportUpdated", id, "Resolved");
+                    await _hubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
+                    await _communityHubContext.Clients.All.SendAsync("RecentReportUpdated", ToRecentReportDto(report));
+
+                    _logger.LogInformation($"Successfully sent notifications for report {report.Id} resolution");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error sending notifications for report {report.Id}: {ex.Message}");
+                }
+
+                // Get notification preferences
+                var notificationPreferences = await _context.NotificationPreferences
+                    .FirstOrDefaultAsync(np => np.UserId == report.UserId);
+
+                // Send email notification if enabled
+                if (notificationPreferences?.EmailEnabled == true && !string.IsNullOrEmpty(report.User.Email))
+                {
+                    try
+                    {
+                        await _emailSender.SendEmailAsync(
+                            report.User.Email,
+                            "THYNK - Report Resolved",
+                            $"Dear {report.User.FirstName},<br><br>" +
+                            $"Your report '{report.Title}' has been successfully resolved.<br><br>" +
+                            $"Resolution Notes: {resolution}<br><br>" +
+                            $"Best regards,<br>THYNK Team"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Failed to send resolution email: {ex.Message}");
+                    }
+                }
+            }
+            
+            TempData["SuccessMessage"] = "Report has been resolved successfully.";
+            return RedirectToAction(nameof(ReportDetails), new { id = id });
+        }
+
+        // Evacuation Sites
+        public async Task<IActionResult> EvacuationSites(string type, bool? isActive)
+        {
+            IQueryable<EvacuationSite> sitesQuery = _context.EvacuationSites
+                .Include(e => e.ManagedBy);
+            
+            // Filter by type if specified
+            if (!string.IsNullOrEmpty(type) && Enum.TryParse<EvacuationSiteType>(type, out var typeEnum))
+            {
+                sitesQuery = sitesQuery.Where(e => e.Type == typeEnum);
+                ViewBag.CurrentTypeFilter = type;
+            }
+            
+            // Filter by active status if specified
+            if (isActive.HasValue)
+            {
+                sitesQuery = sitesQuery.Where(e => e.IsActive == isActive.Value);
+                ViewBag.CurrentActiveFilter = isActive.Value;
+            }
+            
+            var sites = await sitesQuery.OrderBy(e => e.Name).ToListAsync();
+            return View(sites);
+        }
+
+        public IActionResult CreateEvacuationSite()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateEvacuationSite(EvacuationSite site)
+        {
+            try
+            {
+                _logger.LogInformation($"Attempting to create evacuation site: {site.Name}, Type: {site.Type}, Lat: {site.Latitude}, Lng: {site.Longitude}");
+                
+                // Clear ModelState errors for ManagedBy and ManagedByUserId since we'll set them manually
+                ModelState.Remove("ManagedBy");
+                ModelState.Remove("ManagedByUserId");
+                
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Model state is invalid for evacuation site creation");
+                    
+                    // Log all model validation errors
+                    foreach (var modelState in ModelState.Values)
+                    {
+                        foreach (var error in modelState.Errors)
+                        {
+                            _logger.LogWarning($"Validation error: {error.ErrorMessage}");
+                        }
+                    }
+                    
+                    ViewBag.ErrorMessage = "Please correct the validation errors below.";
+                    return View(site);
+                }
+                
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                
+                // Explicitly set the required properties
+                site.ManagedByUserId = userId;
+                site.DateAdded = DateTime.Now;
+                site.IsActive = true;
+                
+                // Check if the user exists in the database
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                {
+                    _logger.LogError($"Failed to create evacuation site: User with ID {userId} not found in the database");
+                    ViewBag.ErrorMessage = "Unable to assign site to current user. Your login session may have expired.";
+                    return View(site);
+                }
+                
+                try 
+                {
+                    // First add the site without tracking ManagedBy
+                    _context.Entry(site).State = EntityState.Added;
+                    _context.Entry(site).Reference(s => s.ManagedBy).IsModified = false;
+                    
+                    // Explicitly log what we're trying to save
+                    _logger.LogInformation($"Saving site to database: ID: {site.Id}, Name: {site.Name}, Address: {site.Address}, City: {site.City}, " +
+                                          $"Coords: ({site.Latitude}, {site.Longitude}), Type: {site.Type}, Managed by: {site.ManagedByUserId}");
+                    
+                    int result = await _context.SaveChangesAsync();
+                    _logger.LogInformation($"SaveChangesAsync result: {result} records affected");
+                    
+                    if (result > 0)
+                    {
+                        TempData["SuccessMessage"] = "Evacuation site has been created successfully.";
+                        return RedirectToAction(nameof(EvacuationSites));
+                    }
+                    else
+                    {
+                        // If SaveChangesAsync returned 0, no records were affected
+                        _logger.LogError("Database save operation did not affect any records");
+                        ViewBag.ErrorMessage = "Failed to save the evacuation site to the database. No records were affected.";
+                        return View(site);
+                    }
+                } 
+                catch (InvalidOperationException ex) 
+                {
+                    _logger.LogError($"Entity Framework operation error: {ex.Message}");
+                    
+                    // Try an alternative approach if EF is having issues
+                    try 
+                    {
+                        // Fallback to a simpler approach
+                        _context.EvacuationSites.Add(site);
+                        int result = await _context.SaveChangesAsync();
+                        
+                        if (result > 0) 
+                        {
+                            TempData["SuccessMessage"] = "Evacuation site has been created successfully.";
+                            return RedirectToAction(nameof(EvacuationSites));
+                        }
+                        else
+                        {
+                            ViewBag.ErrorMessage = "Failed to save evacuation site with fallback approach.";
+                            return View(site);
+                        }
+                    } 
+                    catch (Exception innerEx) 
+                    {
+                        _logger.LogError($"Fallback approach also failed: {innerEx.Message}");
+                        ViewBag.ErrorMessage = $"Could not save evacuation site: {ex.Message}";
+                        return View(site);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error creating evacuation site: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                
+                ViewBag.ErrorMessage = "An unexpected error occurred. Please try again or contact support.";
+                return View(site);
+            }
+        }
+
+        public async Task<IActionResult> EditEvacuationSite(int id)
+        {
+            try 
+            {
+                var site = await _context.EvacuationSites.FindAsync(id);
+                if (site == null)
+                {
+                    _logger.LogWarning($"Evacuation site with ID {id} not found");
+                    return NotFound();
+                }
+                
+                return View(site);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error retrieving evacuation site {id}: {ex.Message}");
+                TempData["ErrorMessage"] = "Error retrieving evacuation site. Please try again.";
+                return RedirectToAction(nameof(EvacuationSites));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditEvacuationSite(int id, EvacuationSite site)
+        {
+            if (id != site.Id)
+            {
+                _logger.LogWarning($"ID mismatch in EditEvacuationSite: URL ID={id}, Model ID={site.Id}");
+                return NotFound();
+            }
+            
+            try
+            {
+                _logger.LogInformation($"Attempting to update evacuation site {id}: {site.Name}, Type: {site.Type}, Lat: {site.Latitude}, Lng: {site.Longitude}");
+                
+                if (!ModelState.IsValid)
+                {
+                    _logger.LogWarning("Model state is invalid for evacuation site update");
+                    
+                    // Log all model validation errors
+                    foreach (var modelState in ModelState.Values)
+                    {
+                        foreach (var error in modelState.Errors)
+                        {
+                            _logger.LogWarning($"Validation error: {error.ErrorMessage}");
+                        }
+                    }
+                    
+                    ViewBag.ErrorMessage = "Please correct the validation errors below.";
+                    return View(site);
+                }
+                
+                var originalSite = await _context.EvacuationSites.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+                if (originalSite == null)
+                {
+                    _logger.LogWarning($"Original evacuation site with ID {id} not found during update");
+                    return NotFound();
+                }
+                
+                // Preserve the original creation data
+                site.ManagedByUserId = originalSite.ManagedByUserId;
+                site.DateAdded = originalSite.DateAdded;
+                site.LastUpdated = DateTime.Now;
+                
+                _context.Update(site);
+                
+                _logger.LogInformation($"Updating site in database: ID: {site.Id}, Name: {site.Name}, Address: {site.Address}, City: {site.City}, " +
+                                     $"Coords: ({site.Latitude}, {site.Longitude}), Type: {site.Type}, Managed by: {site.ManagedByUserId}");
+                
+                int result = await _context.SaveChangesAsync();
+                _logger.LogInformation($"SaveChangesAsync result: {result} records affected");
+                
+                if (result > 0)
+                {
+                    TempData["SuccessMessage"] = "Evacuation site has been updated successfully.";
+                    return RedirectToAction(nameof(EvacuationSites));
+                }
+                else
+                {
+                    // If SaveChangesAsync returned 0, no records were affected
+                    _logger.LogError("Database update operation did not affect any records");
+                    ViewBag.ErrorMessage = "Failed to update the evacuation site. No records were affected.";
+                    return View(site);
+                }
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                if (!EvacuationSiteExists(site.Id))
+                {
+                    _logger.LogWarning($"Evacuation site {site.Id} not found during concurrency check");
+                    return NotFound();
+                }
+                else
+                {
+                    _logger.LogError($"Concurrency exception updating evacuation site {id}: {ex.Message}");
+                    ViewBag.ErrorMessage = "The evacuation site was modified by another user. Please try again.";
+                    return View(site);
+                }
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError($"Database error updating evacuation site {id}: {ex.Message}");
+                _logger.LogError($"Inner exception: {ex.InnerException?.Message}");
+                
+                // Get detailed entity validation errors if available
+                if (ex.InnerException != null)
+                {
+                    _logger.LogError($"SQL error details: {ex.InnerException.Message}");
+                }
+                
+                ViewBag.ErrorMessage = $"Database error: {ex.Message}. Please check your input and try again.";
+                return View(site);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Unexpected error updating evacuation site {id}: {ex.Message}");
+                _logger.LogError($"Stack trace: {ex.StackTrace}");
+                
+                ViewBag.ErrorMessage = "An unexpected error occurred. Please try again or contact support.";
+                return View(site);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleEvacuationSiteStatus(int id)
+        {
+            var site = await _context.EvacuationSites.FindAsync(id);
+            if (site == null)
+            {
+                return NotFound();
+            }
+            
+            site.IsActive = !site.IsActive;
+            site.LastUpdated = DateTime.Now;
+            
+            await _context.SaveChangesAsync();
+            
+            string status = site.IsActive ? "active" : "inactive";
+            TempData["SuccessMessage"] = $"Evacuation site has been marked as {status}.";
+            
+            return RedirectToAction(nameof(EvacuationSites));
+        }
+
+        private bool EvacuationSiteExists(int id)
+        {
+            return _context.EvacuationSites.Any(e => e.Id == id);
         }
     }
 } 

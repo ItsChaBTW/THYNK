@@ -1,0 +1,1515 @@
+@{
+    ViewData["Title"] = "Nearby Evacuation Sites";
+    
+    // Use the appropriate layout based on authentication status
+    if (ViewBag.UseDefaultLayout == true)
+    {
+        Layout = "_Layout"; // Use the default/public layout for anonymous users
+    }
+    else
+    {
+        Layout = "_CommunityLayout"; // Use the community layout for authenticated users
+    }
+}
+
+<!-- Hero Section -->
+<div class="hero-section mb-4">
+    <div class="overlay"></div>
+    <div class="container-fluid position-relative z-index-1">
+        <div class="row align-items-center py-4">
+            <div class="col-lg-6">
+                <h1 class="display-4 text-white fw-bold mb-2">Evacuation Sites</h1>
+                <p class="lead text-white mb-4">Find safe locations near you in case of emergencies</p>
+                <button id="locateMe" class="btn btn-light btn-lg px-4 d-flex align-items-center">
+                    <i class="fas fa-location-arrow me-2"></i> Find Sites Near Me
+                </button>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="floating-image">
+                    <img src="/img/evacuation-illustration.svg" alt="Evacuation Site Illustration" onerror="this.src='https://placehold.co/600x400/3498db/white?text=Evacuation+Sites';this.onerror='';" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <!-- Map Card with enhanced design -->
+            <div class="card border-0 shadow-lg rounded-lg overflow-hidden">
+                <div class="card-header bg-gradient-primary text-white p-3 d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0 d-flex align-items-center">
+                        <i class="fas fa-map-marked-alt me-2"></i>
+                        Interactive 3D Map
+                    </h3>
+                    <div class="d-flex">
+                        <div class="dropdown me-2">
+                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="mapViewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-layer-group me-1"></i> Map View
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="mapViewDropdown">
+                                <li><a class="dropdown-item active" href="#" data-map-style="streets-v11"><i class="fas fa-road me-2"></i>Streets</a></li>
+                                <li><a class="dropdown-item" href="#" data-map-style="satellite-v9"><i class="fas fa-satellite me-2"></i>Satellite</a></li>
+                                <li><a class="dropdown-item" href="#" data-map-style="light-v10"><i class="fas fa-sun me-2"></i>Light</a></li>
+                                <li><a class="dropdown-item" href="#" data-map-style="dark-v10"><i class="fas fa-moon me-2"></i>Dark</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0 position-relative">
+                    <div id="map" class="map-container"></div>
+                    <div class="map-controls position-absolute p-3">
+                        <button id="toggle3D" class="btn btn-sm btn-primary mb-2 d-block w-100" title="Toggle 3D View">
+                            <i class="fas fa-cube me-1"></i> 3D View
+                        </button>
+                        <button id="zoomToFit" class="btn btn-sm btn-light mb-2 d-block w-100" title="Zoom to fit all sites">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Filters Card with enhanced design -->
+            <div class="card border-0 shadow-lg rounded-lg mb-4">
+                <div class="card-header bg-gradient-info text-white p-3">
+                    <h3 class="card-title mb-0 d-flex align-items-center">
+                        <i class="fas fa-filter me-2"></i>
+                        Search Filters
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-4">
+                        <label class="form-label d-flex justify-content-between">
+                            <span>Distance Range</span>
+                            <span class="badge bg-primary" id="distanceValue">10km</span>
+                        </label>
+                        <input type="range" class="form-range custom-range" id="distanceRange" min="1" max="50" value="10">
+                        <div class="d-flex justify-content-between small text-muted">
+                            <span>1km</span>
+                            <span>25km</span>
+                            <span>50km</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-4">
+                        <label class="form-label">Site Type</label>
+                        <select id="siteType" class="form-select">
+                            <option value="">All Types</option>
+                            <option value="FloodEvacuation">Flood Evacuation</option>
+                            <option value="FireEvacuation">Fire Evacuation</option>
+                            <option value="EarthquakeEvacuation">Earthquake Evacuation</option>
+                            <option value="TyphoonEvacuation">Typhoon Evacuation</option>
+                            <option value="MultiHazard">Multi-Hazard</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-4">
+                        <label class="form-label">Facilities Available</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="form-check custom-checkbox">
+                                    <input type="checkbox" class="form-check-input facility-filter" id="hasWater" value="water">
+                                    <label class="form-check-label" for="hasWater">
+                                        <i class="fas fa-tint text-primary me-1"></i> Water Supply
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check custom-checkbox">
+                                    <input type="checkbox" class="form-check-input facility-filter" id="hasElectricity" value="electricity">
+                                    <label class="form-check-label" for="hasElectricity">
+                                        <i class="fas fa-bolt text-warning me-1"></i> Electricity
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check custom-checkbox">
+                                    <input type="checkbox" class="form-check-input facility-filter" id="hasMedical" value="medical">
+                                    <label class="form-check-label" for="hasMedical">
+                                        <i class="fas fa-medkit text-danger me-1"></i> Medical
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check custom-checkbox">
+                                    <input type="checkbox" class="form-check-input facility-filter" id="isWheelchair" value="wheelchair">
+                                    <label class="form-check-label" for="isWheelchair">
+                                        <i class="fas fa-wheelchair text-success me-1"></i> Accessible
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="applyFilters" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i> Search Evacuation Sites
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Nearby Sites List with enhanced design -->
+            <div class="card border-0 shadow-lg rounded-lg">
+                <div class="card-header bg-gradient-success text-white p-3 d-flex justify-content-between align-items-center">
+                    <h3 class="card-title mb-0 d-flex align-items-center">
+                        <i class="fas fa-list me-2"></i>
+                        Nearby Sites
+                    </h3>
+                    <span class="badge bg-light text-dark" id="siteCount">0</span>
+                </div>
+                <div class="card-body p-0">
+                    <div id="sitesList" class="site-list-container">
+                        <!-- Sites will be loaded here -->
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mb-0">Finding evacuation sites near you...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Site Detail Modal with improved design -->
+<div class="modal fade" id="siteDetailModal" tabindex="-1" aria-labelledby="siteDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient-primary text-white border-0">
+                <h5 class="modal-title" id="siteDetailModalLabel">Evacuation Site Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <div class="col-md-6">
+                        <div id="modalMap" class="modal-map-container"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-4">
+                            <h4 id="siteName" class="mb-1"></h4>
+                            <div class="mb-3">
+                                <span id="siteType" class="badge bg-info me-2"></span>
+                                <span id="siteDistance" class="badge bg-secondary"></span>
+                            </div>
+                            
+                            <div class="site-details mb-4">
+                                <div class="d-flex mb-2">
+                                    <div class="icon-circle bg-light me-3">
+                                        <i class="fas fa-map-marker-alt text-danger"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 small text-muted">Address</p>
+                                        <p id="siteAddress" class="mb-0"></p>
+                                    </div>
+                                </div>
+                                <div class="d-flex mb-2">
+                                    <div class="icon-circle bg-light me-3">
+                                        <i class="fas fa-users text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 small text-muted">Capacity</p>
+                                        <p id="siteCapacity" class="mb-0"></p>
+                                    </div>
+                                </div>
+                                <div class="d-flex mb-2">
+                                    <div class="icon-circle bg-light me-3">
+                                        <i class="fas fa-phone text-success"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0 small text-muted">Contact</p>
+                                        <p id="contactInfo" class="mb-0">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h6 class="mb-3 text-primary">Available Facilities</h6>
+                            <div id="siteFacilities" class="row g-2 mb-4">
+                                <!-- Facilities will be loaded here -->
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button id="getDirections" class="btn btn-success">
+                                    <i class="fas fa-directions me-2"></i> Get Directions
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-2"></i> Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Legend Modal -->
+<div class="modal fade" id="legendModal" tabindex="-1" aria-labelledby="legendModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-dark text-white">
+                <h5 class="modal-title" id="legendModalLabel">Map Legend</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="legend-item d-flex align-items-center mb-3">
+                    <div class="site-marker-flood me-2"></div>
+                    <span>Flood Evacuation</span>
+                </div>
+                <div class="legend-item d-flex align-items-center mb-3">
+                    <div class="site-marker-fire me-2"></div>
+                    <span>Fire Evacuation</span>
+                </div>
+                <div class="legend-item d-flex align-items-center mb-3">
+                    <div class="site-marker-earthquake me-2"></div>
+                    <span>Earthquake Evacuation</span>
+                </div>
+                <div class="legend-item d-flex align-items-center mb-3">
+                    <div class="site-marker-typhoon me-2"></div>
+                    <span>Typhoon Evacuation</span>
+                </div>
+                <div class="legend-item d-flex align-items-center">
+                    <div class="site-marker-multi me-2"></div>
+                    <span>Multi-Hazard</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.1/mapbox-gl-directions.css" type="text/css" />
+    <script>
+        let map, modalMap;
+        let markers = [];
+        let currentUserLocation = null;
+        let directionsControl = null;
+        let mapLoaded = false;
+        const mapboxToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
+        let selectedSite = null; // For storing the currently selected site
+        let is3DEnabled = true; // Track 3D state
+        
+        // SVG icons for different types of evacuation sites
+        const siteIcons = {
+            'FloodEvacuation': '<svg width="36" height="36" viewBox="0 0 24 24" fill="#1976D2"><path d="M12,2L1,21H23L12,2M12,6L19.5,19H4.5L12,6Z"/></svg>',
+            'FireEvacuation': '<svg width="36" height="36" viewBox="0 0 24 24" fill="#F44336"><path d="M12,2L1,21H23L12,2M12,6L19.5,19H4.5L12,6Z"/></svg>',
+            'EarthquakeEvacuation': '<svg width="36" height="36" viewBox="0 0 24 24" fill="#FF9800"><path d="M12,2L1,21H23L12,2M12,6L19.5,19H4.5L12,6Z"/></svg>',
+            'TyphoonEvacuation': '<svg width="36" height="36" viewBox="0 0 24 24" fill="#607D8B"><path d="M12,2L1,21H23L12,2M12,6L19.5,19H4.5L12,6Z"/></svg>',
+            'MultiHazard': '<svg width="36" height="36" viewBox="0 0 24 24" fill="#7B1FA2"><path d="M12,2L1,21H23L12,2M12,6L19.5,19H4.5L12,6Z"/></svg>'
+        };
+
+        // Facility icons
+        const facilityIcons = {
+            'water': '<i class="fas fa-tint text-primary"></i> Water',
+            'electricity': '<i class="fas fa-bolt text-warning"></i> Electricity',
+            'medical': '<i class="fas fa-medkit text-danger"></i> Medical',
+            'internet': '<i class="fas fa-wifi text-info"></i> Internet',
+            'wheelchair': '<i class="fas fa-wheelchair text-success"></i> Wheelchair Access',
+            'bathroom': '<i class="fas fa-toilet text-dark"></i> Bathroom',
+            'kitchen': '<i class="fas fa-utensils text-secondary"></i> Kitchen',
+            'sleeping': '<i class="fas fa-bed text-info"></i> Sleeping Area'
+        };
+
+        // Initialize the map
+        function initMap() {
+            // Default center (Philippines)
+            const defaultPosition = { lng: 120.9842, lat: 14.5995 };
+            
+            mapboxgl.accessToken = mapboxToken;
+            map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [defaultPosition.lng, defaultPosition.lat],
+                zoom: 11,
+                pitch: 45, // 3D pitch angle
+                bearing: 0,
+                attributionControl: false
+            });
+            
+            // Add custom attribution with improved styling
+            map.addControl(new mapboxgl.AttributionControl({
+                compact: true
+            }), 'bottom-right');
+            
+            // Add navigation controls with improved positioning
+            map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+            
+            // Add full screen control
+            map.addControl(new mapboxgl.FullscreenControl(), 'bottom-right');
+            
+            // Add scale control
+            map.addControl(new mapboxgl.ScaleControl({
+                maxWidth: 100,
+                unit: 'metric'
+            }), 'bottom-left');
+            
+            // Add compass
+            map.addControl(new mapboxgl.GeolocateControl({
+                positionOptions: {
+                    enableHighAccuracy: true
+                },
+                trackUserLocation: true,
+                showUserHeading: true
+            }), 'bottom-right');
+            
+            // Initialize the directions control for later use (hidden initially)
+            directionsControl = new MapboxDirections({
+                accessToken: mapboxToken,
+                unit: 'metric',
+                profile: 'mapbox/driving',
+                alternatives: true,
+                geometries: 'geojson',
+                controls: {
+                    instructions: true,
+                    profileSwitcher: true
+                },
+                styles: [
+                    {
+                        id: 'directions-route-line',
+                        type: 'line',
+                        source: 'directions',
+                        layout: {
+                            'line-cap': 'round',
+                            'line-join': 'round'
+                        },
+                        paint: {
+                            'line-color': '#3887be',
+                            'line-width': 5,
+                            'line-opacity': 0.75
+                        },
+                        filter: [
+                            '==',
+                            '$type',
+                            'LineString'
+                        ]
+                    }
+                ]
+            });
+            
+            // Add legend control
+            const legendControl = document.createElement('div');
+            legendControl.className = 'mapboxgl-ctrl mapboxgl-ctrl-group legend-control';
+            legendControl.innerHTML = '<button type="button" class="mapboxgl-ctrl-icon" title="Show Legend"><i class="fas fa-info-circle"></i></button>';
+            legendControl.addEventListener('click', function() {
+                const legendModal = new bootstrap.Modal(document.getElementById('legendModal'));
+                legendModal.show();
+            });
+            
+            // Add custom legend control to the map
+            const legendControlContainer = document.createElement('div');
+            legendControlContainer.className = 'mapboxgl-ctrl-top-right';
+            legendControlContainer.appendChild(legendControl);
+            document.getElementById('map').appendChild(legendControlContainer);
+            
+            // Enable 3D buildings on map load
+            map.on('load', () => {
+                mapLoaded = true;
+                
+                // Add 3D building layer with improved styling
+                map.addLayer({
+                    'id': '3d-buildings',
+                    'source': 'composite',
+                    'source-layer': 'building',
+                    'filter': ['==', 'extrude', 'true'],
+                    'type': 'fill-extrusion',
+                    'minzoom': 15,
+                    'paint': {
+                        'fill-extrusion-color': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'height'],
+                            0, '#aaa',
+                            50, '#999',
+                            100, '#888'
+                        ],
+                        'fill-extrusion-height': [
+                            'interpolate', 
+                            ['linear'], 
+                            ['zoom'],
+                            15, 0,
+                            15.05, ['get', 'height']
+                        ],
+                        'fill-extrusion-base': [
+                            'interpolate', 
+                            ['linear'], 
+                            ['zoom'],
+                            15, 0,
+                            15.05, ['get', 'min_height']
+                        ],
+                        'fill-extrusion-opacity': 0.6
+                    }
+                });
+                
+                // Try to get user location after map loads
+                getUserLocation();
+            });
+            
+            // Map style switcher
+            document.querySelectorAll('[data-map-style]').forEach(element => {
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const style = e.target.getAttribute('data-map-style');
+                    map.setStyle('mapbox://styles/mapbox/' + style);
+                    
+                    // Update active state
+                    document.querySelectorAll('[data-map-style]').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                    
+                    // Re-enable 3D buildings if needed
+                    map.once('styledata', function() {
+                        if (is3DEnabled) {
+                            enable3DBuildings();
+                        }
+                    });
+                });
+            });
+            
+            // Toggle 3D view button handler
+            document.getElementById('toggle3D').addEventListener('click', function() {
+                if (is3DEnabled) {
+                    // Disable 3D
+                    map.easeTo({ pitch: 0 });
+                    is3DEnabled = false;
+                    this.innerHTML = '<i class="fas fa-cube me-1"></i> Enable 3D';
+                } else {
+                    // Enable 3D
+                    map.easeTo({ pitch: 45 });
+                    enable3DBuildings();
+                    is3DEnabled = true;
+                    this.innerHTML = '<i class="fas fa-cube me-1"></i> Disable 3D';
+                }
+            });
+            
+            // Zoom to fit all markers
+            document.getElementById('zoomToFit').addEventListener('click', function() {
+                if (markers.length === 0) return;
+                
+                // Create bounds that include all markers
+                const bounds = new mapboxgl.LngLatBounds();
+                
+                // Include user location if available
+                if (currentUserLocation) {
+                    bounds.extend([currentUserLocation.lng, currentUserLocation.lat]);
+                }
+                
+                // Include all markers
+                markers.forEach(marker => {
+                    bounds.extend(marker.getLngLat());
+                });
+                
+                // Fit the map to the bounds
+                map.fitBounds(bounds, {
+                    padding: 50
+                });
+            });
+            
+            // Handle locate me button
+            document.getElementById('locateMe').addEventListener('click', function() {
+                getUserLocation();
+            });
+            
+            // Initialize distance slider value display
+            document.getElementById('distanceRange').addEventListener('input', function() {
+                document.getElementById('distanceValue').textContent = this.value + 'km';
+            });
+            
+            // Handle filter button click with loading animation
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.innerHTML;
+                
+                // Show loading state
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Searching...';
+                
+                if (currentUserLocation) {
+                    loadNearbySites().then(() => {
+                        // Reset button
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }).catch(() => {
+                        // Reset button on error
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    });
+                } else {
+                    getUserLocation().then(() => {
+                        // Reset button
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }).catch(() => {
+                        // Reset button on error
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                        
+                        // Show error alert
+                        showAlert('Please allow location access to find nearby evacuation sites', 'danger');
+                    });
+                }
+            });
+        }
+        
+        // Helper function to enable 3D buildings
+        function enable3DBuildings() {
+            if (map.getLayer('3d-buildings')) {
+                map.removeLayer('3d-buildings');
+            }
+            
+            map.addLayer({
+                'id': '3d-buildings',
+                'source': 'composite',
+                'source-layer': 'building',
+                'filter': ['==', 'extrude', 'true'],
+                'type': 'fill-extrusion',
+                'minzoom': 15,
+                'paint': {
+                    'fill-extrusion-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'height'],
+                        0, '#aaa',
+                        50, '#999',
+                        100, '#888'
+                    ],
+                    'fill-extrusion-height': [
+                        'interpolate', 
+                        ['linear'], 
+                        ['zoom'],
+                        15, 0,
+                        15.05, ['get', 'height']
+                    ],
+                    'fill-extrusion-base': [
+                        'interpolate', 
+                        ['linear'], 
+                        ['zoom'],
+                        15, 0,
+                        15.05, ['get', 'min_height']
+                    ],
+                    'fill-extrusion-opacity': 0.6
+                }
+            });
+        }
+        
+        // Get user's current location with Promise wrapper
+        function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if (navigator.geolocation) {
+                    // Show loading indicator on the locate button
+                    const locateBtn = document.getElementById('locateMe');
+                    const originalContent = locateBtn.innerHTML;
+                    locateBtn.disabled = true;
+                    locateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude,
+                            };
+                            
+                            currentUserLocation = pos;
+                            
+                            // Update map
+                            map.flyTo({
+                                center: [pos.lng, pos.lat],
+                                essential: true,
+                                zoom: 13,
+                                duration: 2000
+                            });
+                            
+                            // Add user marker
+                            createUserMarker(pos);
+                            
+                            // Load nearby sites
+                            loadNearbySites();
+                            
+                            // Reset button
+                            locateBtn.disabled = false;
+                            locateBtn.innerHTML = originalContent;
+                            
+                            resolve(pos);
+                        },
+                        (error) => {
+                            console.error('Error getting user location:', error);
+                            
+                            // Reset button
+                            locateBtn.disabled = false;
+                            locateBtn.innerHTML = originalContent;
+                            
+                            // Show error message
+                            showAlert('Error getting your location: ' + getLocationErrorMessage(error) + '. Please enable location services.', 'danger');
+                            
+                            reject(error);
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000,
+                            maximumAge: 0
+                        }
+                    );
+                } else {
+                    showAlert('Your browser does not support geolocation', 'danger');
+                    reject(new Error('Geolocation not supported'));
+                }
+            });
+        }
+        
+        // Helper function to get user-friendly error messages
+        function getLocationErrorMessage(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    return "Location permission denied";
+                case error.POSITION_UNAVAILABLE:
+                    return "Location information unavailable";
+                case error.TIMEOUT:
+                    return "Location request timed out";
+                case error.UNKNOWN_ERROR:
+                    return "Unknown location error";
+                default:
+                    return "Location error";
+            }
+        }
+        
+        // Create marker for user location with improved styling
+        function createUserMarker(position) {
+            // Remove previous user marker if exists
+            const existingUserMarker = document.getElementById('user-marker-container');
+            if (existingUserMarker) {
+                existingUserMarker.remove();
+            }
+            
+            // Create custom user marker
+            const el = document.createElement('div');
+            el.id = 'user-marker-container';
+            el.className = 'user-marker';
+            el.innerHTML = '<div class="user-marker-icon"></div><div class="user-marker-pulse"></div>';
+            
+            // Add to map with popup
+            const marker = new mapboxgl.Marker({
+                element: el,
+                anchor: 'center'
+            })
+                .setLngLat([position.lng, position.lat])
+                .addTo(map);
+                
+            // Add popup with user location info
+            const popup = new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: false,
+                offset: 25,
+                className: 'user-location-popup'
+            }).setHTML('<div><strong>Your Location</strong></div>');
+            
+            // Show popup on hover
+            el.addEventListener('mouseenter', () => {
+                marker.setPopup(popup);
+                popup.addTo(map);
+            });
+            
+            el.addEventListener('mouseleave', () => {
+                popup.remove();
+            });
+            
+            return marker;
+        }
+        
+        // Load nearby evacuation sites with Promise wrapper
+        function loadNearbySites() {
+            return new Promise((resolve, reject) => {
+                if (!currentUserLocation) {
+                    showAlert('Please allow location access to find nearby evacuation sites', 'danger');
+                    reject(new Error('No location found'));
+                    return;
+                }
+                
+                // Clear existing markers
+                clearMarkers();
+                
+                // Show loading in sites list
+                document.getElementById('sitesList').innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mb-0">Finding evacuation sites near you...</p>
+                    </div>
+                `;
+                
+                // Get filter values
+                const distance = document.getElementById('distanceRange').value;
+                const siteType = document.getElementById('siteType').value;
+                
+                // Get facility filters
+                const facilityFilters = {};
+                document.querySelectorAll('.facility-filter:checked').forEach(checkbox => {
+                    facilityFilters[checkbox.value] = true;
+                });
+                
+                // API call to get nearby sites
+                $.ajax({
+                    url: '/Community/GetNearbySites',
+                    method: 'GET',
+                    data: {
+                        latitude: currentUserLocation.lat,
+                        longitude: currentUserLocation.lng,
+                        maxDistance: distance,
+                        type: siteType,
+                        hasWater: facilityFilters.water || null,
+                        hasElectricity: facilityFilters.electricity || null,
+                        hasMedicalSupplies: facilityFilters.medical || null,
+                        isWheelchairAccessible: facilityFilters.wheelchair || null
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            displaySites(response.sites);
+                            resolve(response.sites);
+                        } else {
+                            document.getElementById('sitesList').innerHTML = `
+                                <div class="empty-state p-4 text-center">
+                                    <i class="fas fa-exclamation-circle text-danger fa-3x mb-3"></i>
+                                    <p class="text-danger mb-0">Error loading sites</p>
+                                    <p class="text-muted small mb-3">${response.message || 'An error occurred'}</p>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="loadNearbySites()">
+                                        <i class="fas fa-sync-alt me-1"></i> Try Again
+                                    </button>
+                                </div>
+                            `;
+                            reject(new Error(response.message || 'Error loading sites'));
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error fetching sites:', error);
+                        document.getElementById('sitesList').innerHTML = `
+                            <div class="empty-state p-4 text-center">
+                                <i class="fas fa-exclamation-circle text-danger fa-3x mb-3"></i>
+                                <p class="text-danger mb-0">Error loading sites</p>
+                                <p class="text-muted small mb-3">Please check your connection and try again</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadNearbySites()">
+                                    <i class="fas fa-sync-alt me-1"></i> Try Again
+                                </button>
+                            </div>
+                        `;
+                        reject(error);
+                    }
+                });
+            });
+        }
+        
+        // Display sites on map and in list with enhanced UI
+        function displaySites(sites) {
+            // Clear markers
+            clearMarkers();
+            
+            // Update site count
+            document.getElementById('siteCount').textContent = sites.length;
+            
+            // Clear sites list
+            const sitesList = document.getElementById('sitesList');
+            
+            if (sites.length === 0) {
+                sitesList.innerHTML = `
+                    <div class="empty-state p-4 text-center">
+                        <i class="fas fa-map-marked-alt text-muted fa-3x mb-3"></i>
+                        <p class="text-muted mb-0">No evacuation sites found</p>
+                        <p class="text-muted small mb-3">Try increasing the distance or changing filters</p>
+                        <button class="btn btn-sm btn-primary" id="resetFilters">
+                            <i class="fas fa-undo me-1"></i> Reset Filters
+                        </button>
+                    </div>
+                `;
+                
+                // Add reset filters button handler
+                document.getElementById('resetFilters').addEventListener('click', function() {
+                    // Reset distance
+                    document.getElementById('distanceRange').value = 10;
+                    document.getElementById('distanceValue').textContent = '10km';
+                    
+                    // Reset type
+                    document.getElementById('siteType').value = '';
+                    
+                    // Reset facility checkboxes
+                    document.querySelectorAll('.facility-filter').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                    
+                    // Re-apply filters
+                    document.getElementById('applyFilters').click();
+                });
+                
+                return;
+            }
+            
+            // Build HTML for list
+            let listHTML = '';
+            
+            // Add sites to map and list
+            sites.forEach(site => {
+                // Create marker
+                const marker = createSiteMarker(site);
+                markers.push(marker);
+                
+                // Get appropriate badge color based on site type
+                let badgeColor = 'primary';
+                switch(site.type) {
+                    case 'FloodEvacuation': badgeColor = 'primary'; break;
+                    case 'FireEvacuation': badgeColor = 'danger'; break;
+                    case 'EarthquakeEvacuation': badgeColor = 'warning'; break;
+                    case 'TyphoonEvacuation': badgeColor = 'secondary'; break;
+                    case 'MultiHazard': badgeColor = 'info'; break;
+                }
+                
+                // Format the type name for display
+                const formattedType = site.type.replace('Evacuation', ' Evacuation');
+                
+                // Add facility icons
+                let facilityIcons = '';
+                if (site.facilities.water) facilityIcons += '<i class="fas fa-tint text-primary me-1" title="Water Supply"></i>';
+                if (site.facilities.electricity) facilityIcons += '<i class="fas fa-bolt text-warning me-1" title="Electricity"></i>';
+                if (site.facilities.medical) facilityIcons += '<i class="fas fa-medkit text-danger me-1" title="Medical Supplies"></i>';
+                if (site.facilities.wheelchair) facilityIcons += '<i class="fas fa-wheelchair text-success me-1" title="Wheelchair Accessible"></i>';
+                
+                // Add to list
+                listHTML += `
+                    <div class="site-list-item" data-site-id="${site.id}">
+                        <div class="site-list-item-content">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h6 class="mb-0">${site.name}</h6>
+                                <span class="badge bg-${badgeColor} rounded-pill ms-2">${formattedType}</span>
+                            </div>
+                            <p class="text-muted mb-1 small"><i class="fas fa-map-marker-alt me-1"></i>${site.address}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="facility-icons small">
+                                    ${facilityIcons}
+                                </div>
+                                <div class="site-distance">
+                                    <span class="badge bg-light text-dark">${site.distance} km</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="site-list-actions mt-2">
+                            <button class="btn btn-sm btn-primary view-details w-100" data-site-id="${site.id}">
+                                <i class="fas fa-info-circle me-2"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Update list
+            sitesList.innerHTML = listHTML;
+            
+            // Add click handlers to site list items
+            document.querySelectorAll('.view-details').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const siteId = parseInt(this.getAttribute('data-site-id'));
+                    const site = sites.find(s => s.id === siteId);
+                    if (site) {
+                        showSiteDetails(site);
+                    }
+                });
+            });
+            
+            // Highlight selected site when clicked in list
+            document.querySelectorAll('.site-list-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const siteId = parseInt(this.getAttribute('data-site-id'));
+                    
+                    // Remove highlight from all list items
+                    document.querySelectorAll('.site-list-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    
+                    // Add highlight to selected item
+                    this.classList.add('active');
+                    
+                    // Find the marker for this site and trigger its click event
+                    const markerEl = document.querySelector(`.site-marker[data-site-id="${siteId}"]`);
+                    if (markerEl) {
+                        markerEl.click();
+                    }
+                });
+            });
+            
+            // Fit map to show all markers if there are multiple
+            if (sites.length > 1) {
+                document.getElementById('zoomToFit').click();
+            }
+        }
+        
+        // Create marker for evacuation site with enhanced styling
+        function createSiteMarker(site) {
+            // Get the correct icon for the site type
+            const iconSvg = siteIcons[site.type] || siteIcons['MultiHazard'];
+            
+            // Create marker element
+            const el = document.createElement('div');
+            el.className = `site-marker site-marker-${site.type.toLowerCase().replace('evacuation', '')}`;
+            el.innerHTML = iconSvg;
+            el.style.cursor = 'pointer';
+            el.setAttribute('data-site-id', site.id);
+            
+            // Create popup with enhanced styling
+            const popup = new mapboxgl.Popup({
+                closeButton: true,
+                closeOnClick: true,
+                maxWidth: '300px',
+                className: 'site-popup'
+            }).setHTML(`
+                <div class="site-popup-content">
+                    <h5>${site.name}</h5>
+                    <div class="site-type-badge mb-2">
+                        <span class="badge bg-${site.type === 'FireEvacuation' ? 'danger' : 
+                          site.type === 'FloodEvacuation' ? 'primary' : 
+                          site.type === 'EarthquakeEvacuation' ? 'warning' : 
+                          site.type === 'TyphoonEvacuation' ? 'secondary' : 'info'}">
+                            ${site.type.replace('Evacuation', ' Evacuation')}
+                        </span>
+                    </div>
+                    <div class="site-info mb-2">
+                        <p class="mb-1"><i class="fas fa-map-marker-alt me-2 text-danger"></i>${site.address}</p>
+                        <p class="mb-1"><i class="fas fa-users me-2 text-primary"></i>Capacity: ${site.capacity} people</p>
+                        <p class="mb-0"><i class="fas fa-route me-2 text-success"></i>Distance: ${site.distance} km</p>
+                    </div>
+                    <div class="site-popup-actions d-grid">
+                        <button class="btn btn-primary view-details" data-site-id="${site.id}">
+                            <i class="fas fa-info-circle me-2"></i>View Details
+                        </button>
+                    </div>
+                </div>
+            `);
+            
+            // Create and add marker
+            const marker = new mapboxgl.Marker({
+                element: el,
+                anchor: 'bottom'
+            })
+                .setLngLat([site.longitude, site.latitude])
+                .setPopup(popup)
+                .addTo(map);
+            
+            // Add click event to marker
+            el.addEventListener('click', () => {
+                selectedSite = site;
+                
+                // Remove highlight from all markers
+                document.querySelectorAll('.site-marker').forEach(marker => {
+                    marker.classList.remove('active');
+                });
+                
+                // Add highlight to selected marker
+                el.classList.add('active');
+                
+                // Remove highlight from all list items
+                document.querySelectorAll('.site-list-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add highlight to corresponding list item
+                const listItem = document.querySelector(`.site-list-item[data-site-id="${site.id}"]`);
+                if (listItem) {
+                    listItem.classList.add('active');
+                    // Scroll list item into view
+                    listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+            
+            // Add click event to the view details button in popup
+            popup.on('open', () => {
+                setTimeout(() => {
+                    const detailButton = document.querySelector(`.view-details[data-site-id="${site.id}"]`);
+                    if (detailButton) {
+                        detailButton.addEventListener('click', () => {
+                            showSiteDetails(site);
+                        });
+                    }
+                }, 100);
+            });
+            
+            return marker;
+        }
+        
+        // Clear all markers from the map
+        function clearMarkers() {
+            markers.forEach(marker => marker.remove());
+            markers = [];
+        }
+        
+        // Show site details in modal with enhanced UI
+        function showSiteDetails(site) {
+            selectedSite = site;
+            
+            // Update modal content
+            document.getElementById('siteDetailModalLabel').textContent = site.name;
+            document.getElementById('siteName').textContent = site.name;
+            document.getElementById('siteType').textContent = site.type.replace('Evacuation', ' Evacuation');
+            document.getElementById('siteAddress').textContent = site.address;
+            document.getElementById('siteCapacity').textContent = `${site.capacity} people`;
+            document.getElementById('siteDistance').textContent = `${site.distance} km`;
+            
+            // Update facilities with improved layout
+            const facilitiesContainer = document.getElementById('siteFacilities');
+            facilitiesContainer.innerHTML = '';
+            
+            // Add facility badges
+            Object.entries(site.facilities).forEach(([key, value]) => {
+                if (value && facilityIcons[key]) {
+                    facilitiesContainer.innerHTML += `
+                        <div class="col-6 mb-2">
+                            <div class="facility-badge">
+                                ${facilityIcons[key]}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            // Contact info
+            document.getElementById('contactInfo').innerHTML = `
+                ${site.contactPerson || 'Not specified'}<br>
+                ${site.contactNumber ? `<a href="tel:${site.contactNumber}">${site.contactNumber}</a>` : 'Not specified'}
+            `;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('siteDetailModal'));
+            modal.show();
+            
+            // Initialize modal map only after modal is shown
+            document.getElementById('siteDetailModal').addEventListener('shown.bs.modal', function() {
+                if (!modalMap) {
+                    modalMap = new mapboxgl.Map({
+                        container: 'modalMap',
+                        style: 'mapbox://styles/mapbox/streets-v11',
+                        center: [site.longitude, site.latitude],
+                        zoom: 15,
+                        pitch: 45,
+                        bearing: 0,
+                        attributionControl: false
+                    });
+                    
+                    // Add navigation controls to modal map
+                    modalMap.addControl(new mapboxgl.NavigationControl({
+                        showCompass: false
+                    }), 'top-right');
+                    
+                    // Add 3D buildings to modal map
+                    modalMap.on('load', () => {
+                        modalMap.addLayer({
+                            'id': '3d-buildings-modal',
+                            'source': 'composite',
+                            'source-layer': 'building',
+                            'filter': ['==', 'extrude', 'true'],
+                            'type': 'fill-extrusion',
+                            'minzoom': 14,
+                            'paint': {
+                                'fill-extrusion-color': '#aaa',
+                                'fill-extrusion-height': [
+                                    'interpolate', 
+                                    ['linear'], 
+                                    ['zoom'],
+                                    14, 0,
+                                    14.05, ['get', 'height']
+                                ],
+                                'fill-extrusion-base': [
+                                    'interpolate', 
+                                    ['linear'], 
+                                    ['zoom'],
+                                    14, 0,
+                                    14.05, ['get', 'min_height']
+                                ],
+                                'fill-extrusion-opacity': 0.6
+                            }
+                        });
+                    });
+                } else {
+                    modalMap.flyTo({
+                        center: [site.longitude, site.latitude],
+                        zoom: 15
+                    });
+                }
+                
+                // Add marker to modal map
+                new mapboxgl.Marker({
+                    color: '#FF0000'
+                })
+                    .setLngLat([site.longitude, site.latitude])
+                    .addTo(modalMap);
+            });
+            
+            // Handle directions button click
+            document.getElementById('getDirections').addEventListener('click', function() {
+                getDirections(site);
+                bootstrap.Modal.getInstance(document.getElementById('siteDetailModal')).hide();
+            });
+        }
+        
+        // Get directions from user location to site
+        function getDirections(site) {
+            if (!currentUserLocation) {
+                showAlert('Please allow location access to get directions', 'danger');
+                return;
+            }
+            
+            // Add directions control if not already added
+            if (!map.hasControl(directionsControl)) {
+                map.addControl(directionsControl, 'top-left');
+            }
+            
+            // Set origin and destination
+            directionsControl.setOrigin([currentUserLocation.lng, currentUserLocation.lat]);
+            directionsControl.setDestination([site.longitude, site.latitude]);
+            
+            // Zoom out to show both points
+            const bounds = new mapboxgl.LngLatBounds()
+                .extend([currentUserLocation.lng, currentUserLocation.lat])
+                .extend([site.longitude, site.latitude]);
+                
+            map.fitBounds(bounds, {
+                padding: 100
+            });
+        }
+        
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            // Remove existing alerts
+            document.querySelectorAll('.alert-floating').forEach(alert => {
+                alert.remove();
+            });
+            
+            // Create alert element
+            const alertEl = document.createElement('div');
+            alertEl.className = `alert alert-${type} alert-floating alert-dismissible fade show`;
+            alertEl.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Add to document
+            document.body.appendChild(alertEl);
+            
+            // Auto close after 5 seconds
+            setTimeout(() => {
+                alertEl.classList.remove('show');
+                setTimeout(() => {
+                    alertEl.remove();
+                }, 300);
+            }, 5000);
+        }
+        
+        // Initialize the map when the page loads
+        document.addEventListener('DOMContentLoaded', initMap);
+    </script>
+    <style>
+        /* Hero section styling */
+        .hero-section {
+            position: relative;
+            background: linear-gradient(to right, #3494e6, #ec6ead);
+            color: white;
+            overflow: hidden;
+            border-radius: 10px;
+            margin: 0 1rem;
+        }
+        
+        .hero-section .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://images.unsplash.com/photo-1483095348487-8c1ee0ac5a7d?q=80&w=2000');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+            z-index: 0;
+        }
+        
+        .z-index-1 {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .floating-image {
+            animation: float 6s ease-in-out infinite;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+        }
+        
+        /* Map container styling */
+        .map-container {
+            height: 600px;
+            width: 100%;
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .modal-map-container {
+            height: 100%;
+            min-height: 400px;
+            width: 100%;
+        }
+        
+        .map-controls {
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            width: 50px;
+        }
+        
+        /* Custom range input styling */
+        .custom-range {
+            height: 6px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-range::-webkit-slider-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            -webkit-appearance: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            margin-top: -7px;
+        }
+        
+        /* Custom checkbox styling */
+        .custom-checkbox .form-check-input {
+            width: 18px;
+            height: 18px;
+            margin-top: 0.2em;
+        }
+        
+        .custom-checkbox .form-check-input:checked {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+        
+        /* User location marker styling */
+        .user-marker {
+            position: relative;
+        }
+        
+        .user-marker-icon {
+            background-color: #2196F3;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.2), 0 0 10px rgba(0,0,0,0.3);
+            transform: translate(-50%, -50%);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 2;
+        }
+        
+        .user-marker-pulse {
+            background-color: rgba(33, 150, 243, 0.3);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 1;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Site list styling */
+        .site-list-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        
+        .site-list-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .site-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: rgba(52, 152, 219, 0.5);
+        }
+        
+        .site-list-item.active {
+            background-color: #f8f9fa;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+        }
+        
+        .facility-badge {
+            background-color: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Evacuation site markers */
+        .site-marker {
+            cursor: pointer;
+            transform-origin: bottom center;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+        }
+        
+        .site-marker:hover, .site-marker.active {
+            transform: scale(1.2);
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.4));
+        }
+        
+        /* Map legend styling */
+        .legend-control {
+            margin-top: 10px;
+        }
+        
+        .site-marker-flood, .site-marker-fire, .site-marker-earthquake, .site-marker-typhoon, .site-marker-multi {
+            width: 30px;
+            height: 30px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: inline-block;
+        }
+        
+        .site-marker-flood { background-color: #1976D2; }
+        .site-marker-fire { background-color: #F44336; }
+        .site-marker-earthquake { background-color: #FF9800; }
+        .site-marker-typhoon { background-color: #607D8B; }
+        .site-marker-multi { background-color: #7B1FA2; }
+        
+        /* Icon circles for details */
+        .icon-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        /* Alert styling */
+        .alert-floating {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 500px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        /* Empty state styling */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        /* Background gradients */
+        .bg-gradient-primary {
+            background: linear-gradient(to right, #3494e6, #3498db);
+        }
+        
+        .bg-gradient-info {
+            background: linear-gradient(to right, #38a4f8, #2f96e0);
+        }
+        
+        .bg-gradient-success {
+            background: linear-gradient(to right, #36d1dc, #5b86e5);
+        }
+        
+        .bg-gradient-dark {
+            background: linear-gradient(to right, #485563, #29323c);
+        }
+        
+        /* Animations */
+        @@keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @@keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+        
+        @@keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* User location popup styling */
+        .user-location-popup {
+            text-align: center;
+        }
+        
+        .mapboxgl-popup-content {
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        /* Site popup styling */
+        .site-popup .mapboxgl-popup-content {
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .site-popup-content {
+            padding: 15px;
+        }
+        
+        .site-popup h5 {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        /* Responsive adjustments */
+        @@media (max-width: 767.98px) {
+            .map-container {
+                height: 400px;
+            }
+            
+            .hero-section {
+                text-align: center;
+                padding: 2rem 1rem;
+            }
+            
+            .map-controls {
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+} 

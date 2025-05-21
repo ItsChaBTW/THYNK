@@ -1,4 +1,4 @@
-s@{
+@{
     ViewData["Title"] = "Incident Map";
     Layout = "_LGULayout";
 }
@@ -98,8 +98,25 @@ s@{
             <div class="quick-filters-bar p-2 bg-light border-bottom">
                 <div class="container-fluid px-1">
                     <div class="row g-2 align-items-center">
-                        <div class="col-auto d-none d-md-block">
-                            <span class="quick-filter-label text-primary fw-bold"><i class="fas fa-bolt me-1"></i>Quick Filters:</span>
+                        <div class="col-md-auto col-12">
+                            <div class="quick-filter-section">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="incident-type-dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-tags me-1"></i>Incident Type
+                                    </button>
+                                    <ul class="dropdown-menu incident-type-dropdown" aria-labelledby="incident-type-dropdown">
+                                        <li><a class="dropdown-item lgu-type-filter-item active" href="#" data-type="all"><i class="fas fa-check me-2 text-success"></i>All Types</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Earthquake"><i class="fas fa-house-damage me-2 text-danger"></i>Earthquake</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Flood"><i class="fas fa-water me-2 text-primary"></i>Flood</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Fire"><i class="fas fa-fire me-2 text-warning"></i>Fire</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Landslide"><i class="fas fa-mountain me-2 text-secondary"></i>Landslide</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Storm"><i class="fas fa-cloud-showers-heavy me-2 text-info"></i>Storm</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Accident"><i class="fas fa-car-crash me-2 text-dark"></i>Accident</a></li>
+                                        <li><a class="dropdown-item lgu-type-filter-item" href="#" data-type="Other"><i class="fas fa-question me-2 text-secondary"></i>Other</a></li>
+                                    </ul>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-auto col-12">
                             <div class="quick-filter-section">
@@ -685,9 +702,12 @@ s@{
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA'; // Replace with your Mapbox access token
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v11',
+            style: 'mapbox://styles/mapbox/outdoors-v12', // Using outdoors style for better terrain visualization
             center: [120.9842, 14.5995], // Default to Philippines
-            zoom: 9
+            zoom: 9,
+            pitch: 45, // Add default pitch for 3D view
+            bearing: -17.6, // Slight bearing for better perspective
+            antialias: true // Enable antialiasing for smoother rendering
         });
 
         // Add map controls
@@ -734,6 +754,31 @@ s@{
         // Toggle heatmap
         document.getElementById('toggle-heatmap').addEventListener('click', toggleHeatmap);
 
+        // Add 3D terrain and sky when map loads
+        map.on('style.load', () => {
+            // Add 3D terrain
+            map.addSource('mapbox-dem', {
+                'type': 'raster-dem',
+                'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                'tileSize': 512,
+                'maxzoom': 14
+            });
+            
+            // Add the DEM source as a terrain layer with exaggerated height
+            map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
+            
+            // Add a sky layer that will show when the map is highly pitched
+            map.addLayer({
+                'id': 'sky',
+                'type': 'sky',
+                'paint': {
+                    'sky-type': 'atmosphere',
+                    'sky-atmosphere-sun': [0.0, 0.0],
+                    'sky-atmosphere-sun-intensity': 15
+                }
+            });
+        });
+
         function toggleLegend() {
             const legend = document.getElementById('floating-legend');
             
@@ -747,14 +792,16 @@ s@{
             }
             
             if (heatmapVisible) {
-                // Hide heatmap layer
+                // Hide heatmap layers
                 map.setLayoutProperty('incidents-heat', 'visibility', 'none');
+                map.setLayoutProperty('incidents-3d', 'visibility', 'none');
                 document.getElementById('toggle-heatmap').innerHTML = '<i class="fas fa-fire me-1"></i><span class="d-none d-md-inline">Heatmap</span>';
                 // Show markers
                 markers.forEach(marker => marker.getElement().style.display = 'flex');
             } else {
-                // Show heatmap layer
+                // Show heatmap layers
                 map.setLayoutProperty('incidents-heat', 'visibility', 'visible');
+                map.setLayoutProperty('incidents-3d', 'visibility', 'visible');
                 document.getElementById('toggle-heatmap').innerHTML = '<i class="fas fa-map-marker-alt me-1"></i><span class="d-none d-md-inline">Markers</span>';
                 // Hide markers
                 markers.forEach(marker => marker.getElement().style.display = 'none');
@@ -774,7 +821,10 @@ s@{
                     type: 'Feature',
                     properties: {
                         id: incident.id,
-                        intensity: getIncidentIntensity(incident)
+                        intensity: getIncidentIntensity(incident),
+                        severity: incident.severity,
+                        type: incident.type,
+                        status: incident.status
                     },
                     geometry: {
                         type: 'Point',
@@ -789,7 +839,7 @@ s@{
                 data: heatmapData
             });
             
-            // Add a heatmap layer
+            // Add enhanced heatmap layer
             map.addLayer({
                 id: 'incidents-heat',
                 type: 'heatmap',
@@ -798,53 +848,91 @@ s@{
                     visibility: 'none'
                 },
                 paint: {
-                    // Increase the heatmap weight based on incident severity
+                    // Increase the heatmap weight based on incident severity and terrain
                     'heatmap-weight': [
                         'interpolate',
                         ['linear'],
                         ['get', 'intensity'],
-                        0, 0.1,
-                        1, 0.3,
-                        2, 0.5,
-                        3, 0.7,
-                        4, 1
+                        0, 0.2,
+                        1, 0.4,
+                        2, 0.6,
+                        3, 0.8,
+                        4, 1.0
                     ],
-                    // Increase the heatmap color weight by zoom level
+                    // Enhanced intensity for better visibility with terrain
                     'heatmap-intensity': [
                         'interpolate',
                         ['linear'],
                         ['zoom'],
                         0, 1,
-                        9, 3
+                        9, 5
                     ],
-                    // Color ramp for heatmap from severity levels
+                    // Vibrant color ramp for improved visibility on terrain
                     'heatmap-color': [
                         'interpolate',
                         ['linear'],
                         ['heatmap-density'],
                         0, 'rgba(33,102,172,0)',
-                        0.2, 'rgb(103,169,207)',
-                        0.4, 'rgb(209,229,240)',
-                        0.6, 'rgb(253,219,199)',
-                        0.8, 'rgb(239,138,98)',
-                        1, 'rgb(178,24,43)'
+                        0.15, 'rgb(15,132,228)',
+                        0.30, 'rgb(87,217,163)',
+                        0.45, 'rgb(249,251,14)',
+                        0.60, 'rgb(244,167,66)',
+                        0.75, 'rgb(234,83,23)',
+                        0.90, 'rgb(196,24,60)',
+                        1.0, 'rgb(178,24,43)'
                     ],
-                    // Adjust the heatmap radius by zoom level
+                    // Increased radius for better visibility on terrain
                     'heatmap-radius': [
                         'interpolate',
                         ['linear'],
                         ['zoom'],
-                        0, 2,
-                        9, 20
+                        0, 4,
+                        9, 25,
+                        15, 35
                     ],
-                    // Transition from heatmap to circle layer by zoom level
+                    // Adjusted opacity for 3D terrain compatibility
                     'heatmap-opacity': [
                         'interpolate',
                         ['linear'],
                         ['zoom'],
-                        7, 1,
-                        12, 0.5
+                        7, 0.95,
+                        12, 0.65
                     ]
+                }
+            }, 'waterway-label');
+            
+            // Add a 3D column visualization layer for incidents
+            map.addLayer({
+                id: 'incidents-3d',
+                type: 'circle',
+                source: 'incidents-heat',
+                layout: {
+                    visibility: 'none'
+                },
+                minzoom: 13,
+                paint: {
+                    'circle-radius': [
+                        'interpolate',
+                        ['linear'],
+                        ['zoom'],
+                        13, 5,
+                        16, 12
+                    ],
+                    'circle-color': [
+                        'match',
+                        ['get', 'severity'],
+                        0, '#6cd976', // Low
+                        1, '#ffda6c', // Medium
+                        2, '#ff9c3f', // High
+                        3, '#ff5252', // Critical
+                        '#6c757d'  // Default
+                    ],
+                    'circle-opacity': 0.9,
+                    'circle-stroke-width': 1,
+                    'circle-stroke-color': '#fff',
+                    'circle-stroke-opacity': 0.5,
+                    'circle-pitch-alignment': 'map',
+                    'circle-pitch-scale': 'map'
                 }
             }, 'waterway-label');
         }
@@ -1611,6 +1699,55 @@ s@{
         
         // Make showIncidentDetails available globally for popup buttons
         window.showIncidentDetails = showIncidentDetails;
+
+        // Incident type dropdown filter logic (Community-style)
+        document.addEventListener('DOMContentLoaded', function() {
+            let selectedType = 'all';
+            document.querySelectorAll('.lgu-type-filter-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Remove active from all
+                    document.querySelectorAll('.lgu-type-filter-item').forEach(i => {
+                        i.classList.remove('active');
+                        i.querySelector('i').classList.remove('text-success');
+                    });
+                    // Set active on this
+                    this.classList.add('active');
+                    this.querySelector('i').classList.add('text-success');
+                    // Update dropdown button text
+                    const typeText = this.getAttribute('data-type') === 'all' ? 'Incident Type' : this.textContent.trim();
+                    document.getElementById('incident-type-dropdown').innerHTML = `<i class='fas fa-tags me-1'></i>${typeText}`;
+                    // Filter incidents
+                    selectedType = this.getAttribute('data-type');
+                    applyTypeDropdownFilter(selectedType);
+                });
+            });
+        });
+
+        function applyTypeDropdownFilter(type) {
+            let filtered = incidents;
+            if (type !== 'all') {
+                // Map type string to number if needed
+                const typeMap = {
+                    'Earthquake': 0,
+                    'Flood': 1,
+                    'Fire': 2,
+                    'Landslide': 3,
+                    'Storm': 4,
+                    'Accident': 5,
+                    'Other': 6
+                };
+                filtered = incidents.filter(incident => {
+                    if (typeof incident.type === 'number') {
+                        return incident.type === typeMap[type];
+                    } else {
+                        return (incident.type || '').toLowerCase() === type.toLowerCase();
+                    }
+                });
+            }
+            renderMarkers(filtered);
+            populateRecentIncidents(filtered);
+        }
     </script>
 }
 
@@ -1833,33 +1970,36 @@ s@{
         
         /* Incident marker */
         .incident-marker {
-            width: 20px;
-            height: 20px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             border: 3px solid white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s ease;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4), 0 5px 5px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
             cursor: pointer;
+            transform-origin: center bottom;
+            transform: perspective(500px) rotateX(25deg) translateZ(0);
+            z-index: 2;
         }
         
         .incident-marker:hover {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+            transform: perspective(500px) rotateX(10deg) scale(1.4) translateZ(0);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5), 0 8px 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
         }
         
         /* Popup styling */
         .mapboxgl-popup {
-            max-width: 300px;
+            z-index: 5;
         }
         
         .incident-popup .mapboxgl-popup-content {
-            padding: 15px;
+            padding: 16px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .incident-popup-content {
-            min-width: 200px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-left: 4px solid #0d6efd;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
         }
         
         /* Modal styling */

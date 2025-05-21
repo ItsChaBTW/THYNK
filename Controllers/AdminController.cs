@@ -41,7 +41,7 @@ namespace THYNK.Controllers
             IWebHostEnvironment webHostEnvironment,
             ILogger<AdminController> logger,
             IHubContext<AdminHub> hubContext,
-            IHubContext<CommunityHub> communityHubContext)
+            IHubContext<CommunityHub> communityHubContext,
             AlertNotificationService alertNotificationService)
         {
             _context = context;
@@ -733,6 +733,7 @@ namespace THYNK.Controllers
             report.AssignedToId = lguId;
             report.Status = ReportStatus.InProgress;
             report.DateInProgress = GetPhilippineTime();
+            report.AssignedAt = GetPhilippineTime();
             await _context.SaveChangesAsync();
 
             // Create notification for the report owner
