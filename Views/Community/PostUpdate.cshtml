@@ -62,9 +62,9 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="Image" class="form-label">Add Image (Optional)</label>
-                            <input type="file" class="form-control" id="Image" name="Image" accept="image/*">
-                            <div class="form-text">Supported formats: JPG, PNG, GIF (Max size: 5MB)</div>
+                            <label for="Attachment" class="form-label">Add Attachment (Optional)</label>
+                            <input type="file" class="form-control" id="Attachment" name="Attachment">
+                            <div class="form-text">All file types supported (Max size: 5MB)</div>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -85,8 +85,8 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Preview image before upload
-        document.getElementById('Image').addEventListener('change', function(e) {
+        // Preview file before upload
+        document.getElementById('Attachment').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 if (file.size > 5 * 1024 * 1024) { // 5MB
@@ -95,27 +95,52 @@
                     return;
                 }
                 
-                // Create image preview
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    // Check if preview container exists, if not create it
-                    let previewContainer = document.getElementById('imagePreview');
-                    if (!previewContainer) {
-                        previewContainer = document.createElement('div');
-                        previewContainer.id = 'imagePreview';
-                        previewContainer.className = 'mt-3 text-center';
-                        document.querySelector('.mb-3:has(#Image)').appendChild(previewContainer);
-                    }
+                // Create preview container
+                let previewContainer = document.getElementById('filePreview');
+                if (!previewContainer) {
+                    previewContainer = document.createElement('div');
+                    previewContainer.id = 'filePreview';
+                    previewContainer.className = 'mt-3 text-center';
+                    document.querySelector('.mb-3:has(#Attachment)').appendChild(previewContainer);
+                }
+                
+                // Set preview content based on file type
+                const isImage = file.type.startsWith('image/');
+                
+                if (isImage) {
+                    // Create image preview
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        previewContainer.innerHTML = `
+                            <div class="card p-2 mb-3">
+                                <img src="${event.target.result}" class="img-fluid rounded mx-auto d-block" style="max-height: 200px; object-fit: contain;">
+                                <p class="text-center text-muted small mt-2">${file.name} (${(file.size/1024).toFixed(1)} KB)</p>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Create file info preview
+                    let fileIcon = 'fas fa-file';
                     
-                    // Set preview content
+                    // Set icon based on file type
+                    if (file.type.includes('pdf')) fileIcon = 'fas fa-file-pdf';
+                    else if (file.type.includes('word') || file.type.includes('document')) fileIcon = 'fas fa-file-word';
+                    else if (file.type.includes('excel') || file.type.includes('sheet')) fileIcon = 'fas fa-file-excel';
+                    else if (file.type.includes('video')) fileIcon = 'fas fa-file-video';
+                    else if (file.type.includes('audio')) fileIcon = 'fas fa-file-audio';
+                    else if (file.type.includes('zip') || file.type.includes('archive')) fileIcon = 'fas fa-file-archive';
+                    
                     previewContainer.innerHTML = `
-                        <div class="card p-2 mb-3">
-                            <img src="${event.target.result}" class="img-fluid rounded mx-auto d-block" style="max-height: 200px; object-fit: contain;">
-                            <p class="text-center text-muted small mt-2">Image preview</p>
+                        <div class="card p-3 mb-3">
+                            <div class="text-center">
+                                <i class="${fileIcon} fa-3x mb-2"></i>
+                                <p class="mb-0">${file.name}</p>
+                                <p class="text-muted small">${file.type || 'Unknown type'} (${(file.size/1024).toFixed(1)} KB)</p>
+                            </div>
                         </div>
                     `;
-                };
-                reader.readAsDataURL(file);
+                }
             }
         });
 

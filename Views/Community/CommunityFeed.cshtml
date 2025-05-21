@@ -222,23 +222,15 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="modalImage" class="form-label small text-muted">Add Image (optional)</label>
+                        <label for="modalAttachment" class="form-label small text-muted">Add Attachment (optional)</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-0">
-                                <i class="fas fa-image text-primary"></i>
+                                <i class="fas fa-paperclip text-primary"></i>
                             </span>
-                            <input type="file" class="form-control bg-light border-0" id="modalImage" name="Image" accept="image/*">
+                            <input type="file" class="form-control bg-light border-0" id="modalAttachment" name="Attachment">
                         </div>
-                        <div id="imagePreview" class="mt-3 d-none text-center">
-                            <div class="position-relative d-inline-block">
-                                <img src="#" alt="Preview" class="img-thumbnail mx-auto" style="max-height: 250px; max-width: 100%; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
-                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" id="removeImage" style="margin-right: -10px; margin-top: -10px;">
-                                    <i class="fas fa-times"></i>
-                            </button>
-                            </div>
-                            <p class="text-muted small mt-2">Selected image preview</p>
-                        </div>
-                    </div>
+                        <div id="filePreview" class="mt-3 d-none text-center">
+                                                                    <div class="position-relative d-inline-block">                                <div id="filePreviewContent"></div>                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" id="removeFile" style="margin-right: -10px; margin-top: -10px;">                                    <i class="fas fa-times"></i>                                </button>                            </div>                            <p class="text-muted small mt-2">Selected file preview</p>
                     
                     <!-- Hidden fields -->
                     <input type="number" step="any" class="d-none" id="modalLatitude" name="Latitude">
@@ -1114,53 +1106,7 @@
                 }
             });
             
-            // Image preview functionality
-            $('#modalImage').on('change', function() {
-                const file = this.files[0];
-                if (file) {
-                    // File size validation
-                    if (file.size > 5 * 1024 * 1024) { // 5MB
-                        alert('File size must be less than 5MB');
-                        this.value = '';
-                        $('#imagePreview').addClass('d-none');
-                        return;
-                    }
-                    
-                    // Preview image
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        // Make sure the image element exists
-                        let $image = $('#imagePreview img');
-                        if ($image.length === 0) {
-                            // Create the image element if it doesn't exist
-                            $('#imagePreview').html(`
-                                <div class="position-relative d-inline-block">
-                                    <img src="${e.target.result}" alt="Preview" class="img-thumbnail mx-auto" 
-                                         style="max-height: 250px; max-width: 100%; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
-                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" 
-                                            id="removeImage" style="margin-right: -10px; margin-top: -10px;">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <p class="text-muted small mt-2">Selected image preview</p>
-                            `);
-                            
-                            // Re-attach the click handler for the remove button
-                            $('#removeImage').on('click', function() {
-                                $('#modalImage').val('');
-                                $('#imagePreview').addClass('d-none');
-                            });
-                        } else {
-                            // Update existing image
-                            $image.attr('src', e.target.result);
-                        }
-                        
-                        // Show the preview container
-                        $('#imagePreview').removeClass('d-none');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+                        // File preview functionality            $('#modalAttachment').on('change', function() {                const file = this.files[0];                if (file) {                    // File size validation                    if (file.size > 5 * 1024 * 1024) { // 5MB                        alert('File size must be less than 5MB');                        this.value = '';                        $('#filePreview').addClass('d-none');                        return;                    }                                        // Create the preview based on file type                    const isImage = file.type.startsWith('image/');                                        if (isImage) {                        // Preview image                        const reader = new FileReader();                        reader.onload = function(e) {                            // Create the image element preview                            $('#filePreviewContent').html(`                                <img src="${e.target.result}" alt="Preview" class="img-thumbnail mx-auto"                                      style="max-height: 250px; max-width: 100%; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">                            `);                                                        // Show the preview container                            $('#filePreview').removeClass('d-none');                        };                        reader.readAsDataURL(file);                    } else {                        // Create file info preview                        let fileIcon = 'fas fa-file';                                                // Set icon based on file type                        if (file.type.includes('pdf')) fileIcon = 'fas fa-file-pdf';                        else if (file.type.includes('word') || file.type.includes('document')) fileIcon = 'fas fa-file-word';                        else if (file.type.includes('excel') || file.type.includes('sheet')) fileIcon = 'fas fa-file-excel';                        else if (file.type.includes('video')) fileIcon = 'fas fa-file-video';                        else if (file.type.includes('audio')) fileIcon = 'fas fa-file-audio';                        else if (file.type.includes('zip') || file.type.includes('archive')) fileIcon = 'fas fa-file-archive';                                                // Create file preview HTML                        $('#filePreviewContent').html(`                            <div class="file-preview p-3 text-center">                                <i class="${fileIcon} fa-3x mb-2 text-primary"></i>                                <p class="mb-0">${file.name}</p>                                <p class="text-muted small">${(file.size/1024).toFixed(1)} KB</p>                            </div>                        `);                                                // Show the preview container                        $('#filePreview').removeClass('d-none');                    }                }            });                        // Remove file button            $(document).on('click', '#removeFile', function() {                $('#modalAttachment').val('');                $('#filePreview').addClass('d-none');            });
             
             // Geolocation support for post form
             $('#detect-modal-location').on('click', function() {
@@ -1538,4 +1484,5 @@
             }
         });
     </script>
+    <script src="/js/community-attachment.js"></script>
 } 

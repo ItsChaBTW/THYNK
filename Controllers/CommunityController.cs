@@ -241,7 +241,7 @@ namespace THYNK.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostUpdate(CommunityUpdate update, IFormFile Image)
+        public async Task<IActionResult> PostUpdate(CommunityUpdate update, IFormFile Attachment)
         {
             try
             {
@@ -258,8 +258,8 @@ namespace THYNK.Controllers
                 update.DatePosted = DateTime.Now;
                 update.ModerationStatus = ModerationStatus.Pending;
 
-                // Handle image upload if provided
-                if (Image != null)
+                // Handle file attachment if provided
+                if (Attachment != null)
                 {
                     var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "community_posts");
                     if (!Directory.Exists(uploadsFolder))
@@ -267,19 +267,19 @@ namespace THYNK.Controllers
                         Directory.CreateDirectory(uploadsFolder);
                     }
 
-                    var uniqueFileName = $"{Guid.NewGuid()}_{Image.FileName}";
+                    var uniqueFileName = $"{Guid.NewGuid()}_{Attachment.FileName}";
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        await Image.CopyToAsync(fileStream);
+                        await Attachment.CopyToAsync(fileStream);
                     }
 
                     update.ImageUrl = $"/uploads/community_posts/{uniqueFileName}";
                 }
                 else
                 {
-                    update.ImageUrl = "/images/no-image.png"; // Set a default image URL
+                    update.ImageUrl = null; // No attachment provided
                 }
 
                 // Ensure location fields are properly set
