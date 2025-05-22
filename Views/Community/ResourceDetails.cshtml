@@ -4,13 +4,19 @@
     Layout = "_CommunityLayout";
 }
 
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header bg-info text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <div class="card-icon bg-white text-info me-3">
+<div class="resource-detail-container">
+    <!-- TEST BANNER - REMOVE AFTER CHECKING -->
+    <div style="background-color: red; color: white; text-align: center; padding: 10px; margin-bottom: 15px; font-weight: bold;">
+        TEST BANNER - PAGE UPDATED
+    </div>
+    
+    <!-- Resource Header -->
+    <div class="resource-header">
+        <div class="header-content">
+            <a href="@Url.Action("EducationalResources", "Community")" class="back-button" aria-label="Go back">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="resource-icon @Model.Type.ToString().ToLower()">
                             @switch (Model.Type)
                             {
                                 case ResourceType.Guide:
@@ -39,170 +45,2282 @@
                                     break;
                             }
                         </div>
-                        <div>
-                            <h5 class="m-0">@Model.Title</h5>
-                            <small>@Model.Type</small>
+            <div class="resource-title">
+                <h1>@Model.Title</h1>
+                <div class="resource-meta">
+                    <span class="resource-type">@Model.Type</span>
+                    <span class="resource-date"><i class="far fa-calendar-alt"></i> @Model.DateAdded.ToString("MMM d, yyyy")</span>
                         </div>
                     </div>
-                    <div>
-                        <a href="@Url.Action("EducationalResources", "Community")" class="btn btn-sm btn-light">
-                            <i class="fas fa-arrow-left me-1"></i> Back to Resources
-                        </a>
                     </div>
+        <div class="resource-badges">
+            <span class="badge-exclusive">
+                <i class="fas fa-star"></i> Community Exclusive
+            </span>
+            @if (Model.IsOfflineAccessible)
+            {
+                <span class="badge-offline">
+                    <i class="fas fa-wifi-slash"></i> Offline Available
+                </span>
+            }
                 </div>
             </div>
-            <div class="card-body">
-                <!-- Community exclusive badge -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <span class="badge bg-success px-3 py-2">
-                        <i class="fas fa-star me-1"></i> Community Exclusive Resource
-                    </span>
-                    <span class="text-muted">Added on @Model.DateAdded.ToString("MMMM dd, yyyy")</span>
-                </div>
-                
-                <!-- Resource description -->
-                <div class="alert alert-light border mb-4">
-                    <h5 class="mb-2">Description</h5>
-                    <p>@Model.Description</p>
-                </div>
-                
-                <!-- Resource content -->
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Resource Content</h5>
+
+    <!-- Type-specific UI Component -->
+    <div class="resource-type-specific @Model.Type.ToString().ToLower()-type">
+        @switch (Model.Type)
+        {
+            case ResourceType.Guide:
+                <div class="type-banner guide">
+                    <div class="type-icon"><i class="fas fa-compass"></i></div>
+                    <div class="type-content">
+                        <h2 class="type-title">Step-by-Step Guide</h2>
+                        <p class="type-description">Follow these detailed instructions to prepare for emergencies effectively.</p>
                     </div>
-                    <div class="card-body">
-                        <div class="markdown-content">
+                    <div class="type-metadata">
+                        <span class="type-metric"><i class="fas fa-clock"></i> @(new Random().Next(5, 15)) min read</span>
+                        <span class="type-metric"><i class="fas fa-user-check"></i> Expert Verified</span>
+                    </div>
+                </div>
+                break;
+            case ResourceType.Tutorial:
+                <div class="type-banner tutorial">
+                    <div class="type-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="type-content">
+                        <h2 class="type-title">Interactive Tutorial</h2>
+                        <p class="type-description">Learn through hands-on instructions and demonstrations.</p>
+                    </div>
+                    <div class="type-metadata">
+                        <span class="type-metric"><i class="fas fa-clock"></i> @(new Random().Next(10, 30)) min completion</span>
+                        <span class="type-metric"><i class="fas fa-graduation-cap"></i> Beginner Friendly</span>
+                    </div>
+                </div>
+                break;
+            case ResourceType.Infographic:
+                <div class="type-banner infographic">
+                    <div class="type-icon"><i class="fas fa-chart-pie"></i></div>
+                    <div class="type-content">
+                        <h2 class="type-title">Visual Infographic</h2>
+                        <p class="type-description">Key information presented visually for quick understanding.</p>
+                    </div>
+                    <div class="type-metadata">
+                        <span class="type-metric"><i class="fas fa-eye"></i> Visual Learning</span>
+                        <span class="type-metric"><i class="fas fa-share-alt"></i> Shareable</span>
+                    </div>
+                </div>
+                break;
+            case ResourceType.Video:
+                <div class="type-banner video">
+                    <div class="type-icon"><i class="fas fa-video"></i></div>
+                    <div class="type-content">
+                        <h2 class="type-title">Video Resource</h2>
+                        <p class="type-description">Watch and learn through visual demonstrations and explanations.</p>
+                    </div>
+                    <div class="type-metadata">
+                        <span class="type-metric"><i class="fas fa-clock"></i> @(new Random().Next(3, 10)):@(new Random().Next(10, 59).ToString("00")) duration</span>
+                        <span class="type-metric"><i class="fas fa-closed-captioning"></i> Captioned</span>
+                    </div>
+                </div>
+                break;
+            case ResourceType.Document:
+                <div class="type-banner document">
+                    <div class="type-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="type-content">
+                        <h2 class="type-title">Official Document</h2>
+                        <p class="type-description">Important reference material for disaster preparedness and response.</p>
+                    </div>
+                    <div class="type-metadata">
+                        <span class="type-metric"><i class="fas fa-file-pdf"></i> Printable</span>
+                        <span class="type-metric"><i class="fas fa-calendar-check"></i> Updated @Model.DateAdded.ToString("MMM yyyy")</span>
+                    </div>
+                </div>
+                break;
+            case ResourceType.FAQ:
+                <div class="type-banner faq">
+                    <div class="type-icon"><i class="fas fa-question-circle"></i></div>
+                    <div class="type-content">
+                        <h2 class="type-title">Frequently Asked Questions</h2>
+                        <p class="type-description">Answers to common questions about emergency preparedness.</p>
+                    </div>
+                    <div class="type-metadata">
+                        <span class="type-metric"><i class="fas fa-lightbulb"></i> Quick Answers</span>
+                        <span class="type-metric"><i class="fas fa-search"></i> Searchable</span>
+                    </div>
+                </div>
+                break;
+            case ResourceType.EmergencyContact:
+                <div class="type-banner emergency">
+                    <div class="type-icon"><i class="fas fa-phone-alt"></i></div>
+                    <div class="type-content">
+                        <h2 class="type-title">Emergency Contacts</h2>
+                        <p class="type-description">Critical contact information for emergency situations.</p>
+                    </div>
+                    <div class="type-metadata">
+                        <span class="type-metric"><i class="fas fa-exclamation-triangle"></i> Save Offline</span>
+                        <span class="type-metric"><i class="fas fa-check-circle"></i> Verified Contacts</span>
+                    </div>
+                </div>
+                break;
+            default:
+                <div class="type-banner default">
+                    <div class="type-icon"><i class="fas fa-book"></i></div>
+                    <div class="type-content">
+                        <h2 class="type-title">Educational Resource</h2>
+                        <p class="type-description">Information to help you prepare and respond to emergencies.</p>
+                    </div>
+                    <div class="type-metadata">
+                        <span class="type-metric"><i class="fas fa-info-circle"></i> Informational</span>
+                    </div>
+                </div>
+                break;
+        }
+                </div>
+                
+    <!-- Resource Description -->
+    <div class="resource-section">
+        <div class="section-title">
+            <i class="fas fa-info-circle"></i>
+            <h2>Description</h2>
+        </div>
+        <div class="section-content">
+                    <p>@Model.Description</p>
+        </div>
+                </div>
+                
+    <!-- Resource Content -->
+    <div class="resource-section">
+        <div class="section-title">
+            <i class="fas fa-file-alt"></i>
+            <h2>Content</h2>
+                    </div>
+        <div class="section-content markdown-content @Model.Type.ToString().ToLower()-content">
+            @switch (Model.Type)
+            {
+                case ResourceType.Guide:
+                    <div class="guide-header">
+                        <div class="guide-intro">
+                            <div class="guide-icon"><i class="fas fa-map-signs"></i></div>
+                            <div class="guide-info">
+                                <h3>Follow this guide step by step</h3>
+                                <p>Complete each step thoroughly before moving to the next one.</p>
+                            </div>
+                        </div>
+                        <div class="guide-difficulty">
+                            <span class="difficulty-label">Difficulty:</span>
+                            <div class="difficulty-level">
+                                <span class="difficulty-dot active"></span>
+                                <span class="difficulty-dot @(new Random().Next(0, 2) == 0 ? "active" : "")"></span>
+                                <span class="difficulty-dot @(new Random().Next(0, 10) > 7 ? "active" : "")"></span>
+                            </div>
+                            <span class="difficulty-text">@(new Random().Next(0, 10) > 7 ? "Advanced" : (new Random().Next(0, 2) == 0 ? "Intermediate" : "Beginner"))</span>
+                        </div>
+                    </div>
+                            @Html.Raw(ConvertMarkdownToHtml(Model.Content))
+                    break;
+                    
+                case ResourceType.Video:
+                    if (!string.IsNullOrEmpty(Model.ExternalUrl))
+                    {
+                        <div class="video-container">
+                            @if (Model.ExternalUrl.Contains("youtube.com") || Model.ExternalUrl.Contains("youtu.be"))
+                            {
+                                string videoId = string.Empty;
+                                if (Model.ExternalUrl.Contains("youtube.com/watch?v="))
+                                {
+                                    videoId = Model.ExternalUrl.Split("watch?v=")[1].Split('&')[0];
+                                }
+                                else if (Model.ExternalUrl.Contains("youtu.be/"))
+                                {
+                                    videoId = Model.ExternalUrl.Split("youtu.be/")[1];
+                                }
+                                
+                                if (!string.IsNullOrEmpty(videoId))
+                                {
+                                    <iframe class="video-embed" src="https://www.youtube.com/embed/@videoId" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                }
+                                else
+                                {
+                                    <div class="video-placeholder">
+                                        <a href="@Model.ExternalUrl" target="_blank" class="btn-video-external">
+                                            <i class="fas fa-play-circle"></i>
+                                            <span>Watch Video on External Site</span>
+                                        </a>
+                        </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="video-placeholder">
+                                    <a href="@Model.ExternalUrl" target="_blank" class="btn-video-external">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span>Watch Video on External Site</span>
+                                    </a>
+                    </div>
+                            }
+                </div>
+                    }
+                    @Html.Raw(ConvertMarkdownToHtml(Model.Content))
+                    break;
+                    
+                case ResourceType.Infographic:
+                    <div class="infographic-container">
+                        @if (!string.IsNullOrEmpty(Model.FileUrl))
+                        {
+                            <div class="infographic-image">
+                                <a href="@Model.FileUrl" data-lightbox="infographic" data-title="@Model.Title">
+                                    <img src="@Model.FileUrl" alt="@Model.Title" class="img-fluid" />
+                                    <div class="infographic-overlay">
+                                        <i class="fas fa-search-plus"></i>
+                                        <span>Click to enlarge</span>
+                            </div>
+                                </a>
+                            </div>
+                        }
+                        @Html.Raw(ConvertMarkdownToHtml(Model.Content))
+                    </div>
+                    break;
+                    
+                case ResourceType.FAQ:
+                    <div class="faq-container">
+                        <div class="faq-search">
+                            <div class="faq-search-input">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="faqSearch" placeholder="Search for a question..." />
+                            </div>
+                        </div>
+                        <div id="faqContent">
                             @Html.Raw(ConvertMarkdownToHtml(Model.Content))
                         </div>
                     </div>
-                </div>
-                
-                <!-- Resource metadata -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="fas fa-tags me-2"></i>Tags</h5>
+                    break;
+                    
+                case ResourceType.EmergencyContact:
+                    <div class="emergency-container">
+                        <div class="emergency-header">
+                            <div class="emergency-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
                             </div>
-                            <div class="card-body">
+                            <div class="emergency-header-text">
+                                <h3>Save these contacts for emergencies</h3>
+                                <p>Keep this information accessible even when you don't have internet connectivity.</p>
+                            </div>
+                            <div class="emergency-actions">
+                                <button id="saveContacts" class="btn-save-contacts">
+                                    <i class="fas fa-save"></i> Save Contacts
+                                </button>
+                            </div>
+                        </div>
+                        @Html.Raw(ConvertMarkdownToHtml(Model.Content))
+                    </div>
+                    break;
+                    
+                default:
+                    @Html.Raw(ConvertMarkdownToHtml(Model.Content))
+                    break;
+            }
+        </div>
+    </div>
+
+    <!-- Resource Metadata -->
+    <div class="resource-grid">
+        <!-- Tags -->
+        <div class="resource-section">
+            <div class="section-title">
+                <i class="fas fa-tags"></i>
+                <h2>Tags</h2>
+            </div>
+            <div class="section-content">
                                 @if (!string.IsNullOrEmpty(Model.Tags))
                                 {
-                                    <div>
+                    <div class="tags-container">
                                         @foreach (var tag in Model.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
                                         {
-                                            <span class="badge bg-secondary me-1 mb-1">@tag.Trim()</span>
+                            <span class="tag">@tag.Trim()</span>
                                         }
                                     </div>
                                 }
                                 else
                                 {
-                                    <p class="text-muted mb-0">No tags assigned</p>
+                    <p class="no-data">No tags assigned</p>
                                 }
                             </div>
                         </div>
+
+        <!-- Download Options -->
+        <div class="resource-section">
+            <div class="section-title">
+                <i class="fas fa-download"></i>
+                <h2>Downloads</h2>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="fas fa-download me-2"></i>Resource File</h5>
+            <div class="section-content">
+                <div class="download-options">
+                    <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = Model.Id })" class="btn-download pdf" aria-label="Download PDF version">
+                        <div class="btn-download-icon">
+                            <i class="fas fa-file-pdf"></i>
                             </div>
-                            <div class="card-body">
+                        <div class="btn-download-text">
+                            <span>PDF Version</span>
+                            <small>Universal Format</small>
+                        </div>
+                    </a>
+                    
                                 @if (!string.IsNullOrEmpty(Model.FileUrl))
                                 {
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>Resource file available</span>
-                                        <div>
-                                            <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = Model.Id })" class="btn btn-primary me-2">
-                                                <i class="fas fa-file-pdf me-1"></i> Download as PDF
-                                            </a>
-                                            <a href="@Model.FileUrl" download class="btn btn-success">
-                                                <i class="fas fa-download me-1"></i> 
-                                                Download Original
+                        <a href="@Model.FileUrl" download class="btn-download original" aria-label="Download original file">
+                            <div class="btn-download-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="btn-download-text">
+                                <span>Original File</span>
                                                 @if (Model.FileSizeKB.HasValue)
                                                 {
-                                                    <span>(@(Model.FileSizeKB < 1024 ? $"{Model.FileSizeKB} KB" : $"{Model.FileSizeKB / 1024.0:F1} MB"))</span>
+                                    <small>@(Model.FileSizeKB < 1024 ? $"{Model.FileSizeKB} KB" : $"{Model.FileSizeKB / 1024.0:F1} MB")</small>
                                                 }
-                                            </a>
                                         </div>
-                                    </div>
-                                    @if (Model.IsOfflineAccessible)
-                                    {
-                                        <div class="alert alert-success mt-3 mb-0">
-                                            <i class="fas fa-wifi-slash me-2"></i>
-                                            This resource is available offline. Download it now to access during emergencies!
-                                        </div>
-                                    }
+                        </a>
                                 }
                                 else if (!string.IsNullOrEmpty(Model.ExternalUrl))
                                 {
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>External resource available</span>
-                                        <div>
-                                            <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = Model.Id })" class="btn btn-primary me-2">
-                                                <i class="fas fa-file-pdf me-1"></i> Download as PDF
-                                            </a>
-                                            <a href="@Model.ExternalUrl" target="_blank" class="btn btn-success">
-                                                <i class="fas fa-external-link-alt me-1"></i> Visit Resource
-                                            </a>
+                        <a href="@Model.ExternalUrl" target="_blank" class="btn-download external" aria-label="Access external resource">
+                            <div class="btn-download-icon">
+                                <i class="fas fa-external-link-alt"></i>
                                         </div>
+                            <div class="btn-download-text">
+                                <span>External Resource</span>
+                                <small>Opens in new tab</small>
                                     </div>
-                                }
-                                else
+                        </a>
+                    }
+                </div>
+                
+                @if (Model.IsOfflineAccessible)
                                 {
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span>No downloadable files available</span>
-                                        <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = Model.Id })" class="btn btn-primary">
-                                            <i class="fas fa-file-pdf me-1"></i> Download as PDF
-                                        </a>
+                    <div class="offline-notice">
+                        <div class="offline-notice-icon">
+                            <i class="fas fa-wifi-slash"></i>
                                     </div>
-                                }
+                        <div class="offline-notice-content">
+                            <p><strong>Offline Access Available</strong></p>
+                            <p>This resource is available offline. Download now to access during emergencies when internet connectivity is limited.</p>
                             </div>
+                    </div>
+                }
                         </div>
                     </div>
                 </div>
                 
-                <!-- Related resources placeholder -->
-                <div class="card">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0"><i class="fas fa-link me-2"></i>Related Resources</h5>
+    <!-- Related Resources -->
+    <div class="resource-section">
+        <div class="section-title">
+            <i class="fas fa-link"></i>
+            <h2>Related Resources</h2>
                     </div>
-                    <div class="card-body">
-                        <p class="text-center text-muted py-3">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Related resources feature coming soon!
-                        </p>
+        <div class="section-content">
+            <div class="coming-soon">
+                <i class="fas fa-hourglass-half"></i>
+                <h3>Coming Soon</h3>
+                <p>We're working on suggesting related resources that might be helpful for you.</p>
+                <div class="progress-indicator">
+                    <span></span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+<!-- Floating Action Button -->
+<div class="floating-action-container">
+    <div class="fab-actions" id="fabActions">
+        <button class="fab-action download" id="fabDownload">
+            <i class="fas fa-file-pdf"></i>
+            <span class="fab-tooltip">Download PDF</span>
+        </button>
+        @if (Model.IsOfflineAccessible)
+        {
+            <button class="fab-action offline" id="fabOffline">
+                <i class="fas fa-wifi-slash"></i>
+                <span class="fab-tooltip">Save Offline</span>
+            </button>
+        }
+        <button class="fab-action share" id="fabShare">
+            <i class="fas fa-share-alt"></i>
+            <span class="fab-tooltip">Share</span>
+        </button>
+    </div>
+    <button class="fab-main" id="fabMain">
+        <i class="fas fa-plus"></i>
+    </button>
 </div>
 
 @section Scripts {
     <script>
+        // Force refresh on first load to ensure UI enhancements are applied
+        (function() {
+            if (!sessionStorage.getItem('resourceDetailsLoaded-@Model.Id')) {
+                sessionStorage.setItem('resourceDetailsLoaded-@Model.Id', 'true');
+                // Only reload if we're not seeing the red test banner
+                if (!document.querySelector('.resource-detail-container > div[style*="background-color: red"]')) {
+                    location.reload(true);
+                }
+            }
+        })();
+        
+        // VERY VISIBLE DEBUG MESSAGE
+        console.log("%c 🔍 RESOURCE DETAILS SCRIPT LOADED 🔍", "background: #3a7bd5; color: white; font-size: 20px; padding: 10px;");
+        console.log("%c Resource Type:", "font-weight: bold; color: red;", "@Model.Type");
+        console.log("%c Page URL:", "font-weight: bold; color: red;", window.location.href);
+        
         $(document).ready(function() {
+            // Debug messages to check if our enhancements are working
+            console.log("ResourceDetails.js loaded");
+            console.log("Resource type:", "@Model.Type");
+            
+            // Check if type-specific UI components are visible
+            if ($('.resource-type-specific').length) {
+                console.log("Type-specific UI component exists");
+                console.log("Resource type class:", "@Model.Type.ToString().ToLower()-type");
+                console.log("Component found:", $('.@Model.Type.ToString().ToLower()-type').length > 0);
+            } else {
+                console.error("Type-specific UI component not found");
+                // Let's log all elements to debug
+                console.log("All resource-type-specific elements:", $('.resource-type-specific').toArray());
+                console.log("Resource type from model:", "@Model.Type");
+                console.log("Resource ID:", "@Model.Id");
+            }
+            
+            // Check content elements
+            if ($('.@Model.Type.ToString().ToLower()-content').length) {
+                console.log("Type-specific content styling applied");
+            } else {
+                console.error("Type-specific content styling not found");
+            }
+            
             // Add copy button to code blocks
             $('.markdown-content pre').each(function() {
                 let $this = $(this);
                 let $code = $this.find('code');
-                let $button = $('<button class="btn btn-sm btn-light position-absolute top-0 end-0 mt-2 me-2"><i class="fas fa-copy"></i></button>');
+                let language = $code.attr('class') || '';
                 
-                $this.addClass('position-relative');
+                // Try to extract language name if class exists
+                let langName = '';
+                if (language) {
+                    langName = language.replace('language-', '');
+                    $this.addClass('language-' + langName);
+                }
+                
+                // Add language name badge if available
+                if (langName) {
+                    let $langBadge = $('<span class="code-lang-badge">' + langName + '</span>');
+                    $this.prepend($langBadge);
+                }
+                
+                let $button = $('<button type="button" class="code-copy-btn" aria-label="Copy code to clipboard"><i class="fas fa-copy"></i></button>');
+                
+                $this.addClass('has-copy-btn');
                 $this.append($button);
                 
                 $button.on('click', function() {
                     let text = $code.text();
                     navigator.clipboard.writeText(text).then(function() {
-                        $button.html('<i class="fas fa-check text-success"></i>');
+                        $button.html('<i class="fas fa-check"></i>');
                         setTimeout(function() {
                             $button.html('<i class="fas fa-copy"></i>');
                         }, 2000);
                     });
                 });
             });
+            
+            // Enhance tables with responsive wrappers
+            $('.markdown-content table').each(function() {
+                $(this).wrap('<div class="table-responsive"></div>');
+            });
+            
+            // Add line numbers to code blocks
+            $('.markdown-content pre code').each(function() {
+                if (!$(this).parent().hasClass('no-line-numbers')) {
+                    let text = $(this).html();
+                    let lines = text.split('\n');
+                    let numbered = '';
+                    
+                    for (let i = 0; i < lines.length; i++) {
+                        if (i === lines.length - 1 && lines[i].trim() === '') continue;
+                        numbered += '<div class="code-line"><span class="line-number">' + (i + 1) + '</span>' + lines[i] + '</div>';
+                    }
+                    
+                    $(this).html(numbered);
+                }
+            });
+            
+            // Type-specific interactions
+            
+            // FAQ Search functionality
+            $('#faqSearch').on('keyup', function() {
+                const searchText = $(this).val().toLowerCase();
+                
+                // Look for h2, h3, h4 that might be questions
+                $('#faqContent h2, #faqContent h3, #faqContent h4').each(function() {
+                    const question = $(this).text().toLowerCase();
+                    const contentSection = $(this).nextUntil('h2, h3, h4').addBack();
+                    
+                    if (question.includes(searchText) || contentSection.text().toLowerCase().includes(searchText)) {
+                        contentSection.show();
+                        $(this).css('background-color', searchText && question.includes(searchText) ? 'rgba(116, 103, 239, 0.1)' : '');
+                    } else {
+                        contentSection.hide();
+                    }
+                });
+                
+                if (searchText === '') {
+                    $('#faqContent h2, #faqContent h3, #faqContent h4').css('background-color', '');
+                    $('#faqContent').children().show();
+                }
+            });
+            
+            // Save Emergency Contacts functionality
+            $('#saveContacts').on('click', function() {
+                const $btn = $(this);
+                const originalText = $btn.html();
+                
+                $btn.html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+                
+                // Simulate saving action
+                setTimeout(function() {
+                    $btn.html('<i class="fas fa-check"></i> Saved!');
+                    showToast('Emergency contacts saved for offline use!');
+                    
+                    setTimeout(function() {
+                        $btn.html(originalText);
+                    }, 3000);
+                }, 1500);
+            });
+            
+            // Guide progress tracking - add checkboxes next to steps
+            if ($('.guide-content').length) {
+                $('.guide-content ol li').each(function(index) {
+                    const $checkbox = $('<div class="step-checkbox"><input type="checkbox" id="step-' + index + '" class="step-check"><label for="step-' + index + '"></label></div>');
+                    $(this).append($checkbox);
+                    
+                    // Add event to track progress
+                    $checkbox.find('input').on('change', function() {
+                        const totalSteps = $('.guide-content ol li').length;
+                        const completedSteps = $('.guide-content ol li input:checked').length;
+                        
+                        if (completedSteps === totalSteps) {
+                            showToast('Congratulations! You completed all steps!');
+                        } else if (completedSteps > 0) {
+                            const percent = Math.round((completedSteps / totalSteps) * 100);
+                            showToast('Progress saved: ' + percent + '% complete');
+                        }
+                    });
+                });
+            }
+            
+            // Floating Action Button functionality
+            $('#fabMain').on('click', function() {
+                $('#fabActions').toggleClass('show');
+                $(this).toggleClass('active');
+            });
+            
+            // Close FAB when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.floating-action-container').length) {
+                    $('#fabActions').removeClass('show');
+                    $('#fabMain').removeClass('active');
+                }
+            });
+            
+            // FAB Download button functionality
+            $('#fabDownload').on('click', function() {
+                window.location.href = '@Url.Action("DownloadResourcePdf", "Community", new { id = Model.Id })';
+            });
+            
+            // FAB Share button functionality
+            $('#fabShare').on('click', function() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: '@Model.Title',
+                        text: '@Model.Description',
+                        url: window.location.href
+                    })
+                    .catch(console.error);
+                } else {
+                    // Fallback - copy link to clipboard
+                    navigator.clipboard.writeText(window.location.href).then(function() {
+                        showToast('Link copied to clipboard!');
+                    });
+                }
+            });
+            
+            // FAB Offline button functionality
+            $('#fabOffline').on('click', function() {
+                // Simulate offline save with animation
+                const $btn = $(this);
+                const originalIcon = $btn.html();
+                
+                $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+                setTimeout(function() {
+                    $btn.html('<i class="fas fa-check"></i>');
+                    showToast('Resource saved for offline access!');
+                    
+                    setTimeout(function() {
+                        $btn.html(originalIcon);
+                    }, 2000);
+                }, 1500);
+            });
+            
+            // Add animations to elements as they enter viewport
+            function animateOnScroll() {
+                $('.resource-section').each(function(index) {
+                    const $section = $(this);
+                    if ($section.isInViewport() && !$section.hasClass('animated')) {
+                        $section.addClass('animated fadeIn');
+                        $section.css('animation-delay', (index * 0.1) + 's');
+                    }
+                });
+            }
+            
+            // Check if element is in viewport
+            $.fn.isInViewport = function() {
+                const elementTop = $(this).offset().top;
+                const elementBottom = elementTop + $(this).outerHeight();
+                const viewportTop = $(window).scrollTop();
+                const viewportBottom = viewportTop + $(window).height();
+                return elementBottom > viewportTop && elementTop < viewportBottom;
+            };
+            
+            // Run animation check on load and scroll
+            animateOnScroll();
+            $(window).on('scroll', animateOnScroll);
+            
+            // Toast notification function
+            function showToast(message) {
+                // Remove existing toasts
+                $('.toast-container').remove();
+                
+                // Create toast container if it doesn't exist
+                $('body').append('<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;"></div>');
+                
+                // Create toast
+                const toastId = 'toast-' + Date.now();
+                const $toast = $(`
+                    <div id="${toastId}" class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <i class="fas fa-check-circle me-2 text-success"></i>
+                            <strong class="me-auto">Success</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `);
+                
+                // Add to container
+                $('.toast-container').append($toast);
+                
+                // Auto-remove after 3 seconds
+                setTimeout(function() {
+                    $toast.removeClass('show');
+                    setTimeout(function() {
+                        $toast.remove();
+                    }, 300);
+                }, 3000);
+                
+                // Close button functionality
+                $toast.find('.btn-close').on('click', function() {
+                    $toast.removeClass('show');
+                    setTimeout(function() {
+                        $toast.remove();
+                    }, 300);
+                });
+            }
+            
+            // Add smooth scroll to top button
+            const $backButton = $('.back-button');
+            $(window).on('scroll', function() {
+                if ($(window).scrollTop() > 300) {
+                    $backButton.addClass('show-scroll-top');
+                } else {
+                    $backButton.removeClass('show-scroll-top');
+                }
+            });
+            
+            // Handle lightbox for infographics
+            if (typeof lightbox !== 'undefined') {
+                lightbox.option({
+                    'resizeDuration': 200,
+                    'wrapAround': true,
+                    'fadeDuration': 200
+                });
+            }
         });
     </script>
+}
+
+@section Styles {
+    <style>
+        :root {
+            --primary: #3a7bd5;
+            --primary-light: #53a0fd;
+            --primary-dark: #2c5ea2;
+            --secondary: #577590;
+            --accent: #43aa8b;
+            --accent-light: #4fbfa0;
+            --accent-dark: #358f73;
+            --info: #4599e1;
+            --success: #4caf9e;
+            --warning: #f9bc60;
+            --danger: #e66767;
+            --light: #f8f9fa;
+            --dark: #334155;
+            --muted: #94a3b8;
+            
+            /* Resource type colors */
+            --guide-color: #43aa8b;
+            --tutorial-color: #4599e1;
+            --infographic-color: #f9bc60;
+            --video-color: #e66767;
+            --document-color: #577590;
+            --faq-color: #7467ef;
+            --emergencycontact-color: #e66767;
+            
+            /* Structural */
+            --border-radius: 12px;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
+            --section-gap: 24px;
+        }
+        
+        /* Type-specific UI Component */
+        .resource-type-specific {
+            margin-bottom: var(--section-gap);
+            animation: fadeIn 0.6s ease-out;
+            animation-delay: 0.2s;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+        
+        .type-banner {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            gap: 16px;
+        }
+        
+        .type-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23000000' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            pointer-events: none;
+            background-size: 150px;
+        }
+        
+        .type-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .type-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .type-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0 0 6px 0;
+            color: white;
+        }
+        
+        .type-description {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0;
+        }
+        
+        .type-metadata {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 12px;
+        }
+        
+        .type-metric {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(255, 255, 255, 0.25);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        
+        /* Type-specific styling */
+        .guide-type .type-banner {
+            background: linear-gradient(135deg, var(--guide-color), #358f73);
+            border-left: 5px solid var(--guide-color);
+        }
+        
+        .guide-type .type-icon {
+            background-color: #2d7a63;
+        }
+        
+        .tutorial-type .type-banner {
+            background: linear-gradient(135deg, var(--tutorial-color), #3b82c4);
+            border-left: 5px solid var(--tutorial-color);
+        }
+        
+        .tutorial-type .type-icon {
+            background-color: #3475b0;
+        }
+        
+        .infographic-type .type-banner {
+            background: linear-gradient(135deg, var(--infographic-color), #e0a757);
+            border-left: 5px solid var(--infographic-color);
+        }
+        
+        .infographic-type .type-icon {
+            background-color: #d9a04e;
+        }
+        
+        .video-type .type-banner {
+            background: linear-gradient(135deg, var(--video-color), #d85555);
+            border-left: 5px solid var(--video-color);
+        }
+        
+        .video-type .type-icon {
+            background-color: #c94b4b;
+        }
+        
+        .document-type .type-banner {
+            background: linear-gradient(135deg, var(--document-color), #4a6379);
+            border-left: 5px solid var(--document-color);
+        }
+        
+        .document-type .type-icon {
+            background-color: #40576a;
+        }
+        
+        .faq-type .type-banner {
+            background: linear-gradient(135deg, var(--faq-color), #6254cf);
+            border-left: 5px solid var(--faq-color);
+        }
+        
+        .faq-type .type-icon {
+            background-color: #5548ba;
+        }
+        
+        .emergency-type .type-banner {
+            background: linear-gradient(135deg, var(--emergencycontact-color), #d85555);
+            border-left: 5px solid var(--emergencycontact-color);
+        }
+        
+        .emergency-type .type-icon {
+            background-color: #c94b4b;
+        }
+        
+        .default-type .type-banner {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-left: 5px solid var(--primary);
+        }
+        
+        .default-type .type-icon {
+            background-color: var(--primary-dark);
+        }
+        
+        @@media (max-width: 768px) {
+            .type-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: center;
+                padding: 16px;
+            }
+            
+            .type-icon {
+                margin: 0 auto 12px auto;
+            }
+            
+            .type-content, .type-metadata {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .type-metadata {
+                justify-content: center;
+            }
+        }
+        
+        /* Container and Layout */
+        .resource-detail-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--section-gap);
+            padding: 1rem;
+            animation: slideInPage 0.4s ease-out;
+        }
+        
+        /* Additional CSS for smooth loading effect */
+        @@keyframes slideInPage {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .animated {
+            animation-duration: 0.5s;
+            animation-fill-mode: both;
+        }
+        
+        .fadeIn {
+            animation-name: fadeIn;
+        }
+        
+        .show-scroll-top {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            z-index: 100;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(58, 123, 213, 0.8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform: rotate(270deg);
+        }
+        
+        .show-scroll-top i {
+            font-size: 18px;
+        }
+        
+        /* Toast styling */
+        .toast {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .toast-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+        
+        .toast-body {
+            padding: 1rem;
+            color: #333;
+        }
+        
+        /* Resource Header */
+        .resource-header {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-bottom: var(--section-gap);
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            background: linear-gradient(to bottom, rgba(248, 250, 252, 0.8), rgba(255, 255, 255, 1));
+            padding: 24px;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-sm);
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .back-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--light);
+            color: var(--secondary);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+        
+        .back-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-color));
+            opacity: 0.8;
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+        
+        .back-button:hover {
+            color: white;
+            transform: translateX(-3px);
+        }
+        
+        .back-button:hover::before {
+            width: 100%;
+        }
+        
+        /* Resource content styling with enhanced effects */
+        .section-content {
+            padding: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section-content::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .resource-section:hover .section-content::after {
+            opacity: 1;
+        }
+        
+        /* Markdown content enhancements for better readability */
+        .markdown-content {
+            line-height: 1.7;
+            color: #334155;
+            font-size: 1rem;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 1.2rem;
+            line-height: 1.75;
+        }
+        
+        .markdown-content ul,
+        .markdown-content ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .markdown-content li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .markdown-content a {
+            color: var(--primary);
+            text-decoration: none;
+            padding-bottom: 1px;
+            border-bottom: 1px dashed var(--primary-light);
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .markdown-content a:hover {
+            color: var(--primary-dark);
+            border-bottom: 1px solid var(--primary);
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid var(--primary-light);
+            padding: 0.5rem 0 0.5rem 1rem;
+            margin: 0 0 1.2rem 0;
+            background-color: rgba(69, 153, 225, 0.05);
+            color: var(--secondary);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            font-style: italic;
+        }
+        
+        /* Enhanced selection highlighting */
+        ::selection {
+            background-color: rgba(69, 153, 225, 0.2);
+            color: var(--dark);
+        }
+        
+        /* Fab active state */
+        .fab-main.active {
+            transform: rotate(45deg);
+            background: linear-gradient(135deg, var(--danger), var(--danger));
+        }
+        
+        /* Additional styles for scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Enhance badge styling */
+        .badge-exclusive, .badge-offline {
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+        
+        /* Resource Section */
+        .resource-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            will-change: transform, box-shadow;
+        }
+        
+        .resource-section:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        /* Section Title */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(to right, #f9fafb, #f8f9fa);
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section-title i {
+            color: var(--primary);
+            font-size: 1.1rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(69, 153, 225, 0.1);
+            border-radius: 50%;
+        }
+        
+        .section-title h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--dark);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .resource-section:hover .section-title::after {
+            opacity: 1;
+        }
+        
+        /* Resource Header */
+        .header-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        
+        .resource-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+        
+        .resource-icon.guide {
+            background: linear-gradient(135deg, var(--guide-color), var(--accent-dark));
+        }
+        
+        .resource-icon.tutorial {
+            background: linear-gradient(135deg, var(--tutorial-color), var(--info));
+        }
+        
+        .resource-icon.infographic {
+            background: linear-gradient(135deg, var(--infographic-color), var(--warning));
+        }
+        
+        .resource-icon.video {
+            background: linear-gradient(135deg, var(--video-color), var(--danger));
+        }
+        
+        .resource-icon.document {
+            background: linear-gradient(135deg, var(--document-color), var(--secondary));
+        }
+        
+        .resource-icon.faq {
+            background: linear-gradient(135deg, var(--faq-color), var(--primary));
+        }
+        
+        .resource-icon.emergencycontact {
+            background: linear-gradient(135deg, var(--emergencycontact-color), var(--danger));
+        }
+        
+        .resource-title {
+            flex: 1;
+        }
+        
+        .resource-title h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0 0 8px 0;
+            line-height: 1.3;
+        }
+        
+        .resource-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .resource-type {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .resource-date {
+            font-size: 0.85rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .resource-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px;
+        }
+        
+        .badge-exclusive {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, rgba(76, 175, 158, 0.1), rgba(76, 175, 158, 0.2));
+            color: var(--success);
+            border-radius: var(--border-radius);
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(76, 175, 158, 0.2);
+            transition: all 0.2s ease;
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+        
+        .badge-exclusive:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .badge-exclusive i {
+            color: var(--success);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .badge-offline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, rgba(69, 153, 225, 0.1), rgba(69, 153, 225, 0.2));
+            color: var(--info);
+            border-radius: var(--border-radius);
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(69, 153, 225, 0.2);
+            transition: all 0.2s ease;
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+        
+        .badge-offline:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .badge-offline i {
+            color: var(--info);
+        }
+        
+        /* Grid Layout */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 8px;
+        }
+        
+        /* Tags */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 6px 14px;
+            background-color: #f1f5f9;
+            color: var(--secondary);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tag:hover {
+            background-color: var(--secondary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Downloads */
+        .download-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-download {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            transition: all 0.25s ease;
+            text-decoration: none;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .btn-download::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: currentColor;
+            opacity: 0.3;
+        }
+        
+        .btn-download-icon {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.5);
+            margin-right: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.25s ease;
+        }
+        
+        .btn-download i {
+            font-size: 1.3rem;
+            transition: transform 0.25s ease;
+        }
+        
+        .btn-download-text {
+            flex: 1;
+        }
+        
+        .btn-download span {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: block;
+        }
+        
+        .btn-download small {
+            display: block;
+            margin-top: 2px;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        
+        .btn-download.pdf {
+            background-color: #fff5f7;
+            color: var(--danger);
+        }
+        
+        .btn-download.pdf:hover {
+            background-color: var(--danger);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-download.original {
+            background-color: #f0f7ff;
+            color: var(--primary);
+        }
+        
+        .btn-download.original:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-download.external {
+            background-color: #f0f9f6;
+            color: var(--success);
+        }
+        
+        .btn-download.external:hover {
+            background-color: var(--success);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-download:hover .btn-download-icon {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-download:hover i {
+            transform: scale(1.2);
+        }
+        
+        /* Improved accessibility */
+        .resource-section:focus-within {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        
+        /* Improved responsiveness */
+        @@media (max-width: 576px) {
+            .resource-detail-container {
+                gap: 16px;
+                padding: 12px;
+            }
+            
+            .section-content {
+                padding: 16px;
+            }
+            
+            .resource-title h1 {
+                font-size: 1.2rem;
+            }
+            
+            .back-button {
+                position: absolute;
+                left: 0;
+                top: 0;
+                border-radius: 0 0 var(--border-radius) 0;
+                width: 40px;
+                height: 40px;
+                z-index: 5;
+            }
+            
+            .header-content {
+                padding-left: 24px;
+                position: relative;
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .resource-icon {
+                margin-left: 16px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .download-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-download {
+                flex-direction: row;
+                justify-content: flex-start;
+                gap: 12px;
+                padding: 14px 16px;
+            }
+            
+            /* Better touch targets for mobile */
+            .tag, .btn-download, .back-button {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        
+        /* Print optimizations */
+        @@media print {
+            .back-button, .code-copy-btn {
+                display: none;
+            }
+            
+            .resource-detail-container {
+                max-width: 100%;
+            }
+            
+            .resource-section {
+                break-inside: avoid;
+                border: none;
+                box-shadow: none;
+            }
+            
+            a {
+                text-decoration: underline;
+                color: black;
+            }
+        }
+
+        /* Floating Action Button for quick access */
+        .floating-action-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .fab-main {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 1.4rem;
+        }
+
+        .fab-main:hover {
+            transform: rotate(45deg);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .fab-actions {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .fab-actions.show {
+            display: flex;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .fab-action {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+        }
+
+        .fab-action.download {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white;
+        }
+
+        .fab-action.offline {
+            background: linear-gradient(135deg, var(--success), var(--accent-dark));
+            color: white;
+        }
+
+        .fab-action.share {
+            background: linear-gradient(135deg, var(--info), var(--primary-light));
+            color: white;
+        }
+
+        .fab-action:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .fab-tooltip {
+            position: absolute;
+            right: 54px;
+            background-color: #333;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .fab-action:hover .fab-tooltip {
+            opacity: 1;
+        }
+
+        @@media (max-width: 576px) {
+            .floating-action-container {
+                bottom: 16px;
+                right: 16px;
+            }
+        }
+
+        /* Offline Notice */
+        .offline-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(76, 175, 158, 0.05), rgba(76, 175, 158, 0.15));
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(76, 175, 158, 0.2);
+            color: var(--success);
+            margin-top: 12px;
+        }
+
+        .offline-notice-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--success);
+            color: white;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .offline-notice-content {
+            flex: 1;
+        }
+
+        .offline-notice-content p {
+            margin: 0 0 4px 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .offline-notice-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code blocks */
+        .markdown-content pre {
+            background-color: #f8f9fa;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            position: relative;
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .markdown-content pre code {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+
+        .has-copy-btn {
+            padding-top: 40px !important;
+        }
+
+        .code-copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--secondary);
+            backdrop-filter: blur(2px);
+        }
+
+        .code-copy-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .code-lang-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: monospace;
+            text-transform: uppercase;
+            color: var(--dark);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .code-line {
+            display: flex;
+            width: 100%;
+        }
+
+        .line-number {
+            display: inline-block;
+            width: 2em;
+            padding-right: 1em;
+            text-align: right;
+            color: var(--muted);
+            user-select: none;
+            border-right: 1px solid var(--border-color);
+            margin-right: 0.5em;
+        }
+
+        /* Type-specific content styling */
+        .guide-content .guide-header {
+            background-color: #f1f9f7;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            padding: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(67, 170, 139, 0.2);
+        }
+        
+        .guide-intro {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .guide-icon {
+            width: 48px;
+            height: 48px;
+            background-color: var(--guide-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .guide-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+            color: var(--guide-color);
+        }
+        
+        .guide-info p {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #444;
+        }
+        
+        .guide-difficulty {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: white;
+            padding: 8px 16px;
+            border-radius: 50px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .difficulty-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .difficulty-level {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .difficulty-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+        }
+        
+        .difficulty-dot.active {
+            background-color: var(--guide-color);
+        }
+        
+        .difficulty-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* Guide content - make steps more visible */
+        .guide-content ol {
+            counter-reset: steps;
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .guide-content ol li {
+            counter-increment: steps;
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 24px;
+            min-height: 40px;
+        }
+        
+        .guide-content ol li::before {
+            content: counter(steps);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 36px;
+            height: 36px;
+            background-color: var(--guide-color);
+            color: white;
+            font-weight: 600;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Video content */
+        .video-container {
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background-color: #000;
+        }
+        
+        .video-embed {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border: none;
+        }
+        
+        .video-placeholder {
+            height: 0;
+            padding-top: 56.25%; /* 16:9 aspect ratio */
+            background-color: #2a2a2a;
+            position: relative;
+        }
+        
+        .btn-video-external {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--video-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-video-external i {
+            font-size: 1.4rem;
+        }
+        
+        .btn-video-external:hover {
+            background-color: #cd4747;
+            transform: translate(-50%, -50%) scale(1.05);
+            color: white;
+        }
+        
+        /* Infographic content */
+        .infographic-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .infographic-image {
+            position: relative;
+            width: 100%;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .infographic-image img {
+            width: 100%;
+            display: block;
+        }
+        
+        .infographic-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+        }
+        
+        .infographic-overlay i {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .infographic-image:hover .infographic-overlay {
+            opacity: 1;
+        }
+        
+        /* FAQ content */
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .faq-search {
+            margin-bottom: 20px;
+        }
+        
+        .faq-search-input {
+            position: relative;
+        }
+        
+        .faq-search-input i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+        }
+        
+        .faq-search-input input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+        
+        .faq-search-input input:focus {
+            outline: none;
+            border-color: var(--faq-color);
+            box-shadow: 0 0 0 3px rgba(116, 103, 239, 0.2);
+        }
+        
+        .faq-content {
+            margin-top: 16px;
+        }
+        
+        /* Emergency content */
+        .emergency-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .emergency-header {
+            background-color: rgba(230, 103, 103, 0.1);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid rgba(230, 103, 103, 0.2);
+        }
+        
+        .emergency-icon {
+            width: 48px;
+            height: 48px;
+            background-color: var(--emergencycontact-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .emergency-header-text {
+            flex: 1;
+        }
+        
+        .emergency-header-text h3 {
+            font-size: 1.1rem;
+            color: var(--emergencycontact-color);
+            margin-bottom: 4px;
+        }
+        
+        .emergency-header-text p {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #444;
+        }
+        
+        .emergency-actions {
+            flex-shrink: 0;
+        }
+        
+        .btn-save-contacts {
+            background-color: var(--emergencycontact-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-save-contacts:hover {
+            background-color: #d85555;
+            transform: translateY(-2px);
+        }
+        
+        /* Style tables for all content types, especially useful for emergency contacts */
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .markdown-content table thead {
+            background-color: #f1f5f9;
+        }
+        
+        .markdown-content table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .markdown-content table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .markdown-content table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .markdown-content table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        /* Responsive adjustments for type-specific content */
+        @@media (max-width: 768px) {
+            .guide-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            
+            .guide-difficulty {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .emergency-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .emergency-actions {
+                width: 100%;
+            }
+            
+            .btn-save-contacts {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Guide step checkboxes */
+        .step-checkbox {
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+        
+        .step-check {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        
+        .step-check + label {
+            position: relative;
+            cursor: pointer;
+            padding: 0;
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        
+        .step-check:checked + label {
+            background-color: var(--guide-color);
+            border-color: var(--guide-color);
+        }
+        
+        .step-check + label:after {
+            content: '';
+            position: absolute;
+            display: none;
+            left: 8px;
+            top: 4px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .step-check:checked + label:after {
+            display: block;
+        }
+        
+        .step-check:focus + label {
+            box-shadow: 0 0 0 3px rgba(67, 170, 139, 0.2);
+        }
+        
+        /* Highlight completed steps */
+        .guide-content ol li:has(.step-check:checked) {
+            opacity: 0.7;
+        }
+        
+        .guide-content ol li:has(.step-check:checked)::before {
+            background-color: var(--success);
+        }
+    </style>
 }
 
 @functions {

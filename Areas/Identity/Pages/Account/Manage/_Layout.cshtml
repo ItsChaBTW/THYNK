@@ -27,20 +27,83 @@
     }
 }
 
-<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+<style>
+    /* Custom animations for account management */
+    .account-section-enter {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    
+    .account-section-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 400ms, transform 400ms;
+    }
+    
+    @@keyframes subtle-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(26, 188, 156, 0.1); }
+        70% { box-shadow: 0 0 0 6px rgba(26, 188, 156, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(26, 188, 156, 0); }
+    }
+    
+    .nav-item-highlight {
+        animation: subtle-pulse 2s infinite;
+    }
+    
+    .hover-lift {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+    }
+</style>
+
+<div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 transition-shadow duration-300 hover:shadow-md hover-lift">
+    <div class="border-b border-gray-100 py-4 px-6 bg-gray-50">
+        <h2 class="text-lg font-medium text-gray-800 flex items-center">
+            <i class="fas fa-user-shield mr-2 text-primary"></i>
+            <span>@ViewData["Title"]</span>
+        </h2>
+        <p class="text-sm text-gray-500 mt-1">Manage your account settings and preferences</p>
+    </div>
+    
     <div class="flex flex-col md:flex-row">
-        <div class="w-full md:w-64 md:border-r border-gray-200 bg-gray-50">
-            <div class="p-4">
+        <div class="w-full md:w-64 md:border-r border-gray-100 bg-gray-50">
+            <div class="p-5">
                 <partial name="_ManageNav" />
             </div>
         </div>
         
-        <div class="flex-grow p-6">
+        <div class="flex-grow p-6 md:p-8 bg-white account-section-enter account-section-enter-active">
             @RenderBody()
         </div>
     </div>
 </div>
 
 @section Scripts {
+    <script>
+        // Add subtle animations to page elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add entrance animations to content sections
+            const contentSections = document.querySelectorAll('form, .bg-white');
+            contentSections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    section.style.transition = 'opacity 400ms, transform 400ms';
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, 100 + (index * 100));
+            });
+            
+            // Add highlight effect to active nav item
+            const activeNavItem = document.querySelector('.border-primary');
+            if (activeNavItem) {
+                activeNavItem.classList.add('nav-item-highlight');
+            }
+        });
+    </script>
     @RenderSection("Scripts", required: false)
 }

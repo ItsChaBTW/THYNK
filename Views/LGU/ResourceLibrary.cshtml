@@ -5,22 +5,53 @@
     Layout = "_Layout"; // Using the main layout since this is accessible to all users
 }
 
-<div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h1 class="display-6 fw-bold mb-2">Educational Resource Library</h1>
-            <p class="text-muted lead">Access disaster management and emergency resources provided by local government units.</p>
-        </div>
-        <div class="col-md-4 d-flex justify-content-md-end align-items-center">
-            <div class="input-group">
-                <input type="text" id="resourceSearch" class="form-control" placeholder="Search resources...">
-                <button class="btn btn-primary" type="button" id="searchBtn">
-                    <i class="fas fa-search"></i>
-                </button>
+<!-- Hero Section -->
+<div class="resource-library-hero">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <div class="hero-content">
+                    <div class="badge-pill animate-fade mb-3">
+                        <div class="pulse-dot"></div>
+                        <span>Knowledge Center</span>
+                    </div>
+                    <h1 class="display-4 fw-bold mb-3 animate-text">Educational Resource Library</h1>
+                    <p class="lead text-muted mb-4 animate-fade-delay">Access comprehensive disaster management and emergency resources provided by local government units to help build a more resilient community.</p>
+                    
+                    <div class="search-container animate-fade-delay-2">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-search text-primary"></i>
+                            </span>
+                            <input type="text" id="resourceSearch" class="form-control border-start-0 shadow-none" placeholder="Search resources by title or keywords...">
+                            <button class="btn btn-primary" type="button" id="searchBtn">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-image-container animate-fade-delay-3">
+                    <img src="https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Educational Resources" class="img-fluid rounded-lg shadow-lg">
+                    <div class="resource-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">@Model.Count()</div>
+                            <div class="stat-label">Available Resources</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">@Model.Select(r => r.Type).Distinct().Count()</div>
+                            <div class="stat-label">Resource Types</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    
+</div>
+
+<!-- Main Content -->
+<div class="container py-5">
     @if (!User.Identity.IsAuthenticated)
     {
         <div class="alert alert-info mb-4">
@@ -36,90 +67,204 @@
         </div>
     }
     
-    <div class="row mb-4">
-        <div class="col-12">
-            <ul class="nav nav-pills" id="resourceTabs">
-                <li class="nav-item">
-                    <a class="nav-link active" data-filter="all">All Resources</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-filter="Guide">Guides</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-filter="Tutorial">Tutorials</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-filter="Infographic">Infographics</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-filter="Document">Documents</a>
-                </li>
-            </ul>
+    <div class="filter-section mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <h5 class="mb-0 filter-title">Filter by Resource Type</h5>
+            </div>
+            <div class="col-md-8">
+                <ul class="nav nav-pills filter-tabs" id="resourceTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-filter="all">
+                            <i class="fas fa-th-large me-1"></i> All Resources
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-filter="Guide">
+                            <i class="fas fa-compass me-1"></i> Guides
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-filter="Tutorial">
+                            <i class="fas fa-chalkboard-teacher me-1"></i> Tutorials
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-filter="Infographic">
+                            <i class="fas fa-chart-pie me-1"></i> Infographics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-filter="Document">
+                            <i class="fas fa-file-alt me-1"></i> Documents
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
     
-    <div class="row" id="resourceGrid">
-        @foreach (var resource in Model)
+    <div class="resources-grid">
+        @if (Model.Any())
         {
-            <div class="col-md-6 col-lg-4 mb-4 resource-item" data-type="@resource.Type">
-                <div class="card h-100 book-card shadow-sm">
-                    <div class="card-header book-header @GetHeaderClass(resource.Type)">
-                        <h5 class="m-0 text-white">
-                            <i class="@GetResourceIcon(resource.Type) me-2"></i>
-                            @resource.Type
-                        </h5>
-                    </div>
+            <!-- Featured Resources Section -->
+            var featuredResources = Model.Where(r => r.ViewCount.HasValue && r.ViewCount > 10).Take(3).ToList();
+            
+            @if (featuredResources.Any())
+            {
+                <div class="featured-resources mb-5">
+                    <h3 class="section-heading">
+                        <i class="fas fa-star text-warning me-2"></i> Featured Resources
+                    </h3>
+                    <p class="text-muted mb-4">Popular resources that are frequently accessed by our community</p>
                     
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">@resource.Title</h5>
-                        <p class="card-text flex-grow-1">@(resource.Description.Length > 120 ? resource.Description.Substring(0, 120) + "..." : resource.Description)</p>
-                        
-                        <div class="mt-3">
-                            <small class="text-muted">
-                                <i class="far fa-calendar-alt me-1"></i> Added: @resource.DateAdded.ToString("MMM dd, yyyy")
-                                
-                                @if (resource.ViewCount.HasValue && resource.ViewCount > 0)
-                                {
-                                    <span class="ms-2">
-                                        <i class="far fa-eye me-1"></i> @resource.ViewCount views
-                                    </span>
-                                }
-                            </small>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <a href="@Url.Action("ViewResource", "LGU", new { id = resource.Id })" class="btn btn-primary">
-                                <i class="fas fa-book-open me-1"></i> Read More
-                            </a>
-                            
-                            @if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(resource.FileUrl))
-                            {
-                                <a href="@resource.FileUrl" download class="btn btn-success">
-                                    <i class="fas fa-download me-1"></i> Download
-                                </a>
-                            }
-                            else if (!string.IsNullOrEmpty(resource.FileUrl))
-                            {
-                                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#loginModal">
-                                    <i class="fas fa-download me-1"></i> Download
-                                </button>
-                            }
-                        </div>
+                    <div class="row">
+                        @foreach (var resource in featuredResources)
+                        {
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100 featured-card animate-on-scroll">
+                                    <div class="featured-badge">
+                                        <i class="fas fa-star"></i> Featured
+                                    </div>
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="featured-icon-bg @GetIconBgClass(resource.Type)">
+                                            <i class="@GetResourceIcon(resource.Type) featured-icon"></i>
+                                        </div>
+                                        <h4 class="card-title mt-3">@resource.Title</h4>
+                                        
+                                        @if (!string.IsNullOrEmpty(resource.Tags))
+                                        {
+                                            <div class="resource-tags mb-2">
+                                                @foreach (var tag in resource.Tags.Split(',').Take(3))
+                                                {
+                                                    <span class="tag-pill">@tag.Trim()</span>
+                                                }
+                                            </div>
+                                        }
+                                        
+                                        <p class="card-text flex-grow-1">@(resource.Description.Length > 100 ? resource.Description.Substring(0, 100) + "..." : resource.Description)</p>
+                                        
+                                        <a href="@Url.Action("ViewResource", "LGU", new { id = resource.Id })" class="btn btn-outline-primary mt-3">
+                                            <i class="fas fa-book-open me-1"></i> Explore Resource
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     </div>
+                </div>
+            }
+            
+            <!-- All Resources Section -->
+            <div class="all-resources">
+                <h3 class="section-heading">
+                    <i class="fas fa-book me-2"></i> Resource Library
+                </h3>
+                <p class="text-muted mb-4">Browse our complete collection of educational resources</p>
+                
+                <div class="row" id="resourceGrid">
+                    @foreach (var resource in Model)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4 resource-item" data-type="@resource.Type">
+                            <div class="card h-100 resource-card shadow-sm animate-on-scroll">
+                                <div class="card-header resource-header @GetHeaderClass(resource.Type)">
+                                    <div class="header-icon">
+                                        <i class="@GetResourceIcon(resource.Type)"></i>
+                                    </div>
+                                    <h5 class="header-text">@resource.Type</h5>
+                                </div>
+                                
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">@resource.Title</h5>
+                                    
+                                    @if (!string.IsNullOrEmpty(resource.Tags))
+                                    {
+                                        <div class="resource-tags mb-2">
+                                            @foreach (var tag in resource.Tags.Split(','))
+                                            {
+                                                <span class="tag-pill">@tag.Trim()</span>
+                                            }
+                                        </div>
+                                    }
+                                    
+                                    <p class="card-text flex-grow-1">@(resource.Description.Length > 120 ? resource.Description.Substring(0, 120) + "..." : resource.Description)</p>
+                                    
+                                    <div class="resource-meta">
+                                        <div class="meta-item">
+                                            <i class="far fa-calendar-alt"></i>
+                                            <span>@resource.DateAdded.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                        
+                                        @if (resource.ViewCount.HasValue && resource.ViewCount > 0)
+                                        {
+                                            <div class="meta-item">
+                                                <i class="far fa-eye"></i>
+                                                <span>@resource.ViewCount views</span>
+                                            </div>
+                                        }
+                                        
+                                        @if (resource.IsOfflineAccessible)
+                                        {
+                                            <div class="meta-item offline-badge" title="Available offline">
+                                                <i class="fas fa-wifi-slash"></i>
+                                                <span>Offline</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    
+                                    <div class="card-actions mt-3">
+                                        <a href="@Url.Action("ViewResource", "LGU", new { id = resource.Id })" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-book-open me-1"></i> Read More
+                                        </a>
+                                        
+                                        @if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(resource.FileUrl))
+                                        {
+                                            <a href="@resource.FileUrl" download class="btn btn-success btn-sm file-download-btn">
+                                                <i class="fas fa-download me-1"></i> Download
+                                                @if (!string.IsNullOrEmpty(resource.FileUrl))
+                                                {
+                                                    <span class="file-type">@GetFileType(resource.FileUrl)</span>
+                                                }
+                                            </a>
+                                        }
+                                        else if (!string.IsNullOrEmpty(resource.FileUrl))
+                                        {
+                                            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                                <i class="fas fa-download me-1"></i> Download
+                                                @if (!string.IsNullOrEmpty(resource.FileUrl))
+                                                {
+                                                    <span class="file-type">@GetFileType(resource.FileUrl)</span>
+                                                }
+                                            </button>
+                                        }
+                                        
+                                        @if (!string.IsNullOrEmpty(resource.ExternalUrl))
+                                        {
+                                            <a href="@resource.ExternalUrl" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-external-link-alt me-1"></i> External Link
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 my-4">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h4>No Resources Found</h4>
+                    <p class="text-muted">No educational resources are currently available.</p>
                 </div>
             </div>
         }
     </div>
-    
-    @if (!Model.Any())
-    {
-        <div class="text-center py-5 my-4">
-            <i class="fas fa-book fa-3x text-muted mb-3"></i>
-            <h4>No Resources Found</h4>
-            <p class="text-muted">No educational resources are currently available.</p>
-        </div>
-    }
-</div>
 
 <!-- Login Modal -->
 <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
@@ -148,91 +293,544 @@
     </div>
 </div>
 
+@if (User.IsInRole("LGU") || User.IsInRole("Admin")) 
+{
+    <a href="@Url.Action("CreateResource", "LGU")" class="create-resource-btn" title="Create New Resource">
+        <i class="fas fa-plus fa-lg"></i>
+    </a>
+}
+
 @section Styles {
     <style>
-        /* Book styling */
-        .book-card {
-            transition: all 0.3s;
-            border: none;
+        /* Hero Section */
+        .resource-library-hero {
+            background-color: #f8f9fa;
+            padding: 3rem 0 2rem;
+            position: relative;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .resource-library-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z' fill='%23545454' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5;
+            z-index: -1;
+        }
+        
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(84, 84, 84, 0.1);
+            color: #545454;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #545454;
+            margin-right: 0.75rem;
+            position: relative;
+        }
+        
+        .pulse-dot:after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid #545454;
+            animation: pulse 2s infinite;
+        }
+        
+        @@keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 1;
+            }
+            70% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+        }
+        
+        .hero-image-container {
+            position: relative;
+            border-radius: 12px;
             overflow: hidden;
         }
         
-        .book-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        .hero-image-container img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
         }
         
-        .book-header {
-            padding: 0.75rem 1.25rem;
+        .resource-stats {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 16px;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(4px);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            min-width: 100px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #545454;
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #696969;
+            margin-top: 4px;
+        }
+        
+        .search-container {
+            max-width: 500px;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .filter-title {
+            color: #545454;
+            font-weight: 600;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0;
+        }
+        
+        .filter-tabs .nav-link {
+            color: #545454;
+            background-color: #f8f9fa;
+            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            margin: 0;
             font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .filter-tabs .nav-link:hover {
+            background-color: #e9ecef;
+            transform: translateY(-2px);
+        }
+        
+        .filter-tabs .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Resource Cards */
+        .resources-grid {
+            margin-bottom: 2rem;
+        }
+        
+        .resource-card {
+            transition: all 0.3s;
+            border: none;
+            overflow: hidden;
+            height: 100%;
+            border-radius: 12px;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+        
+        .resource-header {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .header-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.1rem;
+            color: white;
+        }
+        
+        .header-text {
+            color: white;
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
         }
         
         .card-title {
-            font-weight: 600;
-            font-size: 1.1rem;
+            font-weight: 700;
+            font-size: 1.15rem;
             margin-bottom: 0.75rem;
+            color: #343a40;
+        }
+        
+        .card-text {
+            color: #6c757d;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .resource-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        .meta-item i {
+            margin-right: 6px;
+            opacity: 0.7;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         
         /* Resource type styling */
         .header-guide {
-            background-color: #4285F4;
+            background: linear-gradient(135deg, #4285F4, #5B8DEF);
         }
         
         .header-tutorial {
-            background-color: #0F9D58;
+            background: linear-gradient(135deg, #0F9D58, #1BB56E);
         }
         
         .header-infographic {
-            background-color: #DB4437;
+            background: linear-gradient(135deg, #DB4437, #E25D52);
         }
         
         .header-video {
-            background-color: #F4B400;
+            background: linear-gradient(135deg, #F4B400, #F6C43D);
         }
         
         .header-document {
-            background-color: #6C757D;
+            background: linear-gradient(135deg, #6C757D, #86909A);
         }
         
         .header-faq {
-            background-color: #9C27B0;
+            background: linear-gradient(135deg, #9C27B0, #AB47BC);
         }
         
         .header-emergencycontact {
-            background-color: #DC3545;
+            background: linear-gradient(135deg, #DC3545, #E35D6A);
         }
         
-        /* Filter tabs */
-        .nav-pills {
-            margin-bottom: 1.5rem;
+        /* Empty State */
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
         }
         
-        .nav-pills .nav-link {
-            color: #495057;
+        .empty-icon {
+            width: 80px;
+            height: 80px;
             background-color: #f8f9fa;
-            border-radius: 30px;
-            padding: .5rem 1rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            font-size: 0.9rem;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #6c757d;
         }
         
-        .nav-pills .nav-link.active {
-            background-color: #0d6efd;
-            color: white;
+        /* Animations */
+        .animate-fade {
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
         }
         
-        /* Media queries for responsive design */
+        .animate-fade-delay {
+            opacity: 0;
+            animation: fadeIn 1s ease 0.3s forwards;
+        }
+        
+        .animate-fade-delay-2 {
+            opacity: 0;
+            animation: fadeIn 1s ease 0.6s forwards;
+        }
+        
+        .animate-fade-delay-3 {
+            opacity: 0;
+            animation: fadeIn 1s ease 0.9s forwards;
+        }
+        
+        .animate-text {
+            opacity: 0;
+            animation: fadeIn 1s ease 0.1s forwards;
+        }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .animate-on-scroll.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Search styles */
+        .highlight {
+            background-color: rgba(13, 110, 253, 0.2);
+            padding: 0 2px;
+            border-radius: 2px;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        
+        .search-results-info {
+            background-color: #f8f9fa;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 3px solid #0d6efd;
+            font-size: 0.95rem;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .reset-search {
+            padding: 0;
+            text-decoration: none;
+        }
+        
+        .reset-search:hover {
+            text-decoration: underline;
+        }
+        
+        .header-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Responsive adjustments */
         @@media (max-width: 768px) {
-            .nav-pills .nav-link {
-                padding: .5rem .75rem;
-                font-size: 0.9rem;
+            .filter-tabs .nav-link {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
             }
             
             .card-title {
-                font-size: 1.1rem;
+                font-size: 1.05rem;
             }
+            
+            .stat-item {
+                min-width: 80px;
+                padding: 8px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .hero-image-container {
+                margin-top: 2rem;
+            }
+        }
+        
+        /* Resource tags */
+        .resource-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .tag-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: lowercase;
+        }
+        
+        .offline-badge {
+            background-color: rgba(108, 117, 125, 0.1);
+            padding: 3px 8px;
+            border-radius: 12px;
+            color: #6c757d;
+        }
+        
+        .file-download-btn .file-type {
+            font-size: 0.7rem;
+            background-color: rgba(255, 255, 255, 0.3);
+            padding: 1px 4px;
+            border-radius: 4px;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+        
+        /* Featured resources */
+        .section-heading {
+            margin-bottom: 0.5rem;
+            color: #343a40;
+            font-weight: 600;
+        }
+        
+        .featured-card {
+            border: none;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .featured-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .featured-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: rgba(255, 193, 7, 0.9);
+            color: #343a40;
+            padding: 5px 10px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1;
+        }
+        
+        .featured-icon-bg {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .featured-icon {
+            font-size: 1.8rem;
+            color: white;
+        }
+        
+        /* Icon backgrounds for featured resources */
+        .icon-bg-guide {
+            background: linear-gradient(135deg, #4285F4, #5B8DEF);
+        }
+        
+        .icon-bg-tutorial {
+            background: linear-gradient(135deg, #0F9D58, #1BB56E);
+        }
+        
+        .icon-bg-infographic {
+            background: linear-gradient(135deg, #DB4437, #E25D52);
+        }
+        
+        .icon-bg-video {
+            background: linear-gradient(135deg, #F4B400, #F6C43D);
+        }
+        
+        .icon-bg-document {
+            background: linear-gradient(135deg, #6C757D, #86909A);
+        }
+        
+        .icon-bg-faq {
+            background: linear-gradient(135deg, #9C27B0, #AB47BC);
+        }
+        
+        .icon-bg-emergencycontact {
+            background: linear-gradient(135deg, #DC3545, #E35D6A);
+        }
+        
+        /* LGU Create Button */
+        .create-resource-btn {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+        
+        .create-resource-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(13, 110, 253, 0.4);
+            color: white;
         }
     </style>
 }
@@ -240,23 +838,61 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Filter resources by type
-            $('#resourceTabs a').on('click', function() {
+            // Initialize animations for elements
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+            
+            document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Filter resources by type with smooth transitions
+            $('#resourceTabs a').on('click', function(e) {
+                e.preventDefault();
                 const filter = $(this).data('filter');
                 
-                // Update active tab
+                // Update active tab with animation
                 $('#resourceTabs a').removeClass('active');
                 $(this).addClass('active');
                 
+                // Animate the filtering
                 if (filter === 'all') {
-                    $('.resource-item').show();
+                    $('.resource-item').each(function(i) {
+                        const card = $(this);
+                        setTimeout(function() {
+                            card.fadeIn(300).css('transform', 'translateY(0)');
+                        }, i * 50);
+                    });
                 } else {
                     $('.resource-item').hide();
-                    $(`.resource-item[data-type="${filter}"]`).show();
+                    $(`.resource-item[data-type="${filter}"]`).each(function(i) {
+                        const card = $(this);
+                        setTimeout(function() {
+                            card.fadeIn(300).css('transform', 'translateY(0)');
+                        }, i * 50);
+                    });
                 }
+                
+                // Update the URL hash for sharing/bookmarking
+                window.location.hash = filter;
             });
             
-            // Search functionality
+            // Check URL hash on page load for direct filter access
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                if (hash) {
+                    $(`#resourceTabs a[data-filter="${hash}"]`).trigger('click');
+                }
+            }
+            
+            // Enhanced search functionality with highlighting
             $('#searchBtn').on('click', function() {
                 performSearch();
             });
@@ -271,32 +907,103 @@
                 const searchTerm = $('#resourceSearch').val().toLowerCase();
                 
                 if (searchTerm.length > 0) {
-                    $('.resource-item').each(function() {
-                        const title = $(this).find('.card-title').text().toLowerCase();
-                        const desc = $(this).find('.card-text').text().toLowerCase();
-                        
-                        if (title.includes(searchTerm) || desc.includes(searchTerm)) {
-                            $(this).show();
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                    
                     // Reset filter tabs when searching
                     $('#resourceTabs a').removeClass('active');
                     $('#resourceTabs a[data-filter="all"]').addClass('active');
-                } else {
-                    // If search is cleared, show all or respect current filter
-                    const currentFilter = $('#resourceTabs a.active').data('filter');
                     
-                    if (currentFilter === 'all') {
-                        $('.resource-item').show();
+                    // Hide all items first
+                    $('.resource-item').hide();
+                    
+                    // Show matching items with animation
+                    $('.resource-item').each(function(i) {
+                        const item = $(this);
+                        const title = item.find('.card-title').text().toLowerCase();
+                        const desc = item.find('.card-text').text().toLowerCase();
+                        
+                        if (title.includes(searchTerm) || desc.includes(searchTerm)) {
+                            setTimeout(function() {
+                                item.fadeIn(300).css('transform', 'translateY(0)');
+                                
+                                // Highlight matching text
+                                highlightText(item.find('.card-title'), searchTerm);
+                                highlightText(item.find('.card-text'), searchTerm);
+                            }, i * 50);
+                        }
+                    });
+                    
+                    // Show search results count
+                    const resultCount = $('.resource-item:visible').length;
+                    if ($('.search-results-info').length === 0) {
+                        $('.filter-section').after(`
+                            <div class="search-results-info mb-3 fade-in">
+                                Found <strong>${resultCount}</strong> results for "<span class="text-primary">${searchTerm}</span>"
+                                <button class="btn btn-sm btn-link reset-search">Clear search</button>
+                            </div>
+                        `);
                     } else {
-                        $('.resource-item').hide();
-                        $(`.resource-item[data-type="${currentFilter}"]`).show();
+                        $('.search-results-info').html(`
+                            Found <strong>${resultCount}</strong> results for "<span class="text-primary">${searchTerm}</span>"
+                            <button class="btn btn-sm btn-link reset-search">Clear search</button>
+                        `);
                     }
+                } else {
+                    resetSearch();
                 }
             }
+            
+            // Clear search results and highlighting
+            $(document).on('click', '.reset-search', function() {
+                resetSearch();
+            });
+            
+            function resetSearch() {
+                $('#resourceSearch').val('');
+                $('.search-results-info').remove();
+                
+                // Reset text highlighting
+                $('.card-title, .card-text').each(function() {
+                    const element = $(this);
+                    element.html(element.text());
+                });
+                
+                // Show all resources or respect current filter
+                const currentFilter = $('#resourceTabs a.active').data('filter');
+                
+                if (currentFilter === 'all' || !currentFilter) {
+                    $('.resource-item').each(function(i) {
+                        const card = $(this);
+                        setTimeout(function() {
+                            card.fadeIn(200);
+                        }, i * 30);
+                    });
+                } else {
+                    $('.resource-item').hide();
+                    $(`.resource-item[data-type="${currentFilter}"]`).each(function(i) {
+                        const card = $(this);
+                        setTimeout(function() {
+                            card.fadeIn(200);
+                        }, i * 30);
+                    });
+                }
+            }
+            
+            // Function to highlight matching text
+            function highlightText(element, term) {
+                const text = element.text();
+                const regex = new RegExp('(' + term + ')', 'gi');
+                const highlightedText = text.replace(regex, '<span class="highlight">$1</span>');
+                element.html(highlightedText);
+            }
+            
+            // Resource card hover effects
+            $('.resource-card').hover(
+                function() {
+                    $(this).find('.header-icon').css('transform', 'scale(1.1) rotate(5deg)');
+                },
+                function() {
+                    $(this).find('.header-icon').css('transform', 'scale(1) rotate(0)');
+                }
+            );
         });
     </script>
 }
@@ -305,6 +1012,11 @@
     private string GetHeaderClass(ResourceType type)
     {
         return "header-" + type.ToString().ToLower();
+    }
+    
+    private string GetIconBgClass(ResourceType type)
+    {
+        return "icon-bg-" + type.ToString().ToLower();
     }
     
     private string GetResourceIcon(ResourceType type)
@@ -328,5 +1040,14 @@
             default:
                 return "fas fa-file";
         }
+    }
+    
+    private string GetFileType(string fileUrl)
+    {
+        if (string.IsNullOrEmpty(fileUrl))
+            return "";
+            
+        string extension = System.IO.Path.GetExtension(fileUrl).TrimStart('.');
+        return extension.ToUpper();
     }
 }

@@ -5,12 +5,12 @@
 }
 
 <div class="container-fluid px-lg-4 py-4">
-    <div class="row">
+<div class="row">
         <div class="col-12">
             <!-- Main Incident Card -->
             <div class="card shadow-sm mb-4 border-0 incident-card">
                 <div class="card-header d-flex justify-content-between align-items-center bg-white border-bottom py-3">
-                    <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center">
                         @{
                             var headerColor = Model.Status == ReportStatus.Pending ? "warning" :
                                              Model.Status == ReportStatus.Verified ? "info" :
@@ -38,36 +38,36 @@
                         </div>
                     </div>
                     <div class="text-end d-flex flex-column align-items-end">
-                        @switch (Model.Severity)
-                        {
-                            case SeverityLevel.Low:
+                            @switch (Model.Severity)
+                            {
+                                case SeverityLevel.Low:
                                 <span class="severity-badge severity-low">
                                     <i class="fas fa-exclamation-circle me-1"></i>
                                     Low Severity
                                 </span>
-                                break;
-                            case SeverityLevel.Medium:
+                                    break;
+                                case SeverityLevel.Medium:
                                 <span class="severity-badge severity-medium">
                                     <i class="fas fa-exclamation-circle me-1"></i>
                                     Medium Severity
                                 </span>
-                                break;
-                            case SeverityLevel.High:
+                                    break;
+                                case SeverityLevel.High:
                                 <span class="severity-badge severity-high">
                                     <i class="fas fa-exclamation-circle me-1"></i>
                                     High Severity
                                 </span>
-                                break;
-                            case SeverityLevel.Critical:
+                                    break;
+                                case SeverityLevel.Critical:
                                 <span class="severity-badge severity-critical">
                                     <i class="fas fa-exclamation-triangle me-1"></i>
                                     Critical Severity
                                 </span>
-                                break;
-                        }
+                                    break;
+                            }
+                        </div>
                     </div>
-                </div>
-                
+                    
                 <div class="card-body">
                     <!-- Key Information Section -->
                     <div class="d-flex justify-content-between mb-4 key-info-section">
@@ -90,45 +90,45 @@
                         </div>
                         <div class="d-flex gap-2 align-items-center">
                             <div class="incident-type">
-                                @switch (Model.Type)
-                                {
-                                    case DisasterType.Earthquake:
+                            @switch (Model.Type)
+                            {
+                                case DisasterType.Earthquake:
                                         <div class="type-badge bg-gradient-danger text-white">
                                             <i class="fas fa-house-damage me-2"></i>Earthquake
                                         </div>
-                                        break;
-                                    case DisasterType.Flood:
+                                    break;
+                                case DisasterType.Flood:
                                         <div class="type-badge bg-gradient-primary text-white">
                                             <i class="fas fa-water me-2"></i>Flood
                                         </div>
-                                        break;
-                                    case DisasterType.Fire:
+                                    break;
+                                case DisasterType.Fire:
                                         <div class="type-badge bg-gradient-warning text-white">
                                             <i class="fas fa-fire me-2"></i>Fire
                                         </div>
-                                        break;
-                                    case DisasterType.Landslide:
+                                    break;
+                                case DisasterType.Landslide:
                                         <div class="type-badge bg-gradient-secondary text-white">
                                             <i class="fas fa-mountain me-2"></i>Landslide
                                         </div>
-                                        break;
-                                    case DisasterType.Storm:
+                                    break;
+                                case DisasterType.Storm:
                                         <div class="type-badge bg-gradient-info text-white">
                                             <i class="fas fa-cloud-showers-heavy me-2"></i>Storm
                                         </div>
-                                        break;
-                                    case DisasterType.Accident:
+                                    break;
+                                case DisasterType.Accident:
                                         <div class="type-badge bg-gradient-dark text-white">
                                             <i class="fas fa-car-crash me-2"></i>Accident
                                         </div>
-                                        break;
-                                    default:
+                                    break;
+                                default:
                                         <div class="type-badge bg-gradient-secondary text-white">
                                             <i class="fas fa-exclamation-circle me-2"></i>Other
                                         </div>
-                                        break;
-                                }
-                            </div>
+                                    break;
+                            }
+                        </div>
                             <button type="button" class="btn btn-action btn-timeline" data-bs-toggle="modal" data-bs-target="#timelineModal">
                                 <i class="fas fa-history me-1"></i> Timeline
                             </button>
@@ -145,9 +145,9 @@
                         </h6>
                         <div class="section-content">
                             <p class="mb-0 text-description">@Model.Description</p>
-                        </div>
-                    </div>
-                    
+                </div>
+                </div>
+                
                     <!-- Location Details Section -->
                     <div class="content-section mb-4">
                         <h6 class="section-title">
@@ -155,37 +155,37 @@
                         </h6>
                         <div class="section-content">
                             <div class="row g-3">
-                                <div class="col-md-6">
+                        <div class="col-md-6">
                                     <div class="location-item">
                                         <span class="fw-bold d-block fs-7 text-secondary">Full Address</span>
                                         <span class="location-text">@Model.Location</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
                                     <div class="location-item">
                                         <span class="fw-bold d-block fs-7 text-secondary">Coordinates</span>
                                         <span class="small location-text">@Model.Latitude.ToString("F6"), @Model.Longitude.ToString("F6")</span>
-                                    </div>
+                            </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="location-item">
                                         <span class="fw-bold d-block fs-7 text-secondary">Purok/Street</span>
                                         <span class="location-text">@(String.IsNullOrEmpty(Model.Purok) || Model.Purok == "Unknown" ? "Not specified" : Model.Purok)</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
+                        </div>
+                    </div>
+                        <div class="col-md-3">
                                     <div class="location-item">
                                         <span class="fw-bold d-block fs-7 text-secondary">Barangay</span>
                                         <span class="location-text">@(String.IsNullOrEmpty(Model.Barangay) || Model.Barangay == "Unknown" ? "Not specified" : Model.Barangay)</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                                     <div class="location-item">
                                         <span class="fw-bold d-block fs-7 text-secondary">City/Municipality</span>
                                         <span class="location-text">@(String.IsNullOrEmpty(Model.City) || Model.City == "Unknown" ? "Not specified" : Model.City)</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                                     <div class="location-item">
                                         <span class="fw-bold d-block fs-7 text-secondary">Country</span>
                                         <span class="location-text">@Model.Country</span>
@@ -213,8 +213,8 @@
                                                 <i class="fas fa-search-plus"></i>
                                             </div>
                                         </a>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
                             }
 
                             <!-- Map inside location section -->
@@ -223,81 +223,23 @@
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-map-marked-alt text-primary me-2"></i>
                                         <h6 class="section-subtitle mb-0">Map View</h6>
-                                    </div>
-                                </div>
-                                <div id="map" class="map-preview rounded"></div>
                             </div>
                         </div>
+                                <div id="map" class="map-preview rounded"></div>
+                        </div>
                     </div>
-                    
+                </div>
+                
                     <!-- Additional Information Section -->
-                    @if (!String.IsNullOrEmpty(Model.AdditionalInfo))
-                    {
+                @if (!String.IsNullOrEmpty(Model.AdditionalInfo))
+                {
                         <div class="content-section mb-4">
                             <h6 class="section-title">
                                 <i class="fas fa-info-circle me-2 text-primary"></i>Additional Information
                             </h6>
                             <div class="section-content">
                                 <p class="mb-0 text-description">@Model.AdditionalInfo</p>
-                            </div>
-                        </div>
-                    }
-
-                    <!-- Status History Section -->
-                    <div class="content-section mb-4">
-                        <h6 class="section-title">
-                            <i class="fas fa-history me-2 text-primary"></i>Status History
-                        </h6>
-                        <div class="section-content">
-                            <div class="timeline">
-                                @if (Model.DateVerified.HasValue)
-                                {
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker bg-info"></div>
-                                        <div class="timeline-content">
-                                            <h6 class="mb-0 fw-bold fs-7">Report Verified</h6>
-                                            <small class="text-muted">@Model.DateVerified.Value.ToString("yyyy-MM-dd HH:mm")</small>
-                                        </div>
-                                    </div>
-                                }
-                                @if (Model.AssignedAt.HasValue && Model.AssignedTo != null)
-                                {
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker bg-primary"></div>
-                                        <div class="timeline-content">
-                                            <h6 class="mb-0 fw-bold fs-7">Assigned to @Model.AssignedTo.OrganizationName</h6>
-                                            <small class="text-muted">@Model.AssignedAt.Value.ToString("yyyy-MM-dd HH:mm")</small>
-                                        </div>
-                                    </div>
-                                }
-                                @if (Model.DateInProgress.HasValue)
-                                {
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker bg-primary"></div>
-                                        <div class="timeline-content">
-                                            <h6 class="mb-0 fw-bold fs-7">Response Started</h6>
-                                            <small class="text-muted">@Model.DateInProgress.Value.ToString("yyyy-MM-dd HH:mm")</small>
-                                        </div>
-                                    </div>
-                                }
-                                @if (Model.ResolvedAt.HasValue)
-                                {
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker bg-success"></div>
-                                        <div class="timeline-content">
-                                            <h6 class="mb-0 fw-bold fs-7">Report Resolved</h6>
-                                            <small class="text-muted">@Model.ResolvedAt.Value.ToString("yyyy-MM-dd HH:mm")</small>
-                                            @if (!String.IsNullOrEmpty(Model.Resolution))
-                                            {
-                                                <p class="mb-0 mt-1 text-description">@Model.Resolution</p>
-                                            }
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                    
+                                                        </div>                        </div>                    }                    <!-- Status History Section -->                    <div class="content-section mb-4">                        <h6 class="section-title">                            <i class="fas fa-history me-2 text-primary"></i>Status History                        </h6>                        <div class="section-content">                            <div class="timeline">                                @if (Model.DateVerified.HasValue)                                {                                    <div class="timeline-item">                                        <div class="timeline-marker bg-info"></div>                                        <div class="timeline-content">                                            <h6 class="mb-0 fw-bold fs-7">Report Verified</h6>                                            <small class="text-muted">@Model.DateVerified.Value.ToString("yyyy-MM-dd HH:mm")</small>                                        </div>                                    </div>                                }                                @if (Model.AssignedAt.HasValue && Model.AssignedTo != null)                                {                                    <div class="timeline-item">                                        <div class="timeline-marker bg-primary"></div>                                        <div class="timeline-content">                                            <h6 class="mb-0 fw-bold fs-7">Assigned to @Model.AssignedTo.OrganizationName</h6>                                            <small class="text-muted">@Model.AssignedAt.Value.ToString("yyyy-MM-dd HH:mm")</small>                                        </div>                                    </div>                                }                                @if (Model.DateInProgress.HasValue)                                {                                    <div class="timeline-item">                                        <div class="timeline-marker bg-primary"></div>                                        <div class="timeline-content">                                            <h6 class="mb-0 fw-bold fs-7">Response Started</h6>                                            <small class="text-muted">@Model.DateInProgress.Value.ToString("yyyy-MM-dd HH:mm")</small>                                        </div>                                    </div>                                }                                @if (Model.ResolvedAt.HasValue)                                {                                    <div class="timeline-item">                                        <div class="timeline-marker bg-success"></div>                                        <div class="timeline-content">                                            <h6 class="mb-0 fw-bold fs-7">Report Resolved</h6>                                            <small class="text-muted">@Model.ResolvedAt.Value.ToString("yyyy-MM-dd HH:mm")</small>                                            @if (!String.IsNullOrEmpty(Model.Resolution))                                            {                                                <p class="mb-0 mt-1 text-description">@Model.Resolution</p>                                            }                                        </div>                                    </div>                                }                            </div>                        </div>                    </div>
                     <!-- Action Buttons -->
                     <div class="d-flex flex-wrap gap-3 justify-content-between mt-4 action-buttons-container">
                         <div class="d-flex gap-2">
@@ -323,9 +265,9 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
+            </div>
+        </div>
+        
 <!-- Status Timeline Modal -->
 <div class="modal fade" id="timelineModal" tabindex="-1" aria-labelledby="timelineModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

@@ -12,43 +12,24 @@
     }
 }
 
-<!-- Hero Section -->
-<div class="hero-section mb-4">
-    <div class="overlay"></div>
-    <div class="container-fluid position-relative z-index-1">
-        <div class="row align-items-center py-4">
-            <div class="col-lg-6">
-                <h1 class="display-4 text-white fw-bold mb-2">Evacuation Sites</h1>
-                <p class="lead text-white mb-4">Find safe locations near you in case of emergencies</p>
-                <button id="locateMe" class="btn btn-light btn-lg px-4 d-flex align-items-center">
-                    <i class="fas fa-location-arrow me-2"></i> Find Sites Near Me
-                </button>
-            </div>
-            <div class="col-lg-6 d-none d-lg-block">
-                <div class="floating-image">
-                    <img src="/img/evacuation-illustration.svg" alt="Evacuation Site Illustration" onerror="this.src='https://placehold.co/600x400/3498db/white?text=Evacuation+Sites';this.onerror='';" class="img-fluid">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Minimalist Hero Section --><div class="hero-section-minimal py-4 bg-white shadow-sm mb-4">    <div class="container-fluid">        <div class="row align-items-center py-3">            <div class="col-lg-8">                <h1 class="fw-bold mb-2">Evacuation Sites</h1>                <p class="text-muted mb-3 lead">Find safe locations near you in case of emergencies</p>                <button id="locateMe" class="btn btn-primary px-4 rounded-pill d-flex align-items-center">                    <i class="fas fa-location-arrow me-2"></i> Find Sites Near Me                </button>            </div>        </div>    </div></div>
 
 <div class="container-fluid px-4">
     <div class="row">
         <div class="col-lg-8 mb-4">
             <!-- Map Card with enhanced design -->
             <div class="card border-0 shadow-lg rounded-lg overflow-hidden">
-                <div class="card-header bg-gradient-primary text-white p-3 d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0 d-flex align-items-center">
-                        <i class="fas fa-map-marked-alt me-2"></i>
-                        Interactive 3D Map
+                <div class="card-header bg-white p-3 d-flex justify-content-between align-items-center border-0">
+                    <h3 class="card-title mb-0 d-flex align-items-center fs-5 fw-bold text-dark">
+                        <i class="fas fa-map-marked-alt me-2 text-primary"></i>
+                        Interactive Map
                     </h3>
-                    <div class="d-flex">
+                    <div class="d-flex map-header-controls">
                         <div class="dropdown me-2">
-                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="mapViewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-layer-group me-1"></i> Map View
+                            <button class="btn btn-sm dropdown-toggle rounded-pill map-style-btn" type="button" id="mapViewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-layer-group me-1"></i> Map Style
                             </button>
-                            <ul class="dropdown-menu" aria-labelledby="mapViewDropdown">
+                            <ul class="dropdown-menu shadow border-0 map-style-menu" aria-labelledby="mapViewDropdown">
                                 <li><a class="dropdown-item active" href="#" data-map-style="streets-v11"><i class="fas fa-road me-2"></i>Streets</a></li>
                                 <li><a class="dropdown-item" href="#" data-map-style="satellite-v9"><i class="fas fa-satellite me-2"></i>Satellite</a></li>
                                 <li><a class="dropdown-item" href="#" data-map-style="light-v10"><i class="fas fa-sun me-2"></i>Light</a></li>
@@ -59,12 +40,12 @@
                 </div>
                 <div class="card-body p-0 position-relative">
                     <div id="map" class="map-container"></div>
-                    <div class="map-controls position-absolute p-3">
-                        <button id="toggle3D" class="btn btn-sm btn-primary mb-2 d-block w-100" title="Toggle 3D View">
+                    <div class="map-controls position-absolute">
+                        <button id="toggle3D" class="btn btn-sm btn-primary mb-2 d-block w-100 rounded-pill" title="Toggle 3D View">
                             <i class="fas fa-cube me-1"></i> 3D View
                         </button>
-                        <button id="zoomToFit" class="btn btn-sm btn-light mb-2 d-block w-100" title="Zoom to fit all sites">
-                            <i class="fas fa-compress-arrows-alt"></i>
+                        <button id="zoomToFit" class="btn btn-sm btn-outline-primary mb-2 d-block w-100 rounded-pill" title="Zoom to fit all sites">
+                            <i class="fas fa-compress-arrows-alt"></i> Fit View
                         </button>
                     </div>
                 </div>
@@ -72,214 +53,25 @@
         </div>
 
         <div class="col-lg-4">
-            <!-- Filters Card with enhanced design -->
-            <div class="card border-0 shadow-lg rounded-lg mb-4">
-                <div class="card-header bg-gradient-info text-white p-3">
-                    <h3 class="card-title mb-0 d-flex align-items-center">
-                        <i class="fas fa-filter me-2"></i>
-                        Search Filters
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-group mb-4">
-                        <label class="form-label d-flex justify-content-between">
-                            <span>Distance Range</span>
-                            <span class="badge bg-primary" id="distanceValue">10km</span>
-                        </label>
-                        <input type="range" class="form-range custom-range" id="distanceRange" min="1" max="50" value="10">
-                        <div class="d-flex justify-content-between small text-muted">
-                            <span>1km</span>
-                            <span>25km</span>
-                            <span>50km</span>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group mb-4">
-                        <label class="form-label">Site Type</label>
-                        <select id="siteType" class="form-select">
-                            <option value="">All Types</option>
-                            <option value="FloodEvacuation">Flood Evacuation</option>
-                            <option value="FireEvacuation">Fire Evacuation</option>
-                            <option value="EarthquakeEvacuation">Earthquake Evacuation</option>
-                            <option value="TyphoonEvacuation">Typhoon Evacuation</option>
-                            <option value="MultiHazard">Multi-Hazard</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group mb-4">
-                        <label class="form-label">Facilities Available</label>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <div class="form-check custom-checkbox">
-                                    <input type="checkbox" class="form-check-input facility-filter" id="hasWater" value="water">
-                                    <label class="form-check-label" for="hasWater">
-                                        <i class="fas fa-tint text-primary me-1"></i> Water Supply
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-check custom-checkbox">
-                                    <input type="checkbox" class="form-check-input facility-filter" id="hasElectricity" value="electricity">
-                                    <label class="form-check-label" for="hasElectricity">
-                                        <i class="fas fa-bolt text-warning me-1"></i> Electricity
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-check custom-checkbox">
-                                    <input type="checkbox" class="form-check-input facility-filter" id="hasMedical" value="medical">
-                                    <label class="form-check-label" for="hasMedical">
-                                        <i class="fas fa-medkit text-danger me-1"></i> Medical
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="form-check custom-checkbox">
-                                    <input type="checkbox" class="form-check-input facility-filter" id="isWheelchair" value="wheelchair">
-                                    <label class="form-check-label" for="isWheelchair">
-                                        <i class="fas fa-wheelchair text-success me-1"></i> Accessible
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button id="applyFilters" class="btn btn-primary w-100">
-                        <i class="fas fa-search me-2"></i> Search Evacuation Sites
-                    </button>
-                </div>
-            </div>
+                        <!-- Filters Card (Minimalist) -->            <div class="card border-0 shadow-sm rounded-lg mb-4">                <div class="card-header bg-white p-3 border-bottom">                    <h3 class="card-title mb-0 d-flex align-items-center fs-5 text-dark">                        <i class="fas fa-filter me-2 text-primary"></i>                        Filters                    </h3>                </div>                <div class="card-body">                    <div class="form-group mb-3">                        <label class="form-label d-flex justify-content-between">                            <span>Distance</span>                            <span class="text-primary" id="distanceValue">10km</span>                        </label>                        <input type="range" class="form-range custom-range" id="distanceRange" min="1" max="50" value="10">                        <div class="d-flex justify-content-between small text-muted">                            <span>1km</span>                            <span>50km</span>                        </div>                    </div>                                        <div class="form-group mb-3">                        <label class="form-label">Site Type</label>                        <select id="siteType" class="form-select">                            <option value="">All Types</option>                            <option value="FloodEvacuation">Flood Evacuation</option>                            <option value="FireEvacuation">Fire Evacuation</option>                            <option value="EarthquakeEvacuation">Earthquake Evacuation</option>                            <option value="TyphoonEvacuation">Typhoon Evacuation</option>                            <option value="MultiHazard">Multi-Hazard</option>                        </select>                    </div>                                        <div class="form-group mb-3">                        <label class="form-label">Facilities</label>                        <div class="row g-2">                            <div class="col-6">                                <div class="form-check custom-checkbox">                                    <input type="checkbox" class="form-check-input facility-filter" id="hasWater" value="water">                                    <label class="form-check-label" for="hasWater">                                        <i class="fas fa-tint text-primary me-1"></i> Water Supply                                    </label>                                </div>                            </div>                            <div class="col-6">                                <div class="form-check custom-checkbox">                                    <input type="checkbox" class="form-check-input facility-filter" id="hasElectricity" value="electricity">                                    <label class="form-check-label" for="hasElectricity">                                        <i class="fas fa-bolt text-warning me-1"></i> Electricity                                    </label>                                </div>                            </div>                            <div class="col-6">                                <div class="form-check custom-checkbox">                                    <input type="checkbox" class="form-check-input facility-filter" id="hasMedical" value="medical">                                    <label class="form-check-label" for="hasMedical">                                        <i class="fas fa-medkit text-danger me-1"></i> Medical                                    </label>                                </div>                            </div>                            <div class="col-6">                                <div class="form-check custom-checkbox">                                    <input type="checkbox" class="form-check-input facility-filter" id="isWheelchair" value="wheelchair">                                    <label class="form-check-label" for="isWheelchair">                                        <i class="fas fa-wheelchair text-success me-1"></i> Accessible                                    </label>                                </div>                            </div>                        </div>                    </div>                                        <button id="applyFilters" class="btn btn-primary w-100">                        <i class="fas fa-search me-2"></i> Search Sites                    </button>                </div>            </div>
             
-            <!-- Nearby Sites List with enhanced design -->
-            <div class="card border-0 shadow-lg rounded-lg">
-                <div class="card-header bg-gradient-success text-white p-3 d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0 d-flex align-items-center">
-                        <i class="fas fa-list me-2"></i>
-                        Nearby Sites
-                    </h3>
-                    <span class="badge bg-light text-dark" id="siteCount">0</span>
-                </div>
-                <div class="card-body p-0">
-                    <div id="sitesList" class="site-list-container">
-                        <!-- Sites will be loaded here -->
-                        <div class="text-center py-5">
-                            <div class="spinner-border text-primary mb-3" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="text-muted mb-0">Finding evacuation sites near you...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Site Detail Modal with improved design -->
-<div class="modal fade" id="siteDetailModal" tabindex="-1" aria-labelledby="siteDetailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-gradient-primary text-white border-0">
-                <h5 class="modal-title" id="siteDetailModalLabel">Evacuation Site Details</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-0">
-                <div class="row g-0">
-                    <div class="col-md-6">
-                        <div id="modalMap" class="modal-map-container"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-4">
-                            <h4 id="siteName" class="mb-1"></h4>
-                            <div class="mb-3">
-                                <span id="siteType" class="badge bg-info me-2"></span>
-                                <span id="siteDistance" class="badge bg-secondary"></span>
-                            </div>
-                            
-                            <div class="site-details mb-4">
-                                <div class="d-flex mb-2">
-                                    <div class="icon-circle bg-light me-3">
-                                        <i class="fas fa-map-marker-alt text-danger"></i>
-                                    </div>
-                                    <div>
-                                        <p class="mb-0 small text-muted">Address</p>
-                                        <p id="siteAddress" class="mb-0"></p>
-                                    </div>
-                                </div>
-                                <div class="d-flex mb-2">
-                                    <div class="icon-circle bg-light me-3">
-                                        <i class="fas fa-users text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <p class="mb-0 small text-muted">Capacity</p>
-                                        <p id="siteCapacity" class="mb-0"></p>
-                                    </div>
-                                </div>
-                                <div class="d-flex mb-2">
-                                    <div class="icon-circle bg-light me-3">
-                                        <i class="fas fa-phone text-success"></i>
-                                    </div>
-                                    <div>
-                                        <p class="mb-0 small text-muted">Contact</p>
-                                        <p id="contactInfo" class="mb-0">Loading...</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <h6 class="mb-3 text-primary">Available Facilities</h6>
-                            <div id="siteFacilities" class="row g-2 mb-4">
-                                <!-- Facilities will be loaded here -->
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <button id="getDirections" class="btn btn-success">
-                                    <i class="fas fa-directions me-2"></i> Get Directions
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                    <i class="fas fa-times me-2"></i> Close
-                                </button>
+                        <!-- Nearby Sites List (Minimalist) -->            <div class="card border-0 shadow-sm rounded-lg">                <div class="card-header bg-white p-3 border-bottom d-flex justify-content-between align-items-center">                    <h3 class="card-title mb-0 d-flex align-items-center fs-5 text-dark">                        <i class="fas fa-list me-2 text-primary"></i>                        Nearby Sites                    </h3>                    <span class="badge bg-primary rounded-pill" id="siteCount">0</span>                </div>                <div class="card-body p-0">                    <div id="sitesList" class="site-list-container">                        <!-- Sites will be loaded here -->                        <div class="text-center py-5">                            <div class="spinner-border text-primary mb-3" role="status">                                <span class="visually-hidden">Loading...</span>                            </div>                            <p class="text-muted mb-0">Finding evacuation sites near you...</p>                        </div>                    </div>                </div>            </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                    
+<!-- Site Detail Modal (Minimalist) --><div class="modal fade" id="siteDetailModal" tabindex="-1" aria-labelledby="siteDetailModalLabel" aria-hidden="true">    <div class="modal-dialog modal-lg modal-dialog-centered">        <div class="modal-content border-0 shadow">            <div class="modal-header bg-white">                <h5 class="modal-title fw-bold" id="siteDetailModalLabel">Evacuation Site Details</h5>                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>            </div>            <div class="modal-body p-0">                <div class="row g-0">                    <div class="col-md-6">                        <div id="modalMap" class="modal-map-container"></div>                    </div>                    <div class="col-md-6">                        <div class="p-4">                            <h4 id="siteName" class="mb-1 fw-bold"></h4>                            <div class="mb-3">                                <span id="siteType" class="badge bg-primary me-2"></span>                                <span id="siteDistance" class="badge bg-light text-dark border"></span>                            </div>                            
+                            <div id="travelEstimates" class="travel-time-container mb-3"></div>
+                            
+                            <div class="site-details mb-4">                                <div class="d-flex mb-3">                                    <div class="icon-circle bg-light me-3">                                        <i class="fas fa-map-marker-alt text-primary"></i>                                    </div>                                    <div>                                        <p class="mb-0 small text-muted">Address</p>                                        <p id="siteAddress" class="mb-0 fw-medium"></p>                                    </div>                                </div>                                <div class="d-flex mb-3">                                    <div class="icon-circle bg-light me-3">                                        <i class="fas fa-users text-primary"></i>                                    </div>                                    <div>                                        <p class="mb-0 small text-muted">Capacity</p>                                        <p id="siteCapacity" class="mb-0 fw-medium"></p>                                    </div>                                </div>                                <div class="d-flex mb-3">                                    <div class="icon-circle bg-light me-3">                                        <i class="fas fa-phone text-primary"></i>                                    </div>                                    <div>                                        <p class="mb-0 small text-muted">Contact</p>                                        <p id="contactInfo" class="mb-0">Loading...</p>                                    </div>                                </div>                            </div>                            
+                            <h6 class="mb-3 fw-bold">Available Facilities</h6>                            <div id="siteFacilities" class="row g-2 mb-4">                                <!-- Facilities will be loaded here -->                            </div>                            
+                            <div class="d-grid gap-2">                                <button id="getDirections" class="btn btn-primary">                                    <i class="fas fa-directions me-2"></i> Get Directions                                </button>                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">                                    <i class="fas fa-times me-2"></i> Close                                </button>                            </div>                            
+                            <div class="mt-3 small text-muted text-center">                                <p class="mb-0">This evacuation site information is regularly updated.</p>                                <p class="mb-0">Last verified: <span id="lastVerified">Recent</span></p>                            </div>                        </div>                    </div>                </div>            </div>        </div>    </div></div>
 
-<!-- Legend Modal -->
-<div class="modal fade" id="legendModal" tabindex="-1" aria-labelledby="legendModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header bg-gradient-dark text-white">
-                <h5 class="modal-title" id="legendModalLabel">Map Legend</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="legend-item d-flex align-items-center mb-3">
-                    <div class="site-marker-flood me-2"></div>
-                    <span>Flood Evacuation</span>
-                </div>
-                <div class="legend-item d-flex align-items-center mb-3">
-                    <div class="site-marker-fire me-2"></div>
-                    <span>Fire Evacuation</span>
-                </div>
-                <div class="legend-item d-flex align-items-center mb-3">
-                    <div class="site-marker-earthquake me-2"></div>
-                    <span>Earthquake Evacuation</span>
-                </div>
-                <div class="legend-item d-flex align-items-center mb-3">
-                    <div class="site-marker-typhoon me-2"></div>
-                    <span>Typhoon Evacuation</span>
-                </div>
-                <div class="legend-item d-flex align-items-center">
-                    <div class="site-marker-multi me-2"></div>
-                    <span>Multi-Hazard</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Legend Modal (Minimalist) --><div class="modal fade" id="legendModal" tabindex="-1" aria-labelledby="legendModalLabel" aria-hidden="true">    <div class="modal-dialog modal-sm modal-dialog-centered">        <div class="modal-content border-0 shadow">            <div class="modal-header bg-white">                <h5 class="modal-title fw-bold" id="legendModalLabel">Map Legend</h5>                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>            </div>            <div class="modal-body">                <p class="text-muted small mb-3">The following colors indicate different types of evacuation sites:</p>                
+                <div class="legend-item d-flex align-items-center mb-3">                    <div class="legend-color bg-primary me-3"></div>                    <span>Flood Evacuation</span>                </div>                <div class="legend-item d-flex align-items-center mb-3">                    <div class="legend-color bg-danger me-3"></div>                    <span>Fire Evacuation</span>                </div>                <div class="legend-item d-flex align-items-center mb-3">                    <div class="legend-color bg-warning me-3"></div>                    <span>Earthquake Evacuation</span>                </div>                <div class="legend-item d-flex align-items-center mb-3">                    <div class="legend-color bg-secondary me-3"></div>                    <span>Typhoon Evacuation</span>                </div>                <div class="legend-item d-flex align-items-center">                    <div class="legend-color bg-info me-3"></div>                    <span>Multi-Hazard</span>                </div>                
+                <hr class="my-3">                
+                <p class="text-muted small mb-2">Facility Indicators:</p>                <div class="d-flex flex-wrap gap-2 mb-3">                    <span class="badge bg-light text-dark"><i class="fas fa-tint text-primary me-1"></i> Water</span>                    <span class="badge bg-light text-dark"><i class="fas fa-bolt text-warning me-1"></i> Power</span>                    <span class="badge bg-light text-dark"><i class="fas fa-medkit text-danger me-1"></i> Medical</span>                    <span class="badge bg-light text-dark"><i class="fas fa-wheelchair text-success me-1"></i> Accessible</span>                </div>            </div>            <div class="modal-footer">                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>            </div>        </div>    </div></div>
 
 @section Scripts {
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
@@ -322,15 +114,34 @@
             // Default center (Philippines)
             const defaultPosition = { lng: 120.9842, lat: 14.5995 };
             
+            // Set different default zoom based on screen size
+            const isMobile = window.innerWidth < 768;
+            const defaultZoom = isMobile ? 9.5 : 11;
+            
             mapboxgl.accessToken = mapboxToken;
             map = new mapboxgl.Map({
                 container: 'map',
                 style: 'mapbox://styles/mapbox/streets-v11',
                 center: [defaultPosition.lng, defaultPosition.lat],
-                zoom: 11,
-                pitch: 45, // 3D pitch angle
+                zoom: defaultZoom,
+                pitch: isMobile ? 0 : 45, // Less pitch on mobile for better viewing
                 bearing: 0,
-                attributionControl: false
+                attributionControl: false,
+                preserveDrawingBuffer: true
+            });
+            
+            // Handle resize events properly
+            window.addEventListener('resize', () => {
+                if(map) {
+                    // Trigger a resize event on the map to ensure it fills its container
+                    map.resize();
+                    
+                    // Adjust pitch based on screen size
+                    const isMobileNow = window.innerWidth < 768;
+                    if(isMobileNow && map.getPitch() > 0 && !is3DEnabled) {
+                        map.easeTo({ pitch: 0 });
+                    }
+                }
             });
             
             // Add custom attribution with improved styling
@@ -367,9 +178,14 @@
                 alternatives: true,
                 geometries: 'geojson',
                 controls: {
-                    instructions: true,
-                    profileSwitcher: true
+                    instructions: false, // Hide long instructions panel by default
+                    profileSwitcher: true,
+                    inputs: true
                 },
+                flyTo: false, // Prevent auto-flying to the route
+                collapsed: true, // Start collapsed for cleaner UI
+                placeholderOrigin: 'Your location',
+                placeholderDestination: 'Evacuation site',
                 styles: [
                     {
                         id: 'directions-route-line',
@@ -456,6 +272,10 @@
                 element.addEventListener('click', (e) => {
                     e.preventDefault();
                     const style = e.target.getAttribute('data-map-style');
+                    
+                    // Store current markers before style change
+                    const currentMarkers = [...markers];
+                    
                     map.setStyle('mapbox://styles/mapbox/' + style);
                     
                     // Update active state
@@ -464,10 +284,30 @@
                     });
                     e.target.classList.add('active');
                     
-                    // Re-enable 3D buildings if needed
+                    // Re-enable 3D buildings and restore markers after style loads
                     map.once('styledata', function() {
                         if (is3DEnabled) {
                             enable3DBuildings();
+                        }
+                        
+                        // Recreate user marker if exists
+                        if (currentUserLocation) {
+                            createUserMarker(currentUserLocation);
+                        }
+                        
+                        // If we had directions, re-add the control
+                        if (map.hasControl(directionsControl)) {
+                            // Temporarily remove and re-add directions control
+                            map.removeControl(directionsControl);
+                            map.addControl(directionsControl, 'top-left');
+                            
+                            // Reset origin and destination if needed
+                            if (currentUserLocation) {
+                                directionsControl.setOrigin([currentUserLocation.lng, currentUserLocation.lat]);
+                            }
+                            if (selectedSite) {
+                                directionsControl.setDestination([selectedSite.longitude, selectedSite.latitude]);
+                            }
                         }
                     });
                 });
@@ -506,15 +346,23 @@
                     bounds.extend(marker.getLngLat());
                 });
                 
-                // Fit the map to the bounds
+                // Fit the map to the bounds with responsive padding
+                const isMobile = window.innerWidth < 768;
                 map.fitBounds(bounds, {
-                    padding: 50
+                    padding: isMobile ? 30 : 50,
+                    maxZoom: isMobile ? 13 : 15 // Limit maximum zoom level especially on mobile
                 });
             });
             
-            // Handle locate me button
+            // Handle locate me button with improved routing functionality
             document.getElementById('locateMe').addEventListener('click', function() {
-                getUserLocation();
+                getUserLocation().then(position => {
+                    // Position found, don't automatically show routing
+                    // Display success message
+                    showAlert('Your location has been found. Select an evacuation site to view details or get directions.', 'success');
+                }).catch(error => {
+                    // Error is already handled in getUserLocation()
+                });
             });
             
             // Initialize distance slider value display
@@ -607,7 +455,8 @@
                     const locateBtn = document.getElementById('locateMe');
                     const originalContent = locateBtn.innerHTML;
                     locateBtn.disabled = true;
-                    locateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                    locateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Locating...';
+                    locateBtn.classList.add('btn-loading');
                     
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
@@ -618,12 +467,16 @@
                             
                             currentUserLocation = pos;
                             
-                            // Update map
+                            // Update map with responsive zoom level based on screen size
+                            const isMobile = window.innerWidth < 768;
                             map.flyTo({
                                 center: [pos.lng, pos.lat],
                                 essential: true,
-                                zoom: 13,
-                                duration: 2000
+                                zoom: isMobile ? 12 : 13, // Slightly less zoom on mobile
+                                duration: 1500,
+                                easing: function(t) {
+                                    return t * (2 - t); // Ease out quad for smoother animation
+                                }
                             });
                             
                             // Add user marker
@@ -632,18 +485,36 @@
                             // Load nearby sites
                             loadNearbySites();
                             
-                            // Reset button
+                            // Reset button with success state
                             locateBtn.disabled = false;
+                            locateBtn.classList.remove('btn-loading');
+                            locateBtn.classList.add('btn-success');
+                            locateBtn.innerHTML = '<i class="fas fa-check me-2"></i> Location Found';
+                            
+                            // Reset back to original state after 3 seconds
+                            setTimeout(() => {
+                                locateBtn.classList.remove('btn-success');
+                                locateBtn.classList.add('btn-primary');
                             locateBtn.innerHTML = originalContent;
+                            }, 3000);
                             
                             resolve(pos);
                         },
                         (error) => {
                             console.error('Error getting user location:', error);
                             
-                            // Reset button
+                            // Reset button with error state
                             locateBtn.disabled = false;
+                            locateBtn.classList.remove('btn-loading');
+                            locateBtn.classList.add('btn-danger');
+                            locateBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Location Error';
+                            
+                            // Reset back to original state after 3 seconds
+                            setTimeout(() => {
+                                locateBtn.classList.remove('btn-danger');
+                                locateBtn.classList.add('btn-primary');
                             locateBtn.innerHTML = originalContent;
+                            }, 3000);
                             
                             // Show error message
                             showAlert('Error getting your location: ' + getLocationErrorMessage(error) + '. Please enable location services.', 'danger');
@@ -687,11 +558,83 @@
                 existingUserMarker.remove();
             }
             
-            // Create custom user marker
+            // First, add the location accuracy circle
+            if (map.getLayer('user-location-accuracy')) {
+                map.removeLayer('user-location-accuracy');
+            }
+            
+            if (map.getSource('user-location-source')) {
+                map.removeSource('user-location-source');
+            }
+            
+            // Add a source and layer for the location accuracy radius
+            if (mapLoaded) {
+                map.addSource('user-location-source', {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [position.lng, position.lat]
+                        },
+                        'properties': {}
+                    }
+                });
+                
+                // Add accuracy circle with subtle animation
+                map.addLayer({
+                    'id': 'user-location-accuracy',
+                    'type': 'circle',
+                    'source': 'user-location-source',
+                    'paint': {
+                        'circle-radius': ['interpolate', ['linear'], ['zoom'], 
+                            10, 20,
+                            15, 50,
+                            20, 100
+                        ],
+                        'circle-color': 'rgba(37, 99, 235, 0.1)',
+                        'circle-stroke-width': 1,
+                        'circle-stroke-color': 'rgba(37, 99, 235, 0.5)',
+                        'circle-opacity': 0.8,
+                        'circle-stroke-opacity': ['interpolate', ['linear'], ['get', 'opacity'], 0, 0, 1, 1]
+                    }
+                });
+                
+                // Add animation for the accuracy circle
+                let opacitySteps = [0, 0.5, 1, 0.5, 0];
+                let currentStep = 0;
+                
+                const animateLocationCircle = () => {
+                    if (!map.getSource('user-location-source')) return;
+                    
+                    const opacity = opacitySteps[currentStep];
+                    map.getSource('user-location-source').setData({
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [position.lng, position.lat]
+                        },
+                        'properties': {
+                            'opacity': opacity
+                        }
+                    });
+                    
+                    currentStep = (currentStep + 1) % opacitySteps.length;
+                    setTimeout(animateLocationCircle, 1000);
+                };
+                
+                animateLocationCircle();
+            }
+            
+            // Create custom user marker with enhanced styling
             const el = document.createElement('div');
             el.id = 'user-marker-container';
             el.className = 'user-marker';
-            el.innerHTML = '<div class="user-marker-icon"></div><div class="user-marker-pulse"></div>';
+            el.innerHTML = `
+                <div class="user-marker-icon"></div>
+                <div class="user-marker-pulse"></div>
+                <div class="user-marker-label">You are here</div>
+            `;
             
             // Add to map with popup
             const marker = new mapboxgl.Marker({
@@ -701,22 +644,53 @@
                 .setLngLat([position.lng, position.lat])
                 .addTo(map);
                 
-            // Add popup with user location info
+            // Add popup with user location info and enhanced content
             const popup = new mapboxgl.Popup({
                 closeButton: false,
                 closeOnClick: false,
                 offset: 25,
                 className: 'user-location-popup'
-            }).setHTML('<div><strong>Your Location</strong></div>');
+            }).setHTML(`
+                <div class="user-location-content">
+                    <strong>Your Location</strong>
+                    <p class="coordinates-text">${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}</p>
+                    <div class="user-location-actions">
+                        <button class="btn btn-sm btn-outline-primary get-nearby-sites">Find Nearby Sites</button>
+                    </div>
+                </div>
+            `);
             
             // Show popup on hover
             el.addEventListener('mouseenter', () => {
                 marker.setPopup(popup);
                 popup.addTo(map);
+                
+                // Add event listener to the button
+                setTimeout(() => {
+                    const nearbyBtn = document.querySelector('.get-nearby-sites');
+                    if (nearbyBtn) {
+                        nearbyBtn.addEventListener('click', () => {
+                            loadNearbySites();
+                            popup.remove();
+                        });
+                    }
+                }, 100);
             });
             
             el.addEventListener('mouseleave', () => {
                 popup.remove();
+            });
+            
+            // Add click handler to center map on user location
+            el.addEventListener('click', () => {
+                map.flyTo({
+                    center: [position.lng, position.lat],
+                    zoom: 15,
+                    pitch: 50,
+                    bearing: 0,
+                    duration: 1000,
+                    essential: true
+                });
             });
             
             return marker;
@@ -895,9 +869,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="site-list-actions mt-2">
-                            <button class="btn btn-sm btn-primary view-details w-100" data-site-id="${site.id}">
-                                <i class="fas fa-info-circle me-2"></i>View Details
+                        <div class="site-list-actions mt-2 d-flex gap-2">
+                            <button class="btn btn-sm btn-primary view-details flex-fill" data-site-id="${site.id}">
+                                <i class="fas fa-info-circle me-1"></i>Details
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary get-route flex-fill" data-site-id="${site.id}">
+                                <i class="fas fa-directions me-1"></i>Route
                             </button>
                         </div>
                     </div>
@@ -915,6 +892,19 @@
                     const site = sites.find(s => s.id === siteId);
                     if (site) {
                         showSiteDetails(site);
+                    }
+                });
+            });
+            
+            // Add click handlers to route buttons in list items
+            document.querySelectorAll('.get-route').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation(); // Prevent triggering the list item click
+                    const siteId = parseInt(this.getAttribute('data-site-id'));
+                    const site = sites.find(s => s.id === siteId);
+                    if (site) {
+                        getDirections(site);
                     }
                 });
             });
@@ -980,9 +970,12 @@
                         <p class="mb-1"><i class="fas fa-users me-2 text-primary"></i>Capacity: ${site.capacity} people</p>
                         <p class="mb-0"><i class="fas fa-route me-2 text-success"></i>Distance: ${site.distance} km</p>
                     </div>
-                    <div class="site-popup-actions d-grid">
+                    <div class="site-popup-actions d-flex gap-2">
                         <button class="btn btn-primary view-details" data-site-id="${site.id}">
-                            <i class="fas fa-info-circle me-2"></i>View Details
+                            <i class="fas fa-info-circle me-1"></i>Details
+                        </button>
+                        <button class="btn btn-outline-primary get-route" data-site-id="${site.id}">
+                            <i class="fas fa-directions me-1"></i>Route
                         </button>
                     </div>
                 </div>
@@ -1023,13 +1016,22 @@
                 }
             });
             
-            // Add click event to the view details button in popup
+            // Add click events to the popup buttons
             popup.on('open', () => {
                 setTimeout(() => {
+                    // Setup view details button
                     const detailButton = document.querySelector(`.view-details[data-site-id="${site.id}"]`);
                     if (detailButton) {
                         detailButton.addEventListener('click', () => {
                             showSiteDetails(site);
+                        });
+                    }
+                    
+                    // Setup route button
+                    const routeButton = document.querySelector(`.get-route[data-site-id="${site.id}"]`);
+                    if (routeButton) {
+                        routeButton.addEventListener('click', () => {
+                            getDirections(site);
                         });
                     }
                 }, 100);
@@ -1048,21 +1050,36 @@
         function showSiteDetails(site) {
             selectedSite = site;
             
-            // Update modal content
+            // Get appropriate badge color based on site type
+            let badgeColor = 'primary';
+            switch(site.type) {
+                case 'FloodEvacuation': badgeColor = 'primary'; break;
+                case 'FireEvacuation': badgeColor = 'danger'; break;
+                case 'EarthquakeEvacuation': badgeColor = 'warning'; break;
+                case 'TyphoonEvacuation': badgeColor = 'secondary'; break;
+                case 'MultiHazard': badgeColor = 'info'; break;
+            }
+            
+            // Update modal content with enhanced UI
             document.getElementById('siteDetailModalLabel').textContent = site.name;
             document.getElementById('siteName').textContent = site.name;
-            document.getElementById('siteType').textContent = site.type.replace('Evacuation', ' Evacuation');
+            document.getElementById('siteType').innerHTML = `<i class="fas fa-shield-alt me-1"></i> ${site.type.replace('Evacuation', ' Evacuation')}`;
+            document.getElementById('siteType').className = `badge bg-${badgeColor} me-2`;
             document.getElementById('siteAddress').textContent = site.address;
             document.getElementById('siteCapacity').textContent = `${site.capacity} people`;
-            document.getElementById('siteDistance').textContent = `${site.distance} km`;
+            document.getElementById('siteDistance').innerHTML = `<i class="fas fa-location-arrow me-1"></i> ${site.distance} km`;
             
             // Update facilities with improved layout
             const facilitiesContainer = document.getElementById('siteFacilities');
             facilitiesContainer.innerHTML = '';
             
-            // Add facility badges
+            // Count the available facilities
+            let facilitiesCount = 0;
+            
+            // Add facility badges with enhanced visual hierarchy
             Object.entries(site.facilities).forEach(([key, value]) => {
                 if (value && facilityIcons[key]) {
+                    facilitiesCount++;
                     facilitiesContainer.innerHTML += `
                         <div class="col-6 mb-2">
                             <div class="facility-badge">
@@ -1073,11 +1090,55 @@
                 }
             });
             
-            // Contact info
+            // If no facilities, show a message
+            if (facilitiesCount === 0) {
+                facilitiesContainer.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-light text-center mb-0">
+                            <small class="text-muted">No information about facilities is available</small>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Contact info with enhanced display
             document.getElementById('contactInfo').innerHTML = `
                 ${site.contactPerson || 'Not specified'}<br>
-                ${site.contactNumber ? `<a href="tel:${site.contactNumber}">${site.contactNumber}</a>` : 'Not specified'}
+                ${site.contactNumber ? `<a href="tel:${site.contactNumber}" class="text-primary"><i class="fas fa-phone-alt me-1"></i>${site.contactNumber}</a>` : 'Not specified'}
             `;
+            
+            // Update verification date
+            document.getElementById('lastVerified').textContent = site.lastVerified || 'Recent';
+            
+            // Add travel time estimate if user location is available
+            if (currentUserLocation) {
+                const distanceKm = site.distance;
+                // Rough estimate: walking 4 km/h, driving 40 km/h
+                const walkingTime = Math.round(distanceKm / 4 * 60);
+                const drivingTime = Math.round(distanceKm / 40 * 60);
+                
+                document.getElementById('travelEstimates').innerHTML = `
+                    <div class="d-flex justify-content-between mt-3">
+                        <div class="text-center">
+                            <i class="fas fa-walking text-primary mb-2"></i>
+                            <p class="mb-0 small fw-bold">${walkingTime} min</p>
+                            <p class="mb-0 small text-muted">Walking</p>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-car text-primary mb-2"></i>
+                            <p class="mb-0 small fw-bold">${drivingTime} min</p>
+                            <p class="mb-0 small text-muted">Driving</p>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-bicycle text-primary mb-2"></i>
+                            <p class="mb-0 small fw-bold">${Math.round(distanceKm / 15 * 60)} min</p>
+                            <p class="mb-0 small text-muted">Cycling</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('travelEstimates').innerHTML = '';
+            }
             
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('siteDetailModal'));
@@ -1085,6 +1146,10 @@
             
             // Initialize modal map only after modal is shown
             document.getElementById('siteDetailModal').addEventListener('shown.bs.modal', function() {
+                // Clear any previous modal map labels
+                const existingLabels = document.querySelectorAll('.modal-marker-label');
+                existingLabels.forEach(label => label.remove());
+                
                 if (!modalMap) {
                     modalMap = new mapboxgl.Map({
                         container: 'modalMap',
@@ -1101,8 +1166,9 @@
                         showCompass: false
                     }), 'top-right');
                     
-                    // Add 3D buildings to modal map
-                    modalMap.on('load', () => {
+                    // Add custom location indicators after map loads
+                    modalMap.on('load', function() {
+                        // Add 3D buildings first
                         modalMap.addLayer({
                             'id': '3d-buildings-modal',
                             'source': 'composite',
@@ -1129,20 +1195,252 @@
                                 'fill-extrusion-opacity': 0.6
                             }
                         });
+                        
+                        // Create highlighted site marker with enhanced visibility
+                        const siteEl = document.createElement('div');
+                        siteEl.className = 'modal-site-marker highlighted';
+                        siteEl.style.backgroundColor = getColorForSiteType(site.type);
+                        
+                        const siteMarker = new mapboxgl.Marker({
+                            element: siteEl,
+                            anchor: 'bottom'
+                        })
+                        .setLngLat([site.longitude, site.latitude])
+                        .addTo(modalMap);
+                        
+                        // Add site label
+                        const siteLabelEl = document.createElement('div');
+                        siteLabelEl.className = 'modal-marker-label site-label';
+                        siteLabelEl.innerHTML = '<strong>Evacuation Site</strong>';
+                        
+                        new mapboxgl.Marker({
+                            element: siteLabelEl,
+                            anchor: 'bottom',
+                            offset: [0, -55] // Position above the marker
+                        })
+                        .setLngLat([site.longitude, site.latitude])
+                        .addTo(modalMap);
+                        
+                        // Add user location if available
+                        if (currentUserLocation) {
+                            // Add user location marker with pulse effect
+                            const userEl = document.createElement('div');
+                            userEl.className = 'modal-user-marker highlighted';
+                            userEl.innerHTML = '<div class="modal-user-pulse"></div>';
+                            
+                            const userMarker = new mapboxgl.Marker({
+                                element: userEl,
+                                anchor: 'center'
+                            })
+                            .setLngLat([currentUserLocation.lng, currentUserLocation.lat])
+                            .addTo(modalMap);
+                            
+                            // Add user location label
+                            const userLabelEl = document.createElement('div');
+                            userLabelEl.className = 'modal-marker-label user-label';
+                            userLabelEl.innerHTML = '<strong>Your Location</strong>';
+                            
+                            new mapboxgl.Marker({
+                                element: userLabelEl,
+                                anchor: 'bottom',
+                                offset: [0, -45] // Position above the marker
+                            })
+                            .setLngLat([currentUserLocation.lng, currentUserLocation.lat])
+                            .addTo(modalMap);
+                            
+                            // Add enhanced route line between points
+                            modalMap.addSource('route', {
+                                'type': 'geojson',
+                                'data': {
+                                    'type': 'Feature',
+                                    'properties': {},
+                                    'geometry': {
+                                        'type': 'LineString',
+                                        'coordinates': [
+                                            [currentUserLocation.lng, currentUserLocation.lat],
+                                            [site.longitude, site.latitude]
+                                        ]
+                                    }
+                                }
+                            });
+                            
+                            // Add glowing route line
+                            modalMap.addLayer({
+                                'id': 'route-glow',
+                                'type': 'line',
+                                'source': 'route',
+                                'layout': {
+                                    'line-join': 'round',
+                                    'line-cap': 'round'
+                                },
+                                'paint': {
+                                    'line-color': '#3b82f6',
+                                    'line-width': 8,
+                                    'line-opacity': 0.25
+                                }
+                            });
+                            
+                            // Add main route line
+                            modalMap.addLayer({
+                                'id': 'route',
+                                'type': 'line',
+                                'source': 'route',
+                                'layout': {
+                                    'line-join': 'round',
+                                    'line-cap': 'round'
+                                },
+                                'paint': {
+                                    'line-color': '#3b82f6',
+                                    'line-width': 3,
+                                    'line-dasharray': [2, 1]
+                                }
+                            });
+                            
+                            // Fit map to show both markers
+                            const bounds = new mapboxgl.LngLatBounds()
+                                .extend([currentUserLocation.lng, currentUserLocation.lat])
+                                .extend([site.longitude, site.latitude]);
+                                
+                            modalMap.fitBounds(bounds, {
+                                padding: 70
+                            });
+                        }
                     });
                 } else {
-                    modalMap.flyTo({
-                        center: [site.longitude, site.latitude],
-                        zoom: 15
+                    // Reset existing modal map
+                    modalMap.setCenter([site.longitude, site.latitude]);
+                    modalMap.setZoom(15);
+                    
+                    // Remove existing markers and sources
+                    document.querySelectorAll('.mapboxgl-marker').forEach(marker => {
+                        marker.remove();
                     });
-                }
-                
-                // Add marker to modal map
+                    
+                    if (modalMap.getSource('route')) {
+                        modalMap.removeLayer('route');
+                        modalMap.removeLayer('route-glow');
+                        modalMap.removeSource('route');
+                    }
+                    
+                    // Add site marker with enhanced visibility
+                    const siteEl = document.createElement('div');
+                    siteEl.className = 'modal-site-marker highlighted';
+                    siteEl.style.backgroundColor = getColorForSiteType(site.type);
+                    
+                    const siteMarker = new mapboxgl.Marker({
+                        element: siteEl,
+                        anchor: 'bottom'
+                    })
+                    .setLngLat([site.longitude, site.latitude])
+                    .addTo(modalMap);
+                    
+                    // Add site label
+                    const siteLabelEl = document.createElement('div');
+                    siteLabelEl.className = 'modal-marker-label site-label';
+                    siteLabelEl.innerHTML = '<strong>Evacuation Site</strong>';
+                    
                 new mapboxgl.Marker({
-                    color: '#FF0000'
+                        element: siteLabelEl,
+                        anchor: 'bottom',
+                        offset: [0, -55] // Position above the marker
                 })
                     .setLngLat([site.longitude, site.latitude])
                     .addTo(modalMap);
+                    
+                    // Add user location if available
+                    if (currentUserLocation) {
+                        // Add enhanced user location marker with pulse
+                        const userEl = document.createElement('div');
+                        userEl.className = 'modal-user-marker highlighted';
+                        userEl.innerHTML = '<div class="modal-user-pulse"></div>';
+                        
+                        const userMarker = new mapboxgl.Marker({
+                            element: userEl,
+                            anchor: 'center'
+                        })
+                        .setLngLat([currentUserLocation.lng, currentUserLocation.lat])
+                        .addTo(modalMap);
+                        
+                        // Add user location label
+                        const userLabelEl = document.createElement('div');
+                        userLabelEl.className = 'modal-marker-label user-label';
+                        userLabelEl.innerHTML = '<strong>Your Location</strong>';
+                        
+                        new mapboxgl.Marker({
+                            element: userLabelEl,
+                            anchor: 'bottom',
+                            offset: [0, -45] // Position above the marker
+                        })
+                        .setLngLat([currentUserLocation.lng, currentUserLocation.lat])
+                        .addTo(modalMap);
+                        
+                        // Re-add route if map is already loaded
+                        if (modalMap.isStyleLoaded()) {
+                            addRouteToModalMap();
+                        } else {
+                            modalMap.once('load', addRouteToModalMap);
+                        }
+                        
+                        function addRouteToModalMap() {
+                            // Add enhanced route line between points
+                            modalMap.addSource('route', {
+                                'type': 'geojson',
+                                'data': {
+                                    'type': 'Feature',
+                                    'properties': {},
+                                    'geometry': {
+                                        'type': 'LineString',
+                                        'coordinates': [
+                                            [currentUserLocation.lng, currentUserLocation.lat],
+                                            [site.longitude, site.latitude]
+                                        ]
+                                    }
+                                }
+                            });
+                            
+                            // Add glowing background for the route
+                            modalMap.addLayer({
+                                'id': 'route-glow',
+                                'type': 'line',
+                                'source': 'route',
+                                'layout': {
+                                    'line-join': 'round',
+                                    'line-cap': 'round'
+                                },
+                                'paint': {
+                                    'line-color': '#3b82f6',
+                                    'line-width': 8,
+                                    'line-opacity': 0.25
+                                }
+                            });
+                            
+                            // Add main route line
+                            modalMap.addLayer({
+                                'id': 'route',
+                                'type': 'line',
+                                'source': 'route',
+                                'layout': {
+                                    'line-join': 'round',
+                                    'line-cap': 'round'
+                                },
+                                'paint': {
+                                    'line-color': '#3b82f6',
+                                    'line-width': 3,
+                                    'line-dasharray': [2, 1]
+                                }
+                            });
+                        }
+                        
+                        // Fit map to show both markers with better padding
+                        const bounds = new mapboxgl.LngLatBounds()
+                            .extend([currentUserLocation.lng, currentUserLocation.lat])
+                            .extend([site.longitude, site.latitude]);
+                            
+                        modalMap.fitBounds(bounds, {
+                            padding: 70
+                        });
+                    }
+                }
             });
             
             // Handle directions button click
@@ -1152,30 +1450,93 @@
             });
         }
         
+        // Helper function to get color for site type
+        function getColorForSiteType(type) {
+            switch(type) {
+                case 'FloodEvacuation': return '#2563eb';
+                case 'FireEvacuation': return '#ef4444';
+                case 'EarthquakeEvacuation': return '#f59e0b';
+                case 'TyphoonEvacuation': return '#6b7280';
+                case 'MultiHazard': return '#8b5cf6';
+                default: return '#3b82f6';
+            }
+        }
+        
         // Get directions from user location to site
         function getDirections(site) {
             if (!currentUserLocation) {
-                showAlert('Please allow location access to get directions', 'danger');
+                showAlert('Please allow location access to get directions', 'info');
+                getUserLocation().then(position => {
+                    prepareMapForRouting(position, site);
+                }).catch(error => {
+                    // Error already handled in getUserLocation()
+                });
                 return;
             }
             
-            // Add directions control if not already added
-            if (!map.hasControl(directionsControl)) {
-                map.addControl(directionsControl, 'top-left');
-            }
+            // We have both points, prepare the routing
+            prepareMapForRouting(currentUserLocation, site);
             
-            // Set origin and destination
-            directionsControl.setOrigin([currentUserLocation.lng, currentUserLocation.lat]);
-            directionsControl.setDestination([site.longitude, site.latitude]);
-            
-            // Zoom out to show both points
+            // Create a bounding box that focuses on just the route area
             const bounds = new mapboxgl.LngLatBounds()
                 .extend([currentUserLocation.lng, currentUserLocation.lat])
                 .extend([site.longitude, site.latitude]);
                 
+            // Add some padding based on the distance to ensure a good view
+            const distance = site.distance; // in km
+            const padding = Math.max(100, Math.min(200, distance * 15)); // Dynamic padding based on distance
+                
             map.fitBounds(bounds, {
-                padding: 100
+                padding: {
+                    top: padding,
+                    bottom: padding,
+                    left: padding,
+                    right: padding
+                },
+                duration: 1000
             });
+            
+            // Listen for routing events to show loading state
+            const directionsPanel = document.querySelector('.directions-container');
+            if (directionsPanel) {
+                // Show the directions panel
+                directionsPanel.classList.add('visible');
+                
+                // Make sure we have a loading indicator
+                let loadingIndicator = document.querySelector('.directions-loading');
+                if (!loadingIndicator) {
+                    loadingIndicator = document.createElement('div');
+                    loadingIndicator.className = 'directions-loading';
+                    loadingIndicator.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"></div><span>Finding best route...</span>';
+                    directionsPanel.appendChild(loadingIndicator);
+                }
+                
+                // Remove loading indicator when route is loaded
+                directionsControl.on('route', function() {
+                    const loadingEl = document.querySelector('.directions-loading');
+                    if (loadingEl) loadingEl.remove();
+                    
+                    // Highlight the selected route with a visual effect
+                    setTimeout(() => {
+                        const routeLine = document.querySelector('.mapbox-directions-route');
+                        if (routeLine) {
+                            routeLine.classList.add('route-highlight');
+                        }
+                    }, 500);
+                });
+                
+                // Handle errors in routing
+                directionsControl.on('error', function(e) {
+                    const loadingEl = document.querySelector('.directions-loading');
+                    if (loadingEl) loadingEl.remove();
+                    
+                    // Show a helpful error message
+                    showAlert('Route not found. Try a different transportation mode.', 'warning');
+                });
+            }
+            
+            // Show a success message
+            showAlert(`Showing directions to ${site.name}`, 'success');
         }
         
         // Show alert message
@@ -1205,31 +1566,95 @@
             }, 5000);
         }
         
+        // Modify the "Function to show routing options" to be more clear and user-friendly
+        /**
+         * Prepares the map for routing by ensuring the directions control is available
+         * @@param {Object} startPoint - The starting point with lng and lat properties
+         * @@param {Object} endPoint - The ending point with longitude and latitude properties
+         */
+        function prepareMapForRouting(startPoint, endPoint) {
+            // Make sure the directions control is visible on the map
+            if (!map.hasControl(directionsControl)) {
+                // Add our custom container for the directions control
+                if (!document.getElementById('directions-container')) {
+                    const directionsContainer = document.createElement('div');
+                    directionsContainer.id = 'directions-container';
+                    directionsContainer.className = 'directions-container';
+                    
+                    // Add a single X button to close the directions panel
+                    const closeButton = document.createElement('button');
+                    closeButton.className = 'directions-close-btn';
+                    closeButton.innerHTML = '<i class="fas fa-times"></i>';
+                    closeButton.title = 'Close directions';
+                    closeButton.addEventListener('click', function() {
+                        document.getElementById('directions-container').classList.remove('visible');
+                    });
+                    directionsContainer.appendChild(closeButton);
+                    
+                    document.getElementById('map').appendChild(directionsContainer);
+                }
+                
+                // Add the directions control
+                map.addControl(directionsControl, 'top-left');
+                
+                // Move the directions control to our custom container
+                setTimeout(() => {
+                    const directionsElement = document.querySelector('.mapboxgl-ctrl-directions');
+                    if (directionsElement) {
+                        document.getElementById('directions-container').appendChild(directionsElement);
+                    }
+                }, 10);
+            }
+            
+            // Set the origin and destination if provided
+            if (startPoint && startPoint.lng && startPoint.lat) {
+                directionsControl.setOrigin([startPoint.lng, startPoint.lat]);
+            }
+            
+            if (endPoint && endPoint.longitude && endPoint.latitude) {
+                directionsControl.setDestination([endPoint.longitude, endPoint.latitude]);
+            }
+            
+            // Make the directions panel visible when a route is requested
+            setTimeout(() => {
+                const container = document.getElementById('directions-container');
+                if (container) {
+                    container.classList.add('visible');
+                }
+            }, 300);
+        }
+        
         // Initialize the map when the page loads
         document.addEventListener('DOMContentLoaded', initMap);
     </script>
-    <style>
-        /* Hero section styling */
-        .hero-section {
-            position: relative;
-            background: linear-gradient(to right, #3494e6, #ec6ead);
-            color: white;
-            overflow: hidden;
-            border-radius: 10px;
-            margin: 0 1rem;
+        <style>        /* Minimalist hero section styling */        .hero-section-minimal {            background: linear-gradient(to right, #f8f9fa, #ffffff);            border-bottom: 1px solid rgba(0,0,0,0.04);            margin: 0 0 1.5rem;        }
+        
+        .hero-section-minimal h1 {
+            color: #1a56db;
+            letter-spacing: -0.5px;
         }
         
-        .hero-section .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('https://images.unsplash.com/photo-1483095348487-8c1ee0ac5a7d?q=80&w=2000');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.4;
-            z-index: 0;
+        .hero-section-minimal .lead {
+            font-size: 1.05rem;
+            font-weight: 400;
+        }
+        
+        /* Enhanced card styling */
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, #ffffff, #f8f9fa);
+        }
+        
+        .rounded-pill {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary.rounded-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
         }
         
         .z-index-1 {
@@ -1247,19 +1672,37 @@
             height: 600px;
             width: 100%;
             border-radius: 0 0 5px 5px;
+            position: relative;
+            z-index: 1;
         }
         
         .modal-map-container {
             height: 100%;
             min-height: 400px;
             width: 100%;
+            position: relative;
+            z-index: 1;
         }
         
         .map-controls {
             bottom: 20px;
             right: 20px;
             z-index: 10;
-            width: 50px;
+            width: 60px;
+        }
+        
+        .map-controls button {
+            font-size: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            opacity: 0.95;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .map-controls button:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         
         /* Custom range input styling */
@@ -1295,33 +1738,157 @@
         /* User location marker styling */
         .user-marker {
             position: relative;
+            z-index: 3;
         }
         
         .user-marker-icon {
-            background-color: #2196F3;
-            width: 16px;
-            height: 16px;
+            background-color: #2563eb;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 0 2px rgba(0,0,0,0.2), 0 0 10px rgba(0,0,0,0.3);
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4), 0 0 15px rgba(37, 99, 235, 0.6);
+            transform: translate(-50%, -50%);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 3;
+        }
+        
+        .user-marker-pulse {
+            background-color: rgba(37, 99, 235, 0.2);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
             transform: translate(-50%, -50%);
             position: absolute;
             top: 50%;
             left: 50%;
             z-index: 2;
+            animation: pulse 2.5s infinite cubic-bezier(0.66, 0, 0, 1);
         }
         
-        .user-marker-pulse {
-            background-color: rgba(33, 150, 243, 0.3);
-            width: 50px;
-            height: 50px;
+        .user-marker-label {
+            position: absolute;
+            top: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #2563eb;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+            z-index: 2;
+            pointer-events: none;
+            border: 1px solid rgba(37, 99, 235, 0.3);
+        }
+        
+        /* User location popup styling */
+        .user-location-popup {
+            text-align: center;
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+        
+        .user-location-popup .mapboxgl-popup-content {
+            border-radius: 12px;
+            padding: 12px;
+            max-width: 200px;
+            background-color: white;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .user-location-popup .mapboxgl-popup-tip {
+            border-top-color: white;
+        }
+        
+        .user-location-popup .mapboxgl-popup-close-button {
+            color: #6b7280;
+        }
+        
+        .user-location-content {
+            text-align: center;
+        }
+        
+        .coordinates-text {
+            font-size: 10px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .user-location-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        
+        /* Modal markers */
+        .modal-site-marker {
+            width: 36px;
+            height: 36px;
+            background-color: #ef4444;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.7), 0 3px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        .modal-site-marker::after {
+            content: '';
+            display: block;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
+            background-color: white;
+        }
+        
+        .modal-site-marker-flood { background-color: #2563eb; }
+        .modal-site-marker-fire { background-color: #ef4444; }
+        .modal-site-marker-earthquake { background-color: #f59e0b; }
+        .modal-site-marker-typhoon { background-color: #6b7280; }
+        .modal-site-marker-multi { background-color: #8b5cf6; }
+        
+        .modal-user-marker {
+            position: relative;
+        }
+        
+        .modal-user-marker-icon {
+            background-color: #2563eb;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.5), 0 0 6px rgba(0, 0, 0, 0.2);
             transform: translate(-50%, -50%);
             position: absolute;
             top: 50%;
             left: 50%;
-            z-index: 1;
-            animation: pulse 2s infinite;
+        }
+        
+        /* Enhanced animations */
+        @@keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.3; }
+            100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
+        }
+        
+        /* Updated site detail modal with travel time estimates section */
+        .travel-time-container {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .travel-time-container i {
+            font-size: 18px;
         }
         
         /* Site list styling */
@@ -1336,32 +1903,55 @@
             border-radius: 8px;
             padding: 1rem;
             margin-bottom: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.2s ease;
             cursor: pointer;
         }
         
         .site-list-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-color: rgba(52, 152, 219, 0.5);
+            background-color: #f9fafb;
+            border-color: rgba(59, 130, 246, 0.25);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.04);
+            transform: translateY(-1px);
         }
         
         .site-list-item.active {
-            background-color: #f8f9fa;
-            border-color: #3498db;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+            background-color: #f0f9ff;
+            border-color: #3b82f6;
+            border-left: 3px solid #3b82f6;
+            box-shadow: 0 3px 10px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Site list container with improved scrollbar */
+        .site-list-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .site-list-container::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+
+        .site-list-container::-webkit-scrollbar-thumb {
+            background-color: #e2e8f0;
+            border-radius: 20px;
         }
         
         .facility-badge {
-            background-color: #f8f9fa;
+            background-color: #f9fafb;
             padding: 0.5rem;
             border-radius: 8px;
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            border: 1px solid rgba(0,0,0,0.03);
+            transition: all 0.2s ease;
+        }
+
+        .facility-badge:hover {
+            background-color: #f0f9ff;
+            border-color: rgba(59, 130, 246, 0.2);
         }
         
         /* Evacuation site markers */
@@ -1369,12 +1959,16 @@
             cursor: pointer;
             transform-origin: bottom center;
             transition: all 0.3s ease;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 5px 8px rgba(0,0,0,0.3));
+        }
+        
+        .site-marker svg {
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
         }
         
         .site-marker:hover, .site-marker.active {
-            transform: scale(1.2);
-            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.4));
+            transform: scale(1.2) translateY(-5px);
+            filter: drop-shadow(0 8px 15px rgba(0,0,0,0.4));
         }
         
         /* Map legend styling */
@@ -1406,6 +2000,8 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            background-color: #f0f9ff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         
         /* Alert styling */
@@ -1431,84 +2027,1142 @@
             text-align: center;
         }
         
-        /* Background gradients */
-        .bg-gradient-primary {
-            background: linear-gradient(to right, #3494e6, #3498db);
+        /* Legend color */
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        
-        .bg-gradient-info {
-            background: linear-gradient(to right, #38a4f8, #2f96e0);
-        }
-        
-        .bg-gradient-success {
-            background: linear-gradient(to right, #36d1dc, #5b86e5);
-        }
-        
-        .bg-gradient-dark {
-            background: linear-gradient(to right, #485563, #29323c);
-        }
-        
-        /* Animations */
-        @@keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        @@keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
-        }
-        
-        @@keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-5px); }
-        }
-        
-        @@keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* User location popup styling */
-        .user-location-popup {
-            text-align: center;
-        }
-        
-        .mapboxgl-popup-content {
-            padding: 15px;
-            border-radius: 8px;
-        }
-        
+
         /* Site popup styling */
         .site-popup .mapboxgl-popup-content {
             padding: 0;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
         }
-        
+
         .site-popup-content {
-            padding: 15px;
+            padding: 16px;
         }
-        
+
         .site-popup h5 {
             margin-bottom: 10px;
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 1rem;
         }
-        
+
         /* Responsive adjustments */
         @@media (max-width: 767.98px) {
             .map-container {
                 height: 400px;
             }
             
-            .hero-section {
+            .hero-section-minimal {
                 text-align: center;
-                padding: 2rem 1rem;
+                padding: 1.5rem 1rem;
             }
             
             .map-controls {
                 bottom: 10px;
                 right: 10px;
+                width: 48px;
+            }
+        }
+
+        /* Style for route option buttons */
+        .route-options {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: white;
+            border-radius: 8px;
+            padding: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .route-options .btn {
+            margin: 2px;
+            font-size: 0.75rem;
+        }
+
+        /* Styles for the directions container */
+        .mapbox-directions-component {
+            z-index: 15 !important;
+        }
+
+        .mapbox-directions-component-keyline {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* Z-index fixes for map components */
+        .mapboxgl-ctrl-top-right, 
+        .mapboxgl-ctrl-top-left, 
+        .mapboxgl-ctrl-bottom-left, 
+        .mapboxgl-ctrl-bottom-right {
+            z-index: 5;
+        }
+
+        .mapboxgl-popup {
+            z-index: 6;
+        }
+
+        .mapboxgl-canvas {
+            z-index: 1;
+        }
+
+        .mapbox-directions-component {
+            z-index: 7 !important;
+        }
+
+        .mapbox-directions-route-summary {
+            z-index: 8 !important;
+        }
+
+        /* Loading button animation */
+        .btn-loading {
+            position: relative;
+            pointer-events: none;
+            color: transparent !important;
+        }
+
+        .btn-loading:after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 1.2em;
+            height: 1.2em;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-top-color: white;
+            animation: btn-spinner 0.8s linear infinite;
+        }
+
+        @@keyframes btn-spinner {
+            to {transform: translate(-50%, -50%) rotate(360deg);}
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Fix dropdown z-index issues */
+        .dropdown-menu {
+            z-index: 1000 !important; /* Ensure dropdowns appear above map */
+        }
+
+        /* Enhanced button styling */
+        .btn {
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+
+        .btn i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #1a56db, #3b82f6);
+            border: none;
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #1e40af, #3b82f6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-outline-primary {
+            border-color: #3b82f6;
+            color: #2563eb;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #3b82f6;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #4b5563, #6b7280);
+            border: none;
+            box-shadow: 0 2px 5px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-outline-secondary {
+            border-color: #6b7280;
+            color: #4b5563;
+            background-color: rgba(107, 114, 128, 0.05);
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6b7280;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(107, 114, 128, 0.2);
+        }
+
+        /* Dropdown styling enhancement */
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f9ff;
+            color: #2563eb;
+        }
+
+        .dropdown-item.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        /* Enhanced map controls */
+        .map-controls {
+            bottom: 20px;
+            right: 20px;
+            z-index: 15; /* Increased z-index */
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(5px);
+        }
+
+        /* Enhanced text clarity */
+        h1, h2, h3, h4, h5, h6, .card-title, .modal-title {
+            letter-spacing: -0.01em;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .text-muted {
+            color: #64748b !important;
+        }
+
+        /* Fix specific elements */
+        #mapViewDropdown {
+            position: relative;
+            z-index: 20;
+            font-weight: 500;
+        }
+
+        /* Enhanced legend control */
+        .legend-control {
+            margin-top: 10px;
+            z-index: 20;
+        }
+
+        /* Site marker label enhancement */
+        .site-marker-label, .user-marker-label {
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Badge enhancements */
+        .badge {
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            padding: 0.35em 0.65em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Make buttons in hero section more prominent */
+        .hero-section-minimal .btn-primary {
+            padding: 0.65rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        /* Filter card improvements */
+        .form-label {
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+
+        #applyFilters {
+            margin-top: 0.5rem;
+            padding: 0.6rem 1rem;
+        }
+
+        /* Center all button icons vertically */
+        button i, .btn i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Make map style dropdown more prominent */
+        #mapViewDropdown {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 0.5rem 0.85rem;
+        }
+
+        /* Map style dropdown enhancement */
+        .map-style-btn {
+            background-color: white;
+            color: #1e40af;
+            font-weight: 600;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 0.55rem 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            z-index: 20;
+            position: relative;
+        }
+
+        .map-style-btn:hover {
+            background-color: #f0f9ff;
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .map-style-menu {
+            min-width: 180px;
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1050 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .map-header-controls {
+            position: relative;
+            z-index: 25;
+        }
+
+        /* Enhanced map controls */
+        .map-controls {
+            bottom: 20px;
+            right: 20px;
+            z-index: 15;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(5px);
+            min-width: 120px;
+            max-width: 160px;
+        }
+
+        .map-controls button {
+            font-weight: 600;
+            padding: 0.55rem 0;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .map-controls button i {
+            margin-right: 0.35rem;
+            font-size: 0.9rem;
+        }
+
+        /* Popup enhancements */
+        .mapboxgl-popup-content {
+            border-radius: 12px !important;
+            overflow: hidden;
+            padding: 0 !important;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .mapboxgl-popup-close-button {
+            font-size: 18px !important;
+            color: #64748b !important;
+            padding: 5px 8px !important;
+            background: transparent !important;
+            border: none !important;
+            z-index: 2;
+        }
+
+        .mapboxgl-popup-close-button:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            color: #1e293b !important;
+        }
+
+        /* User location popup enhancement */
+        .user-location-popup .mapboxgl-popup-content {
+            padding: 15px !important;
+        }
+
+        .user-location-content {
+            text-align: center;
+            padding: 5px;
+        }
+
+        .user-location-content strong {
+            font-size: 14px;
+            color: #1e293b;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .coordinates-text {
+            font-size: 10px;
+            font-family: monospace;
+            color: #64748b;
+            background: rgba(241, 245, 249, 0.7);
+            padding: 3px 6px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .user-location-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .get-nearby-sites {
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        /* Better font rendering */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Enhanced heading contrast */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Improve readability of small text */
+        .small, small {
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+
+        /* Make site popups more attractive */
+        .site-popup-content {
+            padding: 18px !important;
+        }
+
+        .site-popup-content h5 {
+            margin-bottom: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            color: #0f172a;
+        }
+
+        .site-type-badge {
+            margin-bottom: 15px;
+        }
+
+        .site-info {
+            margin-bottom: 15px;
+        }
+
+        .site-info p {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .site-info p i {
+            width: 20px;
+                text-align: center;
+            margin-right: 10px;
+        }
+
+        .site-popup-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .site-popup-actions button {
+            flex: 1;
+            justify-content: center;
+            font-weight: 600;
+            padding: 8px 0;
+        }
+
+        /* Enhanced accuracy circle */
+        #user-location-accuracy {
+            animation: pulse-opacity 3s infinite ease-in-out;
+        }
+
+        @@keyframes pulse-opacity {
+            0% { opacity: 0.6; }
+            50% { opacity: 0.3; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Improved modal map styling */
+        .modal-map-container {
+            height: 100%;
+            min-height: 450px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            border-radius: 0 0 0 12px;
+        }
+
+        /* Enhanced site details modal */
+        #siteDetailModal .modal-content {
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        #siteDetailModal .modal-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 1.2rem 1.5rem;
+        }
+
+        #siteDetailModal .modal-body {
+            padding: 0;
+        }
+
+        /* Enhanced facility badges */
+        .facility-badge {
+            background-color: #f8fafc;
+            padding: 0.7rem 0.5rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .facility-badge:hover {
+            background-color: #f0f9ff;
+            border-color: rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .facility-badge i {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        /* Travel time container styling */
+        .travel-time-container {
+            background-color: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .travel-time-container i {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #3b82f6;
+        }
+
+        .travel-time-container p.small.fw-bold {
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        /* Filters Card - Enhanced */
+        .card .card-header {
+            background: linear-gradient(to right, #ffffff, #f8fafc);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card .card-header .card-title {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card .card-header .card-title i {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+
+        /* Enhanced distance range slider */
+        .form-range::-webkit-slider-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            cursor: pointer;
+            -webkit-appearance: none;
+            box-shadow: 0 1px 4px rgba(37, 99, 235, 0.5);
+            margin-top: -7px;
+            border: 2px solid #fff;
+        }
+
+        .form-range::-webkit-slider-runnable-track {
+            height: 6px;
+            background: linear-gradient(90deg, #e2e8f0, #e2e8f0);
+            border-radius: 10px;
+        }
+
+        .form-range:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        /* Site type select enhancement */
+        .form-select {
+            border-color: #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            padding: 0.5rem 0.75rem;
+            font-weight: 500;
+            border-radius: 8px;
+            background-position: right 0.75rem center;
+            transition: all 0.2s ease;
+        }
+
+        .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Enhanced checkbox styling */
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            margin-top: 0.2em;
+            background-color: #fff;
+            border: 2px solid #cbd5e1;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-check-input:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+            box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-check-label {
+            font-weight: 500;
+            padding-left: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Enhanced site list styling */
+        .site-list-container {
+            max-height: 550px;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .site-list-item {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .site-list-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: transparent;
+            transition: background-color 0.3s ease;
+        }
+
+        .site-list-item:hover {
+            background-color: #f9fafb;
+            border-color: rgba(59, 130, 246, 0.25);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+        }
+
+        .site-list-item:hover::before {
+            background-color: rgba(59, 130, 246, 0.5);
+        }
+
+        .site-list-item.active {
+            background-color: #f0f9ff;
+            border-color: #3b82f6;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.15);
+        }
+
+        .site-list-item.active::before {
+            background-color: #3b82f6;
+        }
+
+        .site-list-item-content h6 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+
+        .site-list-item-content p.text-muted {
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .facility-icons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .facility-icons i {
+            font-size: 12px;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f5f9;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .facility-icons i:hover {
+            transform: scale(1.2);
+        }
+
+        .site-list-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .site-list-actions button {
+            flex: 1;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 8px 0;
+        }
+
+        /* Site count badge */
+        #siteCount {
+            background: linear-gradient(45deg, #1e40af, #3b82f6);
+            font-weight: 700;
+            font-size: 14px;
+            padding: 5px 10px;
+            min-width: 30px;
+            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Modal markers with enhanced visibility */
+        .modal-site-marker.highlighted {
+            width: 42px;
+            height: 42px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5);
+            animation: bounceMarker 0.5s ease-out;
+            z-index: 5;
+        }
+
+        .modal-site-marker.highlighted::after {
+            content: '';
+            display: block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+        }
+
+        /* Enhanced user marker in modal */
+        .modal-user-marker.highlighted {
+            position: relative;
+            z-index: 5;
+        }
+
+        .modal-user-marker.highlighted::after {
+            content: '';
+            display: block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #2563eb;
+            border: 4px solid white;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-user-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(37, 99, 235, 0.2);
+            z-index: 4;
+            animation: modalPulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+        }
+
+        /* Modal marker labels */
+        .modal-marker-label {
+            background-color: #fff;
+            border-radius: 20px;
+            padding: 4px 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            font-size: 13px;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 10;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-marker-label.site-label {
+            background-color: #ffffff;
+            color: #0f172a;
+            border-left: 3px solid #ef4444;
+        }
+
+        .modal-marker-label.user-label {
+            background-color: #ffffff;
+            color: #2563eb;
+            border-left: 3px solid #2563eb;
+        }
+
+        .modal-marker-label strong {
+            font-weight: 700;
+        }
+
+        /* Animation for site marker */
+        @@keyframes bounceMarker {
+            0% { transform: rotate(-45deg) translateY(15px); opacity: 0; }
+            60% { transform: rotate(-45deg) translateY(-5px); }
+            80% { transform: rotate(-45deg) translateY(2px); }
+            100% { transform: rotate(-45deg) translateY(0); opacity: 1; }
+        }
+
+        /* Animation for user location pulse */
+        @@keyframes modalPulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.3; }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+        }
+
+        /* Styles for the directions container */
+        .directions-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 50;
+            max-width: 320px;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            display: none;
+        }
+
+        .directions-container.visible {
+            display: block;
+        }
+
+        .directions-container .mapboxgl-ctrl-directions {
+            margin: 0;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+            border-radius: 12px;
+            box-shadow: none;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        /* Single close button for directions */
+        .directions-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #64748b;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .directions-close-btn:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        /* Hide the default Mapbox close button */
+        .directions-container .mapbox-directions-close {
+            display: none !important;
+        }
+
+        /* Override Mapbox directions styles for cleaner look */
+        .directions-container .mapbox-directions-component-keyline {
+            border-top: none;
+            box-shadow: none;
+        }
+
+        .directions-container .mapbox-directions-origin,
+        .directions-container .mapbox-directions-destination {
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        /* Make responsive on mobile */
+        @@media (max-width: 767.98px) {
+            .directions-container {
+                max-width: calc(100% - 20px);
+            }
+            
+            .directions-container.expanded {
+                max-height: 70vh;
+            }
+        }
+
+        /* Loading indicator for directions */
+        .directions-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 30px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            z-index: 60;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .directions-loading .spinner-border {
+            margin-right: 8px;
+        }
+
+        /* Route highlight effect */
+        .route-highlight {
+            animation: routeHighlight 1.5s ease-in-out;
+        }
+
+        @@keyframes routeHighlight {
+            0% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Make responsive on mobile */
+        @@media (max-width: 767.98px) {
+            .directions-container {
+                max-width: calc(100% - 20px);
+            }
+            
+            .directions-container.expanded {
+                max-height: 70vh;
+            }
+        }
+
+        /* Make responsive on mobile */
+        @@media (max-width: 767.98px) {
+            /* Make the map container fully responsive */
+            .map-container {
+                height: 400px;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            
+            /* Ensure the map canvas itself is fully responsive */
+            .mapboxgl-canvas {
+                width: 100% !important;
+                height: 100% !important;
+                left: 0 !important;
+                top: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                position: absolute !important;
+            }
+            
+            /* Ensure the modal map is also fully responsive */
+            .modal-map-container {
+                width: 100% !important;
+                height: 350px !important;
+                min-height: auto !important;
+            }
+            
+            /* Ensure the map's parent containers are also full width */
+            .col-lg-8.mb-4 {
+                padding-left: 0;
+                padding-right: 0;
+            }
+            
+            .card-body.p-0.position-relative {
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            
+            /* Make the MapBox directions elements responsive */
+            .directions-container {
+                max-width: 100%;
+                width: 100%;
+                left: 0;
+                right: 0;
+                margin: 0 auto;
+                box-sizing: border-box;
+                padding: 0 10px;
+            }
+            
+            .directions-container .mapboxgl-ctrl-directions {
+                max-height: 70vh;
+                width: 100%;
+            }
+            
+            .directions-close-btn {
+                right: 15px;
+                top: 15px;
+                z-index: 100;
+            }
+            
+            .mapbox-directions-component {
+                width: 100% !important;
+            }
+            
+            .mapbox-directions-route-summary {
+                width: 100% !important;
+                max-width: none !important;
+            }
+            
+            .mapbox-directions-instructions {
+                width: 100% !important;
+            }
+            
+            /* Adjust the container padding for better mobile viewing */
+            .container-fluid.px-4 {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+        }
+
+        /* Improved mobile map display */
+        @@media (max-width: 767.98px) {
+            /* Better map container sizing on mobile */
+            .map-container {
+                height: 400px;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: 400px;
+            }
+            
+            /* Ensure the map canvas is properly sized and doesn't zoom excessively */
+            .mapboxgl-canvas {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+            }
+            
+            /* Adjust map controls position on mobile for better visibility */
+            .map-controls {
+                right: 10px;
+                bottom: 70px;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 8px;
+            }
+            
+            /* Better container padding for mobile */
+            .container-fluid.px-4 {
+                padding-left: 8px !important;
+                padding-right: 8px !important;
+            }
+            
+            /* Make the map card edge-to-edge on mobile */
+            .col-lg-8.mb-4 .card {
+                border-radius: 0;
+                margin-left: -8px;
+                margin-right: -8px;
+                width: calc(100% + 16px);
+            }
+            
+            /* Ensure the site list is properly sized on mobile */
+            .site-list-container {
+                max-height: 400px;
+            }
+            
+            /* Make modals more mobile-friendly */
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            
+            .modal-content {
+                border-radius: 8px;
+            }
+            
+            /* Make the modal map container better on mobile */
+            .modal-map-container {
+                height: 300px !important;
+                min-height: 300px !important;
+                border-radius: 0 !important;
             }
         }
     </style>

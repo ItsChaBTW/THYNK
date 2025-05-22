@@ -5,44 +5,65 @@
 }
 
 <div class="row">
-    <div class="col-12 mb-4">
-        <div class="card dashboard-card">
-            <div class="card-header bg-info text-white">
-                <div class="d-flex align-items-center">
-                    <div class="card-icon bg-white text-info">
+    <div class="col-12">
+        <!-- Resource Library Header - Redesigned -->
+        <div class="resource-header-wrapper mb-4">
+            <div class="resource-header-container">
+                <div class="resource-header-content">
+                    <div class="resource-header-icon">
+                        <div class="icon-badge">
                         <i class="fas fa-book"></i>
                     </div>
-                    <div>
-                        <h5 class="m-0">Community Resource Library</h5>
-                        <small>Exclusive access to emergency preparedness materials</small>
                     </div>
+                    <div class="resource-header-text">
+                        <h5 class="header-title mb-0">Community Resource Library</h5>
+                        <p class="header-description mb-0">Access to emergency preparedness materials for community members</p>
                 </div>
             </div>
-            <div class="card-body">
-                <!-- Community perk banner -->
-                <div class="alert alert-success mb-4">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-star text-warning fa-2x me-3"></i>
-                        <div>
-                            <h5 class="mb-1">Community Member Exclusive</h5>
-                            <p class="mb-0">As a THYNK community member, you have premium access to these educational resources. Save them offline for emergency situations!</p>
+                <div class="resource-header-actions">
+                    <span class="total-resources-badge" title="Total available resources">
+                        <i class="fas fa-layer-group me-1"></i>
+                        <span id="total-resources-count">@(Model?.Count() ?? 0)</span> resources
+                    </span>
+                    <div class="user-avatar-container d-none d-md-flex">
+                        <div class="user-avatar">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                @if (!string.IsNullOrEmpty(User.FindFirst("ProfilePhotoUrl")?.Value))
+                                {
+                                    <img src="@User.FindFirst("ProfilePhotoUrl")?.Value" alt="Profile" class="avatar-image">
+                                }
+                                else
+                                {
+                                    <span class="avatar-text">@(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")</span>
+                                }
+                            }
+                            else
+                            {
+                                <i class="fas fa-user"></i>
+                            }
                         </div>
                     </div>
-                </div>
-                
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <input type="text" id="search-resources" class="form-control" placeholder="Search resources...">
-                            <button class="btn btn-primary" type="button">
-                                <i class="fas fa-search"></i>
+                    <button class="btn btn-sm btn-outline-primary offline-btn" id="enable-offline-top">
+                        <i class="fas fa-wifi-slash me-1"></i> 
+                        <span class="btn-text">Enable Offline</span>
                             </button>
                         </div>
                     </div>
-
-                    <!-- Resource Counter -->
-                    <div class="resource-counter mb-3">
-                        <span class="counter-text">Showing <span id="resource-count">0</span> resources</span>
+            
+            <!-- Enhanced Search and Filter Bar -->
+            <div class="search-filter-bar mt-3">
+                <div class="search-filter-container">
+                    <div class="search-container">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text border-0 bg-light">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" id="search-resources" class="form-control form-control-sm border-0 bg-light" placeholder="Search by title, keywords, or tags...">
+                            <button class="btn btn-sm btn-clear d-none" id="clear-search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Resources Grid -->
@@ -89,84 +110,184 @@
                                 </div>
                             }
                         }
+                    
+                    <div class="filter-actions">
+                        <div class="filter-group">
+                            <select id="filter-resource-type" class="form-select form-select-sm bg-light border-0">
+                                <option value="all">All Types</option>
+                                <option value="Guide">Guides</option>
+                                <option value="Video">Videos</option>
+                                <option value="Infographic">Infographics</option>
+                                <option value="Document">Documents</option>
+                                <option value="Interactive">Interactive</option>
+                        </select>
                     </div>
+                        
+                        <div class="offline-toggle-container ms-3">
+                            <div class="offline-toggle-wrapper">
+                                <input class="toggle-checkbox" type="checkbox" id="offline-only">
+                                <label class="toggle-label" for="offline-only">
+                                    <span class="toggle-inner"></span>
+                                    <span class="toggle-switch"></span>
+                                </label>
+                                <span class="toggle-text">Offline Only</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Filters -->
+                <div class="filter-chips-container mt-2 d-flex align-items-start justify-content-between">
+                    <div class="d-flex align-items-center flex-wrap">
+                        <span id="filter-label" class="filter-label me-2 d-none">Active filters:</span>
+                        <div class="filter-chips d-inline-flex flex-wrap gap-1"></div>
+                    </div>
+                    <button type="button" id="clear-filters" class="btn btn-sm btn-reset d-none">
+                        <i class="fas fa-times-circle me-1"></i>Reset
+                    </button>
+                </div>
+                
+                <!-- Resource Counter -->
+                <div class="resource-counter mt-2">
+                    <span class="counter-text small">Showing <span id="resource-count" class="fw-bold">0</span> resources</span>
                 </div>
             </div>
         </div>
 
-        <!-- Offline Access Instructions Card -->
-        <div class="col-12">
-            <div class="offline-access-section mt-4">
-                <div class="section-header">
-                    <div class="d-flex align-items-center">
-                        <div class="section-icon">
-                            <i class="fas fa-cloud-download-alt"></i>
-                        </div>
-                        <h5 class="section-title mb-0">Offline Access</h5>
-                    </div>
-                    <p class="section-subtitle mb-0">Access resources even without internet connection</p>
-                </div>
-                
-                <div class="steps-container">
-                    <div class="row g-4">
-                        <div class="col-md-4">
-                            <div class="step-card">
-                                <div class="step-number">1</div>
-                                <div class="step-icon-container">
-                                    <div class="step-icon">
-                                        <i class="fas fa-search-plus"></i>
+        <!-- Resources Grid -->
+        <div class="row g-3" id="resource-container">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var resource in Model)
+                        {
+                    <div class="col-lg-3 col-md-4 col-sm-6 resource-item" 
+                                data-type="@resource.Type" 
+                                data-offline="@resource.IsOfflineAccessible.ToString().ToLower()"
+                                data-title="@resource.Title"
+                                data-tags="@resource.Tags">
+                        <div class="resource-card">
+                            <div class="card-cover cover-@resource.Type.ToString().ToLower()">
+                                <div class="cover-icon">
+                                    <i class="fas @(resource.Type.ToString() == "Guide" ? "fa-book-open" : 
+                                                   resource.Type.ToString() == "Video" ? "fa-play-circle" : 
+                                                   resource.Type.ToString() == "Infographic" ? "fa-chart-bar" : 
+                                                   resource.Type.ToString() == "Document" ? "fa-file-alt" : "fa-laptop-code")"></i>
+                                </div>
+                                            @if (resource.IsOfflineAccessible)
+                                            {
+                                    <div class="card-badge offline-badge" title="Available offline">
+                                                    <i class="fas fa-wifi-slash"></i>
                                     </div>
-                                </div>
-                                <div class="step-content">
-                                    <h6 class="step-title">Find Resources</h6>
-                                    <p class="step-description">Look for resources with the <span class="badge offline-indicator"><i class="fas fa-wifi-slash"></i> Offline</span> badge</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="step-card">
-                                <div class="step-number">2</div>
-                                <div class="step-icon-container">
-                                    <div class="step-icon">
+                                            }
+                                        </div>
+                            
+                            <div class="card-content">
+                                <div class="card-meta">
+                                    <span class="meta-badge type-@resource.Type.ToString().ToLower()">@resource.Type</span>
+                                    <small class="meta-date">@resource.DateAdded.ToString("MMM d, yyyy")</small>
+                                    </div>
+                                
+                                <h6 class="card-title">@resource.Title</h6>
+                                <p class="card-description">@resource.Description</p>
+                                
+                                        @if (!string.IsNullOrEmpty(resource.Tags))
+                                        {
+                                    <div class="card-tags">
+                                        @foreach (var tag in resource.Tags.Split(','))
+                                                {
+                                            <span class="tag">@tag.Trim()</span>
+                                                }
+                                            </div>
+                                        }
+                                
+                                <div class="card-actions">
+                                    <a href="@Url.Action("ResourceDetails", "Community", new { id = resource.Id })" class="btn-action btn-view">
+                                        <i class="fas fa-book-open me-1"></i> View
+                                    </a>
+                                    <a href="@Url.Action("DownloadResourcePdf", "Community", new { id = resource.Id })" class="btn-action btn-download" title="Download as PDF">
                                         <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
                                     </div>
                                 </div>
-                                <div class="step-content">
-                                    <h6 class="step-title">Download</h6>
-                                    <p class="step-description">Save resources to your device using the download button</p>
-                                </div>
                             </div>
+                        }
+                    }
                         </div>
-                        <div class="col-md-4">
-                            <div class="step-card">
-                                <div class="step-number">3</div>
-                                <div class="step-icon-container">
-                                    <div class="step-icon">
-                                        <i class="fas fa-wifi-slash"></i>
-                                    </div>
-                                </div>
+        
+        <!-- Offline Access Section - Enhanced Version -->
+        <div class="offline-access-section mt-4">
+            <div class="offline-access-header" id="offlineAccessHeader">
+                <div class="access-icon-container">
+                    <div class="access-icon">
+                        <i class="fas fa-cloud-download-alt"></i>
+                </div>
+            </div>
+                <div class="access-title-container">
+                    <h6 class="access-title">Offline Access</h6>
+                    <p class="access-subtitle">Access resources even without internet connection</p>
+                </div>
+                <div class="access-toggle-container">
+                    <button class="btn btn-toggle" type="button" id="toggleOfflineBtn">
+                        <i class="fas fa-chevron-down toggle-icon rotate"></i>
+        </div>
+    </div>
+
+            <div id="offlineAccessContent">
+                <div class="offline-access-content">
+                    <div class="steps-container">
+                        <div class="steps-header mb-3">
+                            <div class="steps-badge">
+                                <i class="fas fa-list-ol"></i>
+            </div>
+                            <h6 class="steps-title">How to Access Offline</h6>
+                        </div>
+                        
+                        <div class="steps-grid">
+                            <div class="step-item">
+                                <div class="step-number">
+                                    <span>1</span>
+                    </div>
                                 <div class="step-content">
-                                    <h6 class="step-title">Access Anytime</h6>
-                                    <p class="step-description">View your downloaded resources even without internet connection</p>
-                                </div>
-                            </div>
+                                    <h6 class="step-title mb-1">Find Resources</h6>
+                                    <p class="step-description">Look for the <span class="offline-indicator"><i class="fas fa-wifi-slash"></i></span> icon that indicates offline availability</p>
                         </div>
+                    </div>
+                            
+                            <div class="step-item">
+                                <div class="step-number">
+                                    <span>2</span>
+                        </div>
+                                <div class="step-content">
+                                    <h6 class="step-title mb-1">Download</h6>
+                                    <p class="step-description">Save resources to your device with the <i class="fas fa-download text-primary"></i> button</p>
                     </div>
                 </div>
-                
-                <div class="offline-info mt-4">
-                    <div class="info-icon">
-                        <i class="fas fa-info-circle"></i>
+                            
+                            <div class="step-item">
+                                <div class="step-number">
+                                    <span>3</span>
+                                </div>
+                                <div class="step-content">
+                                    <h6 class="step-title mb-1">Access Anytime</h6>
+                                    <p class="step-description">View saved resources in the "Downloads" section without internet</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="info-content">
-                        <h6 class="info-title">How it works</h6>
-                        <p class="info-description">
-                            This site uses Progressive Web App technology to store resources locally on your device. 
-                            To ensure proper offline access, please allow storage permissions in your browser settings.
-                        </p>
-                        <button class="btn btn-enable-offline" id="enable-offline">
-                            <i class="fas fa-cog me-1"></i> Enable Offline Mode
-                        </button>
+                    
+                    <div class="offline-info-box">
+                        <div class="info-header">
+                            <i class="fas fa-info-circle"></i>
+                            <h6 class="info-title">About Offline Mode</h6>
+                        </div>
+                        <p class="info-text">This site uses Progressive Web App technology to store resources locally on your device. Enable offline mode to ensure access during emergencies.</p>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                            <button class="btn btn-primary" id="enable-offline">
+                                <i class="fas fa-cog me-1"></i> Enable Offline Mode
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -185,12 +306,93 @@
                 tags: []
             };
             
+            // Ensure offline section is properly initialized and visible
+            $("#offlineAccessContent").show();
+            $(".toggle-icon").addClass("rotate");
+            
+            // Highlight offline section briefly on load for visibility
+            setTimeout(function() {
+                $(".offline-access-section").addClass("highlight-section");
+                setTimeout(function() {
+                    $(".offline-access-section").removeClass("highlight-section");
+                }, 1000);
+            }, 500);
+            
+            // Initial animation for resource cards
+            $(".resource-item").each(function(index) {
+                const $item = $(this);
+                setTimeout(function() {
+                    $item.addClass("fade-in");
+                }, index * 50);
+            });
+            
             // Initialize resource count
             updateResourceCount();
             
-            // Search resources
+            // Toggle offline access content when header is clicked
+            $("#offlineAccessHeader").on("click", function(e) {
+                toggleOfflineSection();
+            });
+            
+            // Toggle button click handler
+            $("#toggleOfflineBtn").on("click", function(e) {
+                e.stopPropagation(); // Prevent event bubbling
+                toggleOfflineSection();
+            });
+            
+            // Function to toggle offline section visibility
+            function toggleOfflineSection() {
+                const $content = $("#offlineAccessContent");
+                const $icon = $(".toggle-icon");
+                
+                if ($content.is(":visible")) {
+                    $content.slideUp(300);
+                    $icon.removeClass("rotate");
+                } else {
+                    $content.slideDown(300);
+                    $icon.addClass("rotate");
+                }
+            }
+            
+            // Function to ensure the offline section is visible
+            function ensureOfflineContentVisible() {
+                const $content = $("#offlineAccessContent");
+                const $icon = $(".toggle-icon");
+                
+                if (!$content.is(":visible")) {
+                    $content.slideDown(300);
+                    $icon.addClass("rotate");
+                }
+                
+                // Scroll to the section
+                setTimeout(function() {
+                    $('html, body').animate({
+                        scrollTop: $(".offline-access-section").offset().top - 100
+                    }, 500);
+                }, 200);
+            }
+            
+            // Search resources with improved handling
             $("#search-resources").on("keyup", function() {
-                activeFilters.search = $(this).val().toLowerCase();
+                const searchValue = $(this).val().toLowerCase().trim();
+                activeFilters.search = searchValue;
+                
+                // Show/hide clear button based on input
+                if (searchValue.length > 0) {
+                    $("#clear-search").removeClass("d-none");
+                } else {
+                    $("#clear-search").addClass("d-none");
+                }
+                
+                updateFilterChips();
+                filterResources();
+            });
+            
+            // Clear search input
+            $("#clear-search").on("click", function() {
+                $("#search-resources").val('').focus();
+                activeFilters.search = '';
+                $(this).addClass("d-none");
                 updateFilterChips();
                 filterResources();
             });
@@ -205,12 +407,26 @@
             // Filter offline only
             $("#offline-only").on("change", function() {
                 activeFilters.offline = $(this).is(":checked");
+                
+                // Add visual feedback when toggled
+                if ($(this).is(":checked")) {
+                    $(".toggle-text").addClass("active");
+                } else {
+                    $(".toggle-text").removeClass("active");
+                }
+                
                 updateFilterChips();
                 filterResources();
             });
             
-            // Clear all filters
+            // Clear all filters with animation
             $("#clear-filters").on("click", function() {
+                // Add shake animation
+                $(this).addClass("shake");
+                setTimeout(() => {
+                    $(this).removeClass("shake");
+                }, 500);
+                
                 activeFilters = {
                     search: '',
                     type: 'all',
@@ -222,22 +438,34 @@
                 $("#search-resources").val('');
                 $("#filter-resource-type").val('all');
                 $("#offline-only").prop('checked', false);
+                $(".toggle-text").removeClass("active");
+                $("#clear-search").addClass("d-none");
                 
                 // Update UI
                 updateFilterChips();
                 filterResources();
+                
+                // Add success feedback
+                showToast('Filters have been reset', 'info');
             });
             
-            // Enable offline mode
+            // Enable offline mode - main button
             $("#enable-offline").on("click", function() {
-                $(this).html('<i class="fas fa-spinner fa-spin me-1"></i> Enabling...');
+                enableOfflineMode($(this));
+            });
+            
+            // Enable offline mode - top header button
+            $("#enable-offline-top").on("click", function(e) {
+                e.stopPropagation(); // Prevent event bubbling
+                enableOfflineMode($(this));
                 
+                // Make sure offline content is visible
+                ensureOfflineContentVisible();
+                
+                // Also update main button state
                 setTimeout(function() {
                     $("#enable-offline").html('<i class="fas fa-check-circle me-1"></i> Enabled');
                     $("#enable-offline").addClass('btn-enabled');
-                    
-                    // Show toast notification
-                    showToast('Offline mode enabled successfully!', 'success');
                     
                     setTimeout(function() {
                         $("#enable-offline").html('<i class="fas fa-cog me-1"></i> Enable Offline Mode');
@@ -246,8 +474,53 @@
                 }, 1500);
             });
             
+            // Common function for enabling offline mode with improved animation
+            function enableOfflineMode($button) {
+                const originalHtml = $button.html();
+                
+                // Add pulse animation
+                $button.addClass('pulse-animation');
+                $button.html('<i class="fas fa-spinner fa-spin me-1"></i> Enabling...');
+                
+                setTimeout(function() {
+                    $button.removeClass('pulse-animation');
+                    $button.html('<i class="fas fa-check-circle me-1"></i> Enabled');
+                    $button.addClass('btn-enabled');
+                    
+                    // Make sure offline content is visible
+                    ensureOfflineContentVisible();
+                    
+                    // Add highlighting effect to make it more noticeable
+                    $(".offline-access-section").addClass("highlight-section");
+                    setTimeout(function() {
+                        $(".offline-access-section").removeClass("highlight-section");
+                    }, 1500);
+                    
+                    // Add highlighting effect to the steps
+                    $(".step-item").each(function(index) {
+                        const $step = $(this);
+                        setTimeout(function() {
+                            $step.addClass("highlight-step");
+                            setTimeout(function() {
+                                $step.removeClass("highlight-step");
+                            }, 800);
+                        }, index * 300);
+                    });
+                    
+                    // Show toast notification
+                    showToast('Offline mode enabled successfully! Your resources are now available offline.', 'success');
+                    
+                    setTimeout(function() {
+                        $button.html(originalHtml);
+                        $button.removeClass('btn-enabled');
+                    }, 3000);
+                }, 1500);
+            }
+            
             // Filter resources function
             function filterResources() {
+                let visibleCount = 0;
+                
                 $(".resource-item").each(function() {
                     let $item = $(this);
                     let title = $item.data("title").toLowerCase();
@@ -267,17 +540,53 @@
                     }
                     
                     if (matchesSearch && matchesType && matchesOffline && matchesTags) {
-                        $item.removeClass('hidden-item').addClass('visible-item');
+                        $item.show();
+                        visibleCount++;
                     } else {
-                        $item.removeClass('visible-item').addClass('hidden-item');
+                        $item.hide();
                     }
                 });
                 
                 // Update count after filtering
-                updateResourceCount();
+                updateResourceCount(visibleCount);
                 
                 // Show message if no results
-                updateNoResultsMessage();
+                updateNoResultsMessage(visibleCount);
+            }
+            
+            // Update resource count
+            function updateResourceCount(visibleCount) {
+                const count = visibleCount || $(".resource-item:visible").length;
+                $("#resource-count").text(count);
+            }
+            
+            // Show/hide no results message
+            function updateNoResultsMessage(visibleCount) {
+                const noResults = visibleCount === 0;
+                
+                if (noResults) {
+                    if ($("#no-results-message").length === 0) {
+                        $("#resource-container").append(`
+                            <div id="no-results-message" class="col-12 text-center py-5">
+                                <div class="empty-state-icon mb-3">
+                                    <i class="fas fa-search text-muted"></i>
+                                </div>
+                                <h5 class="mb-2">No matching resources found</h5>
+                                <p class="text-muted mb-3">Try adjusting your search criteria or filters</p>
+                                <button id="reset-search-btn" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-times-circle me-1"></i>Reset Filters
+                                </button>
+                            </div>
+                        `);
+                        
+                        // Add reset button handler
+                        $("#reset-search-btn").on("click", function() {
+                            $("#clear-filters").click();
+                        });
+                    }
+                } else {
+                    $("#no-results-message").remove();
+                }
             }
             
             // Update filter chips UI
@@ -364,6 +673,7 @@
                     } else if (filterType === "offline") {
                         activeFilters.offline = false;
                         $("#offline-only").prop('checked', false);
+                        $(".toggle-text").removeClass("active");
                     } else if (filterType === "tag") {
                         const tag = $(this).data("tag");
                         activeFilters.tags = activeFilters.tags.filter(t => t !== tag);
@@ -372,40 +682,6 @@
                     updateFilterChips();
                     filterResources();
                 });
-            }
-            
-            // Update resource count
-            function updateResourceCount() {
-                const visibleCount = $(".resource-item:visible").length;
-                $("#resource-count").text(visibleCount);
-            }
-            
-            // Show/hide no results message
-            function updateNoResultsMessage() {
-                if ($(".resource-item:visible").length === 0) {
-                    if ($("#no-results").length === 0) {
-                        $("#resource-container").append(`
-                            <div id="no-results" class="no-results">
-                                <div class="no-results-icon">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <h5 class="no-results-title">No matching resources found</h5>
-                                <p class="no-results-message">Try adjusting your search criteria or filters</p>
-                                <button id="reset-filters" class="btn btn-reset">Reset Filters</button>
-                            </div>
-                        `);
-                        
-                        $("#reset-filters").on("click", function() {
-                            $("#clear-filters").click();
-                        });
-                        
-                        $("#no-results").hide().fadeIn(300);
-                    }
-                } else {
-                    $("#no-results").fadeOut(300, function() {
-                        $(this).remove();
-                    });
-                }
             }
             
             // Add click handler for tags to filter by tag
@@ -423,60 +699,37 @@
             // Show toast notification
             function showToast(message, type = 'info') {
                 // Remove existing toasts
-                $(".toast-notification").remove();
+                $(".toast-container").remove();
                 
-                // Create new toast
-                const toast = $(`
-                    <div class="toast-notification toast-${type}">
-                        <div class="toast-icon">
-                            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                // Create toast container if it doesn't exist
+                if ($(".toast-container").length === 0) {
+                    $("body").append('<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>');
+                }
+                
+                // Create toast
+                const toastId = 'toast-' + Date.now();
+                const $toast = $(`
+                    <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header bg-${type === 'success' ? 'success' : 'info'} bg-opacity-10">
+                            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2 text-${type}"></i>
+                            <strong class="me-auto">${type === 'success' ? 'Success' : 'Information'}</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                         </div>
-                        <div class="toast-content">
-                            <p>${message}</p>
+                        <div class="toast-body">
+                            ${message}
                         </div>
-                        <button class="toast-close">
-                            <i class="fas fa-times"></i>
-                        </button>
                     </div>
                 `);
                 
-                // Add to body
-                $("body").append(toast);
-                
-                // Show with animation
-                setTimeout(() => {
-                    toast.addClass('show');
-                    
-                    // Auto hide after 5 seconds
-                    setTimeout(() => {
-                        toast.removeClass('show');
-                        setTimeout(() => {
-                            toast.remove();
-                        }, 300);
-                    }, 5000);
-                }, 100);
-                
-                // Close button handler
-                toast.find(".toast-close").on("click", function() {
-                    toast.removeClass('show');
-                    setTimeout(() => {
-                        toast.remove();
-                    }, 300);
+                // Add to container and show
+                $(".toast-container").append($toast);
+                const toast = new bootstrap.Toast(document.getElementById(toastId), {
+                    delay: 5000
                 });
+                toast.show();
             }
             
-            // Card animations
-            $(".resource-card").each(function(index) {
-                const card = $(this);
-                setTimeout(() => {
-                    card.addClass('show');
-                }, index * 100);
-            });
-            
-            // Initial filtering
-            filterResources();
-            
-            // Install Service Worker for offline capability
+            // Initialize any Service Workers for offline capability
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
@@ -515,9 +768,6 @@
             --text-muted: #94a3b8;
             --border: #e2e8f0;
             
-            /* Custom theme colors */
-            --theme-bg: #EFF3EA;
-            
             /* Component colors */
             --guide-color: #43aa8b;
             --video-color: #4599e1;
@@ -526,151 +776,321 @@
             --interactive-color: #7467ef;
             --offline-color: #4caf9e;
             
-            /* Typography */
-            --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --font-heading: var(--font-sans);
-            --font-body: var(--font-sans);
-            
-            /* Elevations */
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.06);
-            --shadow-hover: 0 10px 25px rgba(58, 123, 213, 0.07);
-            
-            /* Border radius */
-            --radius-sm: 0.25rem;
-            --radius-md: 0.5rem;
-            --radius-lg: 1rem;
-            --radius-full: 9999px;
-            
-            /* Transitions */
-            --transition-fast: 0.15s ease;
-            --transition-normal: 0.25s ease;
-            --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            
-            /* Z-index layers */
-            --z-toast: 5000;
-            --z-dropdown: 1000;
-            --z-modal: 2000;
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.07);
         }
         
-        /* Base styles */
-        body {
-            font-family: var(--font-body);
-            background-color: var(--background);
-            color: var(--text-primary);
+        /* Enhanced Resource Header */
+        .resource-header-wrapper {
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
         
-        /* Page header */
-        .page-header {
-            margin-bottom: 1rem;
-            padding: 1rem 0;
+        .resource-header-container {
+            padding: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(120deg, rgba(69, 153, 225, 0.08), rgba(58, 123, 213, 0.05));
+            border-bottom: 1px solid rgba(58, 123, 213, 0.1);
         }
         
-        .page-icon {
+        .resource-header-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+        }
+        
+        .resource-header-icon {
+            flex-shrink: 0;
+        }
+        
+        .icon-badge {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background: linear-gradient(135deg, var(--info), var(--primary));
             color: white;
-            border-radius: var(--radius-full);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
             box-shadow: var(--shadow-md);
-        }
-        
-        .page-title {
-            color: var(--dark);
-            font-weight: 600;
-            font-family: var(--font-heading);
-            font-size: 1.5rem;
-        }
-        
-        .page-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-        
-        /* Search and filter */
-        .search-filter-container {
-            background-color: var(--theme-bg);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .search-container, .filter-container {
             position: relative;
+            overflow: hidden;
         }
         
-        .btn-search {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        .icon-badge::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+            pointer-events: none;
+        }
+        
+        .resource-header-text {
+            flex: 1;
+        }
+        
+        .header-title {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+        
+        .header-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Adjust spacing for header items */
+        .resource-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: auto;
+        }
+        
+        .total-resources-badge {
+            background-color: rgba(69, 153, 225, 0.1);
+            color: var(--primary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .offline-btn {
+            background-color: white;
+            border-color: var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .offline-btn:hover {
+            background-color: var(--primary);
             color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Enhanced Search and Filter Bar */
+        .search-filter-bar {
+            background-color: white;
+            padding: 12px 16px;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .search-filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .search-container {
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+            width: calc(50% - 6px);
+        }
+        
+        .search-container .input-group {
+            border-radius: 20px;
+            overflow: hidden;
+            background-color: var(--light);
+            border: 1px solid var(--border);
+        }
+        
+        .search-container .form-control {
+            height: 36px;
+            padding-left: 8px;
+        }
+        
+        .search-container .input-group-text {
+            background-color: transparent;
+        }
+        
+        .btn-clear {
+            background: none;
             border: none;
-            transition: var(--transition-normal);
+            color: var(--text-muted);
+            cursor: pointer;
         }
         
-        .btn-search:hover {
-            opacity: 0.9;
-            color: white;
+        .filter-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+            justify-content: flex-end;
+            width: calc(50% - 6px);
+        }
+        
+        .filter-group {
+            min-width: 140px;
+            flex: 1;
+            max-width: 180px;
+        }
+        
+        /* Make the filter dropdown more consistent with search */
+        .filter-group .form-select {
+            border-radius: 20px;
+            height: 36px;
+            padding-left: 12px;
+            padding-right: 28px;
+            background-color: var(--light);
+            border: 1px solid var(--border);
+            width: 100%;
+            font-size: 0.875rem;
+            background-position: right 10px center;
+        }
+        
+        /* Add some focus styling for better UX */
+        .filter-group .form-select:focus,
+        .search-container .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(69, 153, 225, 0.25);
+            border-color: rgba(69, 153, 225, 0.5);
         }
         
         .offline-toggle-container {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+        
+        .offline-toggle-wrapper {
             display: flex;
-            justify-content: flex-end;
+            align-items: center;
         }
         
-        .offline-toggle {
-            background-color: #f8fafc;
-            padding: 0.6rem 1rem;
-            border-radius: var(--radius-full);
+        .toggle-checkbox {
+            height: 0;
+            width: 0;
+            visibility: hidden;
+            position: absolute;
+        }
+        
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            width: 46px;
+            height: 24px;
+            background: #e2e8f0;
+            border-radius: 100px;
+            position: relative;
+            transition: background-color .2s;
+            margin: 0;
+        }
+        
+        .toggle-label .toggle-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 100px;
+            overflow: hidden;
+        }
+        
+        .toggle-label .toggle-switch {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 100%;
+            background: #fff;
+            transition: 0.3s;
+            box-shadow: 0 0 2px 0 rgba(10, 10, 10, 0.15);
+        }
+        
+        .toggle-checkbox:checked + .toggle-label {
+            background: var(--offline-color);
+        }
+        
+        .toggle-checkbox:checked + .toggle-label .toggle-switch {
+            left: calc(100% - 2px);
+            transform: translateX(-100%);
+        }
+        
+        .toggle-text {
+            margin-left: 8px;
+            font-size: 0.85rem;
             color: var(--text-secondary);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition-normal);
+            transition: color 0.2s;
         }
         
-        .offline-toggle:hover {
-            background-color: #ffffff;
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
+        .toggle-text.active, 
+        .toggle-checkbox:checked ~ .toggle-text {
+            color: var(--offline-color);
+            font-weight: 500;
         }
         
-        .offline-toggle .form-check-input {
-            width: 2.5em;
-            height: 1.25em;
+        /* Add some hover effect */
+        .toggle-label:hover {
+            background: #d1d8e3;
         }
         
-        .offline-toggle .form-check-input:checked {
-            background-color: var(--offline-color);
-            border-color: var(--offline-color);
+        .toggle-checkbox:checked + .toggle-label:hover {
+            background: #41a091;
         }
         
-        /* Filter chips */
+        .filter-chips-container {
+            min-height: 30px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(226, 232, 240, 0.5);
+            gap: 8px;
+        }
+        
+        .filter-chips {
+            flex: 1;
+            min-width: 0;
+        }
+        
         .filter-label {
             color: var(--text-secondary);
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
         
         .filter-chip {
             display: inline-flex;
             align-items: center;
-            padding: 0.25rem 0.5rem;
+            padding: 4px 10px;
             background-color: #eef2ff;
-            border-radius: var(--radius-full);
-            font-size: 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
             color: var(--primary);
-            border: 1px solid #d1ddfb;
-            transition: var(--transition-fast);
+            border: none;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
         }
         
         .filter-chip:hover {
-            background-color: #dce7ff;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
         }
         
         .chip-icon {
-            margin-right: 0.35rem;
+            margin-right: 6px;
+            font-size: 0.7rem;
         }
         
         .chip-text {
@@ -678,77 +1098,66 @@
         }
         
         .chip-remove {
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
             background: none;
             border: none;
             color: var(--primary);
-            font-size: 0.75rem;
-            width: 18px;
-            height: 18px;
-            padding: 0;
-            margin-left: 0.35rem;
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: var(--transition-fast);
+            padding: 0;
+            margin-left: 6px;
+            opacity: 0.7;
+            transition: all 0.15s ease;
         }
         
         .chip-remove:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-        
-        .btn-clear-filters {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            padding: 0.25rem 0.5rem;
-            transition: var(--transition-fast);
-        }
-        
-        .btn-clear-filters:hover {
-            color: var(--danger);
-        }
-        
-        /* Resource counter */
-        .resource-counter {
-            margin-bottom: 1rem;
+            opacity: 1;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 50%;
         }
         
         .counter-text {
             color: var(--text-secondary);
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.8rem;
         }
         
         /* Resource cards */
+        .resource-item {
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .resource-item.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
         .resource-card {
             position: relative;
             background-color: var(--surface);
-            border-radius: var(--radius-md);
+            border-radius: 8px;
             overflow: hidden;
             box-shadow: var(--shadow-sm);
-            transition: var(--transition-slow);
-            transform: translateY(20px);
-            opacity: 0;
-            min-height: 360px;
+            transition: all 0.2s ease;
             display: flex;
             flex-direction: column;
-        }
-        
-        .resource-card.show {
-            transform: translateY(0);
-            opacity: 1;
+            height: 100%;
+            min-height: 0;
+            border: 1px solid var(--border);
         }
         
         .resource-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             box-shadow: var(--shadow-hover);
         }
         
         /* Card cover */
         .card-cover {
-            height: 100px;
+            height: 80px;
             position: relative;
             overflow: hidden;
         }
@@ -762,7 +1171,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
+            font-size: 1.75rem;
             color: white;
         }
         
@@ -788,7 +1197,7 @@
         
         /* Card content */
         .card-content {
-            padding: 1.25rem;
+            padding: 12px;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
@@ -798,14 +1207,14 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 0.75rem;
+            margin-bottom: 8px;
         }
         
         .meta-badge {
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 0.25rem 0.5rem;
-            border-radius: var(--radius-full);
+            font-size: 0.65rem;
+            font-weight: 500;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -836,27 +1245,32 @@
         }
         
         .meta-date {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
         }
         
         .card-title {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
-            line-height: 1.4;
+            margin-bottom: 6px;
+            line-height: 1.3;
             color: var(--text-primary);
+            
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
         
         .card-description {
             color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 8px;
             flex-grow: 1;
             
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -865,17 +1279,17 @@
         .card-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.35rem;
-            margin-bottom: 1.25rem;
+            gap: 4px;
+            margin-bottom: 10px;
         }
         
         .tag {
-            font-size: 0.7rem;
-            padding: 0.15rem 0.5rem;
+            font-size: 0.65rem;
+            padding: 0.1rem 0.4rem;
             background-color: #f1f5f9;
             color: var(--text-secondary);
-            border-radius: var(--radius-full);
-            transition: var(--transition-fast);
+            border-radius: 4px;
+            transition: all 0.15s ease;
             cursor: pointer;
         }
         
@@ -888,31 +1302,24 @@
         .card-badge {
             position: absolute;
             z-index: 10;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 0.25rem 0.5rem;
-            border-radius: var(--radius-full);
+            top: 8px;
+            right: 8px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
             box-shadow: var(--shadow-sm);
         }
         
         .offline-badge {
-            top: 0.75rem;
-            right: 0.75rem;
-            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
-            color: white;
-        }
-        
-        .sample-badge {
-            top: 0.75rem;
-            left: 0.75rem;
-            background: linear-gradient(135deg, var(--warning), #e0a44e);
+            background-color: var(--offline-color);
             color: white;
         }
         
         /* Card actions */
         .card-actions {
             display: flex;
-            gap: 0.5rem;
+            gap: 8px;
             margin-top: auto;
         }
         
@@ -920,151 +1327,85 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-full);
-            font-size: 0.85rem;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
             font-weight: 500;
-            transition: var(--transition-normal);
+            transition: all 0.2s ease;
             text-decoration: none;
         }
         
         .btn-view {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background-color: var(--primary);
             color: white;
             flex-grow: 1;
         }
         
         .btn-view:hover {
             opacity: 0.9;
-            transform: translateY(-2px);
             color: white;
         }
         
         .btn-download {
-            background-color: transparent;
-            color: var(--accent);
-            border: 1px solid var(--accent);
+            background-color: #f1f5f9;
+            color: var(--text-secondary);
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            border-radius: 6px;
         }
         
         .btn-download:hover {
-            background-color: rgba(67, 170, 139, 0.08);
-            transform: translateY(-2px);
-            color: var(--accent);
+            background-color: var(--background);
+            color: var(--primary);
         }
         
-        /* No results message */
-        .no-results {
-            text-align: center;
-            padding: 3rem 1rem;
-            background-color: var(--surface);
-            border-radius: var(--radius-md);
-            margin: 2rem 0;
-            width: 100%;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .no-results-icon {
-            width: 80px;
-            height: 80px;
+        /* Empty state styling */
+        .empty-state-icon {
+            width: 60px;
+            height: 60px;
             background-color: #f1f5f9;
             border-radius: 50%;
-            margin: 0 auto 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.5rem;
             color: var(--text-muted);
-            font-size: 1.75rem;
+            margin: 0 auto;
         }
         
-        .no-results-title {
-            color: var(--text-primary);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        /* Offline access compact section */
+        .offline-access-compact {
+            margin-top: 1.5rem;
         }
         
-        .no-results-message {
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
+        .accordion-button {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            border-radius: 8px !important;
         }
         
-        .btn-reset {
-            background-color: transparent;
+        .accordion-button:not(.collapsed) {
             color: var(--primary);
-            border: 1px solid var(--primary);
-            padding: 0.5rem 1.25rem;
-            border-radius: var(--radius-full);
-            font-weight: 500;
-            transition: var(--transition-normal);
+            background-color: rgba(69, 153, 225, 0.05);
         }
         
-        .btn-reset:hover {
-            background-color: var(--primary);
-            color: white;
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--border);
         }
         
-        /* Offline access section */
-        .offline-access-section {
-            background-color: var(--surface);
-            border-radius: var(--radius-md);
-            padding: 2rem;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .section-header {
-            margin-bottom: 2rem;
-        }
-        
-        .section-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
-            color: white;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            margin-right: 1rem;
-        }
-        
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-        
-        .section-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            margin-top: 0.25rem;
-        }
-        
-        .steps-container {
-            margin-bottom: 2rem;
-        }
-        
-        .step-card {
-            background-color: #f8fafc;
-            border-radius: var(--radius-md);
-            padding: 1.75rem;
-            position: relative;
+        .step-mini {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
             height: 100%;
-            transition: var(--transition-normal);
-        }
-        
-        .step-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
         }
         
         .step-number {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
             width: 24px;
             height: 24px;
-            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
+            background-color: var(--primary);
             color: white;
             border-radius: 50%;
             display: flex;
@@ -1072,272 +1413,927 @@
             justify-content: center;
             font-size: 0.8rem;
             font-weight: 600;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .step-icon-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 1.25rem;
-        }
-        
-        .step-icon {
-            width: 60px;
-            height: 60px;
-            background-color: rgba(76, 175, 158, 0.15);
-            color: var(--offline-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-        }
-        
-        .step-content {
-            text-align: center;
         }
         
         .step-title {
-            color: var(--text-primary);
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
         }
         
         .step-description {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 0;
-        }
-        
-        .offline-indicator {
-            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
-            color: white;
             font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: var(--radius-full);
-            display: inline-flex;
-            align-items: center;
-            white-space: nowrap;
-        }
-        
-        .offline-info {
-            background-color: #f8fafc;
-            border-radius: var(--radius-md);
-            padding: 1.5rem;
-            display: flex;
-            align-items: flex-start;
-        }
-        
-        .info-icon {
-            width: 48px;
-            height: 48px;
-            background-color: rgba(76, 175, 158, 0.15);
-            color: var(--offline-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            margin-right: 1rem;
-            flex-shrink: 0;
-        }
-        
-        .info-title {
-            color: var(--text-primary);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        
-        .info-description {
             color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 1rem;
-        }
-        
-        .btn-enable-offline {
-            background: linear-gradient(135deg, var(--offline-color), #3d8c7e);
-            color: white;
-            border: none;
-            border-radius: var(--radius-full);
-            padding: 0.5rem 1.25rem;
-            font-weight: 500;
-            transition: var(--transition-normal);
-        }
-        
-        .btn-enable-offline:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-        
-        .btn-enabled {
-            background: linear-gradient(135deg, #4caf9e, #2d8b7c);
-        }
-        
-        /* Toast notifications */
-        .toast-notification {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background-color: white;
-            border-radius: var(--radius-md);
-            padding: 1rem;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            max-width: 350px;
-            z-index: var(--z-toast);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: var(--transition-normal);
-        }
-        
-        .toast-notification.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .toast-success {
-            border-left: 4px solid var(--success);
-        }
-        
-        .toast-info {
-            border-left: 4px solid var(--info);
-        }
-        
-        .toast-warning {
-            border-left: 4px solid var(--warning);
-        }
-        
-        .toast-error {
-            border-left: 4px solid var(--danger);
-        }
-        
-        .toast-icon {
-            font-size: 1.25rem;
-            margin-right: 0.75rem;
-        }
-        
-        .toast-success .toast-icon {
-            color: var(--success);
-        }
-        
-        .toast-info .toast-icon {
-            color: var(--info);
-        }
-        
-        .toast-warning .toast-icon {
-            color: var(--warning);
-        }
-        
-        .toast-error .toast-icon {
-            color: var(--danger);
-        }
-        
-        .toast-content {
-            flex-grow: 1;
-        }
-        
-        .toast-content p {
             margin-bottom: 0;
-            color: var(--text-primary);
         }
         
-        .toast-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 0.25rem;
-            margin-left: 0.5rem;
-            transition: var(--transition-fast);
-        }
-        
-        .toast-close:hover {
-            color: var(--danger);
-        }
-        
-        /* Animation helper classes */
-        .hidden-item {
-            display: none;
-        }
-        
-        .visible-item {
-            display: block;
+        /* Button states */
+        .btn-enabled {
+            background-color: var(--success) !important;
+            color: white !important;
         }
         
         /* Responsive adjustments */
-        @@media (max-width: 992px) {
-            .offline-toggle-container {
-                justify-content: flex-start;
-            }
-            
-            .search-filter-container {
-                padding: 1rem;
-            }
-        }
-        
-        @@media (max-width: 767.98px) {
-            .page-header {
-                padding: 0.75rem 0;
-            }
-            
-            .page-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-            
-            .page-title {
-                font-size: 1.25rem;
-            }
-            
-            .page-subtitle {
-                font-size: 0.85rem;
-            }
-            
-            .offline-toggle {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.9rem;
+        @@media (max-width: 991px) {
+            .search-container, 
+            .filter-actions {
                 width: 100%;
+                max-width: 100%;
+            }
+            
+            .filter-actions {
+                justify-content: flex-start;
+                margin-top: 12px;
+            }
+            
+            .filter-group {
+                flex: 0 0 auto;
+                width: auto;
+                min-width: 160px;
+                max-width: none;
+            }
+            
+            .offline-toggle-container {
+                flex: 0 0 auto;
+            }
+            
+            .filter-chips-container {
+                flex-wrap: wrap;
+            }
+            
+            .filter-chips-container > div:first-child {
+                margin-bottom: 8px;
+                width: 100%;
+            }
+            
+            .btn-reset {
+                margin-left: auto;
+            }
+            
+            .resource-header-container {
+                padding: 14px;
+            }
+            
+            .resource-header-text {
+                max-width: 100%;
+            }
+            
+            .header-title {
+                font-size: 1.2rem;
+            }
+            
+            .total-resources-badge {
+                display: none;
+            }
+            
+            .offline-btn .btn-text {
+                display: none;
+            }
+            
+            .offline-btn {
+                width: 36px;
+                height: 36px;
+                padding: 0;
+                display: flex;
+                align-items: center;
                 justify-content: center;
             }
             
-            .search-container, .filter-container, .offline-toggle-container {
-                margin-bottom: 0.5rem;
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+        
+        @@media (max-width: 767px) {
+            .search-filter-container {
+                flex-direction: column;
+                align-items: stretch;
             }
             
-            .search-filter-container .row {
-                gap: 0.5rem !important;
+            .search-container {
+                width: 100%;
+                max-width: 100%;
             }
             
-            .section-title {
+            .filter-actions {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            
+            .filter-group {
+                width: calc(60% - 10px);
+                flex: 0 0 auto;
+            }
+            
+            .offline-toggle-container {
+                width: 40%;
+                flex: 0 0 auto;
+            }
+            
+            .filter-chips-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .filter-chips-container > div:first-child {
+                margin-bottom: 8px;
+            }
+            
+            .btn-reset {
+                margin-left: 0;
+                align-self: flex-start;
+            }
+            
+            .resource-header-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .resource-header-content {
+                width: 100%;
+            }
+            
+            .resource-header-text {
+                max-width: 100%;
+            }
+            
+            .resource-header-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .icon-badge {
+                width: 40px;
+                height: 40px;
                 font-size: 1.1rem;
             }
             
-            .step-card {
-                padding: 1.5rem 1rem;
-                margin-bottom: 1rem;
+            .header-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
             }
             
-            .offline-info {
+            /* Offline section adjustments */
+            .offline-access-header {
+                flex-wrap: wrap;
+            }
+            
+            .access-icon-container {
+                margin-right: 12px;
+            }
+            
+            .access-title-container {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .access-toggle-container {
+                margin-left: 0;
+                margin-top: 8px;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            
+            .btn-toggle {
+                margin-top: 0;
+            }
+            
+            .steps-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .step-item {
+                padding: 16px;
+            }
+            
+            .access-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+            
+            .access-title {
+                font-size: 1rem;
+            }
+            
+            .access-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            .offline-info-box {
+                padding: 16px;
+            }
+            
+            /* Better visibility for offline indicator */
+            .offline-indicator {
+                width: 24px;
+                height: 24px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        @@media (max-width: 576px) {
+            .search-filter-bar {
+                padding: 12px;
+            }
+            
+            .filter-actions {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .filter-group, .offline-toggle-container {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .btn-reset {
+                width: 100%;
+                margin-top: 8px;
+                display: flex;
+                justify-content: center;
+            }
+            
+            .resource-header-container {
+                padding: 12px;
+            }
+            
+            .header-title {
+                font-size: 1.1rem;
+            }
+            
+            .header-description {
+                font-size: 0.8rem;
+            }
+            
+            .filter-chip {
+                padding: 3px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .chip-remove {
+                width: 16px;
+                height: 16px;
+                font-size: 0.65rem;
+            }
+            
+            .offline-access-header {
+                padding: 14px;
                 flex-direction: column;
                 align-items: center;
                 text-align: center;
             }
             
-            .info-icon {
+            .access-icon-container {
                 margin-right: 0;
-                margin-bottom: 0.75rem;
+                margin-bottom: 12px;
             }
             
-            .toast-notification {
-                bottom: 1rem;
-                right: 1rem;
-                left: 1rem;
-                max-width: none;
+            .access-title-container {
+                margin-bottom: 10px;
+                width: 100%;
             }
+            
+            .offline-access-content {
+                padding: 14px;
+            }
+            
+            .steps-container {
+                padding: 16px;
+            }
+            
+            .steps-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .steps-badge {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+            
+            .step-item {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 16px;
+            }
+            
+            .step-number {
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+                margin-right: 0;
+                margin-bottom: 12px;
+            }
+            
+            .info-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .info-header i {
+                margin-right: 0;
+                margin-bottom: 8px;
+                font-size: 1.3rem;
+            }
+            
+            .info-text {
+                text-align: center;
+            }
+            
+            #enable-offline {
+                width: 100%;
+            }
+            
+            .card-cover {
+                height: 60px;
+            }
+            
+            .cover-icon {
+                font-size: 1.5rem;
+            }
+            
+            .meta-badge {
+                font-size: 0.6rem;
+                padding: 0.1rem 0.3rem;
+            }
+            
+            .card-content {
+                padding: 12px;
+            }
+            
+            .card-tags {
+                margin-bottom: 8px;
+            }
+            
+            .btn-view {
+                padding: 5px 8px;
+            }
+            
+            .btn-download {
+                width: 32px;
+                height: 32px;
+            }
+        }
+        
+        @@media (max-width: 420px) {
+            .resource-header-icon {
+                display: none;
+            }
+            
+            .header-title {
+                font-size: 1rem;
+            }
+            
+            .header-description {
+                font-size: 0.75rem;
+            }
+            
+            .resource-header-content {
+                gap: 8px;
+            }
+            
+            .resource-header-actions {
+                justify-content: center;
+            }
+            
+            .search-filter-bar {
+                padding: 10px;
+            }
+            
+            .search-container .input-group {
+                height: 38px;
+            }
+            
+            .steps-container {
+                padding: 12px;
+            }
+            
+            .step-item {
+                padding: 12px;
+            }
+            
+            .step-title {
+                font-size: 0.85rem;
+            }
+            
+            .step-description {
+                font-size: 0.75rem;
+            }
+            
+            .step-number {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+                margin-bottom: 8px;
+            }
+            
+            .offline-info-box {
+                padding: 12px;
+            }
+            
+            .info-title {
+                font-size: 0.9rem;
+            }
+            
+            .info-text {
+                font-size: 0.8rem;
+            }
+            
+            #enable-offline {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+            }
+            
+            .resource-item {
+                width: 100%;
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            
+            .card-title {
+                font-size: 0.9rem;
+            }
+            
+            .card-description {
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Enhanced Offline Access Section */
+        .offline-access-section {
+            background-color: var(--surface);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            margin-top: 2rem !important;
+            margin-bottom: 2rem;
+        }
+        
+        #offlineAccessContent {
+            display: block;
+            overflow: hidden;
+        }
+        
+        .offline-access-header {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(120deg, rgba(76, 175, 158, 0.15), rgba(53, 143, 115, 0.10));
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: all 0.2s ease;
+        }
+        
+        .offline-access-header:hover {
+            background: linear-gradient(120deg, rgba(76, 175, 158, 0.2), rgba(53, 143, 115, 0.15));
+        }
+        
+        .offline-access-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(76, 175, 158, 0.3), transparent);
+        }
+        
+        .access-icon-container {
+            margin-right: 16px;
+        }
+        
+        .access-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--offline-color), var(--accent-dark));
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .access-icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+            pointer-events: none;
+        }
+        
+        .access-title-container {
+            flex: 1;
+        }
+        
+        .access-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+        
+        .access-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+        
+        .access-toggle-container {
+            margin-left: 16px;
+        }
+        
+        .btn-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-toggle:hover {
+            background-color: var(--offline-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 158, 0.2);
+        }
+        
+        .toggle-icon {
+            font-size: 0.85rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-icon.rotate {
+            transform: rotate(180deg);
+        }
+        
+        .offline-access-content {
+            padding: 24px;
+            background-color: white;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .offline-access-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(76, 175, 158, 0.1), transparent);
+            z-index: 0;
+        }
+        
+        .steps-container {
+            margin-bottom: 28px;
+            background-color: #f9fafb;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        .steps-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .steps-badge {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(76, 175, 158, 0.15);
+            color: var(--offline-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            margin-right: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .steps-title {
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+        }
+        
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
+        }
+        
+        .step-item {
+            background-color: white;
+            border-radius: 10px;
+            padding: 18px;
+            display: flex;
+            align-items: flex-start;
+            border: 1px solid var(--border);
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .step-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+            border-color: rgba(76, 175, 158, 0.3);
+        }
+        
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--offline-color), var(--accent-dark));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 14px;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .step-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+        
+        .offline-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background-color: var(--offline-color);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .offline-info-box {
+            background: linear-gradient(120deg, rgba(69, 153, 225, 0.05), rgba(58, 123, 213, 0.08));
+            border: 1px solid rgba(69, 153, 225, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .info-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .info-header i {
+            font-size: 1.2rem;
+            color: var(--info);
+            margin-right: 12px;
+        }
+        
+        .info-title {
+            margin-bottom: 0;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .info-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            line-height: 1.6;
+        }
+        
+        #enable-offline {
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 3px 6px rgba(58, 123, 213, 0.2);
+        }
+        
+        #enable-offline:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(58, 123, 213, 0.3);
+        }
+        
+        /* Animations and transitions */
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @@keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @@keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-4px);
+            }
+            50% {
+                transform: translateX(4px);
+            }
+            75% {
+                transform: translateX(-4px);
+            }
+        }
+        
+        .pulse-animation {
+            animation: pulse 0.5s ease infinite;
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        .rotate {
+            transform: rotate(180deg);
+        }
+        
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+        
+        .highlight-step {
+            animation: highlight 0.8s ease;
+            border-color: var(--offline-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 158, 0.2);
+        }
+        
+        .highlight-section {
+            animation: highlightSection 1.5s ease;
+        }
+        
+        @@keyframes highlightSection {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 158, 0.3);
+            }
+            40% {
+                box-shadow: 0 0 0 8px rgba(76, 175, 158, 0.4);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 158, 0.3);
+            }
+        }
+        
+        @@keyframes highlight {
+            0% {
+                transform: translateY(0);
+                box-shadow: 0 0 0 0 rgba(76, 175, 158, 0.2);
+            }
+            50% {
+                transform: translateY(-6px);
+                box-shadow: 0 0 0 4px rgba(76, 175, 158, 0.3);
+            }
+            100% {
+                transform: translateY(0);
+                box-shadow: 0 0 0 0 rgba(76, 175, 158, 0.2);
+            }
+        }
+        
+        /* Hover effects */
+        .resource-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .btn-action {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+        }
+        
+        .filter-chip:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Visual improvements */
+        .btn-enabled {
+            animation: pulse 1s ease;
+        }
+        
+        .btn-reset {
+            flex: 0 0 auto;
+            height: 36px;
+            padding: 0 12px;
+            background-color: rgba(230, 103, 103, 0.1);
+            color: var(--danger);
+            border: none;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-reset:hover {
+            background-color: rgba(230, 103, 103, 0.2);
+        }
+        
+        /* User avatar styling to match sidebar */
+        .user-avatar-container {
+            margin-right: 10px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1ABC9C, #16A085);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .user-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-text {
+            font-size: 16px;
+            text-transform: uppercase;
         }
     </style>
 } 

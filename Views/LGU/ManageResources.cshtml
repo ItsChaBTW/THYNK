@@ -4,47 +4,140 @@
     Layout = "_LGULayout";
 }
 
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Educational Resources</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="/LGU/Dashboard">Dashboard</a></li>
-        <li class="breadcrumb-item active">Educational Resources</li>
-    </ol>
+<div class="container-fluid px-0" style="height: 100% !important;">
     
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-                <i class="fas fa-book-open me-1"></i>
-                Your Resources
-            </div>
-            <a href="@Url.Action("CreateResource", "LGU")" class="btn btn-primary btn-sm">
-                <i class="fas fa-plus me-1"></i> Add New Resource
-            </a>
-        </div>
-        <div class="card-body">
             @if (TempData["SuccessMessage"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert-slide-in alert alert-success alert-dismissible fade show py-2 px-3 mb-4 border-0 shadow-sm" role="alert" style="background-color: var(--success-soft); color: var(--success); border-left: 3px solid var(--success);">
                     <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
 
             @if (TempData["ErrorMessage"] != null)
             {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert-slide-in alert alert-danger alert-dismissible fade show py-2 px-3 mb-4 border-0 shadow-sm" role="alert" style="background-color: var(--danger-soft); color: var(--danger); border-left: 3px solid var(--danger);">
                     <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
             
+    <div class="d-flex flex-wrap gap-2 mb-4 animate-fade-in">
+        <!-- Search box -->
+        <div class="filter-search me-auto">
+            <div class="search-container">
+                <input type="text" id="quickSearch" class="quick-search" placeholder="Search resources...">
+                <button id="clearSearch" class="clear-search"><i class="fas fa-times"></i></button>
+                <i class="fas fa-search search-icon"></i>
+            </div>
+        </div>
+    </div>  <!-- Search and view controls -->
+    
+    <!-- Quick View Stats -->
+    <div class="card border-0 shadow-sm mb-4 animate-fade-in">
+        <div class="card-body p-3">
+            <h6 class="mb-3 fw-medium">Quick Overview</h6>
+            <div class="row g-3" id="resourceStats">
+                <div class="col-md-6 col-lg-3">
+                    <div class="quick-stat-card">
+                        <div class="quick-stat-icon" style="background-color: rgba(66, 133, 244, 0.1); color: #4285F4;">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="quick-stat-content">
+                            <div class="quick-stat-title">Total Resources</div>
+                            <div class="quick-stat-value">@Model.Count()</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="quick-stat-card">
+                        <div class="quick-stat-icon" style="background-color: rgba(25, 135, 84, 0.1); color: #198754;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="quick-stat-content">
+                            <div class="quick-stat-title">Approved</div>
+                            <div class="quick-stat-value">@Model.Count(r => r.ApprovalStatus == ApprovalStatus.Approved)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="quick-stat-card">
+                        <div class="quick-stat-icon" style="background-color: rgba(255, 193, 7, 0.1); color: #ffc107;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="quick-stat-content">
+                            <div class="quick-stat-title">Pending</div>
+                            <div class="quick-stat-value">@Model.Count(r => r.ApprovalStatus == ApprovalStatus.Pending)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="quick-stat-card">
+                        <div class="quick-stat-icon" style="background-color: rgba(220, 53, 69, 0.1); color: #dc3545;">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="quick-stat-content">
+                            <div class="quick-stat-title">Rejected</div>
+                            <div class="quick-stat-value">@Model.Count(r => r.ApprovalStatus == ApprovalStatus.Rejected)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="resource-types-chart">
+                    <div class="d-flex flex-wrap">
+                        @{
+                            var resourceTypes = Model.GroupBy(r => r.Type)
+                                .Select(g => new { Type = g.Key, Count = g.Count() })
+                                .OrderByDescending(x => x.Count);
+                                
+                                                         foreach (var type in resourceTypes)
+                             {
+                                 var typeClass = type.Type.ToString().ToLowerInvariant().Replace(" ", "-");
+                                 var width = Model.Any() ? (type.Count * 100 / Model.Count()) : 0;
+                                <div class="resource-type-stat mb-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <div class="small fw-medium">@type.Type</div>
+                                        <div class="small text-muted">@type.Count</div>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar type-@typeClass" role="progressbar" style="width: @width%;" 
+                                            aria-valuenow="@width" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden animate-fade-in">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-medium">Resources <span class="badge rounded-pill bg-light text-dark ms-2">@Model.Count()</span></h6>
+            <div id="tableActions" class="d-flex gap-2">
+                <div id="bulkActions" class="d-none">
+                    <button class="btn btn-sm btn-danger bulk-action-btn" id="bulkDelete">
+                        <i class="fas fa-trash-alt me-1"></i> Delete
+                    </button>
+                    <button class="btn btn-sm bulk-action-btn" id="bulkExport" style="background-color: var(--primary-dark); color: white;">
+                        <i class="fas fa-file-export me-1"></i> Export
+                    </button>
+                    <span class="ms-2 selected-count">0 selected</span>
+                </div>
+                <button class="btn btn-sm btn-light table-action-btn" id="refreshTable" title="Refresh">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
             @if (!Model.Any())
             {
-                <div class="alert alert-info text-center py-4">
-                    <i class="fas fa-info-circle fa-2x mb-3"></i>
-                    <h5>No Resources Found</h5>
-                    <p class="mb-2">You haven't created any educational resources yet.</p>
-                    <a href="@Url.Action("CreateResource", "LGU")" class="btn btn-primary">
+                <div class="text-center py-5 empty-state">
+                    <h6 class="text-muted mb-1">No Resources Found</h6>
+                    <p class="text-muted small mb-3">You haven't created any educational resources yet</p>
+                    <a href="@Url.Action("CreateResource", "LGU")" class="btn-hover-scale btn btn-sm px-3" style="background-color: var(--sidebar-hover); color: white; transition: all 0.2s;">
                         <i class="fas fa-plus me-1"></i> Create Your First Resource
                     </a>
                 </div>
@@ -52,99 +145,86 @@
             else
             {
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped" id="resourcesTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Title</th>
-                                <th>Type</th>
-                                <th>Added On</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                    <table class="table table-hover mb-0" id="resourcesTable">
+                        <thead>
+                            <tr class="align-middle">
+                                <th class="ps-3" style="width: 40px;">
+                                    <div class="form-check">
+                                        <label class="form-check-label" for="selectAll"></label>
+                                    </div>
+                                </th>
+                                <th style="width: 40%;">Title</th>
+                                <th class="type-column" style="width: 15%;">Type</th>
+                                <th class="date-column" style="width: 15%;">Added</th>
+                                <th style="width: 15%;">Status</th>
+                                <th class="text-end pe-3" style="width: 15%;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var resource in Model)
                             {
-                                <tr>
+                                <tr class="align-middle resource-row" 
+                                    data-type="@resource.Type" 
+                                    data-id="@resource.Id">
+                                    <td class="ps-3">
+                        
+                                    </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="resource-icon me-2">
-                                                @switch (resource.Type)
-                                                {
-                                                    case ResourceType.Guide:
-                                                        <i class="fas fa-compass text-info"></i>
-                                                        break;
-                                                    case ResourceType.Tutorial:
-                                                        <i class="fas fa-chalkboard-teacher text-primary"></i>
-                                                        break;
-                                                    case ResourceType.Infographic:
-                                                        <i class="fas fa-chart-pie text-success"></i>
-                                                        break;
-                                                    case ResourceType.Video:
-                                                        <i class="fas fa-video text-danger"></i>
-                                                        break;
-                                                    case ResourceType.Document:
-                                                        <i class="fas fa-file-alt text-warning"></i>
-                                                        break;
-                                                    case ResourceType.FAQ:
-                                                        <i class="fas fa-question-circle text-secondary"></i>
-                                                        break;
-                                                    case ResourceType.EmergencyContact:
-                                                        <i class="fas fa-phone-alt text-danger"></i>
-                                                        break;
-                                                    default:
-                                                        <i class="fas fa-file"></i>
-                                                        break;
-                                                }
-                                            </div>
                                             <div>
-                                                <a href="@Url.Action("EditResource", "LGU", new { id = resource.Id })" class="text-decoration-none fw-medium">
+                                                <a href="@Url.Action("EditResource", "LGU", new { id = resource.Id })" class="resource-title text-decoration-none fw-medium" style="color: var(--primary-dark); transition: color 0.2s;">
                                                     @resource.Title
                                                 </a>
                                                 @if (!string.IsNullOrEmpty(resource.Tags))
                                                 {
-                                                    <div class="small text-muted mt-1">
-                                                        @foreach (var tag in resource.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                                    <div class="mt-1 tag-container">
+                                                        @foreach (var tag in resource.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).Take(3))
                                                         {
-                                                            <span class="badge bg-light text-secondary me-1">@tag.Trim()</span>
+                                                            <span class="badge rounded-pill tag-pill" style="background-color: var(--secondary); color: var(--primary-soft); font-weight: 500; font-size: 0.7rem; transition: all 0.2s;">@tag.Trim()</span>
+                                                        }
+                                                        @if (resource.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).Length > 3)
+                                                        {
+                                                            <span class="badge rounded-pill tag-pill" style="background-color: var(--secondary); color: var(--primary-soft); font-weight: 500; font-size: 0.7rem;">+@(resource.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).Length - 3)</span>
                                                         }
                                                     </div>
                                                 }
                                             </div>
                                         </div>
                                     </td>
-                                    <td>@resource.Type</td>
-                                    <td>@resource.DateAdded.ToString("MMM dd, yyyy")</td>
+                                    <td class="type-column">
+                                        <span class="resource-type-badge clickable-type" data-type="@resource.Type">@resource.Type</span>
+                                    </td>
+                                    <td class="date-column"><span class="small text-muted">@resource.DateAdded.ToString("MMM dd, yyyy")</span></td>
                                     <td>
                                         @switch (resource.ApprovalStatus)
                                         {
                                             case ApprovalStatus.Approved:
-                                                <span class="badge bg-success">Approved</span>
-                                                <div class="small text-muted mt-1">
-                                                    @(resource.ApprovedDate?.ToString("MMM dd, yyyy") ?? "")
-                                                </div>
+                                                <span class="status-badge approved">Approved</span>
                                                 break;
                                             case ApprovalStatus.Pending:
-                                                <span class="badge bg-warning text-dark">Pending</span>
+                                                <span class="status-badge pending">Pending</span>
                                                 break;
                                             case ApprovalStatus.Rejected:
-                                                <span class="badge bg-danger">Rejected</span>
-                                                <div class="small text-muted mt-1" title="@resource.RejectionReason">
-                                                    <i class="fas fa-info-circle"></i> See reason
-                                                </div>
+                                                <span class="status-badge rejected">Rejected</span>
                                                 break;
                                             default:
-                                                <span class="badge bg-secondary">Unknown</span>
+                                                <span class="status-badge">Unknown</span>
                                                 break;
                                         }
                                     </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="@Url.Action("EditResource", "LGU", new { id = resource.Id })" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i> Edit
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group action-buttons">
+                                            <a href="@Url.Action("EditResource", "LGU", new { id = resource.Id })" class="btn btn-sm action-btn" title="Edit Resource">
+                                                <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="@Url.Action("DeleteResource", "LGU", new { id = resource.Id })" class="btn btn-sm btn-outline-danger">
-                                                <i class="fas fa-trash"></i> Delete
+                                            @if (resource.ApprovalStatus == ApprovalStatus.Rejected)
+                                            {
+                                                <button type="button" class="btn btn-sm view-reason action-btn" data-reason="@resource.RejectionReason" title="View Rejection Reason">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </button>
+                                            }
+                                            <a href="@Url.Action("DeleteResource", "LGU", new { id = resource.Id })" class="btn btn-sm action-btn" title="Delete Resource">
+                                                <i class="fas fa-trash"></i>
                                             </a>
                                         </div>
                                     </td>
@@ -157,125 +237,1384 @@
         </div>
     </div>
     
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-info-circle me-1"></i>
-            Resource Guidelines
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>Content Guidelines:</h5>
-                    <ul class="list-group list-group-flush mb-3">
-                        <li class="list-group-item">
-                            <i class="fas fa-check text-success me-2"></i>
-                            Ensure content is accurate and up-to-date
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-check text-success me-2"></i>
-                            Focus on educational value and clear instructions
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-check text-success me-2"></i>
-                            Include visuals and examples when possible
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-times text-danger me-2"></i>
-                            Avoid political statements or biased content
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-md-6">
-                    <h5>Approval Process:</h5>
-                    <ol class="list-group list-group-flush mb-3">
-                        <li class="list-group-item d-flex">
-                            <div class="badge bg-primary rounded-circle me-3">1</div>
-                            <div>
-                                <strong>Submission:</strong> Create and submit a resource
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex">
-                            <div class="badge bg-primary rounded-circle me-3">2</div>
-                            <div>
-                                <strong>Review:</strong> Admin reviews for accuracy and compliance
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex">
-                            <div class="badge bg-primary rounded-circle me-3">3</div>
-                            <div>
-                                <strong>Approval/Rejection:</strong> Resource is approved or rejected with feedback
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex">
-                            <div class="badge bg-primary rounded-circle me-3">4</div>
-                            <div>
-                                <strong>Publication:</strong> Approved resources appear in the Resource Library
-                            </div>
-                        </li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
+  
 </div>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
-            $('#resourcesTable').DataTable({
-                order: [[2, 'desc']], // Sort by Added On (descending)
+            // Track current state
+            let selectedResources = new Set();
+            
+            // Empty message generator
+            function getEmptyMessage() {
+                return `
+                    <div class="text-center py-5 empty-state-filtered">
+                        <div style="height: 70px; width: 70px; margin: 0 auto; border-radius: 50%; background-color: var(--secondary); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-search fa-2x" style="color: var(--sidebar-bg); opacity: 0.5;"></i>
+                        </div>
+                        <h6 class="text-muted mt-3 mb-1">No resources found</h6>
+                        <p class="text-muted small mb-3">Try a different search term</p>
+                    </div>
+                `;
+            }
+            
+            // Initialize DataTable with minimalist styling
+            const resourcesTable = $('#resourcesTable').DataTable({
+                order: [[3, 'desc']], // Sort by Added On (descending) - column index changed due to checkbox
                 language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search resources..."
+                    search: "",
+                    searchPlaceholder: "Search resources...",
+                    lengthMenu: "_MENU_ per page",
+                    info: "_START_-_END_ of _TOTAL_",
+                    paginate: {
+                        previous: '<i class="fas fa-chevron-left"></i>',
+                        next: '<i class="fas fa-chevron-right"></i>'
+                    },
+                    emptyTable: function() {
+                        return getEmptyMessage();
+                    }
+                },
+                dom: '<"d-flex justify-content-between align-items-center mb-3"<"d-flex align-items-center"l><"d-flex align-items-center"f>>rt<"d-flex justify-content-between align-items-center mt-3"<"text-muted small"i><"pagination-sm"p>>',
+                drawCallback: function() {
+                    // Show table actions when table is initialized
+                    $('#tableActions').fadeIn();
+                    
+                    // Style the pagination
+                    $('.dataTables_paginate .paginate_button').addClass('px-3 py-1 mx-1 rounded-1');
+                    $('.dataTables_paginate .paginate_button.current').css({
+                        'background-color': 'var(--sidebar-hover)',
+                        'color': 'white !important',
+                        'border': 'none'
+                    });
+                    
+                    // Style the search input
+                    $('.dataTables_filter input').addClass('form-control form-control-sm ms-2').css({
+                        'min-width': '200px',
+                        'border-radius': '6px',
+                        'border': '1px solid rgba(0,0,0,0.1)'
+                    });
+                    
+                    // Style the length menu
+                    $('.dataTables_length select').addClass('form-select form-select-sm ms-2').css({
+                        'min-width': '80px',
+                        'border-radius': '6px',
+                        'border': '1px solid rgba(0,0,0,0.1)'
+                    });
+                    
+                    // Restore checkbox states after table redraw
+                    restoreCheckboxStates();
+                }
+            });
+
+            // Set quick search to use the DataTable's search
+            $('#quickSearch').on('input', function() {
+                const searchTerm = $(this).val().trim();
+                
+                if (searchTerm.length > 0) {
+                    $('#clearSearch').show();
+                    resourcesTable.search(searchTerm).draw();
+                    showNotification(`Searching for: ${searchTerm}`, 'fas fa-search', 'info');
+                } else {
+                    $('#clearSearch').hide();
+                    resourcesTable.search('').draw();
                 }
             });
             
-            // Initialize tooltips
-            $('[title]').tooltip();
+            // Clear search button
+            $('#clearSearch').on('click', function() {
+                $('#quickSearch').val('').focus();
+                $(this).hide();
+                resourcesTable.search('').draw();
+                showNotification('Search cleared', 'fas fa-times', 'info');
+            });
             
-            // Show rejection reason in modal
-            $('[title]').click(function(e) {
-                if ($(this).attr('title')) {
-                    e.preventDefault();
-                    const reason = $(this).attr('title');
+            // Allow tag pills to search by tag
+            $(document).on('click', '.tag-pill', function() {
+                const tagText = $(this).text().trim();
+                if (tagText.startsWith('+')) return; // Skip the "+X more" pill
+                
+                // Apply a search filter for this tag
+                $('#quickSearch').val(tagText);
+                resourcesTable.search(tagText).draw();
+                
+                // Show a notification
+                showNotification(`Searching for tag: ${tagText}`, 'fas fa-tag', 'info');
+            });
+
+            // Dark mode implementation
+            function initDarkMode() {
+                // Check for saved preference
+                const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                
+                // Apply initial theme
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                    $('#themeToggle i').removeClass('fa-moon').addClass('fa-sun');
+                }
+                
+                // Theme toggle click handler
+                $('#themeToggle').on('click', function() {
+                    document.body.classList.toggle('dark-mode');
+                    const isDark = document.body.classList.contains('dark-mode');
                     
-                    // Create modal dynamically
-                    const modalHtml = `
-                        <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Rejection Reason</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    // Update icon
+                    if (isDark) {
+                        $(this).find('i').removeClass('fa-moon').addClass('fa-sun');
+                    } else {
+                        $(this).find('i').removeClass('fa-sun').addClass('fa-moon');
+                    }
+                    
+                    // Save preference
+                    localStorage.setItem('darkMode', isDark);
+                    
+                    // Show notification
+                    showNotification(isDark ? 'Dark mode enabled' : 'Light mode enabled', 
+                                    isDark ? 'fas fa-moon' : 'fas fa-sun');
+                });
+            }
+            
+            // Keyboard shortcuts
+            function initKeyboardShortcuts() {
+                $(document).on('keydown', function(e) {
+                    // Only apply shortcuts when not in input fields
+                    if ($(e.target).is('input, textarea, select')) return;
+                    
+                    switch(e.which) {
+                        case 191: // Forward slash key (/)
+                            if (e.shiftKey) return; // Ignore question mark (shift+/)
+                    e.preventDefault();
+                            $('#quickSearch').focus();
+                            break;
+                            
+                        case 65: // A key
+                            if (e.ctrlKey) {
+                                e.preventDefault();
+                                toggleSelectAll();
+                            }
+                            break;
+                            
+                        case 70: // F key (for filter)
+                            if (e.ctrlKey) {
+                                e.preventDefault();
+                                $('#quickSearch').focus();
+                            }
+                            break;
+                            
+                        case 82: // R key (for refresh)
+                            if (e.ctrlKey) {
+                                e.preventDefault();
+                                $('#refreshTable').click();
+                            }
+                            break;
+                            
+                        case 84: // T key (toggle theme)
+                            if (e.ctrlKey && e.shiftKey) {
+                                e.preventDefault();
+                                $('#themeToggle').click();
+                            }
+                            break;
+                    }
+                });
+                
+                // Show keyboard shortcuts help
+                $('.view-toggles').append('<button class="btn btn-sm btn-light table-action-btn ms-2" id="showShortcuts" title="Keyboard Shortcuts"><i class="fas fa-keyboard"></i></button>');
+                
+                $('#showShortcuts').on('click', function() {
+                    const shortcutsHtml = `
+                        <div class="modal fade" id="shortcutsModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header border-0">
+                                        <h6 class="modal-title fw-semibold">Keyboard Shortcuts</h6>
+                                        <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <div class="modal-body">
-                                        <div class="alert alert-danger">
-                                            <i class="fas fa-exclamation-circle me-2"></i>
-                                            ${reason}
+                                    <div class="modal-body pt-0">
+                                        <div class="shortcuts-list">
+                                            <div class="shortcut-item">
+                                                <span class="key">/</span>
+                                                <span class="description">Focus search box</span>
+                                            </div>
+                                            <div class="shortcut-item">
+                                                <span class="key">Ctrl + A</span>
+                                                <span class="description">Select/deselect all resources</span>
+                                            </div>
+                                            <div class="shortcut-item">
+                                                <span class="key">Ctrl + F</span>
+                                                <span class="description">Focus search box</span>
+                                            </div>
+                                            <div class="shortcut-item">
+                                                <span class="key">Ctrl + R</span>
+                                                <span class="description">Refresh table</span>
+                                            </div>
+                                            <div class="shortcut-item">
+                                                <span class="key">Ctrl + Shift + T</span>
+                                                <span class="description">Toggle dark/light mode</span>
+                                            </div>
                                         </div>
-                                        <p>You can edit your resource to address these issues and resubmit for approval.</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `;
                     
-                    // Add modal to body if it doesn't exist
+                    if ($('#shortcutsModal').length === 0) {
+                        $('body').append(shortcutsHtml);
+                    }
+                    
+                    const shortcutsModal = new bootstrap.Modal(document.getElementById('shortcutsModal'));
+                    shortcutsModal.show();
+                });
+            }
+
+            // Show enhanced notification
+            function showNotification(message, icon, type = 'success') {
+                // Remove any existing notification
+                $('.enhanced-notification').remove();
+                
+                let bgColor, textColor, borderColor;
+                
+                switch(type) {
+                    case 'error':
+                        bgColor = 'var(--danger-soft)';
+                        textColor = 'var(--danger)';
+                        borderColor = 'var(--danger)';
+                        break;
+                    case 'warning':
+                        bgColor = 'rgba(224, 164, 88, 0.15)';
+                        textColor = 'var(--warning)';
+                        borderColor = 'var(--warning)';
+                        break;
+                    case 'info':
+                        bgColor = 'rgba(13, 110, 253, 0.1)';
+                        textColor = '#0d6efd';
+                        borderColor = '#0d6efd';
+                        break;
+                    case 'success':
+                    default:
+                        bgColor = 'var(--success-soft)';
+                        textColor = 'var(--success)';
+                        borderColor = 'var(--success)';
+                        break;
+                }
+                
+                const notification = $(`
+                    <div class="enhanced-notification" style="background-color: ${bgColor}; color: ${textColor}; border-left: 3px solid ${borderColor};">
+                        <i class="${icon} me-2"></i> ${message}
+                        <button class="notification-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `);
+                
+                $('body').append(notification);
+                
+                setTimeout(() => notification.addClass('show'), 100);
+                
+                // Auto dismiss after 3 seconds
+                const autoDismiss = setTimeout(() => {
+                    notification.removeClass('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+                
+                // Manual close button
+                notification.find('.notification-close').on('click', function() {
+                    clearTimeout(autoDismiss);
+                    notification.removeClass('show');
+                    setTimeout(() => notification.remove(), 300);
+                });
+            }
+            
+            // Bulk selection functionality
+            function initBulkSelection() {
+                // Select all checkbox
+                $('#selectAll').on('change', function() {
+                    toggleSelectAll();
+                });
+                
+                // Individual checkbox change handler
+                $(document).on('change', '.resource-checkbox', function() {
+                    const resourceId = $(this).data('id');
+                    
+                    if ($(this).is(':checked')) {
+                        selectedResources.add(resourceId);
+                    } else {
+                        selectedResources.delete(resourceId);
+                    }
+                    
+                    updateSelectionUI();
+                });
+                
+                // Bulk delete action
+                $('#bulkDelete').on('click', function() {
+                    if (selectedResources.size === 0) return;
+                    
+                    // Create confirmation modal
+                    const confirmHtml = `
+                        <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header border-0">
+                                        <h6 class="modal-title fw-semibold text-danger">Delete Resources</h6>
+                                        <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Are you sure you want to delete ${selectedResources.size} selected resource(s)?
+                                        </div>
+                                        <p class="text-muted small mb-0">This action cannot be undone.</p>
+                                    </div>
+                                    <div class="modal-footer border-0">
+                                        <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="background-color: var(--secondary); color: var(--primary);">Cancel</button>
+                                        <button type="button" class="btn btn-sm btn-danger" id="confirmBulkDelete">
+                                            <i class="fas fa-trash me-1"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    if ($('#bulkDeleteModal').length === 0) {
+                        $('body').append(confirmHtml);
+                    }
+                    
+                    const deleteModal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
+                    deleteModal.show();
+                    
+                    $('#confirmBulkDelete').off('click').on('click', function() {
+                        deleteModal.hide();
+                        
+                        // Show loading spinner
+                        showProcessingNotification('Deleting resources...');
+                        
+                        // Build resource IDs array for deletion
+                        const resourceIds = Array.from(selectedResources);
+                        
+                        // Make AJAX call to delete resources
+                        $.ajax({
+                            url: '/LGU/BulkDeleteResources',
+                            type: 'POST',
+                            data: { resourceIds: resourceIds },
+                            success: function(response) {
+                                if (response.success) {
+                                    // Refresh table
+                                    refreshTable();
+                                    selectedResources.clear();
+                                    updateSelectionUI();
+                                    
+                                    showNotification('Resources deleted successfully', 'fas fa-check');
+                                } else {
+                                    showNotification('Error deleting resources', 'fas fa-times', 'error');
+                                }
+                            },
+                            error: function() {
+                                showNotification('Server error occurred', 'fas fa-exclamation-triangle', 'error');
+                            }
+                        });
+                    });
+                });
+                
+                // Bulk export action
+                $('#bulkExport').on('click', function() {
+                    if (selectedResources.size === 0) return;
+                    
+                    // Build resource IDs for export
+                    const resourceIds = Array.from(selectedResources).join(',');
+                    
+                    // Redirect to export endpoint
+                    window.location.href = `/LGU/ExportResources?ids=${resourceIds}`;
+                    
+                    showNotification('Preparing export...', 'fas fa-file-export');
+                });
+                
+                // Row click to select
+                $(document).on('click', '.resource-row', function(e) {
+                    // Ignore clicks on buttons, links, and checkboxes
+                    if ($(e.target).is('a, button, input, i, .clickable-type, .tag-pill') || 
+                        $(e.target).closest('a, button, .clickable-type, .tag-pill').length) {
+                        return;
+                    }
+                    
+                    // Toggle checkbox
+                    const checkbox = $(this).find('.resource-checkbox');
+                    checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
+                });
+            }
+            
+            // Helper to toggle all checkboxes
+            function toggleSelectAll() {
+                const isChecked = $('#selectAll').prop('checked');
+                
+                // Set all visible checkboxes to match selectAll state
+                $('.resource-checkbox:visible').prop('checked', isChecked);
+                
+                // Update selectedResources set
+                if (isChecked) {
+                    // Add all visible resources to selection
+                    resourcesTable.rows({search:'applied'}).nodes().each(function() {
+                        const resourceId = $(this).find('.resource-checkbox').data('id');
+                        selectedResources.add(resourceId);
+                    });
+                } else {
+                    // Remove all visible resources from selection
+                    resourcesTable.rows({search:'applied'}).nodes().each(function() {
+                        const resourceId = $(this).find('.resource-checkbox').data('id');
+                        selectedResources.delete(resourceId);
+                    });
+                }
+                
+                updateSelectionUI();
+            }
+            
+            // Update UI based on selection state
+            function updateSelectionUI() {
+                const count = selectedResources.size;
+                
+                // Update selection count
+                $('.selected-count').text(`${count} selected`);
+                
+                // Show/hide bulk actions
+                if (count > 0) {
+                    $('#bulkActions').removeClass('d-none');
+                } else {
+                    $('#bulkActions').addClass('d-none');
+                }
+                
+                // Update select all checkbox
+                const visibleCheckboxes = $('.resource-checkbox:visible');
+                const checkedVisibleCheckboxes = $('.resource-checkbox:visible:checked');
+                
+                if (visibleCheckboxes.length === checkedVisibleCheckboxes.length && visibleCheckboxes.length > 0) {
+                    $('#selectAll').prop('checked', true);
+                } else {
+                    $('#selectAll').prop('checked', false);
+                }
+            }
+            
+            // Restore checkbox states after table redraw
+            function restoreCheckboxStates() {
+                // Set checkboxes based on selectedResources set
+                $('.resource-checkbox').each(function() {
+                    const resourceId = $(this).data('id');
+                    $(this).prop('checked', selectedResources.has(resourceId));
+                });
+                
+                updateSelectionUI();
+            }
+            
+            // Show processing notification
+            function showProcessingNotification(message) {
+                $('.enhanced-notification').remove();
+                
+                const notification = $(`
+                    <div class="enhanced-notification processing" style="background-color: var(--secondary); color: var(--primary); border-left: 3px solid var(--primary);">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        ${message}
+                    </div>
+                `);
+                
+                $('body').append(notification);
+                setTimeout(() => notification.addClass('show'), 100);
+            }
+            
+            // Refresh table with animation
+            function refreshTable() {
+                $('#refreshTable').find('i').addClass('fa-spin');
+                showProcessingNotification('Refreshing...');
+                
+                // Simulate AJAX refresh 
+                setTimeout(() => {
+                    location.reload();
+                }, 800);
+            }
+            
+            // Quick Stats functionality
+            function refreshQuickStats() {
+                // Animate the stat numbers
+                $('.quick-stat-value').each(function() {
+                    const $this = $(this);
+                    const countTo = parseInt($this.text());
+                    
+                    $({ countNum: 0 }).animate({
+                        countNum: countTo
+                    }, {
+                        duration: 1000,
+                        easing: 'swing',
+                        step: function() {
+                            $this.text(Math.floor(this.countNum));
+                        },
+                        complete: function() {
+                            $this.text(countTo);
+                        }
+                    });
+                });
+                
+                // Add click to filter functionality
+                $('.quick-stat-card').on('click', function() {
+                    const statType = $(this).find('.quick-stat-title').text().trim();
+                    let searchTerm = '';
+                    
+                    // Don't filter for "Total Resources"
+                    if (statType === 'Total Resources') {
+                        $('#quickSearch').val('');
+                        resourcesTable.search('').draw();
+                        return;
+                    }
+                    
+                    // Set search term based on the stat type
+                    switch(statType) {
+                        case 'Approved':
+                        case 'Pending':
+                        case 'Rejected':
+                            searchTerm = statType;
+                            break;
+                        default:
+                            searchTerm = statType;
+                    }
+                    
+                    // Apply filter
+                    $('#quickSearch').val(searchTerm);
+                    resourcesTable.search(searchTerm).draw();
+                    showNotification(`Filtered by ${statType}`, 'fas fa-filter', 'info');
+                });
+                
+                // Add click to filter for resource types
+                $('.resource-type-stat').on('click', function() {
+                    const typeText = $(this).find('.fw-medium').text().trim();
+                    $('#quickSearch').val(typeText);
+                    resourcesTable.search(typeText).draw();
+                    showNotification(`Filtered by ${typeText}`, 'fas fa-filter', 'info');
+                });
+            }
+            
+            // Initialize enhancements
+            initDarkMode();
+            initKeyboardShortcuts();
+            initBulkSelection();
+            refreshQuickStats();
+            
+            // Remove toggle columns functionality since button is removed
+            
+            // Refresh button functionality
+            $('#refreshTable').on('click', function() {
+                refreshTable();
+            });
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    placement: 'top',
+                    trigger: 'hover',
+                    delay: {show: 400, hide: 100}
+                });
+            });
+            
+            // View rejection reason
+            $(document).on('click', '.view-reason', function() {
+                const reason = $(this).data('reason') || 'No specific reason provided.';
+                    
+                    // Create modal dynamically
+                    const modalHtml = `
+                        <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow">
+                                <div class="modal-header border-0">
+                                    <h6 class="modal-title fw-semibold">Rejection Reason</h6>
+                                    <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                <div class="modal-body pt-0">
+                                    <div class="p-3 mb-3 rounded-3" style="background-color: var(--danger-soft); color: var(--danger);">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            ${reason}
+                                        </div>
+                                    <p class="small text-muted mb-0">You can edit your resource to address these issues and resubmit for approval.</p>
+                                    </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-sm" data-bs-dismiss="modal" style="background-color: var(--secondary); color: var(--primary);">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                // Add modal to body
                     if ($('#rejectionReasonModal').length === 0) {
                         $('body').append(modalHtml);
                     } else {
                         // Update existing modal content
-                        $('#rejectionReasonModal .alert-danger').html(`<i class="fas fa-exclamation-circle me-2"></i>${reason}`);
+                    $('#rejectionReasonModal .rounded-3').html(`<i class="fas fa-exclamation-circle me-2"></i>${reason}`);
+                }
+                
+                // Show modal with animation
+                const rejectionModal = new bootstrap.Modal(document.getElementById('rejectionReasonModal'));
+                rejectionModal.show();
+                setTimeout(() => {
+                    $('#rejectionReasonModal .modal-content').addClass('modal-reveal');
+                }, 150);
+            });
+
+            // View toggle functionality
+            $('.view-toggle').on('click', function() {
+                const viewType = $(this).data('view');
+                $('.view-toggle').removeClass('active');
+                $(this).addClass('active');
+                
+                if (viewType === 'grid') {
+                    $('#resourcesTable_wrapper').hide();
+                    buildGridView();
+                    $('#resourceGrid').show();
+                    localStorage.setItem('preferredView', 'grid');
+                } else {
+                    $('#resourceGrid').hide();
+                    $('#resourcesTable_wrapper').show();
+                    localStorage.setItem('preferredView', 'table');
+                }
+            });
+            
+            // Build grid view from table data
+            function buildGridView() {
+                if ($('#resourceGrid').length === 0) {
+                    const gridHtml = '<div id="resourceGrid" class="resource-grid"></div>';
+                    $('#resourcesTable_wrapper').after(gridHtml);
+                }
+                
+                const $grid = $('#resourceGrid');
+                $grid.empty();
+                
+                // Get all visible rows after filtering
+                const visibleRows = resourcesTable.rows({search:'applied'}).nodes();
+                
+                if (visibleRows.length === 0) {
+                    $grid.html(getEmptyMessage());
+                    return;
+                }
+                
+                // Create grid cards for each row
+                $(visibleRows).each(function() {
+                    const $row = $(this);
+                    const title = $row.find('.resource-title').text().trim();
+                    const type = $row.find('.type-label').text().trim();
+                    const status = $row.find('.status-badge').clone();
+                    const iconClass = $row.find('.resource-icon i').attr('class');
+                    const iconColor = $row.find('.resource-icon').css('color');
+                    const iconBg = $row.find('.resource-icon').css('background-color');
+                    const resourceId = $row.find('.resource-checkbox').data('id');
+                    const isChecked = selectedResources.has(resourceId);
+                    const tags = [];
+                    $row.find('.tag-pill').each(function() {
+                        if (!$(this).text().trim().startsWith('+')) {
+                            tags.push($(this).text().trim());
+                        }
+                    });
+                    
+                    // Create card
+                    const cardHtml = `
+                        <div class="resource-card ${isChecked ? 'selected' : ''}" data-type="${type}" data-id="${resourceId}">
+                            <div class="resource-card-select">
+                                <div class="form-check">
+                                    <input class="form-check-input resource-checkbox" type="checkbox" data-id="${resourceId}" id="gridCheck${resourceId}" ${isChecked ? 'checked' : ''}>
+                                    <label class="form-check-label" for="gridCheck${resourceId}"></label>
+                                </div>
+                            </div>
+                            <div class="resource-card-icon" style="background-color: ${iconBg}; color: ${iconColor}">
+                                <i class="${iconClass}"></i>
+                            </div>
+                            <div class="resource-card-content">
+                                <h6 class="resource-card-title">${title}</h6>
+                                <div class="resource-card-type clickable-type" data-type="${type}">${type}</div>
+                                <div class="resource-card-status">${status[0].outerHTML}</div>
+                                <div class="resource-card-tags">
+                                    ${tags.map(tag => `<span class="badge rounded-pill tag-pill">${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div class="resource-card-actions">
+                                <a href="/LGU/EditResource/${resourceId}" class="card-action-btn" title="Edit Resource">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="/LGU/DeleteResource/${resourceId}" class="card-action-btn" title="Delete Resource">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    $grid.append(cardHtml);
+                });
+                
+                // Add click handler for card selection
+                $('.resource-card').on('click', function(e) {
+                    // Ignore clicks on buttons, links, and checkboxes
+                    if ($(e.target).is('a, button, input, i, .clickable-type, .tag-pill') || 
+                        $(e.target).closest('a, button, .clickable-type, .tag-pill').length) {
+                        return;
                     }
                     
-                    // Show modal
-                    new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
+                    // Toggle checkbox
+                    const checkbox = $(this).find('.resource-checkbox');
+                    checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
+                    $(this).toggleClass('selected', checkbox.prop('checked'));
+                });
+            }
+            
+            // Load preferred view from localStorage
+            function loadPreferredView() {
+                const preferredView = localStorage.getItem('preferredView') || 'table';
+                if (preferredView === 'grid') {
+                    $('.view-toggle[data-view="grid"]').click();
                 }
+            }
+            
+            // Initialize view preferences after table is loaded
+            resourcesTable.on('draw', function() {
+                // Any table redraw actions can go here
+            });
+            
+            // Initialize view on page load
+            setTimeout(loadPreferredView, 500);
+            
+            // Make resource type labels show in search box
+            $(document).on('click', '.clickable-type', function() {
+                const typeText = $(this).text().trim();
+                $('#quickSearch').val(typeText);
+                resourcesTable.search(typeText).draw();
+                showNotification(`Searching for type: ${typeText}`, 'fas fa-filter', 'info');
             });
         });
     </script>
+    
+    <style>
+        /* Enhanced Minimalist Styles */
+        
+        /* Animation keyframes */
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @@keyframes slideIn {
+            from { transform: translateX(-10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Quick stat styles */
+        .quick-stat-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 12px;
+            background-color: white;
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        
+        body.dark-mode .quick-stat-card {
+            background-color: #1e1e1e;
+            border-color: #333;
+        }
+        
+        .quick-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        
+        .quick-stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .quick-stat-content {
+            flex: 1;
+        }
+        
+        .quick-stat-title {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 2px;
+        }
+        
+        body.dark-mode .quick-stat-title {
+            color: #aaa;
+        }
+        
+        .quick-stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #495057;
+            line-height: 1;
+        }
+        
+        body.dark-mode .quick-stat-value {
+            color: #e0e0e0;
+        }
+        
+        .resource-type-stat {
+            width: 100%;
+            padding-right: 15px;
+        }
+        
+        .progress {
+            background-color: rgba(0,0,0,0.03);
+            overflow: hidden;
+        }
+        
+        body.dark-mode .progress {
+            background-color: rgba(255,255,255,0.05);
+        }
+        
+        .progress-bar.type-guide {
+            background-color: #4285F4;
+        }
+        
+        .progress-bar.type-tutorial {
+            background-color: #0F9D58;
+        }
+        
+        .progress-bar.type-document {
+            background-color: #6C757D;
+        }
+        
+        .progress-bar.type-video {
+            background-color: #F4B400;
+        }
+        
+        .progress-bar.type-infographic {
+            background-color: #DB4437;
+        }
+        
+        .progress-bar.type-faq {
+            background-color: #9C27B0;
+        }
+        
+        /* Dark mode support */
+        body.dark-mode {
+            background-color: #121212;
+            color: #f5f5f5;
+        }
+        
+        body.dark-mode .table {
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .table-hover tbody tr:hover {
+            background-color: rgba(255,255,255,0.05);
+        }
+        
+        body.dark-mode .table thead tr {
+            background-color: #252525 !important;
+        }
+        
+        body.dark-mode .filter-btn {
+            background-color: #252525;
+            border-color: #333;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .status-badge {
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        body.dark-mode .resource-title {
+            color: #e0e0e0 !important;
+        }
+        
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background-color: #252525;
+            border-color: #333;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .text-muted {
+            color: #aaa !important;
+        }
+        
+        /* Enhanced Table Styling */
+        .table {
+            margin-bottom: 0;
+            border-spacing: 0;
+        }
+        
+        .table thead th {
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #f0f0f0;
+            background-color: #f8f9fa;
+            padding: 15px 10px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        body.dark-mode .table thead th {
+            color: #e0e0e0;
+            border-bottom: 2px solid #333;
+        }
+        
+        .table tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        body.dark-mode .table tbody tr {
+            border-bottom: 1px solid #333;
+        }
+        
+        .table tbody td {
+            padding: 15px 10px;
+            vertical-align: middle;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(0,0,0,0.02);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 5px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+        
+        /* Resource Type Badge */
+        .resource-type-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            transition: all 0.2s;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 1px solid #e9ecef;
+        }
+        
+        .resource-type-badge[data-type="Guide"] {
+            background-color: rgba(66, 133, 244, 0.1);
+            color: #4285F4;
+            border-color: rgba(66, 133, 244, 0.2);
+        }
+        
+        .resource-type-badge[data-type="Tutorial"] {
+            background-color: rgba(15, 157, 88, 0.1);
+            color: #0F9D58;
+            border-color: rgba(15, 157, 88, 0.2);
+        }
+        
+        .resource-type-badge[data-type="Document"] {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: #6C757D;
+            border-color: rgba(108, 117, 125, 0.2);
+        }
+        
+        .resource-type-badge[data-type="Video"] {
+            background-color: rgba(244, 180, 0, 0.1);
+            color: #F4B400;
+            border-color: rgba(244, 180, 0, 0.2);
+        }
+        
+        .resource-type-badge[data-type="Infographic"] {
+            background-color: rgba(219, 68, 55, 0.1);
+            color: #DB4437;
+            border-color: rgba(219, 68, 55, 0.2);
+        }
+        
+        .resource-type-badge[data-type="FAQ"] {
+            background-color: rgba(156, 39, 176, 0.1);
+            color: #9C27B0;
+            border-color: rgba(156, 39, 176, 0.2);
+        }
+        
+        .resource-type-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+        
+        .status-badge.approved {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: #198754;
+            border-color: rgba(25, 135, 84, 0.2);
+        }
+        
+        .status-badge.pending {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border-color: rgba(255, 193, 7, 0.2);
+        }
+        
+        .status-badge.rejected {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border-color: rgba(220, 53, 69, 0.2);
+        }
+        
+        /* Action buttons */
+        .action-btn {
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            background-color: rgba(0,0,0,0.04);
+            color: #6c757d;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background-color: var(--sidebar-hover);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        body.dark-mode .action-btn {
+            background-color: rgba(255,255,255,0.05);
+            color: #aaa;
+        }
+        
+        /* Tag pills */
+        .tag-pill {
+            padding: 3px 8px;
+            font-size: 0.65rem !important;
+            font-weight: 500;
+            background-color: #f0f0f0;
+            color: #666;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .tag-pill:hover {
+            background-color: var(--sidebar-hover);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        body.dark-mode .tag-pill {
+            background-color: #333;
+            color: #ccc;
+        }
+        
+        /* Card styling upgrades */
+        .card {
+            border-radius: 15px !important;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.03) !important;
+        }
+        
+        body.dark-mode .card {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            background-color: #1e1e1e;
+            border-color: #333 !important;
+        }
+        
+        .card:hover {
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            padding: 20px !important;
+            background: linear-gradient(to right, #f8f9fa, white) !important;
+            border-bottom: 1px solid #f0f0f0 !important;
+        }
+        
+        body.dark-mode .card-header {
+            background: linear-gradient(to right, #252525, #1e1e1e) !important;
+            border-bottom: 1px solid #333 !important;
+        }
+        
+        .card-body {
+            padding: 0 !important;
+        }
+        
+        /* Search controls */
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border-radius: 12px;
+            transition: all 0.3s;
+            background: white;
+            border: 1px solid #f0f0f0;
+            max-width: 400px;
+        }
+        
+        body.dark-mode .search-container {
+            background-color: #252525;
+            border-color: #333;
+        }
+        
+        .search-container:focus-within {
+            box-shadow: 0 6px 15px rgba(26, 188, 156, 0.1);
+            border-color: rgba(26, 188, 156, 0.3);
+        }
+        
+        .quick-search {
+            border: none;
+            padding: 10px 15px;
+            border-radius: 12px;
+            width: 100%;
+            background: transparent;
+        }
+        
+        .quick-search:focus {
+            outline: none;
+        }
+        
+        .search-icon {
+            color: #aaa;
+            position: absolute;
+            right: 40px;
+            pointer-events: none;
+        }
+        
+        .clear-search {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0 10px;
+            display: none;
+        }
+        
+        .clear-search:hover {
+            color: var(--danger);
+        }
+        
+        /* View toggle buttons */
+        .view-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #f0f0f0;
+            background-color: white;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        
+        body.dark-mode .view-toggle {
+            background-color: #252525;
+            border-color: #333;
+            color: #aaa;
+        }
+        
+        .view-toggle:hover {
+            color: var(--sidebar-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+        
+        .view-toggle.active {
+            background-color: var(--sidebar-hover);
+            color: white;
+            border-color: var(--sidebar-hover);
+        }
+        
+        /* Theme toggle button */
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid #f0f0f0;
+            background-color: white;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        
+        body.dark-mode .theme-toggle {
+            background-color: #252525;
+            border-color: #333;
+            color: #aaa;
+        }
+        
+        .theme-toggle:hover {
+            color: var(--sidebar-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+        
+        /* Bulk action buttons */
+        .bulk-action-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .bulk-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .selected-count {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            color: #666;
+            background-color: #f8f9fa;
+            border-radius: 20px;
+            min-width: 80px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        body.dark-mode .selected-count {
+            background-color: #333;
+            color: #ccc;
+        }
+        
+        /* Grid view styling */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .resource-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            border: 1px solid rgba(0,0,0,0.03);
+            transform-origin: center;
+        }
+        
+        body.dark-mode .resource-card {
+            background-color: #1e1e1e;
+            border-color: #333;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .resource-card:hover {
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+        }
+        
+        .resource-card.selected {
+            border: 2px solid var(--sidebar-hover);
+            box-shadow: 0 10px 25px rgba(26, 188, 156, 0.2);
+        }
+        
+        .resource-card-select {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 2;
+        }
+        
+        .resource-card-content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+        
+        .resource-card-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        body.dark-mode .resource-card-title {
+            color: #e0e0e0;
+        }
+        
+        .resource-card-actions {
+            display: flex;
+            padding: 15px 20px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            background-color: rgba(0,0,0,0.01);
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        body.dark-mode .resource-card-actions {
+            border-top-color: rgba(255,255,255,0.05);
+            background-color: rgba(255,255,255,0.03);
+        }
+        
+        .card-action-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0,0,0,0.04);
+            color: var(--primary-soft);
+            transition: all 0.2s;
+        }
+        
+        .card-action-btn:hover {
+            background-color: var(--sidebar-hover);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        body.dark-mode .card-action-btn {
+            background-color: rgba(255,255,255,0.05);
+            color: #ccc;
+        }
+        
+        /* Table responsive styles */
+        @@media (max-width: 768px) {
+            .date-column, .type-column {
+                display: none;
+            }
+            
+            .action-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
 } 

@@ -4,7 +4,7 @@
     Layout = "_CommunityLayout";
 }
 
-<div class="container-fluid px-4 py-4">
+<div class="container-fluid px-4 py-4" style="background-color: white !important;">
     <div class="row g-4">
         <!-- Create Post Card - Trigger for Modal -->
         <div class="col-12">
@@ -42,10 +42,13 @@
 
         <!-- Feed Posts -->
         <div class="col-12">
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card border-0 mb-4">
                 <div class="card-body p-3">
                     <div class="feed-header d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                        <h5 class="m-0 mb-2 mb-md-0">Community Updates</h5>
+                        <h5 class="m-0 mb-2 mb-md-0 feed-title">
+                            <i class="fas fa-users me-2 text-primary"></i>
+                            <span class="fw-bold">Community Updates</span>
+                        </h5>
                         <div class="feed-controls d-flex align-items-center">
                             <div class="search-container me-2">
                                 <div class="input-group">
@@ -55,7 +58,7 @@
                                     <input type="text" class="form-control bg-light border-0" id="post-search" placeholder="Search posts...">
                                 </div>
                             </div>
-                <div class="feed-filters">
+                 <!-- #region           --> <div class="feed-filters">
                                 <select class="form-select form-select-sm bg-light border-0" id="post-filter">
                         <option value="all">All Posts</option>
                                     <option value="HelpRequest">Help Requests</option>
@@ -75,7 +78,7 @@
             {
                 foreach (var post in Model)
                 {
-                        <div class="card shadow-sm border-0 mb-4 post-card" data-post-type="@post.Type">
+                        <div class="card shadow border-0 mb-4 post-card" data-post-type="@post.Type" data-post-id="@post.Id" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05) !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
                         <div class="card-body p-4">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avatar-circle me-3">
@@ -99,10 +102,22 @@
                                     <p class="card-text mb-0">@post.Content</p>
                                 </div>
 
-                                @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                @{
+                                    var hasValidImage = !string.IsNullOrWhiteSpace(post.ImageUrl) && 
+                                                       post.ImageUrl != "null" && 
+                                                       post.ImageUrl != "#" &&
+                                                       !post.ImageUrl.Equals("undefined", StringComparison.OrdinalIgnoreCase) &&
+                                                       !post.ImageUrl.Equals("empty", StringComparison.OrdinalIgnoreCase) &&
+                                                       !string.IsNullOrEmpty(post.ImageUrl?.Trim()) &&
+                                                       post.ImageUrl.Length > 5 && // Ensure the URL has some meaningful length
+                                                       (post.ImageUrl.StartsWith("http") || post.ImageUrl.StartsWith("/"));
+                                }
+                                @if (hasValidImage)
                                 {
-                                    <div class="post-image mb-3">
+                                    <div class="post-image mb-3" data-post-id="@post.Id">
                                         <img src="@post.ImageUrl" class="img-fluid rounded" alt="Post image" 
+                                             onerror="this.onerror=null; this.parentNode.style.display='none';" 
+                                             onload="this.dataset.loaded='true'"
                                              onclick="openImageViewer(this.src)" style="cursor: pointer;">
                                     </div>
                                 }
@@ -119,43 +134,15 @@
                                     </div>
                                 }
 
-                                <div class="post-actions d-flex align-items-center gap-3">
-                                    <button class="btn btn-subtle btn-sm rounded-pill post-like-btn" data-post-id="@post.Id">
-                                        <i class="far fa-heart me-1"></i><span class="like-count">0</span> Like
-                                    </button>
-                                    <button class="btn btn-subtle btn-sm rounded-pill" data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
-                                        <i class="far fa-comment me-1"></i>Comment
-                                    </button>
-                                    <button class="btn btn-subtle btn-sm rounded-pill share-btn" data-post-id="@post.Id">
+                                <div class="post-actions d-flex align-items-center justify-content-end">
+                                    <button class="btn btn-primary btn-sm rounded-pill px-3 share-btn" data-post-id="@post.Id">
                                         <i class="far fa-share-square me-1"></i>Share
                                     </button>
                                 </div>
                                 
                                 <!-- Comments Section (Collapsed by default) -->
-                                <div class="collapse mt-3" id="comments-@post.Id">
-                                    <div class="card card-body bg-light border-0">
-                                        <div class="comments-list mb-3">
-                                            <!-- Empty placeholder for comments -->
-                                            <div class="text-center text-muted py-3 empty-comments">
-                                                <i class="far fa-comment-dots mb-2"></i>
-                                                <p class="small mb-0">No comments yet. Be the first to comment!</p>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex">
-                                            <div class="avatar-circle me-2" style="width:30px;height:30px">
-                                                <i class="fas fa-user small"></i>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control bg-white border comment-input" 
-                                                           placeholder="Write a comment..." data-post-id="@post.Id">
-                                                    <button class="btn btn-primary send-comment-btn" type="button" data-post-id="@post.Id">
-                                                        <i class="fas fa-paper-plane"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="collapse mt-3" id="comments-@post.Id" style="display: none;">
+                                    <!-- Removed comment section content -->
                                 </div>
                             </div>
                         </div>
@@ -176,67 +163,74 @@
     </div>
 </div>
 
-<!-- Create Post Modal -->
+<!-- Create Post Modal - Enhanced with minimal design -->
 <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-white border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="createPostModalLabel">
+                    <i class="fas fa-pen-fancy me-2 text-primary"></i>Create Post
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
-                <div class="modal-body">
+                <div class="modal-body p-4 pt-2">
                     @Html.AntiForgeryToken()
                     
+                    <!-- Improved textarea with proper floating label -->
                     <div class="mb-3">
-                        <textarea class="form-control" id="modalContent" name="Content" rows="4" required 
-                                placeholder="Share your thoughts, updates, or information with the community..."></textarea>
+                        <div class="form-floating">
+                            <textarea class="form-control" id="modalContent" name="Content" rows="3" required 
+                                    placeholder="Share your thoughts..."></textarea>
+                            <label for="modalContent">Share your thoughts, updates, or information with the community...</label>
+                        </div>
                     </div>
                     
-                    <div class="row mb-3">
+                    <div class="row mb-3 g-3">
                         <div class="col-md-6">
-                            <label for="modalType" class="form-label small text-muted">Post Type</label>
-                            <select class="form-select bg-light border-0" id="modalType" name="Type" required>
+                            <label for="modalType" class="form-label small text-muted">POST TYPE</label>
+                            <div class="post-type-selector">
+                                <select class="form-select form-select-sm shadow-sm" id="modalType" name="Type" required>
                                 <option value="GeneralUpdate">General Update</option>
                                 <option value="HelpRequest">Help Request</option>
                                 <option value="StatusUpdate">Status Update</option>
                                 <option value="ResourceSharing">Resource Sharing</option>
                                 <option value="Information">Information</option>
                             </select>
-                            <small class="text-muted d-block mt-1">Select the category that best fits your post</small>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <label for="modalLocation" class="form-label small text-muted">Location (optional)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="fas fa-map-marker-alt text-muted"></i>
+                            <label for="modalLocation" class="form-label small text-muted">LOCATION (OPTIONAL)</label>
+                            <div class="input-group shadow-sm rounded overflow-hidden">
+                                <span class="input-group-text border-0 bg-light">
+                                    <i class="fas fa-map-marker-alt text-danger"></i>
                                 </span>
-                                <input type="text" class="form-control bg-light border-0" id="modalLocation" name="Location" 
+                                <input type="text" class="form-control form-control-sm border-0" id="modalLocation" name="Location" 
                                        placeholder="Add location">
-                                <button type="button" class="btn btn-primary" id="detect-modal-location">
+                                <button type="button" class="btn btn-sm btn-primary location-btn" id="detect-modal-location">
                                     <i class="fas fa-crosshairs"></i>
                                 </button>
                             </div>
-                            <small class="text-muted d-block mt-1">Current location will be automatically detected</small>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="modalImage" class="form-label small text-muted">Add Image (optional)</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0">
+                        <label for="modalImage" class="form-label small text-muted">IMAGE (OPTIONAL)</label>
+                        <div class="image-upload-container">
+                            <div class="input-group shadow-sm rounded overflow-hidden">
+                                <span class="input-group-text border-0 bg-light">
                                 <i class="fas fa-image text-primary"></i>
                             </span>
-                            <input type="file" class="form-control bg-light border-0" id="modalImage" name="Image" accept="image/*">
+                                <input type="file" class="form-control form-control-sm border-0" id="modalImage" name="Image" accept="image/*">
                         </div>
-                        <div id="imagePreview" class="mt-3 d-none text-center">
+                        </div>
+                        <div id="imagePreview" class="mt-3 d-none">
                             <div class="position-relative d-inline-block">
-                                <img src="#" alt="Preview" class="img-thumbnail mx-auto" style="max-height: 250px; max-width: 100%; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                                <img src="#" alt="Preview" class="img-thumbnail mx-auto" style="max-height: 200px; max-width: 100%; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" id="removeImage" style="margin-right: -10px; margin-top: -10px;">
                                     <i class="fas fa-times"></i>
                             </button>
                             </div>
-                            <p class="text-muted small mt-2">Selected image preview</p>
                         </div>
                     </div>
                     
@@ -244,13 +238,18 @@
                     <input type="number" step="any" class="d-none" id="modalLatitude" name="Latitude">
                     <input type="number" step="any" class="d-none" id="modalLongitude" name="Longitude">
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary" id="submit-post-btn" style="background-color: rgb(46, 137, 255);">
-                        <i class="fas fa-paper-plane me-2"></i>Post
-                    </button>
+                <!-- Enhanced footer with better styled buttons -->
+                <div class="modal-footer border-top border-light pt-0 pb-3 px-4">
+                    <div class="d-flex justify-content-between w-100">
+                        <button type="button" class="btn btn-light px-4 rounded-pill" data-bs-dismiss="modal" 
+                                style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); border: none; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill" id="submit-post-btn" 
+                                style="background: linear-gradient(45deg, #4361ee, #4895ef); border: none; box-shadow: 0 2px 5px rgba(79, 111, 255, 0.3);">
+                            <i class="fas fa-paper-plane me-2"></i>Post
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -271,40 +270,64 @@
     </div>
 </div>
 
-<!-- Share Post Modal -->
+<!-- Enhanced Share Post Modal -->
 <div class="modal fade" id="sharePostModal" tabindex="-1" aria-labelledby="sharePostModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="sharePostModalLabel">Share Post</h5>
+        <div class="modal-content border-0 shadow-lg rounded-lg">
+            <div class="modal-header bg-gradient-light border-0 py-3">
+                <h5 class="modal-title fw-bold" id="sharePostModalLabel">
+                    <i class="fas fa-share-alt me-2 text-primary"></i>Share Post
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
+                <div class="share-preview mb-4 bg-light rounded-3 p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-quote-left text-muted me-2"></i>
+                        <span class="small text-muted">Post Preview</span>
+                    </div>
+                    <p class="share-preview-content mb-1 small text-truncate"></p>
+                    <p class="mb-0 small text-primary fw-medium">Read more on THYNK Community...</p>
+                </div>
+                
+                <h6 class="fw-bold mb-3">Share via</h6>
                 <div class="share-options">
-                    <div class="d-flex flex-wrap gap-2 justify-content-center">
-                        <a href="#" class="btn btn-outline-primary" id="share-facebook">
+                    <div class="d-flex flex-wrap gap-2 justify-content-between mb-4">
+                        <a href="#" class="btn btn-outline-primary d-flex align-items-center justify-content-center share-btn-option" id="share-facebook">
                             <i class="fab fa-facebook-f me-2"></i>Facebook
                         </a>
-                        <a href="#" class="btn btn-outline-info" id="share-twitter">
+                        <a href="#" class="btn btn-outline-info d-flex align-items-center justify-content-center share-btn-option" id="share-twitter">
                             <i class="fab fa-twitter me-2"></i>Twitter
                         </a>
-                        <a href="#" class="btn btn-outline-success" id="share-whatsapp">
+                        <a href="#" class="btn btn-outline-success d-flex align-items-center justify-content-center share-btn-option" id="share-whatsapp">
                             <i class="fab fa-whatsapp me-2"></i>WhatsApp
                         </a>
-                        <a href="#" class="btn btn-outline-secondary" id="share-email">
+                        <a href="#" class="btn btn-outline-secondary d-flex align-items-center justify-content-center share-btn-option" id="share-email">
                             <i class="fas fa-envelope me-2"></i>Email
                         </a>
                     </div>
-                    <div class="mt-3">
-                        <label class="form-label small">Copy Link</label>
-                        <div class="input-group">
-                            <input type="text" id="share-link" class="form-control" readonly>
+                    
+                    <h6 class="fw-bold mb-2">Copy Link</h6>
+                    <div class="input-group shadow-sm mb-3">
+                        <input type="text" id="share-link" class="form-control border-0" readonly>
                             <button class="btn btn-primary" type="button" id="copy-link-btn">
-                                <i class="fas fa-copy"></i>
+                            <i class="fas fa-copy me-1"></i>Copy
                             </button>
                         </div>
+                    
+                    <div class="qr-code-section text-center mt-4">
+                        <h6 class="fw-bold mb-2">QR Code</h6>
+                        <div class="qr-placeholder bg-light mx-auto rounded p-3" style="width:150px;height:150px">
+                            <div id="share-qr-code" class="d-flex align-items-center justify-content-center h-100">
+                                <i class="fas fa-qrcode fa-4x text-muted"></i>
                     </div>
                 </div>
+                        <p class="small text-muted mt-2">Scan to view post on mobile</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -381,10 +404,12 @@
                 <p class="small text-muted mb-0">Your post will be submitted for review. Once approved, it will be visible to the community.</p>
             </div>
             <div class="modal-footer p-2 border-0 d-flex justify-content-between">
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="editPostBtn">
+                <button type="button" class="btn btn-sm btn-outline-secondary px-4 rounded-pill" id="editPostBtn"
+                        style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); border: none; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
                     <i class="fas fa-pencil-alt me-1"></i> Edit
                 </button>
-                <button type="button" class="btn btn-sm btn-primary px-3" id="confirmPostBtn">
+                <button type="button" class="btn btn-sm btn-primary px-4 rounded-pill" id="confirmPostBtn"
+                        style="background: linear-gradient(45deg, #4361ee, #4895ef); border: none; box-shadow: 0 2px 5px rgba(79, 111, 255, 0.3);">
                     <i class="fas fa-check me-1"></i> Submit
                 </button>
             </div>
@@ -394,6 +419,101 @@
 
 @section Styles {
     <style>
+        /* Enhanced highlighted post styles */
+        .highlighted-post {
+            box-shadow: 0 4px 20px rgba(13, 110, 253, 0.5) !important;
+            transform: translateY(-5px);
+            position: relative;
+            z-index: 5;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(13, 110, 253, 0.3);
+            animation: highlightPulse 2s infinite;
+        }
+        
+        @@keyframes highlightPulse {
+            0% { box-shadow: 0 4px 20px rgba(13, 110, 253, 0.5); }
+            50% { box-shadow: 0 4px 30px rgba(13, 110, 253, 0.7); }
+            100% { box-shadow: 0 4px 20px rgba(13, 110, 253, 0.5); }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: badgeFloat 3s ease-in-out infinite;
+            z-index: 10;
+            cursor: pointer;
+        }
+        
+        @@keyframes badgeFloat {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+        
+        .notification-badge i {
+            animation: bellRing 2s ease-in-out infinite;
+        }
+        
+        @@keyframes bellRing {
+            0% { transform: rotate(0); }
+            5% { transform: rotate(15deg); }
+            10% { transform: rotate(-15deg); }
+            15% { transform: rotate(15deg); }
+            20% { transform: rotate(-15deg); }
+            25% { transform: rotate(0); }
+            100% { transform: rotate(0); }
+        }
+        
+        .highlighted-post::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 8px;
+            background: linear-gradient(45deg, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.05));
+            pointer-events: none;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+        
+        @@keyframes gradientShift {
+            0% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.5; }
+        }
+        
+        .highlighted-post .post-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .highlighted-post .post-actions {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .highlighted-post .post-image {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .highlighted-post .post-location {
+            position: relative;
+            z-index: 2;
+        }
+        
         :root {
             --bg-primary: #f8f9fa;
             --bg-secondary: #f1f3f5;
@@ -839,292 +959,381 @@
             }
         }
         
-        /* Modal button enhancements */
-        .modal-footer .btn {
-            transition: all 0.3s ease;
-            font-weight: 500;
-            border-radius: 20px;
-            padding: 8px 20px;
+        /* Enhanced floating label styling for post modal */
+        .create-post-form .form-floating {
+            position: relative;
         }
         
-        .modal-footer .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-        }
-
-        .btn-primary {
-            background-color: #4f6fff;
-            border-color: #4f6fff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #4f6fff;
-            border-color: #4f6fff;
-        }
-        
-        #detect-modal-location {
-            border-radius: 0 4px 4px 0;
-            transition: all 0.3s ease;
-        }
-        
-        #detect-modal-location:hover {
-            transform: translateY(-2px);
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        /* Modal form enhancements */
-        .create-post-form textarea {
-            border-radius: 12px;
-            padding: 12px;
-            border: 1px solid #e4e4e4;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05) inset;
-            transition: all 0.3s ease;
-        }
-        
-        .create-post-form textarea:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-        }
-        
-        .create-post-form .form-select {
-            border-radius: 8px;
-            border: 1px solid #e4e4e4;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            padding: 10px 12px;
-        }
-        
-        .create-post-form .form-select:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-        }
-        
-        .create-post-form .input-group {
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        
-        /* Image preview styles */
-        #imagePreview {
-            transition: all 0.3s ease;
-            padding: 10px;
-            background-color: #f8f9fa;
+        .create-post-form .form-floating > .form-control {
+            height: auto;
+            min-height: 100px;
+            padding-top: 1.625rem;
+            padding-bottom: 0.625rem;
             border-radius: 10px;
-        }
-        
-        #imagePreview img {
-            transition: all 0.3s ease;
-            border: 2px solid #eaeaea;
-        }
-        
-        #imagePreview img:hover {
-            transform: scale(1.01);
-        }
-        
-        #removeImage {
-            opacity: 0.8;
             transition: all 0.2s ease;
-            z-index: 10;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
-        #removeImage:hover {
-            opacity: 1;
-            transform: scale(1.1);
+        .create-post-form .form-floating > label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 1rem 0.75rem;
+            overflow: hidden;
+            text-align: start;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .create-post-form .form-floating > .form-control:focus,
+        .create-post-form .form-floating > .form-control:not(:placeholder-shown) {
+            padding-top: 1.625rem;
+            padding-bottom: 0.625rem;
+        }
+        
+        .create-post-form .form-floating > .form-control:focus ~ label,
+        .create-post-form .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            opacity: 0.75;
+            transform: scale(0.8) translateY(-0.5rem) translateX(0.15rem);
+            color: #4f6fff;
+            font-weight: 500;
+        }
+        
+        /* Button enhancements for post modal */
+        #submit-post-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(79, 111, 255, 0.4) !important;
+        }
+        
+        .modal-footer .btn.btn-light {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: none;
+            color: #6c757d;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-footer .btn.btn-light:hover {
+            background: linear-gradient(45deg, #e9ecef, #dee2e6);
+            color: #495057;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
-        /* Review status timeline styles */
-        .review-pending-icon {
-            width: 90px;
-            height: 90px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .review-status {
-            width: 100%;
-            max-width: 400px;
-        }
-        
-        .review-stage {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .review-stage.active {
-            background-color: rgba(79, 111, 255, 0.1);
-            color: #4f6fff;
-        }
-        
-        .review-line {
-            flex-grow: 1;
-            height: 3px;
-            background-color: #f0f0f0;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .review-stage.active + .review-line {
-            background-color: rgba(79, 111, 255, 0.1);
-        }
-        
-        #reviewPendingModal .modal-content {
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        #reviewPendingModal .modal-body {
-            border-radius: 16px;
-        }
-        
-        /* Post confirmation modal styles */
-        #postConfirmModal .modal-content {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        #postConfirmModal .modal-header {
-            padding: 15px;
-        }
-        
-        #postConfirmModal .confirmation-icon {
-            width: 60px;
-            height: 60px;
-            background-color: rgba(79, 111, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-        }
-        
+        /* Enhanced confirmation modal buttons */
         #postConfirmModal .modal-footer {
-            background-color: #f9f9f9;
+            padding: 1rem 1.5rem;
+            gap: 1rem;
         }
-        
-        #postConfirmModal .btn-outline-secondary:hover {
-            background-color: #f0f0f0;
-            color: #333;
+
+        #postConfirmModal .modal-footer .btn {
+            min-width: 100px;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
-        
-        #postConfirmModal .btn-primary {
-            background-color: #4f6fff;
-            border-color: #4f6fff;
+
+        #postConfirmModal .modal-footer .btn:hover {
+            transform: translateY(-1px);
         }
-        
-        #postConfirmModal .btn-primary:hover {
-            background-color: #3e5ce2;
-            border-color: #3e5ce2;
+
+        #postConfirmModal .modal-footer .btn-outline-secondary {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border: none;
+            color: #6c757d;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        
-        /* Soft background classes for confirmation modal */
-        .bg-primary-soft {
-            background-color: rgba(79, 111, 255, 0.1);
+
+        #postConfirmModal .modal-footer .btn-outline-secondary:hover {
+            background: linear-gradient(45deg, #e9ecef, #dee2e6);
+            color: #495057;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
-        
-        .bg-danger-soft {
-            background-color: rgba(220, 53, 69, 0.1);
+
+        #postConfirmModal .modal-footer .btn-primary {
+            background: linear-gradient(45deg, #4361ee, #4895ef);
+            border: none;
+            box-shadow: 0 2px 5px rgba(79, 111, 255, 0.3);
         }
-        
-        .bg-success-soft {
-            background-color: rgba(40, 167, 69, 0.1);
-        }
-        
-        .bg-info-soft {
-            background-color: rgba(23, 162, 184, 0.1);
-        }
-        
-        .bg-secondary-soft {
-            background-color: rgba(108, 117, 125, 0.1);
-        }
-        
-        /* User feedback animation */
-        @@keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(79, 111, 255, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 15px rgba(79, 111, 255, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(79, 111, 255, 0);
-            }
-        }
-        
-        .review-pending-icon {
-            animation: pulse 2s infinite;
+
+        #postConfirmModal .modal-footer .btn-primary:hover {
+            background: linear-gradient(45deg, #3a56d4, #3f84d4);
+            box-shadow: 0 4px 8px rgba(79, 111, 255, 0.4);
         }
     </style>
 }
 
 @section Scripts {
+    <!-- QR Code library for share feature -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    
     <script>
         // Document ready function to initialize all components
         $(document).ready(function() {
+            // Check for highlighted post from notification link
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightPostId = urlParams.get('highlight') || sessionStorage.getItem('highlightPostId');
+            
+            // Clear session storage after reading
+            if (sessionStorage.getItem('highlightPostId')) {
+                sessionStorage.removeItem('highlightPostId');
+            }
+            
+            if (highlightPostId) {
+                // Immediately hide the notification badge
+                const notificationBadge = document.getElementById('notificationBadge');
+                if (notificationBadge) {
+                    // Force hide the badge using multiple techniques
+                    notificationBadge.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important;';
+                    notificationBadge.classList.remove('badge-pulse');
+                    notificationBadge.setAttribute('aria-hidden', 'true');
+                    notificationBadge.setAttribute('hidden', 'hidden');
+                    notificationBadge.textContent = '0';
+                    
+                    // Force browser to recognize the change
+                    void notificationBadge.offsetWidth;
+                    
+                    // Mark the notification as read via API
+                    fetch(`/Community/MarkNotificationAsRead/${highlightPostId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).catch(err => console.error('Error marking notification as read:', err));
+                }
+
+                // Flag to prevent duplicate highlighting if layout script also runs
+                window.postAlreadyHighlighted = true;
+
+                // Find the post element
+                const findAndHighlightPost = function() {
+                    const postElement = document.querySelector(`.post-card[data-post-id="${highlightPostId}"]`);
+                    
+                    if (postElement) {
+                        console.log('Found post to highlight:', highlightPostId);
+                        
+                        // Scroll to the post with smooth animation
+                        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // Store original styles
+                        const originalBoxShadow = getComputedStyle(postElement).boxShadow;
+                        const originalTransform = getComputedStyle(postElement).transform;
+                        const originalBorder = getComputedStyle(postElement).border;
+                        
+                        // Add highlighted class
+                        postElement.classList.add('highlighted-post');
+                        
+                        // Create a visual indicator element
+                        const notificationTag = document.createElement('div');
+                        notificationTag.className = 'notification-badge';
+                        notificationTag.innerHTML = '<i class="fas fa-bell me-1"></i>From Notification';
+                        postElement.appendChild(notificationTag);
+                        
+                        // Animate the badge with a pulse effect
+                        let badgeScale = 1;
+                        let scaleIncreasing = true;
+                        
+                        const badgePulseInterval = setInterval(() => {
+                            if (scaleIncreasing) {
+                                badgeScale += 0.005;
+                                if (badgeScale >= 1.05) scaleIncreasing = false;
+                            } else {
+                                badgeScale -= 0.005;
+                                if (badgeScale <= 1) scaleIncreasing = true;
+                            }
+                            notificationTag.style.transform = `scale(${badgeScale})`;
+                        }, 50);
+                        
+                        // Create pulsing effect with JavaScript
+                        let isIncreasing = true;
+                        let opacity = 0.5;
+                        
+                        const pulseInterval = setInterval(() => {
+                            if (isIncreasing) {
+                                opacity += 0.03;
+                                if (opacity >= 0.8) isIncreasing = false;
+                            } else {
+                                opacity -= 0.03;
+                                if (opacity <= 0.4) isIncreasing = true;
+                            }
+                            postElement.style.boxShadow = `0 5px 25px rgba(13, 110, 253, ${opacity})`;
+                        }, 100);
+                        
+                        // After 5 seconds, remove the highlight
+                        setTimeout(() => {
+                            clearInterval(pulseInterval);
+                            clearInterval(badgePulseInterval);
+                            
+                            // Remove highlighted class
+                            postElement.classList.remove('highlighted-post');
+                            
+                            // Restore original styles with smooth transition
+                            postElement.style.transition = 'all 1s ease';
+                            postElement.style.boxShadow = originalBoxShadow;
+                            postElement.style.transform = originalTransform;
+                            postElement.style.border = originalBorder;
+                            
+                            // Fade out notification badge
+                            notificationTag.style.opacity = '0';
+                            notificationTag.style.transition = 'opacity 1s ease';
+                            
+                            // Remove notification tag after fade out
+                            setTimeout(() => {
+                                notificationTag.remove();
+                            }, 1000);
+                        }, 5000);
+                        
+                        return true;
+                    }
+                    return false;
+                };
+
+                // Try to find the post immediately
+                if (!findAndHighlightPost()) {
+                    // If not found, try again after a delay (DOM might still be loading)
+                    setTimeout(() => {
+                        if (!findAndHighlightPost()) {
+                            // If still not found, try one more time with longer delay
+                            setTimeout(findAndHighlightPost, 1000);
+                        }
+                    }, 500);
+                }
+            }
+            
             // Initialize all tooltips
             $('[data-bs-toggle="tooltip"]').tooltip();
+            
+            // Enhanced cleanup for empty image elements
+            function cleanupEmptyImages() {
+                $('.post-image img').each(function() {
+                    const $img = $(this);
+                    const src = $img.attr('src');
+                    
+                    // Comprehensive check for invalid image sources
+                    if (!src || 
+                        src === '' || 
+                        src === 'null' || 
+                        src === '#' || 
+                        src.toLowerCase() === 'undefined' || 
+                        src.toLowerCase() === 'empty' ||
+                        src.trim() === '' ||
+                        src.length < 5) {
+                        
+                        console.log('Removing invalid image container:', src);
+                        $img.closest('.post-image').remove();
+                        return;
+                    }
+                    
+                    // Check for image elements that don't have proper dimensions
+                    if ($img[0].complete && ($img[0].naturalWidth === 0 || $img[0].naturalHeight === 0)) {
+                        console.log('Removing zero dimension image:', src);
+                        $img.closest('.post-image').remove();
+                    }
+                    
+                    // Additional check for broken images
+                    $img.on('error', function() {
+                        console.log('Removing broken image:', src);
+                        $(this).closest('.post-image').remove();
+                    });
+                });
+            }
+            
+            // Run cleanup immediately
+            cleanupEmptyImages();
+            
+            // Also run after images have had time to load
+            setTimeout(cleanupEmptyImages, 1000);
+
+            // Enhanced image viewer with more validation
+            window.openImageViewer = function(src) {
+                // Comprehensive validation check
+                if (!src || 
+                    src === '' || 
+                    src === 'null' || 
+                    src === '#' || 
+                    src.toLowerCase() === 'undefined' || 
+                    src.toLowerCase() === 'empty' ||
+                    src.trim() === '' ||
+                    src.length < 5) {
+                    console.log('Invalid image source, not opening viewer:', src);
+                    return;
+                }
+                
+                const img = new Image();
+                img.onload = function() {
+                    if (this.width === 0 || this.height === 0) {
+                        console.log('Image has zero dimensions, not opening viewer');
+                        return;
+                    }
+                    
+                    $('#fullImage').attr('src', src);
+                    new bootstrap.Modal(document.getElementById('imageViewerModal')).show();
+                };
+                
+                img.onerror = function() {
+                    console.log('Error loading image preview');
+                };
+                
+                img.src = src;
+                
+                // Add error handler for broken images in modal
+                $('#fullImage').off('error').on('error', function() {
+                    console.log('Error loading image in modal');
+                    bootstrap.Modal.getInstance(document.getElementById('imageViewerModal')).hide();
+                });
+            };
             
             // Update submit button color based on selected post type
             $('#modalType').on('change', function() {
                 const postType = $(this).val();
                 const $submitBtn = $('#submit-post-btn');
+                const $postTypeIcon = $('.post-type-icon i');
                 
                 // Remove all color classes
                 $submitBtn.removeClass('btn-primary btn-danger btn-success btn-info btn-warning');
+                $postTypeIcon.removeClass('fa-pen fa-hands-helping fa-share-alt fa-info-circle fa-comment-alt text-primary text-danger text-success text-info text-warning');
                 
                 // Add appropriate color class based on post type
                 switch(postType) {
                     case 'HelpRequest':
                         $submitBtn.addClass('btn-danger');
+                        $postTypeIcon.addClass('fa-hands-helping text-danger');
                         break;
                     case 'StatusUpdate':
-                        $submitBtn.addClass('btn-warning');
+                        $submitBtn.addClass('btn-info');
+                        $postTypeIcon.addClass('fa-comment-alt text-info');
                         break;
                     case 'ResourceSharing':
                         $submitBtn.addClass('btn-success');
+                        $postTypeIcon.addClass('fa-share-alt text-success');
                         break;
                     case 'Information':
                         $submitBtn.addClass('btn-info');
+                        $postTypeIcon.addClass('fa-info-circle text-info');
                         break;
                     default:
                         $submitBtn.addClass('btn-primary');
+                        $postTypeIcon.addClass('fa-pen text-primary');
                 }
             });
             
             // Image preview functionality
             $('#modalImage').on('change', function() {
                 const file = this.files[0];
-                if (file) {
+            if (file) {
                     // File size validation
-                    if (file.size > 5 * 1024 * 1024) { // 5MB
-                        alert('File size must be less than 5MB');
-                        this.value = '';
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    alert('File size must be less than 5MB');
+                    this.value = '';
                         $('#imagePreview').addClass('d-none');
-                        return;
-                    }
+                    return;
+                }
                     
                     // Preview image
                     const reader = new FileReader();
@@ -1136,7 +1345,7 @@
                             $('#imagePreview').html(`
                                 <div class="position-relative d-inline-block">
                                     <img src="${e.target.result}" alt="Preview" class="img-thumbnail mx-auto" 
-                                         style="max-height: 250px; max-width: 100%; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                                         style="max-height: 250px; max-width: 100%; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                                     <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" 
                                             id="removeImage" style="margin-right: -10px; margin-top: -10px;">
                                         <i class="fas fa-times"></i>
@@ -1144,12 +1353,6 @@
                                 </div>
                                 <p class="text-muted small mt-2">Selected image preview</p>
                             `);
-                            
-                            // Re-attach the click handler for the remove button
-                            $('#removeImage').on('click', function() {
-                                $('#modalImage').val('');
-                                $('#imagePreview').addClass('d-none');
-                            });
                         } else {
                             // Update existing image
                             $image.attr('src', e.target.result);
@@ -1160,6 +1363,24 @@
                     };
                     reader.readAsDataURL(file);
                 }
+            });
+            
+            // Remove image button click handler - moved outside the change event
+            $(document).on('click', '#removeImage', function() {
+                $('#modalImage').val('');
+                $('#imagePreview').addClass('d-none');
+            });
+            
+            // Floating label effects for textarea
+            $('#modalContent').on('focus blur', function() {
+                $(this).parent('.input-floating').toggleClass('focused');
+            });
+            
+            // Visual feedback for focus on input elements
+            $('#createPostModal input, #createPostModal textarea, #createPostModal select').on('focus', function() {
+                $(this).closest('.input-group, .post-type-selector').addClass('focused');
+            }).on('blur', function() {
+                $(this).closest('.input-group, .post-type-selector').removeClass('focused');
             });
             
             // Geolocation support for post form
@@ -1286,113 +1507,6 @@
             // Clear validation on input
             $('#modalContent').on('input', function() {
                 $(this).removeClass('is-invalid');
-            });
-            
-            // Image viewer functionality
-            window.openImageViewer = function(src) {
-                $('#fullImage').attr('src', src);
-                new bootstrap.Modal(document.getElementById('imageViewerModal')).show();
-            };
-            
-            // Post like functionality
-            $('.post-like-btn').on('click', function() {
-                const $this = $(this);
-                const postId = $this.data('post-id');
-                const $icon = $this.find('i');
-                const $count = $this.find('.like-count');
-                
-                // Toggle like state
-                if ($icon.hasClass('far')) {
-                    $icon.removeClass('far').addClass('fas text-danger');
-                    $count.text(parseInt($count.text()) + 1);
-                } else {
-                    $icon.removeClass('fas text-danger').addClass('far');
-                    $count.text(Math.max(0, parseInt($count.text()) - 1));
-                }
-                
-                // Here you would normally make an AJAX call to save the like
-                console.log('Like toggled for post ID:', postId);
-            });
-            
-            // Comment submit functionality
-            $('.send-comment-btn').on('click', function() {
-                const postId = $(this).data('post-id');
-                const $input = $(`.comment-input[data-post-id="${postId}"]`);
-                const commentText = $input.val().trim();
-                
-                if (commentText !== '') {
-                    // Remove empty comments message if present
-                    $(`#comments-${postId} .empty-comments`).remove();
-                    
-                    // Add the new comment
-                    const $commentsList = $(`#comments-${postId} .comments-list`);
-                    const now = new Date();
-                    const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    
-                    const commentHtml = `
-                        <div class="comment d-flex mb-2 animate__animated animate__fadeIn">
-                            <div class="avatar-circle me-2" style="width:24px;height:24px">
-                                <i class="fas fa-user" style="font-size:10px"></i>
-                            </div>
-                            <div class="comment-content bg-white rounded p-2 flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-bold small">Current User</span>
-                                    <small class="text-muted">${timeStr}</small>
-                                </div>
-                                <p class="mb-0 small">${commentText}</p>
-                            </div>
-                        </div>
-                    `;
-                    
-                    $commentsList.append(commentHtml);
-                    $input.val('');
-                    
-                    // Here you would normally make an AJAX call to save the comment
-                    console.log('New comment on post ID:', postId, commentText);
-                }
-            });
-            
-            // Comment input Enter key handling
-            $('.comment-input').on('keypress', function(e) {
-                if (e.which === 13) {
-                    e.preventDefault();
-                    const postId = $(this).data('post-id');
-                    $(`.send-comment-btn[data-post-id="${postId}"]`).click();
-                }
-            });
-            
-            // Share post functionality
-            $('.share-btn').on('click', function() {
-                const postId = $(this).data('post-id');
-                const postUrl = `${window.location.origin}/Community/ViewPost/${postId}`;
-                
-                // Set share links
-                $('#share-facebook').attr('href', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`);
-                $('#share-twitter').attr('href', `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent('Check out this community post!')}`);
-                $('#share-whatsapp').attr('href', `https://wa.me/?text=${encodeURIComponent('Check out this community post: ' + postUrl)}`);
-                $('#share-email').attr('href', `mailto:?subject=${encodeURIComponent('Community Post')}&body=${encodeURIComponent('Check out this community post: ' + postUrl)}`);
-                
-                // Set copy link input
-                $('#share-link').val(postUrl);
-                
-                // Show modal
-                new bootstrap.Modal(document.getElementById('sharePostModal')).show();
-            });
-            
-            // Copy share link functionality
-            $('#copy-link-btn').on('click', function() {
-                const $shareLink = $('#share-link');
-                $shareLink.select();
-                document.execCommand('copy');
-                
-                // Show copied feedback
-                const $this = $(this);
-                const originalHTML = $this.html();
-                $this.html('<i class="fas fa-check"></i>').addClass('btn-success').removeClass('btn-primary');
-                
-                setTimeout(() => {
-                    $this.html(originalHTML).addClass('btn-primary').removeClass('btn-success');
-                }, 2000);
             });
             
             // Search functionality

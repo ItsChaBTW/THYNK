@@ -3,6 +3,315 @@
     Layout = "_AdminLayout";
 }
 
+@section Styles {
+    <style>
+        /* Enhanced Welcome Message Styles */
+        .dashboard-welcome {
+            background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-welcome::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(26, 188, 156, 0.1) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .dashboard-welcome .alert-heading {
+            color: #ECF0F1;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dashboard-welcome .alert-heading i {
+            font-size: 1.4rem;
+            color: #1ABC9C;
+            background: rgba(26, 188, 156, 0.1);
+            padding: 0.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dashboard-welcome p {
+            color: rgba(236, 240, 241, 0.85);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0;
+            max-width: 600px;
+        }
+
+        .dashboard-welcome .welcome-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Stats Box Styles */
+        .stats-box {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(44, 62, 80, 0.05);
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.08);
+        }
+
+        .stats-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #1ABC9C 0%, #2CD3AF 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stats-box:hover::before {
+            opacity: 1;
+        }
+
+        .stats-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stats-box:hover .stats-icon {
+            transform: scale(1.1);
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2C3E50;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .stats-label {
+            color: #7F8C8D;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-box .btn-link {
+            color: #1ABC9C;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .stats-box .btn-link:hover {
+            color: #2CD3AF;
+            transform: translateX(3px);
+        }
+
+        /* Card Styles */
+        .admin-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.04);
+            transition: all 0.3s ease;
+            background: #FFFFFF;
+        }
+
+        .admin-card:hover {
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.08);
+        }
+
+        .admin-card .card-header {
+            background: #FFFFFF;
+            border-bottom: 1px solid rgba(44, 62, 80, 0.05);
+            padding: 1rem 1.25rem;
+        }
+
+        .admin-card .card-header h5 {
+            color: #2C3E50;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Table Styles */
+        .table {
+            margin: 0;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #2C3E50;
+            border-bottom-width: 1px;
+            padding: 1rem 1.25rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #F8F9FA;
+        }
+
+        .table td {
+            padding: 1rem 1.25rem;
+            vertical-align: middle;
+            color: #34495E;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(44, 62, 80, 0.05);
+        }
+
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(26, 188, 156, 0.05);
+        }
+
+        /* Status Badge Styles */
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .status-pending {
+            background-color: rgba(241, 196, 15, 0.1);
+            color: #F1C40F;
+        }
+
+        .status-approved {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ECC71;
+        }
+
+        .status-rejected {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #E74C3C;
+        }
+
+        /* Quick Actions Styles */
+        .btn {
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1ABC9C 0%, #2CD3AF 100%);
+            border: none;
+            color: #FFFFFF;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(26, 188, 156, 0.2);
+            background: linear-gradient(135deg, #2CD3AF 0%, #1ABC9C 100%);
+        }
+
+        .btn-outline-primary {
+            border-color: #1ABC9C;
+            color: #1ABC9C;
+        }
+
+        .btn-outline-primary:hover {
+            background: #1ABC9C;
+            border-color: #1ABC9C;
+            transform: translateY(-2px);
+            color: #FFFFFF;
+        }
+
+        /* System Status Styles */
+        .list-group-item {
+            border: none;
+            padding: 1rem 1.25rem;
+            background: transparent;
+            color: #34495E;
+        }
+
+        .list-group-item:not(:last-child) {
+            border-bottom: 1px solid rgba(44, 62, 80, 0.05);
+        }
+
+        .badge {
+            padding: 0.5rem 0.75rem;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .badge.bg-success {
+            background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%) !important;
+        }
+
+        .text-success {
+            color: #2ECC71 !important;
+        }
+
+        /* Icon Colors */
+        .bg-warning {
+            background: linear-gradient(135deg, #F1C40F 0%, #F39C12 100%) !important;
+        }
+
+        .bg-danger {
+            background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%) !important;
+        }
+
+        .bg-info {
+            background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%) !important;
+        }
+
+        .bg-success {
+            background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%) !important;
+        }
+
+        /* Responsive Adjustments */
+        @@media (max-width: 768px) {
+            .stats-box {
+                margin-bottom: 1rem;
+            }
+
+            .stats-number {
+                font-size: 1.75rem;
+            }
+
+            .table th, .table td {
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+}
+
 @section Scripts {
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -84,13 +393,13 @@
 
 <div class="row mb-4">
     <div class="col-12">
-        <div class="alert alert-primary" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-info-circle me-3 fs-4"></i>
-                <div>
-                    <h4 class="alert-heading mb-1">Welcome to the THYNK Admin Dashboard</h4>
-                    <p class="mb-0">Manage users, review reports, moderate content, and send alerts from this central control panel.</p>
-                </div>
+        <div class="alert dashboard-welcome" role="alert">
+            <div class="welcome-content">
+                <h4 class="alert-heading">
+                    <i class="fas fa-info-circle"></i>
+                    Welcome to THYNK Admin
+                </h4>
+                <p>Manage users, review reports, moderate content, and send alerts from this central control panel.</p>
             </div>
         </div>
     </div>

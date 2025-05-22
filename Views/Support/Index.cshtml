@@ -7,66 +7,67 @@
     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 }
 
-<div class="container-fluid px-4 py-4">
-    <div class="row g-4">
+<div class="support-container">
+    <div class="support-content">
         <!-- Main Section -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-4">
-                        <div class="support-icon bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
-                            <i class="fas fa-headset fa-lg"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-1">Support Center</h5>
-                            <p class="text-muted mb-0">Get help and answers to your questions</p>
-                        </div>
+        <div class="support-main">
+            <div class="support-card primary-card">
+                <div class="card-header">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-headset"></i>
                     </div>
+                    <div class="header-content">
+                        <h5>Support Center</h5>
+                        <p>Get help and answers to your questions</p>
+                    </div>
+                </div>
 
+                <div class="card-body">
                     @if (ViewBag.ActiveSession != null)
                     {
                         <!-- Active Chat Session -->
-                        <div class="d-flex align-items-center justify-content-between mb-4">
-                            <div class="d-flex align-items-center">
-                                <div class="chat-icon bg-primary bg-opacity-10 text-primary rounded-circle p-3 me-3">
-                                    <i class="fas fa-comments fa-lg"></i>
+                        <div class="active-chat-header">
+                            <div class="session-info">
+                                <div class="icon-wrapper secondary">
+                                    <i class="fas fa-comments"></i>
                                 </div>
                                 <div>
-                                    <h5 class="mb-1">@(string.IsNullOrEmpty(ViewBag.ActiveSession.Title) ? "Chat Support Session" : ViewBag.ActiveSession.Title)</h5>
-                                    <p class="text-muted mb-0">Started @ViewBag.ActiveSession.StartTime.ToString("MMM dd, yyyy HH:mm")</p>
+                                    <h6>@(string.IsNullOrEmpty(ViewBag.ActiveSession.Title) ? "Chat Support Session" : ViewBag.ActiveSession.Title)</h6>
+                                    <span class="timestamp">Started @ViewBag.ActiveSession.StartTime.ToString("MMM dd, yyyy HH:mm")</span>
                                 </div>
                             </div>
                             <div>
                                 <form asp-action="CloseChat" method="post" class="d-inline-block" onsubmit="return confirm('Are you sure you want to close this chat session?');">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="sessionId" value="@ViewBag.ActiveSession.Id" />
-                                    <button type="submit" class="btn btn-outline-danger rounded-pill">
-                                        <i class="fas fa-times-circle me-1"></i>Close Chat
+                                    <button type="submit" class="btn-close-chat">
+                                        <i class="fas fa-times-circle"></i>
+                                        <span>Close Chat</span>
                                     </button>
                                 </form>
                             </div>
                         </div>
                         
-                        <div class="chat-messages bg-light rounded-3 p-3 mb-3" style="height: 350px; overflow-y: auto;">
+                        <div class="chat-messages">
                             @if (ViewBag.ActiveSession.Messages != null && ViewBag.ActiveSession.Messages.Count > 0)
                             {
                                 foreach (var message in ViewBag.ActiveSession.Messages)
                                 {
-                                    <div class="message-bubble @(message.SenderId == userId ? "message-user" : "message-support") mb-3">
-                                        <div class="message-content @(message.SenderId == userId ? "bg-primary text-white" : "bg-white")">
-                                            <p class="mb-0">@message.Content</p>
+                                    <div class="message @(message.SenderId == userId ? "message-user" : "message-support")">
+                                        <div class="message-content">
+                                            <p>@message.Content</p>
                                         </div>
                                         <div class="message-meta">
-                                            <small class="text-muted">@message.Timestamp.ToString("HH:mm")</small>
+                                            <span>@message.Timestamp.ToString("HH:mm")</span>
                                         </div>
                                     </div>
                                 }
                             }
                             else
                             {
-                                <div class="text-center py-5">
-                                    <i class="fas fa-comments text-muted fa-3x mb-3"></i>
-                                    <p class="mb-0">No messages yet. Start the conversation!</p>
+                                <div class="empty-state">
+                                    <i class="fas fa-comments"></i>
+                                    <p>No messages yet. Start the conversation!</p>
                                 </div>
                             }
                         </div>
@@ -75,38 +76,41 @@
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="sessionId" value="@ViewBag.ActiveSession.Id" />
                             <div class="input-group">
-                                <textarea name="message" class="form-control bg-light border-0" 
-                                          placeholder="Type your message here..." required rows="2"></textarea>
-                                <button type="submit" class="btn btn-primary">
+                                <textarea name="message" placeholder="Type your message here..." required rows="2"></textarea>
+                                <button type="submit" class="btn-send">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
                         </form>
+                        
+                        <!-- Response time indicator -->
+                        <div class="response-indicator">
+                            <div class="icon-wrapper secondary" style="width: 32px; height: 32px;">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <p>Our support team will respond as soon as possible. Meanwhile, you can click the <strong>robot icon</strong> in the bottom-right corner for immediate assistance with common questions.</p>
+                        </div>
                     }
                     else
                     {
                         <!-- Start New Chat -->
                         <div class="start-chat-container">
-                            <div class="alert alert-light border rounded-3 mb-4">
-                                <div class="d-flex">
-                                    <div class="me-3">
-                                        <i class="fas fa-info-circle text-primary fa-2x"></i>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-2">Need assistance?</h6>
-                                        <p class="mb-0">Start a chat with our support team to get help with your queries or issues. 
-                                           You can check our FAQ section first to see if your question has already been answered.</p>
-                                    </div>
+                            <div class="info-banner">
+                                <div class="icon-wrapper secondary">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div>
+                                    <h6>Need assistance?</h6>
+                                    <p>Start a chat with our support team to get help with your queries or issues. 
+                                       For immediate assistance with common questions, click the <strong>robot icon</strong> in the bottom-right corner of the screen.</p>
                                 </div>
                             </div>
                             
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-4">
-                                    <h6 class="mb-3">Start a New Chat</h6>
-                                    <button type="button" class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#startChatModal">
-                                        <i class="fas fa-comments me-2"></i>Start New Chat
-                                    </button>
-                                </div>
+                            <div class="action-area">
+                                <button type="button" class="btn-start-chat" data-bs-toggle="modal" data-bs-target="#startChatModal">
+                                    <i class="fas fa-comments"></i>
+                                    <span>Start New Chat</span>
+                                </button>
                             </div>
                         </div>
                     }
@@ -170,91 +174,41 @@
         </div>
         
         <!-- Sidebar -->
-        <div class="col-lg-4">
+        <div class="support-sidebar">
             <!-- Quick Templates -->
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="template-icon bg-warning bg-opacity-10 text-warning rounded-circle p-3 me-3">
-                            <i class="fas fa-clipboard-list fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Quick Templates</h6>
-                            <p class="text-muted small mb-0">Common queries and reports</p>
-                        </div>
+            <div class="support-card">
+                <div class="card-header">
+                    <div class="icon-wrapper warning">
+                        <i class="fas fa-clipboard-list"></i>
                     </div>
-                    
-                    <div class="template-list">
-                        <div class="template-item mb-3">
-                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="technical">
-                                <i class="fas fa-tools me-2"></i>Technical Issue
-                            </button>
-                        </div>
-                        <div class="template-item mb-3">
-                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="account">
-                                <i class="fas fa-user-circle me-2"></i>Account Problem
-                            </button>
-                        </div>
-                        <div class="template-item mb-3">
-                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="report">
-                                <i class="fas fa-flag me-2"></i>Report Submission Issue
-                            </button>
-                        </div>
-                        <div class="template-item mb-3">
-                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="feature">
-                                <i class="fas fa-lightbulb me-2"></i>Feature Request
-                            </button>
-                        </div>
-                        <div class="template-item">
-                            <button class="btn btn-outline-secondary w-100 text-start template-button" data-template="other">
-                                <i class="fas fa-question-circle me-2"></i>Other Inquiry
-                            </button>
-                        </div>
+                    <div class="header-content">
+                        <h5>Quick Templates</h5>
+                        <p>Common queries and reports</p>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Contact Information -->
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="contact-icon bg-info bg-opacity-10 text-info rounded-circle p-3 me-3">
-                            <i class="fas fa-address-card fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-1">Contact Information</h6>
-                            <p class="text-muted small mb-0">Other ways to reach us</p>
-                        </div>
-                    </div>
-                    
-                    <div class="contact-list">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="contact-method-icon bg-primary bg-opacity-10 text-primary rounded-circle p-2 me-3">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Email Support</h6>
-                                <p class="text-muted small mb-0">support@thynk.com</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="contact-method-icon bg-success bg-opacity-10 text-success rounded-circle p-2 me-3">
-                                <i class="fas fa-phone-alt"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Phone Support</h6>
-                                <p class="text-muted small mb-0">+63 123 456 7890</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="contact-method-icon bg-danger bg-opacity-10 text-danger rounded-circle p-2 me-3">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div>
-                                <h6 class="mb-1">Support Hours</h6>
-                                <p class="text-muted small mb-0">Monday to Friday: 8:00 AM - 5:00 PM</p>
-                            </div>
-                        </div>
+                
+                <div class="card-body">
+                    <div class="template-list">
+                        <button class="template-btn" data-template="technical">
+                            <i class="fas fa-tools"></i>
+                            <span>Technical Issue</span>
+                        </button>
+                        <button class="template-btn" data-template="account">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Account Problem</span>
+                        </button>
+                        <button class="template-btn" data-template="report">
+                            <i class="fas fa-flag"></i>
+                            <span>Report Submission Issue</span>
+                        </button>
+                        <button class="template-btn" data-template="feature">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Feature Request</span>
+                        </button>
+                        <button class="template-btn" data-template="other">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Other Inquiry</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -273,12 +227,12 @@
             <form asp-action="StartChat" method="post">
                 @Html.AntiForgeryToken()
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Title (Optional)</label>
+                    <div class="form-group">
+                        <label>Title (Optional)</label>
                         <input type="text" name="title" class="form-control" placeholder="Enter a title for your chat session">
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Category</label>
+                    <div class="form-group">
+                        <label>Category</label>
                         <select name="category" class="form-select">
                             <option value="General">General</option>
                             <option value="Technical">Technical</option>
@@ -286,15 +240,15 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Initial Message</label>
+                    <div class="form-group">
+                        <label>Initial Message</label>
                         <textarea name="initialMessage" class="form-control" rows="3" required 
                                   placeholder="Describe what you need help with..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Start Chat</button>
+                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-submit">Start Chat</button>
                 </div>
             </form>
         </div>
@@ -303,81 +257,610 @@
 
 @section Styles {
     <style>
-        .support-icon, 
-        .faq-icon, 
-        .template-icon, 
-        .contact-icon {
-            width: 48px;
-            height: 48px;
+        /* Main Layout */
+        .support-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0.5rem;
+        }
+        
+        .support-content {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.5rem;
+        }
+        
+        /* Card Styling */
+        .support-card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+        
+        .support-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background-color: #fcfcfc;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .primary-card {
+            border-left: 3px solid #0d6efd;
+        }
+        
+        .secondary-card {
+            border-left: 3px solid #20c997;
+        }
+        
+        /* Icon Styling */
+        .icon-wrapper {
+            width: 42px;
+            height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 50%;
+            margin-right: 1rem;
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            flex-shrink: 0;
         }
         
-        .contact-method-icon {
-            width: 36px;
-            height: 36px;
+        .icon-wrapper.secondary {
+            background: rgba(13, 110, 253, 0.08);
+            color: #0d6efd;
+        }
+        
+        .icon-wrapper.success {
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+        
+        .icon-wrapper.warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        .icon-wrapper.info {
+            background: rgba(13, 202, 240, 0.1);
+            color: #0dcaf0;
+        }
+        
+        .icon-wrapper.danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        
+        .icon-wrapper i {
+            font-size: 1.25rem;
+        }
+        
+        .header-content h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+            color: #343a40;
+        }
+        
+        .header-content p {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin: 0;
+        }
+        
+        /* Chat Styling */
+        .active-chat-header {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         
-        .message-bubble {
+        .session-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .session-info h6 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+            color: #343a40;
+        }
+        
+        .timestamp {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .btn-close-chat {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .btn-close-chat:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .chat-messages {
+            height: 350px;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .message {
             display: flex;
             flex-direction: column;
             max-width: 80%;
+            animation: fadeIn 0.3s ease;
         }
         
         .message-user {
             align-self: flex-end;
             align-items: flex-end;
-            margin-left: auto;
         }
         
         .message-support {
             align-self: flex-start;
             align-items: flex-start;
-            margin-right: auto;
         }
         
         .message-content {
-            padding: 10px 15px;
-            border-radius: 18px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            position: relative;
         }
         
         .message-user .message-content {
-            border-bottom-right-radius: 5px;
+            background-color: #0d6efd;
+            color: white;
+            border-bottom-right-radius: 4px;
         }
         
         .message-support .message-content {
-            border-bottom-left-radius: 5px;
+            background-color: white;
+            color: #343a40;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message-content p {
+            margin: 0;
+            line-height: 1.4;
+            font-size: 0.95rem;
         }
         
         .message-meta {
-            margin-top: 4px;
+            margin-top: 0.25rem;
+        }
+        
+        .message-meta span {
             font-size: 0.75rem;
+            color: #6c757d;
         }
         
-        .accordion-button:not(.collapsed) {
+        .chat-input-form {
+            margin-top: 0.5rem;
+        }
+        
+        .input-group {
+            display: flex;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .input-group textarea {
+            flex: 1;
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            resize: none;
+            outline: none;
+            background-color: #fff;
+        }
+        
+        .btn-send {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 0 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-send:hover {
+            background-color: #0b5ed7;
+        }
+        
+        /* Response Indicator */
+        .response-indicator {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background-color: rgba(52, 152, 219, 0.05);
+            border: 1px dashed rgba(52, 152, 219, 0.3);
+            border-radius: 8px;
+        }
+        
+        .response-indicator p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #495057;
+            line-height: 1.5;
+        }
+        
+        .response-indicator strong {
+            color: #3498db;
+        }
+        
+        /* Start Chat Section */
+        .info-banner {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem;
             background-color: #f8f9fa;
-            color: #0d6efd;
-            box-shadow: none;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(0,0,0,0.05);
         }
         
-        .accordion-button:focus {
-            box-shadow: none;
-            border-color: #dee2e6;
+        .info-banner h6 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            color: #343a40;
         }
         
-        .template-button {
-            transition: all 0.2s ease-in-out;
+        .info-banner p {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #495057;
+            margin: 0;
         }
         
-        .template-button:hover {
+        .action-area {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .btn-start-chat {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+        }
+        
+        .btn-start-chat:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
+        }
+        
+        /* Template Styling */
+        .template-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .template-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background-color: transparent;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-align: left;
+            color: #495057;
+        }
+        
+        .template-btn:hover {
             background-color: #f8f9fa;
             border-color: #0d6efd;
             transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .template-btn i {
+            color: #0d6efd;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Contact Styling */
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            transition: transform 0.2s ease;
+            border-radius: 8px;
+        }
+        
+        .contact-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
+        
+        .contact-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .contact-icon.primary {
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+        
+        .contact-icon.success {
+            background: rgba(32, 201, 151, 0.1);
+            color: #20c997;
+        }
+        
+        .contact-icon.danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        
+        .contact-details h6 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+            color: #343a40;
+        }
+        
+        .contact-details p {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin: 0;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            color: #6c757d;
+            text-align: center;
+        }
+        
+        .empty-state i {
+            font-size: 2.5rem;
+            opacity: 0.2;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        /* Modal Styling */
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #343a40;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+            outline: none;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: #fff;
+            transition: all 0.2s ease;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+            appearance: none;
+        }
+        
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+            outline: none;
+        }
+        
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+        
+        .btn-cancel {
+            padding: 0.5rem 1.25rem;
+            background-color: #f8f9fa;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-cancel:hover {
+            background-color: #e9ecef;
+        }
+        
+        .btn-submit {
+            padding: 0.5rem 1.25rem;
+            background-color: #0d6efd;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-submit:hover {
+            background-color: #0b5ed7;
+        }
+        
+        /* Animations */
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive Styles */
+        @@media (max-width: 992px) {
+            .support-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .support-sidebar {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 1.5rem;
+            }
+        }
+        
+        @@media (max-width: 768px) {
+            .card-header {
+                padding: 1rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .active-chat-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .btn-close-chat {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .chat-messages {
+                height: 300px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .support-sidebar {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Custom FAQ Styles */
@@ -491,22 +974,40 @@
             // Auto-resize textarea
             const textarea = document.querySelector('textarea[name="message"]');
             if (textarea) {
+                // Apply initial height
+                autoResizeTextarea(textarea);
+                
                 textarea.addEventListener('input', function() {
-                    this.style.height = 'auto';
-                    this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+                    autoResizeTextarea(this);
                 });
             }
             
-            // Scroll to bottom of chat messages
-            const chatMessages = document.querySelector('.chat-messages');
-            if (chatMessages) {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Auto-resize FAQ textarea
+            const faqTextarea = document.getElementById('faqMessage');
+            if (faqTextarea) {
+                autoResizeTextarea(faqTextarea);
+                
+                faqTextarea.addEventListener('input', function() {
+                    autoResizeTextarea(this);
+                });
+            }
+            
+            // Function to resize textarea
+            function autoResizeTextarea(element) {
+                element.style.height = 'auto';
+                element.style.height = Math.min(element.scrollHeight, 150) + 'px';
             }
             
             // Template buttons
-            const templateButtons = document.querySelectorAll('.template-button');
+            const templateButtons = document.querySelectorAll('.template-btn');
             templateButtons.forEach(button => {
                 button.addEventListener('click', function() {
+                    // Add click feedback animation
+                    this.classList.add('active-feedback');
+                    setTimeout(() => {
+                        this.classList.remove('active-feedback');
+                    }, 300);
+                    
                     const templateType = this.getAttribute('data-template');
                     let title = '';
                     let category = '';
@@ -515,7 +1016,7 @@
                     switch(templateType) {
                         case 'technical':
                             title = 'Technical Issue Report';
-                            category = 'Technical Issue';
+                            category = 'Technical';
                             message = 'I am experiencing a technical issue with the THYNK platform. Details:\n\n' +
                                      '• What feature/page has the issue: \n' +
                                      '• Description of the problem: \n' +
@@ -525,7 +1026,7 @@
                             break;
                         case 'account':
                             title = 'Account Problem';
-                            category = 'Account Issue';
+                            category = 'Account';
                             message = 'I am having an issue with my THYNK account. Details:\n\n' +
                                      '• Type of account issue: \n' +
                                      '• Description of the problem: \n' +
@@ -534,7 +1035,7 @@
                             break;
                         case 'report':
                             title = 'Report Submission Issue';
-                            category = 'Report Problem';
+                            category = 'Technical';
                             message = 'I am having trouble submitting an incident report. Details:\n\n' +
                                      '• Type of report: \n' +
                                      '• Error message (if any): \n' +
@@ -543,7 +1044,7 @@
                             break;
                         case 'feature':
                             title = 'Feature Request';
-                            category = 'Feature Request';
+                            category = 'Other';
                             message = 'I would like to suggest a new feature for the THYNK platform. Details:\n\n' +
                                      '• Proposed feature: \n' +
                                      '• Description and benefits: \n' +
@@ -552,7 +1053,7 @@
                             break;
                         case 'other':
                             title = 'General Inquiry';
-                            category = 'Other';
+                            category = 'General';
                             message = 'I have a general inquiry about the THYNK platform. Details:\n\n' +
                                      '• Topic of inquiry: \n' +
                                      '• My question/concern: \n\n' +
@@ -560,34 +1061,75 @@
                             break;
                     }
                     
-                    // Fill the form if it exists
-                    const titleInput = document.querySelector('input[name="title"]');
-                    const categorySelect = document.querySelector('select[name="category"]');
-                    const messageTextarea = document.querySelector('textarea[name="initialMessage"]');
-                    
-                    if (titleInput && categorySelect && messageTextarea) {
-                        titleInput.value = title;
-                        
-                        // Find and select the matching option
-                        for (let i = 0; i < categorySelect.options.length; i++) {
-                            if (categorySelect.options[i].text === category) {
-                                categorySelect.selectedIndex = i;
-                                break;
-                            }
-                        }
-                        
-                        messageTextarea.value = message;
-                        messageTextarea.style.height = 'auto';
-                        messageTextarea.style.height = (messageTextarea.scrollHeight) + 'px';
-                    }
+                    // Fill modal form if it exists
+                    fillFormWithTemplate(title, category, message);
                     
                     // If there's an active chat, insert into message input
-                    const messageInput = document.querySelector('input[name="message"]');
-                    if (messageInput) {
-                        messageInput.value = message;
-                    }
+                    updateActiveChatInput(message);
                 });
             });
+            
+            // Function to fill form with template
+            function fillFormWithTemplate(title, category, message) {
+                const titleInput = document.querySelector('input[name="title"]');
+                const categorySelect = document.querySelector('select[name="category"]');
+                const messageTextarea = document.querySelector('textarea[name="initialMessage"]');
+                
+                if (titleInput && categorySelect && messageTextarea) {
+                    titleInput.value = title;
+                    
+                    // Find and select the matching option
+                    for (let i = 0; i < categorySelect.options.length; i++) {
+                        if (categorySelect.options[i].value === category) {
+                            categorySelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    messageTextarea.value = message;
+                    autoResizeTextarea(messageTextarea);
+                    
+                    // Show the modal
+                    const startChatModal = new bootstrap.Modal(document.getElementById('startChatModal'));
+                    startChatModal.show();
+                }
+            }
+            
+            // Function to update active chat input
+            function updateActiveChatInput(message) {
+                const messageInput = document.querySelector('textarea[name="message"]');
+                if (messageInput) {
+                    messageInput.value = message;
+                    autoResizeTextarea(messageInput);
+                    messageInput.focus();
+                }
+            }
+            
+            // Add CSS class for button press feedback
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .active-feedback {
+                    transform: scale(0.98) !important;
+                    opacity: 0.9;
+                    background-color: #f0f0f0 !important;
+                }
+                
+                .template-btn {
+                    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+                }
+                
+                .message-user {
+                    align-self: flex-end;
+                    align-items: flex-end;
+                }
+                
+                .message-user .message-content {
+                    background-color: #0d6efd;
+                    color: white;
+                    border-bottom-right-radius: 4px;
+                }
+            `;
+            document.head.appendChild(style);
         });
     </script>
 } 

@@ -13,8 +13,8 @@
                     <div class="d-flex align-items-center mb-4">
                         <div class="report-icon bg-danger bg-opacity-10 text-danger rounded-circle p-3 me-3">
                             <i class="fas fa-exclamation-triangle fa-lg"></i>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                             <h5 class="mb-1">Report Incident</h5>
                             <p class="text-muted mb-0">Submit details about a disaster or accident</p>
                         </div>
@@ -42,46 +42,46 @@
                     </div>
 
                     <form asp-action="SubmitReport" method="post" enctype="multipart/form-data" id="report-form">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <!-- Step 1: Basic Information -->
                         <div id="step1">
-                            <div class="mb-4">
-                                <label asp-for="Title" class="form-label small text-muted">Title</label>
-                                <input asp-for="Title" class="form-control form-control-lg bg-light border-0" 
-                                       placeholder="Brief title of the incident" required />
-                                <span asp-validation-for="Title" class="text-danger"></span>
-                            </div>
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label small text-muted">Title</label>
+                            <input asp-for="Title" class="form-control form-control-lg bg-light border-0" 
+                                   placeholder="Brief title of the incident" required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
 
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <label asp-for="Type" class="form-label small text-muted">Incident Type</label>
-                                    <select asp-for="Type" class="form-select bg-light border-0" required>
-                                        @foreach (var type in Enum.GetValues(typeof(DisasterType)))
-                                        {
-                                            <option value="@type">@type</option>
-                                        }
-                                    </select>
-                                    <span asp-validation-for="Type" class="text-danger"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="Severity" class="form-label small text-muted">Severity Level</label>
-                                    <select asp-for="Severity" class="form-select bg-light border-0" required>
-                                        @foreach (var severity in Enum.GetValues(typeof(SeverityLevel)))
-                                        {
-                                            <option value="@severity">@severity</option>
-                                        }
-                                    </select>
-                                    <span asp-validation-for="Severity" class="text-danger"></span>
-                                </div>
-                            </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Type" class="form-label small text-muted">Incident Type</label>
+                                <select asp-for="Type" class="form-select bg-light border-0" required>
+                            @foreach (var type in Enum.GetValues(typeof(DisasterType)))
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+                            <div class="col-md-6">
+                                <label asp-for="Severity" class="form-label small text-muted">Severity Level</label>
+                                <select asp-for="Severity" class="form-select bg-light border-0" required>
+                            @foreach (var severity in Enum.GetValues(typeof(SeverityLevel)))
+                            {
+                                <option value="@severity">@severity</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Severity" class="text-danger"></span>
+                    </div>
+                    </div>
 
-                            <div class="mb-4">
-                                <label asp-for="Description" class="form-label small text-muted">Description</label>
-                                <textarea asp-for="Description" class="form-control bg-light border-0" rows="4" 
-                                          placeholder="Detailed description of what happened" required></textarea>
-                                <span asp-validation-for="Description" class="text-danger"></span>
-                            </div>
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label small text-muted">Description</label>
+                            <textarea asp-for="Description" class="form-control bg-light border-0" rows="4" 
+                                      placeholder="Detailed description of what happened" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
 
                             <div class="mb-4">
                                 <div class="form-check">
@@ -98,7 +98,7 @@
                             </div>
 
                             <div class="d-flex justify-content-end">
-                                <button type="button" class="btn rounded-pill px-4 next-step step-1-btn" data-step="1">
+                                <button type="button" class="btn rounded-pill px-4 next-step step-1-btn" data-step="1" style="background-color: #2CD3AF !important; ">
                                     Next - Set Location <i class="fas fa-map-marker-alt ms-2"></i>
                                 </button>
                             </div>
@@ -106,8 +106,8 @@
 
                         <!-- Step 2: Location Details -->
                         <div id="step2" class="d-none">
-                            <div class="mb-4">
-                                <label class="form-label small text-muted">Location</label>
+                        <div class="mb-4">
+                            <label class="form-label small text-muted">Location</label>
                                 <div class="alert alert-light border mb-3 user-friendly-alert">
                                     <div class="d-flex">
                                         <i class="fas fa-info-circle text-primary me-3 mt-1"></i>
@@ -120,49 +120,49 @@
                                             </ul>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="input-group mb-3">
-                                    <input asp-for="Location" id="location" class="form-control bg-light border-0" 
-                                           placeholder="Complete address" required />
-                                    <button type="button" class="btn btn-primary rounded-end" id="detect-location">
-                                        <i class="fas fa-map-marker-alt me-1"></i> Detect
-                                    </button>
-                                </div>
-                                <span asp-validation-for="Location" class="text-danger"></span>
+                            </div>
+                            <div class="input-group mb-3">
+                                <input asp-for="Location" id="location" class="form-control bg-light border-0" 
+                                       placeholder="Complete address" required />
+                                <button type="button" class="btn btn-primary rounded-end" id="detect-location">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Detect
+                            </button>
+                        </div>
+                        <span asp-validation-for="Location" class="text-danger"></span>
                                 
                                 <!-- Display map inside step 2 -->
                                 <div id="map" class="map-preview rounded-3 mb-4 mt-3"></div>
-                            </div>
+                    </div>
 
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <label asp-for="Purok" class="form-label small text-muted">Purok/Street</label>
-                                    <input asp-for="Purok" id="purok" class="form-control bg-light border-0" 
-                                           placeholder="Purok or Street number" />
-                                    <span asp-validation-for="Purok" class="text-danger"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="Barangay" class="form-label small text-muted">Barangay</label>
-                                    <input asp-for="Barangay" id="barangay" class="form-control bg-light border-0" 
-                                           placeholder="Barangay name" />
-                                    <span asp-validation-for="Barangay" class="text-danger"></span>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <label asp-for="City" class="form-label small text-muted">City/Municipality</label>
-                                    <input asp-for="City" id="city" class="form-control bg-light border-0" 
-                                           placeholder="City or Municipality" />
-                                    <span asp-validation-for="City" class="text-danger"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="Country" class="form-label small text-muted">Country</label>
-                                    <input asp-for="Country" id="country" class="form-control bg-light border-0" 
-                                           placeholder="Country" value="Philippines" />
-                                    <span asp-validation-for="Country" class="text-danger"></span>
-                                </div>
-                            </div>
+                        <div class="row mb-4">
+                        <div class="col-md-6">
+                                <label asp-for="Purok" class="form-label small text-muted">Purok/Street</label>
+                                <input asp-for="Purok" id="purok" class="form-control bg-light border-0" 
+                                       placeholder="Purok or Street number" />
+                            <span asp-validation-for="Purok" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                                <label asp-for="Barangay" class="form-label small text-muted">Barangay</label>
+                                <input asp-for="Barangay" id="barangay" class="form-control bg-light border-0" 
+                                       placeholder="Barangay name" />
+                            <span asp-validation-for="Barangay" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                        <div class="row mb-4">
+                        <div class="col-md-6">
+                                <label asp-for="City" class="form-label small text-muted">City/Municipality</label>
+                                <input asp-for="City" id="city" class="form-control bg-light border-0" 
+                                       placeholder="City or Municipality" />
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                                <label asp-for="Country" class="form-label small text-muted">Country</label>
+                                <input asp-for="Country" id="country" class="form-control bg-light border-0" 
+                                       placeholder="Country" value="Philippines" />
+                            <span asp-validation-for="Country" class="text-danger"></span>
+                        </div>
+                    </div>
 
                             <!-- Hidden fields for coordinates -->
                             <input type="hidden" asp-for="Latitude" id="latitude" />
@@ -180,15 +180,15 @@
 
                         <!-- Step 3: Additional Information -->
                         <div id="step3" class="d-none">
-                            <div class="mb-4">
+                        <div class="mb-4">
                                 <label class="form-label small text-muted">Photo <span class="text-danger">*</span> <small>(Required)</small></label>
-                                <div class="input-group">
-                                    <input type="file" class="form-control bg-light border-0" id="photo" name="photo" 
+                            <div class="input-group">
+                                <input type="file" class="form-control bg-light border-0" id="photo" name="photo" 
                                            accept="image/*" required />
-                                    <button type="button" class="btn btn-light border-0" id="clear-photo">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
+                                <button type="button" class="btn btn-light border-0" id="clear-photo">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                                 <small class="text-muted">Upload a clear photo of the incident (required for verification).</small>
                                 
                                 <!-- Photo preview -->
@@ -204,27 +204,27 @@
                                         <div>Please upload an image to complete your report</div>
                                     </div>
                                 </div>
-                            </div>
+                    </div>
 
-                            <div class="mb-4">
-                                <label asp-for="AdditionalInfo" class="form-label small text-muted">Additional Information (Optional)</label>
-                                <textarea asp-for="AdditionalInfo" class="form-control bg-light border-0" rows="3" 
-                                          placeholder="Any other details you'd like to share"></textarea>
-                            </div>
+                        <div class="mb-4">
+                            <label asp-for="AdditionalInfo" class="form-label small text-muted">Additional Information (Optional)</label>
+                            <textarea asp-for="AdditionalInfo" class="form-control bg-light border-0" rows="3" 
+                                      placeholder="Any other details you'd like to share"></textarea>
+                    </div>
 
                             <div class="d-flex justify-content-between">
                                 <button type="button" class="btn btn-light rounded-pill px-4 prev-step">
                                     <i class="fas fa-arrow-left me-1"></i> Back
                                 </button>
                                 <button type="submit" id="submit-report-btn" class="btn btn-success rounded-pill px-4" disabled>
-                                    <i class="fas fa-paper-plane me-1"></i>Submit Report
-                                </button>
+                                <i class="fas fa-paper-plane me-1"></i>Submit Report
+                            </button>
                             </div>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
 
         <!-- Sidebar -->
         <div class="col-lg-4">
@@ -244,37 +244,37 @@
                         <div class="guideline-item mb-3">
                             <div class="d-flex">
                                 <div class="guideline-icon bg-success bg-opacity-10 text-success">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <div class="guideline-text">
-                                    <h6 class="mb-1">Be Accurate</h6>
-                                    <p class="text-muted small mb-0">Provide precise details about the incident</p>
-                                </div>
+                                <i class="fas fa-check"></i>
                             </div>
+                                <div class="guideline-text">
+                                <h6 class="mb-1">Be Accurate</h6>
+                                <p class="text-muted small mb-0">Provide precise details about the incident</p>
+            </div>
+        </div>
                         </div>
                         <div class="guideline-item mb-3">
                             <div class="d-flex">
                                 <div class="guideline-icon bg-warning bg-opacity-10 text-warning">
-                                    <i class="fas fa-exclamation"></i>
-                                </div>
+                                <i class="fas fa-exclamation"></i>
+            </div>
                                 <div class="guideline-text">
-                                    <h6 class="mb-1">Stay Safe</h6>
-                                    <p class="text-muted small mb-0">Do not put yourself in danger to report</p>
-                                </div>
-                            </div>
+                                <h6 class="mb-1">Stay Safe</h6>
+                                <p class="text-muted small mb-0">Do not put yourself in danger to report</p>
+                </div>
+                </div>
                         </div>
                         <div class="guideline-item">
-                            <div class="d-flex">
+                        <div class="d-flex">
                                 <div class="guideline-icon bg-info bg-opacity-10 text-info">
-                                    <i class="fas fa-camera"></i>
-                                </div>
+                                <i class="fas fa-camera"></i>
+                </div>
                                 <div class="guideline-text">
-                                    <h6 class="mb-1">Include Photos</h6>
-                                    <p class="text-muted small mb-0">Add clear images if safely possible</p>
+                                <h6 class="mb-1">Include Photos</h6>
+                                <p class="text-muted small mb-0">Add clear images if safely possible</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -568,12 +568,12 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        
+
         .btn-light {
             background-color: #f1f3f5;
             color: #495057;
         }
-        
+
         .btn-light:hover {
             background-color: #e9ecef;
         }
@@ -758,7 +758,7 @@
             draggable: true
         })
         .setLngLat([120.9842, 14.5995])
-        .addTo(map);
+          .addTo(map);
 
         // Update coordinates and address when marker is dragged
         marker.on('dragend', function() {
@@ -942,7 +942,7 @@
             document.getElementById('photoPreview').classList.add('d-none');
             document.getElementById('submit-report-btn').disabled = true;
         });
-
+        
         // Form step navigation
         let currentStep = 1;
         const totalSteps = 3;
@@ -1124,4 +1124,4 @@
         // Initialize first step
         document.querySelector(`.progress-step[data-step="1"]`).classList.add('active');
     </script>
-}
+} 

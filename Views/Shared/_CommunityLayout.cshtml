@@ -8,6 +8,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Cache control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>@ViewData["Title"] - THYNK</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -19,6 +23,9 @@
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -46,6 +53,9 @@
         }
     </script>
     <style type="text/tailwindcss">
+    *{
+        font-family: 'Poppins', sans-serif;
+    }
         :root {
             --primary: #545454;
             --primary-dark: #3c3c3c;
@@ -83,7 +93,7 @@
         }
         
         body {
-            @@apply bg-secondary text-primary font-sans;
+            @@apply text-primary font-sans;
         }
         
         .sidebar {
@@ -224,7 +234,7 @@
         .main-content {
             @@apply transition-all duration-300 ease-in-out;
             z-index: 10;
-            background-color:#FAF7F0;
+            background-color: #ffffff !important;
         }
         
         /* Custom scrollbar */
@@ -238,12 +248,128 @@
         
         .custom-scrollbar::-webkit-scrollbar-thumb {
             @@apply bg-primary rounded-full;
+                }                /* Enhanced Notification Bell Styles */        .notification-bell-container {            position: relative;        }                .notification-bell-btn {            display: flex;            align-items: center;            justify-content: center;            width: 40px;            height: 40px;            background: rgba(59, 130, 246, 0.08);            border-radius: 50%;            border: none;            transition: all 0.25s ease;            position: relative;            color: #3b82f6;        }                .notification-bell-btn:hover {            transform: translateY(-1px);            background: rgba(59, 130, 246, 0.15);            color: #2563eb;        
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.1);
+        }                .notification-bell-btn:focus {            outline: none;            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);        }                .bell-icon-wrapper {            position: relative;            font-size: 1.15rem;        }                .bell-icon-wrapper i {            transition: all 0.3s ease;        }                .notification-bell-btn:hover .bell-icon-wrapper i {            animation: bell-ring 1s ease;        }                .notification-badge {            position: absolute;            top: -6px;            right: -8px;            display: flex;            align-items: center;            justify-content: center;            min-width: 18px;            height: 18px;            padding: 0 5px;            border-radius: 50px;            background: linear-gradient(135deg, #3b82f6, #2563eb);            color: white;            font-size: 0.7rem;            font-weight: 600;            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.4);            z-index: 1;            
+            transform: scale(0);            
+            animation: badge-pulse 0.3s forwards;            
+            transition: all 0.2s ease;            
+            visibility: visible;            
+            opacity: 1;
+            border: 1.5px solid white;
+        }                
+        
+        .notification-badge[style*="display: none"] {            
+            opacity: 0 !important;            
+            transform: scale(0) !important;            
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }                
+        
+        .notification-dropdown {            
+            width: 320px;            
+            max-height: 420px;            
+            border-radius: 8px;            
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);            
+            border: 1px solid rgba(0, 0, 0, 0.04);            
+            overflow: hidden;            
+            margin-top: 8px;            
+            padding: 0;            
+            background: white;
+        }                
+        
+        .notification-header {            
+            display: flex;            
+            justify-content: space-between;            
+            align-items: center;            
+            padding: 12px 16px;            
+            background: linear-gradient(to right, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.02));          
+            border-bottom: 1px solid rgba(59, 130, 246, 0.08);        
+        }                
+        
+        .notification-header h6 {            
+            font-weight: 500;            
+            color: #2563eb;            
+            font-size: 0.9rem;
+            margin: 0;    
+        }                
+        
+        .mark-all-read-btn {            
+            background: transparent;            
+            color: #6b7280;            
+            border: none;            
+            font-size: 0.75rem;            
+            transition: all 0.2s ease;            
+            padding: 5px 10px;            
+            border-radius: 4px;
+            font-weight: 500;        
+        }                
+        
+        .mark-all-read-btn:hover {            
+            background: rgba(59, 130, 246, 0.1);            
+            color: #2563eb;      
+        }                .notification-divider {            
+            height: 1px;            
+            background: linear-gradient(to right, rgba(59, 130, 246, 0.02), rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.02));        
+        }                
+        
+        .notification-list {            
+            max-height: 380px;            
+            overflow-y: auto;            
+            scrollbar-width: thin;
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);            
+        }                
+        
+        .notification-list::-webkit-scrollbar {            
+            width: 6px;        
+        }                
+        
+        .notification-list::-webkit-scrollbar-track {            
+            background: rgba(52, 152, 219, 0.03);
+            border-radius: 10px;        
+        }                
+        
+        .notification-list::-webkit-scrollbar-thumb {            
+            background: rgba(52, 152, 219, 0.15);            
+            border-radius: 10px;        
         }
-
-        /* Alert transitions */
-        .alert-enter {
-            @@apply transform translate-y-[-20px] opacity-0;
-        }
+        
+        .notification-list::-webkit-scrollbar-thumb:hover {            
+            background: rgba(52, 152, 219, 0.25);            
+        }                
+        
+        .notification-loading {            
+            display: flex;            
+            flex-direction: column;            
+            align-items: center;            
+            justify-content: center;            
+            padding: 30px 0;            
+            color: #3498db;        
+        }                
+        
+        .notification-item {            
+            padding: 14px 18px;            
+            border-bottom: 1px solid rgba(52, 152, 219, 0.05);            
+            transition: all 0.3s ease;            
+            cursor: pointer;            
+            background: white;        
+        }                
+        
+        .notification-item:hover {            
+            background-color: rgba(52, 152, 219, 0.05);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);        
+        }                
+        
+        .notification-item.unread {            
+            background: rgba(52, 152, 219, 0.04);            
+            border-left: 3px solid #3498db;
+            box-shadow: inset 1px 0 0 rgba(52, 152, 219, 0.1);        
+        }                
+        
+        .notification-item.unread:hover {            
+            background: rgba(52, 152, 219, 0.07);        
+        }                @@keyframes bell-ring {            0% { transform: rotate(0); }            10% { transform: rotate(10deg); }            20% { transform: rotate(-10deg); }            30% { transform: rotate(6deg); }            40% { transform: rotate(-6deg); }            50% { transform: rotate(3deg); }            60% { transform: rotate(-3deg); }            70% { transform: rotate(1deg); }            80% { transform: rotate(-1deg); }            100% { transform: rotate(0); }        }                @@keyframes badge-pulse {            0% { transform: scale(0); }            50% { transform: scale(1.2); }            70% { transform: scale(0.95); }            100% { transform: scale(1); }        }        /* Alert transitions */        .alert-enter {            @@apply transform translate-y-[-20px] opacity-0;        }
         
         .alert-enter-active {
             @@apply transform translate-y-0 opacity-100 transition-all duration-300;
@@ -530,6 +656,19 @@
             color: white;
         }
 
+        /* Highlight post from notification styles */
+        @@keyframes highlightPulse {
+            0% { box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4); transform: translateY(-5px); }
+            50% { box-shadow: 0 4px 25px rgba(13, 110, 253, 0.65); transform: translateY(-5px); }
+            100% { box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4); transform: translateY(-5px); }
+        }
+        
+        .highlighted-post {
+            animation: highlightPulse 2s ease-in-out infinite;
+            position: relative;
+            z-index: 5;
+        }
+        
         /* Form Validation Styling */
         .form-control.is-invalid,
         .form-select.is-invalid,
@@ -689,132 +828,715 @@
             margin-right: 8px;
             font-size: 0.9em;
         }
-
-        .notification-dropdown {
-            border: none;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
-
-        .notification-item {
-            transition: background-color 0.2s;
-            cursor: pointer;
-        }
-
-        .notification-item.unread {
-            background-color: #f0f7ff;
-        }
-
-        .notification-item.unread:hover {
-            background-color: #e6f2ff;
-        }
-
-        .notification-item i {
-            font-size: 1.25rem;
-        }
-
-        #notificationBadge {
-            transform: translate(25%, -25%);
-            display: flex !important;
+        
+        /* FAQ Assistant Button */
+        .faq-assistant-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db, #1abc9c);
+            color: white;
+            display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 6px 20px rgba(26, 188, 156, 0.4);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            overflow: hidden;
         }
-
-        .dropdown-header {
-            border-bottom: 1px solid #e5e7eb;
+        
+        .faq-assistant-btn:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 25px rgba(26, 188, 156, 0.5);
+        }
+        
+        .faq-assistant-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .faq-assistant-btn i {
+            font-size: 1.75rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+        
+        .faq-assistant-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(26, 188, 156, 0.8));
+            z-index: -1;
+            transform: scale(1.2);
+            filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .faq-assistant-btn:hover::before {
+            opacity: 1;
+        }
+        
+        .faq-assistant-label {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #3498db, #1abc9c);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            animation: bounce 2s infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .faq-assistant-btn:hover .faq-assistant-label {
+            opacity: 1;
+        }
+        
+        .faq-assistant-label:after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid #1abc9c;
+        }
+        
+        @@keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
+            40% {transform: translateX(-50%) translateY(-10px);}
+            60% {transform: translateX(-50%) translateY(-5px);}
+        }
+        
+        @@keyframes floatIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .pulse-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db, #1abc9c);
+            opacity: 0;
+            animation: pulse 2.5s infinite cubic-bezier(0.66, 0, 0.33, 1);
+        }
+        
+        .pulse-ring:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .pulse-ring:nth-child(2) {
+            animation-delay: 0.8s;
+        }
+        
+        @@keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+            70% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+        
+        /* Enhanced Assistant Modal Styling */
+        .assistant-header {
+            background: linear-gradient(135deg, #3498db, #1abc9c);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+            border-bottom: none;
+        }
+        
+        .assistant-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.2) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        
+        .assistant-icon {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 0 5px rgba(255, 255, 255, 0.1);
+            animation: pulse-soft 2s infinite;
         }
-
-        .notification-list {
-            max-height: 300px;
+        
+        .assistant-icon i {
+            font-size: 1.5rem;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .assistant-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+        }
+        
+        @@keyframes pulse-soft {
+            0% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 0 5px rgba(255, 255, 255, 0.1); }
+            50% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15), 0 0 0 8px rgba(255, 255, 255, 0.2); }
+            100% { box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1), 0 0 0 5px rgba(255, 255, 255, 0.1); }
+        }
+        
+        /* FAQ Modal Styling */
+        .faq-chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 75vh;
+            max-height: 700px;
+        }
+        
+        .faq-chat-messages {
+            flex: 2;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+        }
+        
+        .message-assistant {
+            align-self: flex-start;
+        }
+        
+        .message-user {
+            align-self: flex-end;
+        }
+        
+        .message-content {
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .message-assistant .message-content {
+            background-color: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message-user .message-content {
+            background: linear-gradient(135deg, #3498db, #1abc9c);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-content p {
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .faq-categories {
+            padding: 1rem 1.5rem;
+            background-color: white;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            flex: 1;
+            max-height: 250px;
             overflow-y: auto;
         }
-
-        .notification-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .notification-list::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .notification-list::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 2px;
+        
+        .category-group {
+            margin-bottom: 1rem;
         }
         
-        .toast-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            min-width: 300px;
-            max-width: 400px;
-            background-color: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 0.5rem;
-            z-index: 9999;
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(-20px);
-            animation: toast-enter 0.3s forwards;
+        .category-group:last-child {
+            margin-bottom: 0;
         }
         
-        .toast-notification.hide {
-            animation: toast-exit 0.3s forwards;
-        }
-        
-        .toast-notification .toast-header {
+        .category-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
-            padding: 0.75rem 1rem;
-            background-color: rgba(0, 0, 0, 0.03);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
-        .toast-notification .toast-body {
-            padding: 0.75rem 1rem;
+        .category-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
         }
         
-        .toast-notification.success .toast-header i {
-            color: var(--success);
+        .category-group:nth-child(1) .category-title::before {
+            background-color: #d32f2f;
         }
         
-        .toast-notification.warning .toast-header i {
-            color: var(--warning);
+        .category-group:nth-child(2) .category-title::before {
+            background-color: #ff9800;
         }
         
-        .toast-notification.info .toast-header i {
+        .category-group:nth-child(3) .category-title::before {
+            background: linear-gradient(135deg, #3498db, #1abc9c);
+        }
+        
+        .category-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .question-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background-color: #f8f9fa;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #495057;
+        }
+        
+        .category-group:nth-child(1) .question-chip:hover {
+            background-color: rgba(211, 47, 47, 0.1);
+            color: #d32f2f;
+            border-color: rgba(211, 47, 47, 0.2);
+        }
+        
+        .category-group:nth-child(2) .question-chip:hover {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+            border-color: rgba(255, 152, 0, 0.2);
+        }
+        
+        .category-group:nth-child(3) .question-chip:hover {
+            background-color: rgba(26, 188, 156, 0.1);
+            color: #1abc9c;
+            border-color: rgba(26, 188, 156, 0.2);
+        }
+        
+        .faq-restart-container {
+            padding: 0.75rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .faq-restart-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background-color: transparent;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .faq-restart-btn:hover {
+            background-color: #f0f0f0;
+            color: #1abc9c;
+        }
+        
+        /* Suggested Topics Styling */
+        .suggested-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .topic-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(26, 188, 156, 0.1));
+            border: 1px solid rgba(26, 188, 156, 0.2);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #3498db;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .topic-chip:hover {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(26, 188, 156, 0.15));
+            border-color: rgba(26, 188, 156, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Typing Animation */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            background-color: white;
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            width: fit-content;
+            align-self: flex-start;
+        }
+        
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin-right: 3px;
+            background-color: #3498db;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+            margin-right: 0;
+        }
+        
+        @@keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        /* Talk to a Person button */
+        .talk-to-human-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background: linear-gradient(135deg, #3498db, #1abc9c);
+            border: 1px solid rgba(26, 188, 156, 0.1);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .talk-to-human-btn:hover {
+            background: linear-gradient(135deg, #2980b9, #16a085);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(26, 188, 156, 0.25);
+            color: white;
+            text-decoration: none;
+        }
+        
+        /* Responsive adjustments for modal */
+        @@media (max-width: 576px) {
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            
+            .faq-chat-container {
+                height: 85vh;
+                max-height: none;
+            }
+            
+            .category-questions {
+                gap: 0.35rem;
+            }
+            
+            .question-chip {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+        
+        .profile-link.active {
+            background-color: var(--sidebar-hover);
+            color: white;
+            position: relative;
+        }
+        
+        .profile-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: white;
+            border-radius: 0 2px 2px 0;
+        }
+        
+        .user-dropdown-item.active {
+            background-color: var(--secondary-light);
+            color: var(--primary-dark);
+            position: relative;
+        }
+        
+        .profile-link i {
+            @@apply mr-2;
+        }
+        
+        /* Welcome Screen Styling */
+        .welcome-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            z-index: 1000;
+        }
+
+        .welcome-content {
+            max-width: 500px;
+            padding: 2rem;
+        }
+
+        .welcome-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(26, 188, 156, 0.1));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-soft 2s infinite;
+        }
+
+        .welcome-title {
             color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .welcome-text {
+            color: var(--primary);
+            opacity: 0.8;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .start-chat-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #3498db, #1abc9c);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(26, 188, 156, 0.2);
+        }
+
+        .start-chat-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 188, 156, 0.3);
+        }
+
+        .start-chat-btn:active {
+            transform: translateY(1px);
         }
         
-        /* Animations */
-        @@keyframes toast-enter {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        /* Notification item content styling */
+        .notification-item-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
         }
         
-        @@keyframes toast-exit {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
+        .notification-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            color: white;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .notification-icon.success {
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+        }
+        
+        .notification-icon.warning {
+            background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);
+        }
+        
+        .notification-icon.info {
+            background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+        }
+        
+        .notification-icon.primary {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        }
+        
+        .notification-details {
+            flex-grow: 1;
+            min-width: 0; /* For text truncation */
+        }
+        
+        .notification-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+        
+        .notification-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--primary);
+            line-height: 1.3;
+        }
+        
+        .notification-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            margin-left: 8px;
+        }
+        
+        .notification-message {
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            color: #444;
+            line-height: 1.4;
+            margin-top: 0;
+        }
+        
+        .notification-action-btn {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .notification-action-btn.primary {
+            background: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            border: 1px solid rgba(13, 110, 253, 0.2);
+        }
+        
+        .notification-action-btn.success {
+            background: rgba(25, 135, 84, 0.1);
+            color: #198754;
+            border: 1px solid rgba(25, 135, 84, 0.2);
+        }
+        
+        .notification-action-btn.warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #d39e00;
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+        
+        .notification-action-btn.info {
+            background: rgba(13, 202, 240, 0.1);
+            color: #0dcaf0;
+            border: 1px solid rgba(13, 202, 240, 0.2);
+        }
+        
+        .notification-action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .notification-action-btn.primary:hover {
+            background: rgba(13, 110, 253, 0.15);
+            color: #0a58ca;
+        }
+        
+        .notification-action-btn.success:hover {
+            background: rgba(25, 135, 84, 0.15);
+            color: #146c43;
+        }
+        
+        .notification-action-btn.warning:hover {
+            background: rgba(255, 193, 7, 0.15);
+            color: #b69500;
+        }
+        
+        .notification-action-btn.info:hover {
+            background: rgba(13, 202, 240, 0.15);
+            color: #0990a8;
+        }
+        
+        /* Bell shake animation */
+        .bell-shake {
+            animation: bell-ring 1s ease;
+        }
+        
+        /* Badge pulse animation */
+        .badge-pulse {
+            animation: badge-pulse 0.3s forwards;
         }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="bg-[#FAF7F0]">
+<body class="bg-red-100">
     <!-- Hamburger Menu Button -->
     <button id="hamburger" class="hamburger md:hidden">
         <span class="hamburger-line"></span>
@@ -822,75 +1544,24 @@
         <span class="hamburger-line"></span>
     </button>
 
-    <!-- Header Bar -->
-    <header class="fixed top-0 left-0 right-0 shadow-md z-20 bg-white">
+    <!-- Enhanced Header Bar -->
+    <header class="fixed top-0 left-0 right-0 shadow-sm z-20 bg-white border-b border-gray-100">
         <div class="container mx-auto relative z-10">
             <div class="flex items-center justify-between px-4 py-3">
                 <div class="md:ml-64 ml-12 flex items-center transition-all duration-300">
                     <div class="relative flex items-center header-title-container">
-                        <h2 class="text-primary text-xl font-semibold relative z-10">@ViewData["Title"]</h2>
-                        <div class="ml-2 h-6 w-1 bg-primary rounded-full opacity-30"></div>
-                        <span class="ml-2 text-sm text-primary opacity-70 font-medium">THYNK Community</span>
+                        <div class="mr-3 h-6 w-1 bg-blue-500 opacity-70 rounded-full hidden md:block"></div>
+                        <h2 class="text-primary text-lg font-medium relative z-10">@ViewData["Title"]</h2>
+                        <span class="ml-2 text-xs text-blue-500 font-medium">THYNK Community</span>
                     </div>
                 </div>
                 
-                <div class="flex items-center space-x-3">
-                    @if (User.Identity.IsAuthenticated)
-                    {
-                        <!-- Notification Bell -->
-                        <div class="nav-item dropdown">
-                            <button class="btn btn-link nav-link position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-bell"></i>
-                                <span id="notificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
-                                    0
-                                </span>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown" style="width: 350px; max-height: 400px; overflow-y: auto;">
-                                <div class="dropdown-header d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">Notifications</h6>
-                                    <button id="markAllRead" class="btn btn-link btn-sm text-decoration-none p-0">
-                                        Mark all as read
-                                    </button>
+                            <div class="flex items-center">                @if (User.Identity.IsAuthenticated)                {                    <!-- Notification Bell -->                    <div class="notification-bell-container">                        <button class="notification-bell-btn" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">                            <div class="bell-icon-wrapper">                                <i class="fas fa-bell"></i>                                <span id="notificationBadge" class="notification-badge" style="display: none;" data-count="0">0</span>                            </div>                        </button>                        <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown">                            <div class="notification-header">                                <h6 class="mb-0 font-semibold">Notifications</h6>                                <button id="markAllRead" class="mark-all-read-btn">                                    <i class="fas fa-check-double me-1"></i>Mark all as read                                </button>                            </div>                            <div class="notification-divider"></div>                            <div id="notificationList" class="notification-list">                                <div class="notification-loading">                                    <div class="spinner-border spinner-border-sm text-primary" role="status">                                        <span class="visually-hidden">Loading...</span>                                    </div>                                    <p class="text-muted mb-0 mt-2">Loading notifications...</p>
                                 </div>
-                                <div class="dropdown-divider"></div>
-                                <div id="notificationList" class="notification-list">
-                                    <div class="text-center py-3">
-                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                            <span class="visually-hidden">Loading...</span>
                                         </div>
-                                        <p class="text-muted mb-0 mt-2">Loading notifications...</p>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="hidden md:flex items-center border-l border-gray-200 pl-3 user-dropdown-container">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2 shadow-sm" style="background-color: #1ABC9C; color: white;">
-                                @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
-                            </div>
-                            <span class="text-primary text-sm cursor-pointer user-dropdown-trigger">@(User.Identity != null ? User.Identity.Name : "User")</span>
-                            
-                            <!-- Dropdown Menu -->
-                            <div class="user-dropdown-menu">
-                                <div class="user-dropdown-content">
-                                    <a href="/Identity/Account/Manage" class="user-dropdown-item">
-                                        <i class="fas fa-user-cog me-2"></i>Manage Account
-                                    </a>
-                                    <button type="button" data-logout-trigger class="user-dropdown-item w-full text-left">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                        </button>
-                                </div>
-                            </div>
-                        </div>
                     }
-                    <a href="@Url.Action("Alerts", "Community")" class="header-alert-btn relative p-2 text-primary">
-                        <i class="fas fa-bell"></i>
-                    </a>
-                    
-                    <!-- Sound permissions button -->
-                    <button id="enableSoundPermission" class="header-alert-btn relative p-2 text-primary">
-                        <i class="fas fa-volume-up"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -934,10 +1605,10 @@
                         <span class="nav-text">Report Incident</span>
                     </a>
                     
-                    <a href="@Url.Action("Alerts", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
+                    @* <a href="@Url.Action("Alerts", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-bell"></i></span>
                         <span class="nav-text">Alerts</span>
-                    </a>
+                    </a> *@
                     
                     <a href="@Url.Action("IncidentMap", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
@@ -948,7 +1619,7 @@
                         <span class="nav-text">My Reports</span>
                     </a>
                     
-                    <a href="@Url.Action("Index", "Support")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "Support" ? "active" : "")">
+                    <a href="@Url.Action("Index", "Support")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Controller") && ViewContext.RouteData.Values["Controller"].ToString() == "Support" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
                         <span class="nav-text">Support & FAQs</span>
                     </a>
@@ -961,19 +1632,19 @@
             <div class="sidebar-footer absolute bottom-0 left-0 right-0 p-4 border-t border-primary/20">
                 @if (User.Identity.IsAuthenticated)
                 {
-                    <div class="user-info flex items-center">
+                    <div class="user-info flex items-center mb-2">
                         <a href="/Identity/Account/Manage" class="flex items-center">
-                            <div class="avatar-circle w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+                            <div class="avatar-circle w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white" style="background-color: #1ABC9C; color: white;">
                                 @if (!string.IsNullOrEmpty(User.FindFirst("ProfilePhotoUrl")?.Value))
                                 {
                                     <img src="@User.FindFirst("ProfilePhotoUrl")?.Value" alt="Profile" class="w-full h-full object-cover rounded-full">
                                 }
                                 else
                                 {
-                                    <i class="fas fa-user"></i>
+                                    @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "U")
                                 }
-                        </div>
-                        <div class="overflow-hidden">
+                            </div>
+                        <div class="overflow-hidden ml-3">
                             <p class="text-sm font-medium truncate text-white">@User.Identity.Name</p>
                             <p class="text-xs text-white opacity-70">Community User</p>
                         </div>
@@ -982,7 +1653,7 @@
                     <div class="profile-actions">
                         @if (User.Identity != null)
                         {
-                            <a href="/Identity/Account/Manage" class="profile-link w-full">
+                            <a href="/Identity/Account/Manage" class="profile-link w-full @(Context.Request.Path.StartsWithSegments("/Identity/Account/Manage") ? "active" : "")">
                                 <i class="fas fa-user-cog"></i> Manage Account
                             </a>
                             <button type="button" data-logout-trigger class="profile-link w-full text-left">
@@ -1007,12 +1678,18 @@
     </div>
     
     <!-- Main Content -->
-    <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64">
+    <main id="main-content" class="main-content pt-20 md:px-4 px-0 pb-6 transition-all duration-300 md:ml-64" style="background-color: white !important;">
+        <!-- FAQ Assistant Button -->
+        <div class="faq-assistant-btn" id="faqAssistantBtn" data-bs-toggle="modal" data-bs-target="#faqAssistantModal">
+            <div class="faq-assistant-label">Need help? Ask me!</div>
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+            <i class="fas fa-robot"></i>
+        </div>
 
-       
-        <div class="max-w-7xl mx-auto">
+        <div class="max-w-7xl mx-auto" style="background-color: white !important;">
             <!-- Notifications -->
-            <div id="notifications" class="space-y-3 mb-6">
+            @* <div id="notifications" class="space-y-3 mb-6">
                 @if (TempData["SuccessMessage"] != null && !TempData.ContainsKey("ReportSubmitted"))
                 {
                     @* <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md" role="alert">
@@ -1023,7 +1700,7 @@
                         <button type="button" class="float-right text-green-700" onclick="this.parentElement.remove()">
                             <i class="fas fa-times"></i>
                         </button>
-                    </div> *@
+                    </div> 
                 }
                 
                 @if (TempData["WarningMessage"] != null)
@@ -1076,10 +1753,10 @@
                         </div>
                     </div>
                 }
-            </div>
+            </div> *@
             
             <!-- Page Content -->
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class=" rounded-lg shadow-md p-6" style="background-color: white !important;">
                 @RenderBody()
             </div>
         </div>
@@ -1103,6 +1780,9 @@
                 document.addEventListener('keydown', function() { initSound(false); }, { once: true });
                 document.addEventListener('touchstart', function() { initSound(false); }, { once: true });
             }
+            
+            // Check for highlighted post from notification
+            checkForHighlightedPost();
         });
 
         function initSound(fromPreference = false) {
@@ -1271,12 +1951,35 @@
             }, 5000);
         });
 
-        // Global variables
+                // Global variables for notification system
         let connection = null;
         let retryCount = 0;
         const maxRetries = 5;
         let isInitialized = false;
         let isNotificationLoading = false;
+                
+        // Format notification time to be more user-friendly
+        function formatNotificationTime(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffMs = now - date;
+            const diffSec = Math.round(diffMs / 1000);
+            const diffMin = Math.round(diffSec / 60);
+            const diffHour = Math.round(diffMin / 60);
+            const diffDay = Math.round(diffHour / 24);
+                        
+            if (diffSec < 60) {
+                return 'Just now';
+            } else if (diffMin < 60) {
+                return `${diffMin} min${diffMin > 1 ? 's' : ''} ago`;
+            } else if (diffHour < 24) {
+                return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
+            } else if (diffDay < 7) {
+                return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+            } else {
+                return date.toLocaleDateString();
+            }
+        }
 
         // Debounce function
         function debounce(func, wait) {
@@ -1313,34 +2016,42 @@
                 if (data.notifications && data.notifications.length > 0) {
                     data.notifications.forEach(notification => {
                         const notificationItem = document.createElement('div');
-                        notificationItem.className = `dropdown-item notification-item p-3 border-bottom ${notification.isRead ? '' : 'unread'}`;
+                        notificationItem.className = `notification-item ${notification.isRead ? '' : 'unread'}`;
                         notificationItem.dataset.id = notification.id;
                         
-                        let iconType = 'bell text-primary';
+                        let iconType = 'primary';
+                        let iconClass = 'bell';
+                        
                         if (notification.notificationType === 'success') {
-                            iconType = 'check-circle text-success';
+                            iconType = 'success';
+                            iconClass = 'check-circle';
                         } else if (notification.notificationType === 'warning') {
-                            iconType = 'exclamation-circle text-warning';
+                            iconType = 'warning';
+                            iconClass = 'exclamation-circle';
                         } else if (notification.notificationType === 'info') {
-                            iconType = 'info-circle text-info';
+                            iconType = 'info';
+                            iconClass = 'info-circle';
                         }
                         
                         notificationItem.innerHTML = `
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0 mt-1">
-                                    <i class="fas fa-${iconType}"></i>
+                            <div class="notification-item-content">
+                                <div class="notification-icon ${notification.notificationType || iconType}">
+                                    <i class="fas fa-${iconClass}"></i>
                                 </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <h6 class="mb-1">${notification.title}</h6>
-                                        <small class="text-muted">${new Date(notification.createdAt).toLocaleString()}</small>
+                                <div class="notification-details">
+                                    <div class="notification-header-row">
+                                        <h6 class="notification-title">${notification.title}</h6>
+                                        <span class="notification-time">${formatNotificationTime(notification.createdAt)}</span>
                                     </div>
-                                    <p class="mb-1 small">${notification.message}</p>
+                                    <p class="notification-message">${notification.message}</p>
                                     ${notification.relatedEntityId ? `
                                         <a href="${notification.relatedEntityType === 'Report' ? 
                                             '/Community/ReportDetails/' + notification.relatedEntityId : 
-                                            '/Community/CommunityFeed'}" 
-                                            class="btn btn-sm btn-outline-primary mt-1">
+                                            '/Community/CommunityFeed?highlight=' + notification.relatedEntityId}" 
+                                            class="notification-action-btn ${notification.notificationType === 'success' ? 'success' : 
+                                                notification.notificationType === 'warning' ? 'warning' : 
+                                                notification.notificationType === 'info' ? 'info' : 'primary'}"
+                                            data-notification-id="${notification.id}">
                                             <i class="fas fa-${notification.relatedEntityType === 'Report' ? 'eye' : 'comments'} me-1"></i>
                                             View ${notification.relatedEntityType === 'Report' ? 'Report' : 'Post'}
                                         </a>
@@ -1348,6 +2059,80 @@
                                 </div>
                             </div>
                         `;
+                        
+                        // Add click handler for marking as read when notification is clicked
+                        notificationItem.addEventListener('click', function(e) {
+                            // Skip if clicking on the action button - it has its own handler
+                            if (e.target.closest('.notification-action-btn')) {
+                                return;
+                            }
+                            
+                            // If the notification is already read, no need to process further
+                            if (!this.classList.contains('unread')) {
+                                // Just handle navigation if needed
+                                if (notification.relatedEntityId) {
+                                    if (notification.relatedEntityType === 'Report') {
+                                        window.location.href = '/Community/ReportDetails/' + notification.relatedEntityId;
+                                    } else {
+                                        window.location.href = '/Community/CommunityFeed?highlight=' + notification.relatedEntityId;
+                                    }
+                                }
+                                return;
+                            }
+                            
+                            // Otherwise mark as read and process
+                            markNotificationAsRead(notificationItem.dataset.id);
+                            
+                            // Remove unread styling
+                            this.classList.remove('unread');
+                            
+                            // Handle navigation when clicking anywhere on the notification
+                            if (notification.relatedEntityId) {
+                                if (notification.relatedEntityType === 'Report') {
+                                    window.location.href = '/Community/ReportDetails/' + notification.relatedEntityId;
+                                } else {
+                                    window.location.href = '/Community/CommunityFeed?highlight=' + notification.relatedEntityId;
+                                }
+                            }
+                        });
+                        
+                        // Add separate click handler for action buttons
+                        const actionBtn = notificationItem.querySelector('.notification-action-btn');
+                        if (actionBtn) {
+                            actionBtn.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                
+                                // Get notification ID from data attribute
+                                const notificationId = this.getAttribute('data-notification-id');
+                                
+                                // If this is an unread notification, mark it as read
+                                if (notificationItem.classList.contains('unread')) {
+                                    // Force hide badge immediately before any other operations
+                                    forceHideBadge();
+                                    
+                                    markNotificationAsRead(notificationId);
+                                    notificationItem.classList.remove('unread');
+                                }
+                                
+                                // Get the destination URL
+                                const href = this.getAttribute('href');
+                                
+                                // For Community Feed with highlight, add a flag for smoother handling
+                                if (href && href.includes('/Community/CommunityFeed?highlight=')) {
+                                    // Get the post ID from the URL
+                                    const postId = href.split('highlight=')[1];
+                                    if (postId) {
+                                        // Store it in session storage with a timestamp
+                                        sessionStorage.setItem('highlightPostId', postId);
+                                        sessionStorage.setItem('highlightTimestamp', Date.now());
+                                    }
+                                }
+                                
+                                // Navigate to the appropriate page
+                                window.location.href = href;
+                            });
+                        }
                         
                         notificationList.appendChild(notificationItem);
                     });
@@ -1380,6 +2165,48 @@
                 isNotificationLoading = false;
             }
         }
+        
+        // Function to mark notification as read
+        async function markNotificationAsRead(notificationId) {
+            try {
+                const response = await fetch(`/Community/MarkNotificationAsRead/${notificationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Get updated count from server
+                    const data = await response.json();
+                    
+                    // Update badge with server-provided count or decrement current count
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        let newCount = 0;
+                        
+                        if (data && typeof data.unreadCount !== 'undefined') {
+                            newCount = data.unreadCount;
+                        } else {
+                            // Fallback to client-side count reduction
+                            const currentCount = parseInt(badge.textContent);
+                            if (!isNaN(currentCount) && currentCount > 0) {
+                                newCount = currentCount - 1;
+                            }
+                        }
+                        
+                        // If count becomes zero, force hide badge
+                        if (newCount <= 0) {
+                            forceHideBadge();
+                        } else {
+                            updateNotificationBadge(newCount);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
 
         // Create debounced version of loadNotifications
         const debouncedLoadNotifications = debounce(loadNotifications, 300);
@@ -1387,6 +2214,13 @@
         // Initialize SignalR connection
         async function initializeSignalR() {
             try {
+                // If already initialized, return the connection
+                if (connection && isInitialized) {
+                    console.log('SignalR already initialized');
+                    return connection;
+                }
+                
+                // Create the connection
                 const conn = new signalR.HubConnectionBuilder()
                     .withUrl("/communityHub")
                     .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
@@ -1422,7 +2256,7 @@
                     }
                 });
 
-                // Set up notification handlers with correct case
+                // Set up notification handlers
                 conn.on("JoinedGroup", function (userId) {
                     console.log('Joined group:', userId);
                     debouncedLoadNotifications();
@@ -1430,6 +2264,21 @@
 
                 conn.on("NotificationReceived", function (notification) {
                     console.log('New notification received:', notification);
+                    // Play notification sound if available
+                    const sound = document.getElementById('alertSound');
+                    if (sound && !sound.muted) {
+                        sound.play().catch(err => console.log('Could not play notification sound:', err));
+                    }
+                    
+                    // Shake the bell icon
+                    const bellBtn = document.querySelector('.notification-bell-btn');
+                    if (bellBtn) {
+                        bellBtn.classList.remove('bell-shake');
+                        void bellBtn.offsetWidth; // Force reflow
+                        bellBtn.classList.add('bell-shake');
+                    }
+                    
+                    // Load the notifications
                     debouncedLoadNotifications();
                 });
 
@@ -1477,8 +2326,13 @@
                     console.log('Joined user group:', userId);
                 }
 
+                connection = conn;
+                isInitialized = true;
                 retryCount = 0;
+                
+                // Initial load of notifications
                 await debouncedLoadNotifications();
+                
                 return conn;
             } catch (err) {
                 console.error('SignalR Connection Error:', err);
@@ -1518,20 +2372,217 @@
             if (!badge) return;
             
             if (count > 0) {
-                badge.textContent = count;
+                badge.textContent = count > 99 ? '99+' : count;
                 badge.style.display = 'flex';
+                badge.style.visibility = 'visible';
+                badge.style.opacity = '1';
+                badge.removeAttribute('aria-hidden');
+                
+                // Add animation class
+                badge.classList.remove('badge-pulse');
+                void badge.offsetWidth; // Force reflow to restart animation
+                badge.classList.add('badge-pulse');
+                
+                // Subtle bell shake
+                const bellBtn = document.querySelector('.notification-bell-btn');
+                if (bellBtn) {
+                    bellBtn.classList.remove('bell-shake');
+                    void bellBtn.offsetWidth; // Force reflow
+                    bellBtn.classList.add('bell-shake');
+                }
             } else {
-                badge.style.display = 'none';
+                // Use the force hide function for consistency
+                forceHideBadge();
+            }
+        }
+
+        // Function to mark all notifications as read
+        async function markAllNotificationsAsRead() {
+            const markAllReadBtn = document.getElementById('markAllRead');
+            if (!markAllReadBtn) return;
+            
+            // Show loading state
+            const originalText = markAllReadBtn.innerHTML;
+            markAllReadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processing...';
+            markAllReadBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/Community/MarkAllNotificationsAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Update all notification items to remove unread status
+                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                    });
+                    
+                    // Force hide the badge
+                    forceHideBadge();
+                    
+                    // Show success state briefly
+                    markAllReadBtn.innerHTML = '<i class="fas fa-check me-1"></i>Done!';
+                    markAllReadBtn.classList.add('text-success');
+                    
+                    setTimeout(() => {
+                        markAllReadBtn.innerHTML = originalText;
+                        markAllReadBtn.disabled = false;
+                        markAllReadBtn.classList.remove('text-success');
+                    }, 1500);
+                    
+                    // Show a small toast notification
+                    showToastNotification(
+                        'Notifications Cleared', 
+                        'All notifications have been marked as read', 
+                        'success'
+                    );
+                    
+                    console.log('All notifications marked as read successfully');
+                } else {
+                    markAllReadBtn.innerHTML = originalText;
+                    markAllReadBtn.disabled = false;
+                    console.error('Failed to mark notifications as read');
+                }
+            } catch (error) {
+                markAllReadBtn.innerHTML = originalText;
+                markAllReadBtn.disabled = false;
+                console.error('Error marking all notifications as read:', error);
             }
         }
 
         // Initialize SignalR when the page loads
         document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // Initialize SignalR connection
                 await initializeSignalR();
+                
+                // Add click listener for notification dropdown
+                const notificationDropdown = document.getElementById('notificationDropdown');
+                if (notificationDropdown) {
+                    notificationDropdown.addEventListener('click', function() {
+                        // Load notifications when dropdown is opened
+                        loadNotifications();
+                    });
+                }
+                
+                // Set up mark all read button
+                const markAllReadBtn = document.getElementById('markAllRead');
+                if (markAllReadBtn) {
+                    markAllReadBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        markAllNotificationsAsRead();
+                    });
+                }
+                
+                console.log('Notification system initialized successfully');
             } catch (error) {
                 console.error('Failed to initialize SignalR:', error);
             }
+        });
+
+        // Add a helper function to force hide the notification badge
+        function forceHideBadge() {
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                // Multiple techniques to ensure the badge is hidden
+                badge.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important;';
+                badge.setAttribute('aria-hidden', 'true');
+                badge.textContent = '0';
+                badge.dataset.count = '0';
+                
+                // Force browser reflow
+                void badge.offsetWidth;
+            }
+        }
+
+        // Function to check and highlight post from notification
+        function checkForHighlightedPost() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightPostId = urlParams.get('highlight');
+            
+            // Only proceed if:
+            // 1. We have a highlight parameter
+            // 2. We're not on the CommunityFeed page (which has its own highlighting)
+            // 3. The post hasn't already been highlighted by another script
+            if (highlightPostId && 
+                !window.location.pathname.includes('/Community/CommunityFeed') && 
+                !window.postAlreadyHighlighted) {
+                
+                console.log('Layout script highlighting post:', highlightPostId);
+                
+                // Wait for DOM to be fully loaded
+                setTimeout(() => {
+                    const postElement = document.querySelector(`.post-card[data-post-id="${highlightPostId}"]`);
+                    
+                    if (postElement) {
+                        // Scroll to the post with smooth animation
+                        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // Add highlight effect
+                        postElement.classList.add('highlighted-post');
+                        
+                        // Store original style values
+                        const originalBoxShadow = getComputedStyle(postElement).boxShadow;
+                        const originalTransform = getComputedStyle(postElement).transform;
+                        const originalTransition = getComputedStyle(postElement).transition;
+                        
+                        // Add the highlighted-post class which has the animation defined in CSS
+                        postElement.classList.add('highlighted-post');
+                        
+                        // Remove highlight after 5 seconds
+                        setTimeout(() => {
+                            // Remove the highlighting class
+                            postElement.classList.remove('highlighted-post');
+                            
+                            // Add transition for smooth return to normal state
+                            postElement.style.transition = 'all 1s ease';
+                            
+                            // Restore original styles
+                            setTimeout(() => {
+                                postElement.style.boxShadow = originalBoxShadow;
+                                postElement.style.transform = originalTransform;
+                                postElement.style.transition = originalTransition;
+                            }, 100);
+                        }, 5000);
+                    }
+                }, 500);
+            }
+        }
+
+        // Add cleanup function for highlighted posts
+        function cleanupHighlightedPosts() {
+            const highlightTimestamp = sessionStorage.getItem('highlightTimestamp');
+            if (highlightTimestamp) {
+                const now = Date.now();
+                const timePassed = now - parseInt(highlightTimestamp);
+                
+                // If more than 5 seconds have passed since highlighting
+                if (timePassed > 5000) {
+                    // Remove highlight classes
+                    document.querySelectorAll('.highlighted-post').forEach(post => {
+                        post.classList.remove('highlighted-post');
+                    });
+                    
+                    // Clear the storage
+                    sessionStorage.removeItem('highlightPostId');
+                    sessionStorage.removeItem('highlightTimestamp');
+                }
+            }
+        }
+
+        // Add this to your DOMContentLoaded event
+        document.addEventListener('DOMContentLoaded', function() {
+            // Existing code...
+            
+            // Clean up highlighted posts
+            cleanupHighlightedPosts();
+            
+            // Add interval to check and cleanup highlights
+            setInterval(cleanupHighlightedPosts, 1000);
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
@@ -1564,7 +2615,6 @@
     <!-- Logout Form (Hidden) -->
     <form id="logoutForm" class="d-none" action="/Identity/Account/Logout" method="post">
         @Html.AntiForgeryToken()
-        <input type="hidden" name="ReturnUrl" value="~/" />
     </form>
     
     <!-- Report Submission Success Modal -->
@@ -1609,6 +2659,107 @@
                     <a href="@Url.Action("CommunityFeed", "Community")" class="btn btn-success px-4">
                         <i class="fas fa-home me-2"></i>Return to Feed
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Assistant Modal -->
+    <div class="modal fade" id="faqAssistantModal" tabindex="-1" aria-labelledby="faqAssistantModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-lg overflow-hidden">
+                <div class="modal-header assistant-header">
+                    <div class="d-flex align-items-center">
+                        <div class="assistant-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h5 class="modal-title fw-bold mb-0" id="faqAssistantModalLabel">THYNK Assistant</h5>
+                            <p class="assistant-subtitle mb-0">Your disaster preparedness guide</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="faq-chat-container">
+                        <!-- Welcome Screen -->
+                        <div id="welcomeScreen" class="welcome-screen">
+                            <div class="welcome-content text-center p-5">
+                                <div class="welcome-icon mb-4">
+                                    <i class="fas fa-robot fa-4x" style="color: #1abc9c;"></i>
+                                </div>
+                                <h3 class="welcome-title mb-3">Welcome to THYNK Assistant!</h3>
+                                <p class="welcome-text mb-4">I'm here to help you with disaster preparedness and emergency response information. Let's get started!</p>
+                                <button id="startChatBtn" class="start-chat-btn">
+                                    <i class="fas fa-comments me-2"></i>Start Chat
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chat Messages Area (Initially Hidden) -->
+                        <div class="faq-chat-messages" id="faqChatMessages" style="display: none;">
+                            <div class="message message-assistant">
+                                <div class="message-content">
+                                    <p>👋 Hello! I'm your THYNK Assistant. I can help answer common disaster-related questions while you wait for a response from our support team.</p>
+                                </div>
+                            </div>
+                            <div class="message message-assistant">
+                                <div class="message-content">
+                                    <p>What would you like to know more about today?</p>
+                                    <div class="suggested-topics">
+                                        <span class="topic-chip" data-topic="typhoon">Typhoons</span>
+                                        <span class="topic-chip" data-topic="earthquake">Earthquakes</span>
+                                        <span class="topic-chip" data-topic="flood">Floods</span>
+                                        <span class="topic-chip" data-topic="emergency">Emergency Kits</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- FAQ Categories -->
+                        <div class="faq-categories" style="display: none;">
+                            <div class="category-group">
+                                <div class="category-title">Disaster Preparedness</div>
+                                <div class="category-questions">
+                                    <span class="question-chip" data-question="How do I prepare for a typhoon?">Typhoon Preparation</span>
+                                    <span class="question-chip" data-question="What to do during an earthquake?">During Earthquake</span>
+                                    <span class="question-chip" data-question="What to do after an earthquake?">After Earthquake</span>
+                                    <span class="question-chip" data-question="Flood safety guidelines?">Flood Safety</span>
+                                    <span class="question-chip" data-question="Emergency evacuation procedures?">Evacuation</span>
+                                </div>
+                            </div>
+                            <div class="category-group">
+                                <div class="category-title">Disaster Response</div>
+                                <div class="category-questions">
+                                    <span class="question-chip" data-question="How to report a disaster situation?">Report Disaster</span>
+                                    <span class="question-chip" data-question="What supplies should be in my emergency kit?">Emergency Kit</span>
+                                    <span class="question-chip" data-question="How can I help my community during disasters?">Help Community</span>
+                                    <span class="question-chip" data-question="What disaster alerts does THYNK provide?">THYNK Alerts</span>
+                                </div>
+                            </div>
+                            <div class="category-group">
+                                <div class="category-title">General Support</div>
+                                <div class="category-questions">
+                                    <span class="question-chip" data-question="How do I report an incident?">Report Incident</span>
+                                    <span class="question-chip" data-question="What is THYNK?">About THYNK</span>
+                                    <span class="question-chip" data-question="How do I update my account?">Update Account</span>
+                                    <span class="question-chip" data-question="How to contact support?">Contact Support</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-restart-container d-flex justify-content-between align-items-center" style="display: none !important;">
+                            <button id="faqRestartBtn" class="faq-restart-btn">
+                                <i class="fas fa-redo-alt"></i>
+                                <span>Start Over</span>
+                            </button>
+                            
+                            <a href="@Url.Action("Index", "Support")" class="talk-to-human-btn">
+                                <i class="fas fa-comment-dots"></i>
+                                <span>Talk to a Person</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1663,6 +2814,618 @@
                 logoutForm.submit();
             });
         });
+    </script>
+    
+    <!-- FAQ Assistant JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // FAQ question database
+            const faqDatabase = {
+                "how do i prepare for a typhoon?": "To prepare for a typhoon:\n\n• Create an emergency kit with water, non-perishable food, medicine, flashlights, batteries, and first aid supplies\n• Secure your home by reinforcing windows and doors\n• Trim trees and branches that could fall on your house\n• Move outdoor furniture and objects inside\n• Charge all communication devices and keep portable chargers ready\n• Monitor weather updates through the THYNK app\n• Follow evacuation orders immediately if issued",
+                
+                "what to do during an earthquake?": "During an earthquake:\n\n• DROP to the ground\n• COVER by getting under a sturdy table or desk\n• HOLD ON until the shaking stops\n• Stay away from windows, exterior walls, and anything that could fall\n• If outdoors, move to an open area away from buildings\n• If driving, pull over safely away from buildings and utility wires\n• Do NOT run outside during shaking or use elevators",
+                
+                "what to do after an earthquake?": "After an earthquake:\n\n• Check yourself and others for injuries\n• Put on closed-toe shoes to protect from broken glass\n• Check for damage to your building\n• If you smell gas, turn off the main valve and open windows\n• Be prepared for aftershocks\n• Keep monitoring the THYNK app for emergency information\n• Check on neighbors, especially the elderly or those with disabilities",
+                
+                "flood safety guidelines?": "Flood Safety Guidelines:\n\n• Move to higher ground immediately if flooding is imminent\n• Stay informed through the THYNK app\n• Avoid walking or driving through flood waters\n• If trapped in a building, go to the highest level\n• Only get on the roof if necessary and signal for help\n• Keep emergency supplies in a waterproof container\n• Avoid contact with flood water as it may be contaminated",
+                
+                "emergency evacuation procedures?": "Emergency Evacuation Procedures:\n\n• Stay calm and act quickly\n• Follow your household evacuation plan\n• Grab your emergency kit if immediately accessible\n• Use the evacuation route designated by authorities\n• Stay updated through the THYNK app emergency alerts\n• Check in at evacuation centers\n• Do not return home until authorities confirm it's safe",
+                
+                "how to report a disaster situation?": "To report a disaster situation in THYNK:\n\n• Open the THYNK app and select 'Emergency Report'\n• Choose the type of disaster from the dropdown menu\n• Mark your location on the map\n• Upload photos or videos if safe to do so\n• Describe the situation, including any injuries or immediate dangers\n• Submit your report to emergency response teams\n• Stay on the line if connected to emergency services",
+                
+                "what supplies should be in my emergency kit?": "Essential Emergency Kit Supplies:\n\n• Water - one gallon per person per day for at least 3 days\n• Non-perishable food for at least 3 days\n• Battery-powered radio\n• Flashlight and extra batteries\n• First aid kit with prescription medications\n• Whistle to signal for help\n• Dust mask, plastic sheeting, and duct tape\n• Moist towelettes, garbage bags for sanitation\n• Cell phone with chargers and backup battery\n• Copies of important documents in waterproof container",
+                
+                "how can i help my community during disasters?": "Ways to Help Your Community During Disasters:\n\n• Join the THYNK Community Response Team\n• Get trained in first aid and CPR\n• Volunteer with local disaster relief organizations\n• Help neighbors with evacuation, especially elderly or disabled\n• Share verified information through community channels\n• Offer shelter to displaced people if your home is safe\n• Assist with cleanup efforts after the disaster\n• Remember to ensure your own safety first before helping others",
+                
+                "what disaster alerts does thynk provide?": "THYNK Disaster Alert Types:\n\n• Typhoon/Hurricane Warnings\n• Flood Alerts with real-time water level monitoring\n• Earthquake Notifications\n• Tsunami Warnings\n• Landslide Risk Assessments\n• Volcanic Activity Updates\n• Fire Danger Warnings\n• Extreme Weather Alerts\n• Disease Outbreak Notifications\n• Infrastructure Damage Reports",
+                
+                "how do i report an incident?": "To report an incident in THYNK:\n\n• Navigate to the 'Report Incident' section in the sidebar\n• Fill in the required details about the incident\n• Add supporting documents or images\n• Submit the form\n• Your report will be sent to the relevant authorities\n• You can track your report status in 'My Reports'",
+                
+                "what is thynk?": "THYNK is a comprehensive community portal designed to:\n\n• Connect citizens, local government units, and community services\n• Provide tools for reporting incidents\n• Offer educational resources on safety and disaster preparedness\n• Facilitate communication between community members and local authorities\n• Deliver real-time alerts about emergencies and important events\n• Help coordinate disaster response and recovery efforts",
+                
+                "how do i update my account?": "To update your account information:\n\n• Click on your profile icon in the top-right corner\n• Select 'Manage Account'\n• Update your personal information, change your password, and adjust notification preferences\n• You can also update your profile picture and emergency contact information\n• Don't forget to click 'Save Changes' when you're done",
+                
+                "how to contact support?": "Contact THYNK Support:\n\n• Click on 'Support & FAQs' in the sidebar\n• Start a chat with our support team\n• Email us at support@thynk.com\n• Call our support line at +63 123 456 7890 (Monday to Friday, 8:00 AM - 5:00 PM)\n• For urgent matters, use the emergency contact feature in the app"
+            };
+            
+            // Topic-specific recommendations
+            const topicRecommendations = {
+                "typhoon": [
+                    "How do I prepare for a typhoon?",
+                    "What to do during a typhoon?",
+                    "How to secure my home before a typhoon?"
+                ],
+                "earthquake": [
+                    "What to do during an earthquake?",
+                    "What to do after an earthquake?",
+                    "How to prepare for aftershocks?"
+                ],
+                "flood": [
+                    "Flood safety guidelines?",
+                    "How to prepare for floods?",
+                    "What to do if my home is flooded?"
+                ],
+                "emergency": [
+                    "What supplies should be in my emergency kit?",
+                    "Emergency evacuation procedures?",
+                    "How to make a family emergency plan?"
+                ]
+            };
+            
+            // Follow-up questions based on previous answers
+            const followUpQuestions = {
+                "how do i prepare for a typhoon?": [
+                    "What to do during a typhoon?",
+                    "How to secure my home better?",
+                    "Where can I find evacuation centers?"
+                ],
+                "what to do during an earthquake?": [
+                    "What to do after an earthquake?", 
+                    "How to prepare for aftershocks?",
+                    "What if I'm in a high-rise building?"
+                ],
+                "what supplies should be in my emergency kit?": [
+                    "Where should I store my emergency kit?",
+                    "How often should I update my emergency supplies?",
+                    "What special items should I include for children?"
+                ]
+            };
+            
+            // Get DOM elements
+            const faqChatMessages = document.getElementById('faqChatMessages');
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            const startChatBtn = document.getElementById('startChatBtn');
+            const questionChips = document.querySelectorAll('.question-chip');
+            const faqRestartBtn = document.getElementById('faqRestartBtn');
+            const talkToHumanBtn = document.querySelector('.talk-to-human-btn');
+            
+            // Initially hide the Talk to a Person button
+            if (talkToHumanBtn) {
+                talkToHumanBtn.style.display = 'none';
+            }
+
+            // Get categories and restart container elements
+            const faqCategories = document.querySelector('.faq-categories');
+            const faqRestartContainer = document.querySelector('.faq-restart-container');
+            
+            // Initially hide categories and restart container when welcome screen is visible
+            if (welcomeScreen.style.display !== 'none') {
+                faqCategories.style.display = 'none';
+                faqRestartContainer.style.display = 'none';
+            }
+            
+            // Handle start chat button click
+            if (startChatBtn) {
+                startChatBtn.addEventListener('click', function() {
+                    // Hide welcome screen
+                    welcomeScreen.style.display = 'none';
+                    // Show chat messages
+                    faqChatMessages.style.display = 'flex';
+                    // Show categories and restart container
+                    faqCategories.style.display = 'block';
+                    faqRestartContainer.style.display = 'flex';
+                });
+            }
+            
+            // Track interaction count and last question
+            let interactionCount = 0;
+            let hasInteracted = false;
+            let lastQuestion = "";
+            
+            // Initialize and add event listeners for topic chips
+            function initializeTopicChips() {
+                const topicChips = document.querySelectorAll('.topic-chip');
+                topicChips.forEach(chip => {
+                    chip.addEventListener('click', function() {
+                        const topic = this.getAttribute('data-topic');
+                        showRecommendationsForTopic(topic);
+                    });
+                });
+            }
+            
+            // Show recommendations for a selected topic
+            function showRecommendationsForTopic(topic) {
+                // Add user's selection to chat
+                addMessage(`I'd like to learn about ${topic}`, true);
+                
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Process with slight delay for realism
+                setTimeout(() => {
+                    // Remove typing indicator
+                    removeTypingIndicator();
+                    
+                    // Add response
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message message-assistant';
+                    
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'message-content';
+                    
+                    let responseHtml = `<p>Here are some common questions about ${topic}s:</p>`;
+                    responseHtml += '<div class="suggested-topics">';
+                    
+                    topicRecommendations[topic].forEach(question => {
+                        responseHtml += `<span class="question-chip" data-question="${question}">${question}</span>`;
+                    });
+                    
+                    responseHtml += '</div>';
+                    contentDiv.innerHTML = responseHtml;
+                    
+                    messageDiv.appendChild(contentDiv);
+                    faqChatMessages.appendChild(messageDiv);
+                    
+                    // Scroll to bottom
+                    faqChatMessages.scrollTop = faqChatMessages.scrollHeight;
+                    
+                    // Initialize event listeners for the new question chips
+                    const newQuestionChips = messageDiv.querySelectorAll('.question-chip');
+                    newQuestionChips.forEach(chip => {
+                        chip.addEventListener('click', function() {
+                            const question = this.getAttribute('data-question');
+                            // Add user's question to chat
+                            addMessage(question, true);
+                            // Process the question
+                            processFaqQuery(question);
+                        });
+                    });
+                }, 1500);
+            }
+            
+            // Show typing indicator
+            function showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'typing-indicator';
+                typingDiv.id = 'typingIndicator';
+                
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'typing-dot';
+                    typingDiv.appendChild(dot);
+                }
+                
+                faqChatMessages.appendChild(typingDiv);
+                faqChatMessages.scrollTop = faqChatMessages.scrollHeight;
+            }
+            
+            // Remove typing indicator
+            function removeTypingIndicator() {
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+            
+            // Function to add message to chat
+            function addMessage(content, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = isUser ? 'message message-user' : 'message message-assistant';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                
+                const paragraph = document.createElement('p');
+                paragraph.innerHTML = formatMessage(content);
+                contentDiv.appendChild(paragraph);
+                
+                messageDiv.appendChild(contentDiv);
+                faqChatMessages.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                faqChatMessages.scrollTop = faqChatMessages.scrollHeight;
+                
+                // Show the Talk to a Person button after interaction
+                if (isUser) {
+                    hasInteracted = true;
+                    interactionCount++;
+                    
+                    if (talkToHumanBtn && interactionCount >= 1) {
+                        setTimeout(() => {
+                            talkToHumanBtn.style.display = 'inline-flex';
+                        }, 2000);
+                    }
+                    
+                    // After 3 questions, suggest contacting support team
+                    if (interactionCount === 3) {
+                        setTimeout(() => {
+                            showTypingIndicator();
+                            
+                            setTimeout(() => {
+                                removeTypingIndicator();
+                                
+                                const messageDiv = document.createElement('div');
+                                messageDiv.className = 'message message-assistant';
+                                
+                                const contentDiv = document.createElement('div');
+                                contentDiv.className = 'message-content';
+                                
+                                const paragraph = document.createElement('p');
+                                paragraph.textContent = "If you need more personalized assistance or have a complex question, you can talk to our support team by clicking 'Talk to a Person' below.";
+                                contentDiv.appendChild(paragraph);
+                                
+                                messageDiv.appendChild(contentDiv);
+                                faqChatMessages.appendChild(messageDiv);
+                                
+                                // Scroll to bottom
+                                faqChatMessages.scrollTop = faqChatMessages.scrollHeight;
+                            }, 1500);
+                        }, 1000);
+                    }
+                }
+            }
+            
+            // Format message to handle line breaks and bullet points
+            function formatMessage(text) {
+                return text
+                    .replace(/\n\n/g, '<br><br>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/•/g, '<span style="color:#3498db;padding-right:4px">•</span>');
+            }
+            
+            // Show follow-up questions after an answer
+            function showFollowUpQuestions(question) {
+                if (followUpQuestions[question.toLowerCase()]) {
+                    setTimeout(() => {
+                        showTypingIndicator();
+                        
+                        setTimeout(() => {
+                            removeTypingIndicator();
+                            
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = 'message message-assistant';
+                            
+                            const contentDiv = document.createElement('div');
+                            contentDiv.className = 'message-content';
+                            
+                            let responseHtml = `<p>Would you like to know more about:</p>`;
+                            responseHtml += '<div class="suggested-topics">';
+                            
+                            followUpQuestions[question.toLowerCase()].forEach(followUp => {
+                                responseHtml += `<span class="question-chip" data-question="${followUp}">${followUp}</span>`;
+                            });
+                            
+                            responseHtml += '</div>';
+                            contentDiv.innerHTML = responseHtml;
+                            
+                            messageDiv.appendChild(contentDiv);
+                            faqChatMessages.appendChild(messageDiv);
+                            
+                            // Initialize event listeners for the follow-up questions
+                            const newQuestionChips = messageDiv.querySelectorAll('.question-chip');
+                            newQuestionChips.forEach(chip => {
+                                chip.addEventListener('click', function() {
+                                    const question = this.getAttribute('data-question');
+                                    // Add user's question to chat
+                                    addMessage(question, true);
+                                    // Process the question
+                                    processFaqQuery(question);
+                                });
+                            });
+                            
+                            // Scroll to bottom
+                            faqChatMessages.scrollTop = faqChatMessages.scrollHeight;
+                        }, 1500);
+                    }, 1000);
+                }
+            }
+            
+            // Process FAQ query
+            function processFaqQuery(query) {
+                const normalizedQuery = query.toLowerCase().trim();
+                lastQuestion = normalizedQuery;
+                
+                // Show typing indicator first
+                showTypingIndicator();
+                
+                let found = false;
+                
+                for (const [question, answer] of Object.entries(faqDatabase)) {
+                    if (normalizedQuery.includes(question) || question.includes(normalizedQuery)) {
+                        found = true;
+                        
+                        // Add response with slight delay for realism
+                        setTimeout(() => {
+                            // Remove typing indicator
+                            removeTypingIndicator();
+                            
+                            // Add answer
+                            addMessage(answer);
+                            
+                            // Show follow-up questions if available
+                            if (followUpQuestions[question]) {
+                                showFollowUpQuestions(question);
+                            }
+                        }, 2000); // Longer delay for typing effect
+                        
+                        break;
+                    }
+                }
+                
+                // No match found
+                if (!found) {
+                    setTimeout(() => {
+                        removeTypingIndicator();
+                        addMessage("I don't have information on that specific topic. For a more detailed response, please click 'Talk to a Person' to connect with our support team who can better assist you.");
+                    }, 1500);
+                }
+            }
+            
+            // Handle click on question chips
+            questionChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    const question = this.getAttribute('data-question');
+                    // Add user's question to chat
+                    addMessage(question, true);
+                    // Process the question
+                    processFaqQuery(question);
+                });
+            });
+            
+            // Initialize topic chips
+            initializeTopicChips();
+            
+            // Reset chat
+            if (faqRestartBtn) {
+                faqRestartBtn.addEventListener('click', function() {
+                    // Clear all messages except the first
+                    while (faqChatMessages.children.length > 2) {
+                        faqChatMessages.removeChild(faqChatMessages.lastChild);
+                    }
+                    
+                    // Reset interaction state and count
+                    hasInteracted = false;
+                    interactionCount = 0;
+                    lastQuestion = "";
+                    
+                    // Hide the talk to human button
+                    if (talkToHumanBtn) {
+                        talkToHumanBtn.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Modal reset when closed
+            const faqModal = document.getElementById('faqAssistantModal');
+            if (faqModal) {
+                faqModal.addEventListener('hidden.bs.modal', function () {
+                    // Reset to welcome screen
+                    welcomeScreen.style.display = 'flex';
+                    faqChatMessages.style.display = 'none';
+                    
+                    // Hide categories and restart container
+                    faqCategories.style.display = 'none';
+                    faqRestartContainer.style.display = 'none';
+                    
+                    // Only reset chat if there was an interaction
+                    if (hasInteracted) {
+                        // Clear all messages except the first two
+                        while (faqChatMessages.children.length > 2) {
+                            faqChatMessages.removeChild(faqChatMessages.lastChild);
+                        }
+                        
+                        // Reset interaction state and count
+                        hasInteracted = false;
+                        interactionCount = 0;
+                        lastQuestion = "";
+                        
+                        // Hide the talk to human button
+                        if (talkToHumanBtn) {
+                            talkToHumanBtn.style.display = 'none';
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Global direct badge controller -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize global notification badge controller
+            initNotificationBadgeController();
+            
+            // Add global click handler for all notification-related elements
+            document.body.addEventListener('click', function(e) {
+                // Check if clicked on a notification action button or mark all read button
+                if (e.target.closest('.notification-action-btn') || e.target.closest('#markAllRead')) {
+                    // Hide badge immediately
+                    hideNotificationBadgeImmediately();
+                    console.log('Global handler: notification action detected, hiding badge');
+                }
+            }, true); // Use capture phase to ensure this runs first
+        });
+        
+        function initNotificationBadgeController() {
+            // Create a global controller for the notification badge
+            window.notificationController = {
+                hideImmediately: function() {
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        // 1. Remove from DOM flow
+                        badge.style.position = 'absolute';
+                        
+                        // 2. Hide using multiple techniques
+                        badge.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important; position: absolute; pointer-events: none;';
+                        
+                        // 3. Remove content
+                        badge.textContent = '0';
+                        badge.setAttribute('data-count', '0');
+                        
+                        // 4. Add hidden attributes
+                        badge.setAttribute('hidden', 'hidden');
+                        badge.setAttribute('aria-hidden', 'true');
+                        
+                        // 5. Force reflow
+                        void badge.offsetWidth;
+                        
+                        console.log('Badge forcefully hidden');
+                    }
+                },
+                
+                reset: function() {
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        // Reset all badge properties
+                        badge.style.cssText = 'display: none !important;';
+                        badge.textContent = '0';
+                        badge.setAttribute('data-count', '0');
+                        badge.classList.remove('badge-pulse');
+                        badge.setAttribute('hidden', 'hidden');
+                        badge.setAttribute('aria-hidden', 'true');
+                        
+                        console.log('Badge reset');
+                    }
+                }
+            };
+            
+            // Execute this on page load to ensure badge starts in correct state
+            setTimeout(function() {
+                const badge = document.getElementById('notificationBadge');
+                const unreadItems = document.querySelectorAll('.notification-item.unread');
+                
+                if (badge && (!unreadItems || unreadItems.length === 0)) {
+                    window.notificationController.hideImmediately();
+                }
+            }, 1000);
+        }
+        
+        // Direct access function to hide badge
+        function hideNotificationBadgeImmediately() {
+            if (window.notificationController) {
+                window.notificationController.hideImmediately();
+            } else {
+                // Fallback if controller not initialized
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    badge.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important;';
+                }
+            }
+        }
+        
+        // Override markNotificationAsRead to use our direct method
+        const originalMarkNotificationAsRead = markNotificationAsRead;
+        markNotificationAsRead = function(notificationId) {
+            // Call the original function
+            originalMarkNotificationAsRead(notificationId);
+            
+            // Then immediately hide badge if needed
+            setTimeout(function() {
+                const unreadItems = document.querySelectorAll('.notification-item.unread');
+                if (!unreadItems || unreadItems.length === 0) {
+                    hideNotificationBadgeImmediately();
+                }
+            }, 100);
+        }
+        
+        // Override markAllNotificationsAsRead to use our direct method
+        const originalMarkAllNotificationsAsRead = markAllNotificationsAsRead;
+        markAllNotificationsAsRead = function() {
+            // Call original function
+            originalMarkAllNotificationsAsRead();
+            
+            // Immediately hide badge
+            hideNotificationBadgeImmediately();
+        }
+    </script>
+
+    <!-- Enhanced badge cleanup system -->
+    <script>
+        const BadgeController = {
+            hide: function() {
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    badge.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important; position: absolute !important; pointer-events: none !important;';
+                    badge.setAttribute('aria-hidden', 'true');
+                    badge.setAttribute('hidden', 'true');
+                    badge.textContent = '0';
+                    badge.dataset.count = '0';
+                    badge.classList.remove('badge-pulse');
+                    void badge.offsetWidth;
+                }
+            },
+            
+            reset: function() {
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+                    if (unreadCount === 0) {
+                        this.hide();
+                    } else {
+                        badge.textContent = unreadCount.toString();
+                        badge.dataset.count = unreadCount.toString();
+                        badge.style.display = 'flex';
+                        badge.removeAttribute('hidden');
+                        badge.removeAttribute('aria-hidden');
+                    }
+                }
+            }
+        };
+
+        // Override the existing updateNotificationBadge function
+        function updateNotificationBadge(count) {
+            if (count <= 0) {
+                BadgeController.hide();
+            } else {
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    badge.textContent = count > 99 ? '99+' : count.toString();
+                    badge.dataset.count = count.toString();
+                    badge.style.cssText = 'display: flex; visibility: visible; opacity: 1;';
+                    badge.removeAttribute('hidden');
+                    badge.removeAttribute('aria-hidden');
+                    badge.classList.add('badge-pulse');
+                }
+            }
+        }
+
+        // Add cleanup on page navigation
+        window.addEventListener('beforeunload', function() {
+            const hasUnread = document.querySelectorAll('.notification-item.unread').length > 0;
+            if (!hasUnread) {
+                BadgeController.hide();
+            }
+        });
+
+        // Add mutation observer to watch for changes in notification items
+        const notificationList = document.getElementById('notificationList');
+        if (notificationList) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                        const unreadCount = notificationList.querySelectorAll('.notification-item.unread').length;
+                        updateNotificationBadge(unreadCount);
+                    }
+                });
+            });
+            
+            observer.observe(notificationList, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        }
     </script>
 </body>
 </html> 

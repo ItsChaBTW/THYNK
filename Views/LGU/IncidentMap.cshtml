@@ -74,15 +74,15 @@
         <div class="card dashboard-card border-0 shadow-sm">
             <div class="card-header bg-primary text-white">
                 <div class="d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <div class="card-icon bg-white text-primary">
-                            <i class="fas fa-map-marked-alt"></i>
-                        </div>
-                        <div>
-                            <h5 class="m-0">Incident Map</h5>
-                            <small>View all reported incidents on the map</small>
-                        </div>
+                <div class="d-flex align-items-center">
+                    <div class="card-icon bg-white text-primary">
+                        <i class="fas fa-map-marked-alt"></i>
                     </div>
+                    <div>
+                        <h5 class="m-0">Incident Map</h5>
+                        <small>View all reported incidents on the map</small>
+                    </div>
+                </div>
                     <div>
                         <button class="btn btn-light btn-sm me-2" id="toggle-heatmap">
                             <i class="fas fa-fire me-1"></i><span class="d-none d-md-inline">Heatmap</span>
@@ -90,9 +90,9 @@
                         <button class="btn btn-light btn-sm" id="legend-toggle">
                             <i class="fas fa-map-signs me-1"></i><span class="d-none d-md-inline">Legend</span>
                         </button>
-                    </div>
-                </div>
             </div>
+            </div>
+        </div>
             
             <!-- Quick Filters Bar -->
             <div class="quick-filters-bar p-2 bg-light border-bottom">
@@ -128,16 +128,16 @@
                                     <button class="btn btn-outline-primary" id="apply-filters">
                                         <i class="fas fa-filter"></i>
                                     </button>
-                                </div>
-                            </div>
-                        </div>
+            </div>
+                    </div>
+                    </div>
                         <div class="col-md-auto col-12">
                             <div class="quick-filter-section">
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-primary quick-status" data-status="2">In Progress</button>
                                     <button type="button" class="btn btn-outline-success quick-status" data-status="3">Resolved</button>
                                     <button type="button" class="btn btn-outline-secondary quick-status" data-status="all">All</button>
-                                </div>
+                </div>
                             </div>
                         </div>
                         <div class="col-md-auto col-12 ms-md-auto">
@@ -146,20 +146,20 @@
                             </button>
                         </div>
                     </div>
-                </div>
             </div>
-            
+        </div>
+
             <div class="card-body p-0 position-relative">
                 <div id="map" class="map-container"></div>
                 <div class="map-overlay-info">
                     <span id="incident-count" class="badge bg-primary"></span>
-                </div>
+            </div>
                 
                 <!-- No incidents alert -->
                 <div id="no-incidents-alert" class="alert alert-info m-3 d-none">
                     <i class="fas fa-info-circle me-2"></i>
                     No incidents match your filter criteria. Try adjusting your filters or <a href="#" id="reset-filters-alert">reset all filters</a>.
-                </div>
+                    </div>
                 
                 <!-- Improved Floating Collapsible Legend with Tabs -->
                 <div id="floating-legend" class="map-legend shadow">
@@ -177,17 +177,17 @@
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-primary me-2"></span>
                                 <span>In Progress</span>
-                            </div>
+                    </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-success me-2"></span>
                                 <span>Resolved</span>
-                            </div>
-                        </div>
+                    </div>
+                    </div>
                         <div class="legend-content" id="severity-content">
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-success me-2"></span>
                                 <span>Low</span>
-                            </div>
+                </div>
                             <div class="d-flex align-items-center mb-2">
                                 <span class="legend-dot bg-warning me-2"></span>
                                 <span>Medium</span>
@@ -243,8 +243,8 @@
                         <i class="fas fa-sync-alt"></i>
                     </button>
                     <span class="badge bg-light text-primary rounded-pill ms-2" id="recent-count">0</span>
-                </div>
-            </div>
+                    </div>
+                    </div>
             <div class="card-body p-0">
                 <div class="incidents-filter-bar d-flex align-items-center p-2 bg-light border-bottom">
                     <div class="input-group input-group-sm">
@@ -252,8 +252,8 @@
                             <i class="fas fa-search text-muted"></i>
                         </span>
                         <input type="text" class="form-control form-control-sm border-start-0" id="incidents-search" placeholder="Search incidents...">
-                    </div>
                 </div>
+            </div>
                 <div class="list-group list-group-flush" id="recent-incidents-list">
                     <!-- This will be populated with recent incidents -->
                     <div class="recent-incidents-loading text-center py-4">
@@ -321,7 +321,7 @@
                                     <div class="col-12">
                                         <h6 class="text-muted mb-1 small">DESCRIPTION</h6>
                                         <div class="p-3 bg-light rounded">
-                                            <p class="mb-0" id="modal-description"></p>
+                                        <p class="mb-0" id="modal-description"></p>
                                         </div>
                                     </div>
                                 </div>

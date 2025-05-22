@@ -319,9 +319,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#faq">FAQ</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Community" asp-action="EvacuationSite">Evacuation Sites</a>
-                        </li>
                      
 
                       
@@ -625,6 +622,29 @@
             // Add active class to nav item on scroll
             const navLinks = document.querySelectorAll('.navbar .nav-link');
             const sections = ['home', 'features', 'process', 'testimonials', 'education', 'faq'];
+            
+            // Check if we're viewing a post from notification
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightPostId = urlParams.get('highlight');
+            
+            if (highlightPostId) {
+                // Hide notification badge when viewing a post from notification
+                const notificationBadge = document.getElementById('notificationBadge');
+                if (notificationBadge) {
+                    notificationBadge.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important;';
+                    notificationBadge.classList.remove('badge-pulse');
+                    notificationBadge.setAttribute('aria-hidden', 'true');
+                    notificationBadge.textContent = '0';
+                    
+                    // Also mark the notification as read via API
+                    fetch(`/Community/MarkNotificationAsRead/${highlightPostId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).catch(err => console.error('Error marking notification as read:', err));
+                }
+            }
             
             // Set active nav item on page load
             setActiveNavItem();

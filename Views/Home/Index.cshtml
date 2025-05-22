@@ -16,6 +16,7 @@
             <span data-section="features"></span>
             <span data-section="process"></span>
             <span data-section="education"></span>
+            <span data-section="resources"></span>
             <span data-section="faq"></span>
         </div>
     </nav>
@@ -461,6 +462,77 @@
                                 <i class="fas fa-map-pin me-2"></i> View Evacuation Sites
                             </a>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Resource Library Section -->
+<section id="resources" class="resources-section py-8">
+    <div class="container">
+        <div class="row justify-content-center mb-6">
+            <div class="col-lg-8 text-center">
+                <div class="section-tag animate-on-scroll">
+                    <span>Knowledge Center</span>
+                </div>
+                <h2 class="section-title animate-on-scroll">
+                    Resource <span class="gradient-text">Library</span>
+                </h2>
+                <p class="section-subtitle animate-on-scroll">
+                    Access our comprehensive collection of educational materials, guides, and toolkits to help your community prepare for and respond to disasters effectively.
+                </p>
+            </div>
+        </div>
+        
+        <div class="row animate-on-scroll">
+            <div class="col-lg-6">
+                <div class="resource-preview">
+                    <div class="resource-image">
+                        <img src="https://images.unsplash.com/photo-1519791883288-dc8bd6d686a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Resource Library" class="img-fluid rounded-3 shadow-lg">
+                        <div class="resource-badge">
+                            <span><i class="fas fa-book-open me-2"></i>100+ Resources</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="resource-features">
+                    <div class="resource-feature-item animate-on-scroll">
+                        <div class="resource-feature-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="resource-feature-content">
+                            <h3>Downloadable Guides</h3>
+                            <p>Access comprehensive PDF guides for different disaster scenarios, from floods to earthquakes, with step-by-step preparation instructions.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-feature-item animate-on-scroll">
+                        <div class="resource-feature-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <div class="resource-feature-content">
+                            <h3>Training Videos</h3>
+                            <p>Watch instructional videos on emergency procedures, first aid techniques, and proper use of emergency equipment.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="resource-feature-item animate-on-scroll">
+                        <div class="resource-feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="resource-feature-content">
+                            <h3>Interactive Tools</h3>
+                            <p>Use our interactive assessment tools to evaluate your community's disaster preparedness and identify areas for improvement.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="/LGU/ResourceLibrary" class="btn btn-primary btn-lg">
+                            <i class="fas fa-book me-2"></i> Browse Resource Library
+                        </a>
                     </div>
                 </div>
             </div>
@@ -2441,6 +2513,112 @@
                 flex-wrap: wrap;
             }
         }
+        
+        /* Resources Section Styles */
+        .resources-section {
+            background-color: var(--secondary-light);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .resource-preview {
+            position: relative;
+            padding: 1rem;
+        }
+        
+        .resource-image {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .resource-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            filter: brightness(0.9);
+        }
+        
+        .resource-preview:hover .resource-image img {
+            transform: scale(1.03);
+        }
+        
+        .resource-badge {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(84, 84, 84, 0.9);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .resource-features {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            height: 100%;
+            padding: 1.5rem;
+        }
+        
+        .resource-feature-item {
+            display: flex;
+            background-color: var(--accent);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(84, 84, 84, 0.05);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .resource-feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .resource-feature-icon {
+            width: 60px;
+            height: 60px;
+            min-width: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1.5rem;
+            box-shadow: var(--shadow-primary);
+        }
+        
+        .resource-feature-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .resource-feature-content p {
+            color: var(--dark-alt);
+            margin-bottom: 0;
+            font-size: 0.95rem;
+        }
+        
+        @@media (max-width: 992px) {
+            .resource-preview {
+                margin-bottom: 2rem;
+            }
+            
+            .resource-features {
+                padding: 0;
+            }
+        }
     </style>
 }
 
@@ -2472,7 +2650,7 @@
             }
             
             // Navigation indicator
-            const sections = ['home', 'features', 'process', 'education', 'faq'];
+            const sections = ['home', 'features', 'process', 'education', 'resources', 'faq'];
             const navItems = document.querySelectorAll('.nav-indicator span');
             
             // Add additional indicator dots for new sections
