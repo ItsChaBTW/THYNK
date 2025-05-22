@@ -1,0 +1,90 @@
+@model THYNK.Models.EducationalResource
+@{
+    ViewData["Title"] = "Delete Resource";
+    Layout = "_LGULayout";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Delete Resource</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/LGU/Dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/LGU/ManageResources">Educational Resources</a></li>
+        <li class="breadcrumb-item active">Delete</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-danger text-white">
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            Confirm Deletion
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Warning:</strong> This action cannot be undone. Are you sure you want to permanently delete this resource?
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Title</h5>
+                    <div class="mb-3">
+                        <span class="badge bg-secondary">@Model.Type</span>
+                        @if (Model.ApprovalStatus == THYNK.Models.ApprovalStatus.Approved)
+                        {
+                            <span class="badge bg-success ms-1">Approved</span>
+                        }
+                        else if (Model.ApprovalStatus == THYNK.Models.ApprovalStatus.Pending)
+                        {
+                            <span class="badge bg-warning ms-1">Pending</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger ms-1">Rejected</span>
+                        }
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p>@Model.Description</p>
+                    </div>
+                    
+                    <div class="text-muted small">
+                        <p>Added on: @Model.DateAdded.ToString("MMM dd, yyyy")</p>
+                        
+                        @if (!string.IsNullOrEmpty(Model.Tags))
+                        {
+                            <div class="mb-2">
+                                Tags: 
+                                @foreach (var tag in Model.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <span class="badge bg-light text-secondary me-1">@tag.Trim()</span>
+                                }
+                            </div>
+                        }
+                        
+                        @if (Model.ViewCount.HasValue && Model.ViewCount > 0)
+                        {
+                            <p>Views: @Model.ViewCount</p>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(Model.FileUrl))
+                        {
+                            <p>Has attached file: <a href="@Model.FileUrl" target="_blank">View file</a></p>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <form asp-action="DeleteResource" method="post">
+                <input type="hidden" asp-for="Id" />
+                
+                <div class="d-flex justify-content-between">
+                    <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i> Delete Permanently
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 

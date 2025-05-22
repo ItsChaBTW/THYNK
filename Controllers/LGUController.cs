@@ -1637,16 +1637,10 @@ namespace THYNK.Controllers
         // Post a community update
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostUpdate(CommunityUpdate update, IFormFile Image)
+        public async Task<IActionResult> PostUpdate(CommunityUpdate update, IFormFile Attachment)
         {
             try
             {
-                // Add these debug lines
-                _logger.LogInformation("PostUpdate action called");
-                _logger.LogInformation($"Content: {update.Content}");
-                _logger.LogInformation($"Type: {update.Type}");
-                _logger.LogInformation($"UserId: {User.FindFirstValue(ClaimTypes.NameIdentifier)}");
-
                 // Get the current user's ID
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(userId))
@@ -1669,7 +1663,7 @@ namespace THYNK.Controllers
                 update.UserId = userId;
                 update.DatePosted = DateTime.Now;
                 update.ModerationStatus = ModerationStatus.Approved; // Automatically approve LGU/SLU posts
-                update.ImageUrl = "/images/no-image.png"; // Set default image URL
+                update.ImageUrl = null; // No default attachment
 
                 // Set optional fields if not provided
                 if (string.IsNullOrEmpty(update.Location))
@@ -1679,26 +1673,26 @@ namespace THYNK.Controllers
 
                 _logger.LogInformation($"Created CommunityUpdate object: {JsonSerializer.Serialize(update)}");
 
-                // Handle image upload if provided
-                if (Image != null && Image.Length > 0)
+                // Handle file attachment if provided
+                if (Attachment != null && Attachment.Length > 0)
                 {
-                    _logger.LogInformation($"Processing image upload: {Image.FileName}, Size: {Image.Length}");
+                    _logger.LogInformation($"Processing file upload: {Attachment.FileName}, Size: {Attachment.Length}");
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "community");
                     if (!Directory.Exists(uploadsFolder))
                     {
                         Directory.CreateDirectory(uploadsFolder);
                     }
 
-                    var uniqueFileName = $"{Guid.NewGuid()}_{Image.FileName}";
+                    var uniqueFileName = $"{Guid.NewGuid()}_{Attachment.FileName}";
                     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        await Image.CopyToAsync(fileStream);
+                        await Attachment.CopyToAsync(fileStream);
                     }
 
                     update.ImageUrl = $"/uploads/community/{uniqueFileName}";
-                    _logger.LogInformation($"Image saved to: {update.ImageUrl}");
+                    _logger.LogInformation($"File saved to: {update.ImageUrl}");
                 }
 
                 _context.CommunityUpdates.Add(update);
@@ -2121,6 +2115,51 @@ namespace THYNK.Controllers
             await _context.SaveChangesAsync();
             
             return RedirectToAction(nameof(ChatSupport));
+        }
+        
+        // Chat History for LGU
+        public async Task<IActionResult> ChatHistory()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUser = await _userManager.FindByIdAsync(userId) as LGUUser;
+            
+            if (currentUser == null)
+            {
+                return NotFound();
+            }
+            
+            // Extract LGU jurisdiction details from the current user
+            string lgaName = currentUser.OrganizationName;
+            
+            // Get all chats (including closed ones) that were assigned to this LGU user
+            // or match this LGU's jurisdiction
+            var historicalChats = await _context.ChatSessions
+                .Include(c => c.User)
+                .Include(c => c.Messages)
+                .Where(c => 
+                    // Assigned to this specific LGU user
+                    c.AssignedToId == userId ||
+                    // OR matches LGU jurisdiction
+                    (
+                        // Match based on user's location (city/municipality)
+                        (c.User != null && 
+                         ((c.User.CityMunicipalityName != null && c.User.CityMunicipalityName.Contains(currentUser.CityMunicipalityName ?? "")) ||
+                          (c.User.BarangayName != null && c.User.BarangayName.Contains(currentUser.BarangayName ?? "")))
+                        ) ||
+                        // OR match based on chat category (can contain LGU name or area)
+                        (c.Category != null && c.Category.Contains(lgaName)) ||
+                        // OR match based on chat title (can mention area name)
+                        (c.Title != null && (
+                            c.Title.Contains(currentUser.CityMunicipalityName ?? "") || 
+                            c.Title.Contains(currentUser.BarangayName ?? "") ||
+                            c.Title.Contains(lgaName)
+                        ))
+                    )
+                )
+                .OrderByDescending(c => c.StartTime)
+                .ToListAsync();
+            
+            return View(historicalChats);
         }
 
         [HttpGet]
