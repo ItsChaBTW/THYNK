@@ -58,7 +58,14 @@
                             
                             <div class="mb-3">
                                 <label asp-for="AffectedArea" class="form-label">Affected Area <span class="text-danger">*</span></label>
-                                <input asp-for="AffectedArea" class="form-control" placeholder="Specify the areas affected by this alert" required />
+                                <select asp-for="AffectedArea" class="form-select" required>
+                                    <option value="">Select affected city/municipality</option>
+                                    @foreach (var city in ViewBag.Cities)
+                                    {
+                                        <option value="@city">@city</option>
+                                    }
+                                    <option value="All areas">All areas</option>
+                                </select>
                                 <span asp-validation-for="AffectedArea" class="text-danger"></span>
                             </div>
                             
@@ -254,7 +261,7 @@
             // Title and message preview
             $('#Title').on('input', updatePreview);
             $('#Message').on('input', updatePreview);
-            $('#AffectedArea').on('input', updatePreview);
+            $('#AffectedArea').on('change', updatePreview);
             
             // Refresh preview button
             $('#refreshPreview').click(updatePreview);

@@ -319,9 +319,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#faq">FAQ</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Community" asp-action="EvacuationSite">Evacuation Sites</a>
-                        </li>
+                        <!-- Evacuation site link removed from navbar -->
                      
 
                       
@@ -355,144 +353,18 @@
             // Initialize SignalR connection
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl("/alertHub")
-                .withAutomaticReconnect([0, 2000, 5000, 10000, 20000]) // Retry connection with increasing delays
+                .withAutomaticReconnect()
                 .build();
                 
             // Start the connection
             connection.start()
                 .then(() => {
                     console.log("Connected to AlertHub");
-                    // Verify connection is working
-                    connection.invoke("PingConnection")
-                        .then(response => {
-                            console.log("Connection verified:", response);
-                        })
-                        .catch(err => {
-                            console.error("Error verifying connection:", err);
-                        });
                 })
                 .catch(err => {
                     console.error("Error connecting to AlertHub:", err);
                 });
                 
-            // Handle connection state changes
-            connection.onreconnecting(error => {
-                console.log("Reconnecting to AlertHub...", error);
-            });
-            
-            connection.onreconnected(connectionId => {
-                console.log("Reconnected to AlertHub with ID:", connectionId);
-            });
-            
-            connection.onclose(error => {
-                console.log("Connection to AlertHub closed:", error);
-            });
-                
-            // Function to load existing alerts when the page loads
-            function loadExistingAlerts() {
-                fetch('/LGU/GetRecentAlerts')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success && data.alerts) {
-                            // Clear existing alerts first
-                            const alertsContainer = document.getElementById('alertsContainer');
-                            if (alertsContainer) {
-                                alertsContainer.innerHTML = '';
-                            }
-                            
-                            // Display each alert without playing sound
-                            data.alerts.forEach(alert => {
-                                showAlertNotification(alert, false);
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error loading alerts:', error);
-                    });
-            }
-
-            // Function to show alert notification
-            function showAlertNotification(alert, playSound = true) {
-                const alertsContainer = document.getElementById('alertsContainer');
-                if (!alertsContainer) return;
-
-                // Create alert element
-                const alertElement = document.createElement('div');
-                alertElement.className = 'alert-item';
-                alertElement.setAttribute('data-alert-id', alert.id);
-                
-                // Get severity class and color
-                const severityClass = getSeverityClass(alert.severity);
-                const severityColor = getSeverityColor(alert.severity);
-                
-                // Format the date
-                const date = new Date(alert.dateIssued);
-                const formattedDate = date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                }) + ' ' + date.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-
-                alertElement.innerHTML = `
-                    <div class="alert-content ${severityClass}" style="border-left: 4px solid ${severityColor}">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <h6 class="mb-1">${alert.title}</h6>
-                            <small class="text-muted">${formattedDate}</small>
-                        </div>
-                        <p class="mb-1">${alert.message}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                <i class="fas fa-map-marker-alt me-1"></i>${alert.affectedArea}
-                            </small>
-                            <small class="text-muted">Issued by: ${alert.issuedBy}</small>
-                        </div>
-                    </div>
-                `;
-
-                // Add to container
-                alertsContainer.insertBefore(alertElement, alertsContainer.firstChild);
-
-                // Play sound only for new alerts
-                if (playSound) {
-                    const audio = new Audio('/sounds/alert.mp3');
-                    audio.play().catch(error => console.error('Error playing sound:', error));
-                }
-            }
-
-            // Helper function to get severity class
-            function getSeverityClass(severity) {
-                switch (severity) {
-                    case 0: return 'alert-info';
-                    case 1: return 'alert-warning';
-                    case 2: return 'alert-danger';
-                    case 3: return 'alert-dark';
-                    default: return 'alert-info';
-                }
-            }
-
-            // Helper function to get severity color
-            function getSeverityColor(severity) {
-                switch (severity) {
-                    case 0: return 'var(--info)';
-                    case 1: return 'var(--warning)';
-                    case 2: return 'var(--danger)';
-                    case 3: return 'var(--dark)';
-                    default: return 'var(--info)';
-                }
-            }
-
-            // Load existing alerts when the page loads
-            loadExistingAlerts();
-            
             // Handle receiving a new alert
             connection.on("ReceiveAlert", function(alert) {
                 console.log("New alert received:", alert);
@@ -526,6 +398,94 @@
                     existingAlert.remove();
                 }
             });
+            
+            // Function to display alert notification
+            function showAlertNotification(alert) {
+                // Only show active alerts
+                if (!alert.isActive) return;
+                
+                // Create alert element
+                const alertElement = document.createElement('div');
+                alertElement.className = `real-time-alert alert-${getSeverityClass(alert.severity)}`;
+                alertElement.setAttribute('data-alert-id', alert.id);
+                alertElement.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    max-width: 400px;
+                    z-index: 9999;
+                    padding: 15px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    color: white;
+                    animation: slideIn 0.5s ease-out forwards;
+                `;
+                
+                // Add background styling based on alert properties
+                if (alert.backgroundStyle === 'warning-pattern') {
+                    alertElement.style.backgroundImage = `repeating-linear-gradient(
+                        45deg,
+                        rgba(255,255,255,0.1),
+                        rgba(255,255,255,0.1) 10px,
+                        rgba(255,255,255,0.2) 10px,
+                        rgba(255,255,255,0.2) 20px
+                    )`;
+                } else if (alert.backgroundStyle === 'info-gradient') {
+                    alertElement.style.backgroundImage = `linear-gradient(
+                        135deg,
+                        rgba(255,255,255,0.2) 0%,
+                        rgba(255,255,255,0) 100%
+                    )`;
+                }
+                
+                // Create alert content
+                alertElement.innerHTML = `
+                    <div class="d-flex">
+                        <div class="alert-icon me-3">
+                            ${getAlertIcon(alert.severity, alert.iconStyle)}
+                        </div>
+                        <div>
+                            <h5 class="alert-heading mb-1">${alert.title}</h5>
+                            <p class="mb-1">${alert.message}</p>
+                            <small class="text-light">${alert.affectedArea}</small>
+                            <div class="mt-2 d-flex justify-content-between align-items-center">
+                                <small class="text-light">
+                                    ${new Date(alert.dateIssued).toLocaleString()}
+                                </small>
+                                <button type="button" class="btn-close btn-close-white" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add close button handler
+                alertElement.querySelector('.btn-close').addEventListener('click', function() {
+                    alertElement.style.animation = 'slideOut 0.3s ease-in forwards';
+                    setTimeout(() => {
+                        alertElement.remove();
+                    }, 300);
+                });
+                
+                // Auto-dismiss after 10 seconds for non-critical alerts
+                if (alert.severity !== 3) { // 3 = Critical in AlertSeverity enum
+                    setTimeout(() => {
+                        if (document.body.contains(alertElement)) {
+                            alertElement.style.animation = 'slideOut 0.3s ease-in forwards';
+                            setTimeout(() => {
+                                alertElement.remove();
+                            }, 300);
+                        }
+                    }, 10000);
+                }
+                
+                // Append to body
+                document.body.appendChild(alertElement);
+                
+                // Play notification sound for critical and danger alerts
+                if (alert.severity >= 2) { // 2 = Danger, 3 = Critical
+                    playAlertSound();
+                }
+            }
             
             // Function to update an existing alert notification
             function updateAlertNotification(alertElement, alert) {
@@ -566,94 +526,96 @@
                     alertElement.style.backgroundImage = 'none';
                 }
             }
-
+            
+            // Helper function to get severity class
+            function getSeverityClass(severity) {
+                switch(severity) {
+                    case 0: return 'info';    // Info
+                    case 1: return 'warning'; // Warning
+                    case 2: return 'danger';  // Danger
+                    case 3: return 'dark';    // Critical
+                    default: return 'info';
+                }
+            }
+            
             // Helper function to get alert icon
             function getAlertIcon(severity, iconStyle) {
-                let icon = '';
-                switch (severity) {
-                    case 0: icon = 'fa-info-circle'; break;
-                    case 1: icon = 'fa-exclamation-triangle'; break;
-                    case 2: icon = 'fa-radiation'; break;
-                    case 3: icon = 'fa-skull-crossbones'; break;
-                    default: icon = 'fa-info-circle';
-                }
+                let iconClass = 'fas fa-exclamation-triangle';
+                
+                if (severity === 0) iconClass = 'fas fa-info-circle';
+                if (severity === 1) iconClass = 'fas fa-exclamation-circle';
+                if (severity === 3) iconClass = 'fas fa-skull-crossbones';
                 
                 if (iconStyle === 'outlined') {
-                    icon = icon.replace('fa-', 'far fa-');
-                } else if (iconStyle === 'solid') {
-                    icon = icon.replace('fa-', 'fas fa-');
-                } else {
-                    icon = icon.replace('fa-', 'fas fa-');
+                    iconClass = iconClass.replace('fas', 'far');
+                } else if (iconStyle === 'minimal') {
+                    iconClass = iconClass.split(' ')[0] + ' fa-' + iconClass.split('-')[1];
                 }
                 
-                return `<i class="${icon} fa-2x"></i>`;
+                const animationClass = iconStyle === 'animated' ? 'animated-icon' : '';
+                
+                return `<i class="${iconClass} fa-2x ${animationClass}"></i>`;
+            }
+            
+            // Function to play alert sound
+            function playAlertSound() {
+                // Create audio element if it doesn't exist
+                let alertSound = document.getElementById('alertSound');
+                if (!alertSound) {
+                    alertSound = document.createElement('audio');
+                    alertSound.id = 'alertSound';
+                    alertSound.src = '/sounds/alert.mp3'; // Make sure this file exists
+                    alertSound.style.display = 'none';
+                    document.body.appendChild(alertSound);
+                }
+                
+                // Play the sound
+                alertSound.play().catch(e => console.log('Error playing alert sound:', e));
             }
         });
     </script>
     <style>
+        /* Animation for alerts */
         @@keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
-
+        
         @@keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
         }
-
+        
+        /* Animation for animated icons */
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .animated-icon {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Alert styling */
         .real-time-alert {
             transition: all 0.3s ease;
         }
-
-        .alert-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.2);
+        
+        .alert-info {
+            background-color: #0dcaf0;
         }
-
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 8px;
+        
+        .alert-warning {
+            background-color: #ffc107;
         }
-
-        .item-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 4px;
+        
+        .alert-danger {
+            background-color: #dc3545;
         }
-
-        .item-content {
-            font-size: 0.8rem;
-            margin-bottom: 4px;
-        }
-
-        .item-footer {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .item-date {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.7);
+        
+        .alert-dark {
+            background-color: #212529;
         }
     </style>
     <script>
@@ -661,6 +623,29 @@
             // Add active class to nav item on scroll
             const navLinks = document.querySelectorAll('.navbar .nav-link');
             const sections = ['home', 'features', 'process', 'testimonials', 'education', 'faq'];
+            
+            // Check if we're viewing a post from notification
+            const urlParams = new URLSearchParams(window.location.search);
+            const highlightPostId = urlParams.get('highlight');
+            
+            if (highlightPostId) {
+                // Hide notification badge when viewing a post from notification
+                const notificationBadge = document.getElementById('notificationBadge');
+                if (notificationBadge) {
+                    notificationBadge.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important;';
+                    notificationBadge.classList.remove('badge-pulse');
+                    notificationBadge.setAttribute('aria-hidden', 'true');
+                    notificationBadge.textContent = '0';
+                    
+                    // Also mark the notification as read via API
+                    fetch(`/Community/MarkNotificationAsRead/${highlightPostId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).catch(err => console.error('Error marking notification as read:', err));
+                }
+            }
             
             // Set active nav item on page load
             setActiveNavItem();
@@ -783,72 +768,5 @@
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
-    <style>
-        .alert-item {
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .alert-content {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .alert-content h6 {
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .alert-content p {
-            margin: 0.5rem 0;
-            font-size: 0.9rem;
-        }
-
-        .alert-content small {
-            font-size: 0.8rem;
-        }
-
-        .alert-info {
-            background-color: var(--info-light);
-        }
-
-        .alert-warning {
-            background-color: var(--warning-light);
-        }
-
-        .alert-danger {
-            background-color: var(--danger-light);
-        }
-
-        .alert-dark {
-            background-color: var(--dark-light);
-        }
-
-        #alertsContainer {
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-
-        #alertsContainer::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #alertsContainer::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        #alertsContainer::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-
-        #alertsContainer::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-    </style>
 </body>
 </html>

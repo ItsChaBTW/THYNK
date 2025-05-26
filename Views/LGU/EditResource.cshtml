@@ -1,0 +1,207 @@
+@model THYNK.Models.EducationalResource
+@{
+    ViewData["Title"] = "Edit Educational Resource";
+    Layout = "_LGULayout";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Edit Educational Resource</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="/LGU/Dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/LGU/ManageResources">Educational Resources</a></li>
+        <li class="breadcrumb-item active">Edit</li>
+    </ol>
+    
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-edit me-1"></i>
+                    Resource Information
+                </div>
+                <div class="card-body">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Please correct the following errors:</strong>
+                            
+                            <ul class="mb-0 mt-2">
+                                @foreach (var modelState in ViewData.ModelState.Values)
+                                {
+                                    foreach (var error in modelState.Errors)
+                                    {
+                                        <li>@error.ErrorMessage</li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
+                    
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    
+                    <form asp-action="EditResource" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="CreatedById" />
+                        <input type="hidden" asp-for="DateAdded" />
+                        <input type="hidden" asp-for="ApprovalStatus" />
+                        <input type="hidden" asp-for="ApprovedDate" />
+                        <input type="hidden" asp-for="ViewCount" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Resource Title <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control" required />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Type" class="form-label">Resource Type <span class="text-danger">*</span></label>
+                            <select asp-for="Type" class="form-select" required>
+                                @foreach (var type in Enum.GetValues(typeof(THYNK.Models.ResourceType)))
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Brief Description <span class="text-danger">*</span></label>
+                            <textarea asp-for="Description" class="form-control" rows="3" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">Full Content <span class="text-danger">*</span></label>
+                            <textarea asp-for="Content" id="contentEditor" class="form-control" rows="10" required></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Tags" class="form-label">Tags (comma separated)</label>
+                            <input asp-for="Tags" class="form-control" placeholder="e.g. typhoon, emergency, preparation" />
+                            <span asp-validation-for="Tags" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="ExternalUrl" class="form-label">External URL (optional)</label>
+                                    <input asp-for="ExternalUrl" class="form-control" placeholder="https://example.com/resource" />
+                                    <span asp-validation-for="ExternalUrl" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Resource File (optional)</label>
+                                    <input name="resourceFile" type="file" class="form-control" />
+                                    @if (!string.IsNullOrEmpty(Model.FileUrl))
+                                    {
+                                        <small class="form-text text-muted">
+                                            Current file: <a href="@Model.FileUrl" target="_blank">Download</a>
+                                            (Leave empty to keep the current file)
+                                        </small>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input asp-for="IsOfflineAccessible" class="form-check-input" />
+                            <label asp-for="IsOfflineAccessible" class="form-check-label">Make available for offline access</label>
+                            <div class="form-text">Allow users to download and cache this resource for offline viewing</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("ManageResources", "LGU")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Update Resource
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Resource Status
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Current Status</label>
+                        <div>
+                            @if (Model.ApprovalStatus == THYNK.Models.ApprovalStatus.Pending)
+                            {
+                                <span class="badge bg-warning">Pending Review</span>
+                            }
+                            else if (Model.ApprovalStatus == THYNK.Models.ApprovalStatus.Approved)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Rejected</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (Model.ApprovalStatus == THYNK.Models.ApprovalStatus.Approved && Model.ApprovedDate.HasValue)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Approved Date</label>
+                            <div>@Model.ApprovedDate.Value.ToString("MMM dd, yyyy")</div>
+                        </div>
+                    }
+                    
+                    @if (Model.ApprovalStatus == THYNK.Models.ApprovalStatus.Rejected && !string.IsNullOrEmpty(Model.RejectionReason))
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">Rejection Reason</label>
+                            <div class="alert alert-danger py-2 px-3 mb-0">@Model.RejectionReason</div>
+                        </div>
+                    }
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Date Added</label>
+                        <div>@Model.DateAdded.ToString("MMM dd, yyyy")</div>
+                    </div>
+                    
+                    @if (Model.ViewCount.HasValue && Model.ViewCount > 0)
+                    {
+                        <div>
+                            <label class="form-label">Total Views</label>
+                            <div>@Model.ViewCount</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add a rich text editor for the content field
+        $(document).ready(function() {
+            // You can initialize a rich text editor here if you're using one
+            // Example (if using TinyMCE):
+            // tinymce.init({
+            //     selector: '#contentEditor',
+            //     height: 400,
+            //     plugins: 'link image table code',
+            //     toolbar: 'undo redo | formatselect | bold italic | alignleft aligncenter alignright | bullist numlist | link image | table | code'
+            // });
+        });
+    </script>
+} 

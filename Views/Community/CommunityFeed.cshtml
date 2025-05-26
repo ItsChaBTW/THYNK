@@ -26,14 +26,7 @@
                                 <i class="fas fa-pen text-primary"></i>
                                 <span class="ms-1 d-none d-md-inline">Post</span>
                             </button>
-                            <button type="button" class="btn btn-light rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="HelpRequest">
-                                <i class="fas fa-hands-helping text-danger"></i>
-                                <span class="ms-1 d-none d-md-inline">Help</span>
-                            </button>
-                            <button type="button" class="btn btn-light rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#createPostModal" data-post-type="ResourceSharing">
-                                <i class="fas fa-share-alt text-success"></i>
-                                <span class="ms-1 d-none d-md-inline">Resource</span>
-                            </button>
+                           
                         </div>
                     </div>
                 </div>
@@ -211,58 +204,86 @@
 <!-- Create Post Modal -->
 <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="createPostModalLabel">Create Post</h5>
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-white border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="createPostModalLabel">
+                    <i class="fas fa-pen-fancy me-2 text-primary"></i>Create Post
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-action="PostUpdate" method="post" enctype="multipart/form-data" class="create-post-form">
                 <div class="modal-body">
                     @Html.AntiForgeryToken()
                     
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="modalType" class="form-label small text-muted">Post Type</label>
+                            <select class="form-select bg-light border-0" id="modalType" name="Type" required>
+                            <option value="GeneralUpdate">General Update</option>
+                            <option value="StatusUpdate">Status Update</option>
+                            <option value="ResourceSharing">Resource Sharing</option>
+                            <option value="Information">Information</option>
+                        </select>
+                            <small class="text-muted d-block mt-1">Select the category that best fits your post</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="modalLocation" class="form-label small text-muted">Location (optional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0">
+                                    <i class="fas fa-map-marker-alt text-muted"></i>
+                                </span>
+                                <input type="text" class="form-control bg-light border-0" id="modalLocation" name="Location" 
+                                       placeholder="Add location">
+                                <button type="button" class="btn btn-primary" id="detect-modal-location">
+                                    <i class="fas fa-crosshairs"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted d-block mt-1">Current location will be automatically detected</small>
+                        </div>
+                    </div>
+                    
                     <div class="mb-3">
                         <textarea class="form-control" id="modalContent" name="Content" rows="4" required 
                                 placeholder="Share your thoughts, updates, or information with the community..."></textarea>
                     </div>
                     
+                  
+
                     <div class="mb-3">
-                        <label for="type" class="form-label">Post Type</label>
-                        <select class="form-select" id="modalType" name="Type">
-                            <option value="GeneralUpdate">General Update</option>
-                            <option value="HelpRequest">Help Request</option>
-                            <option value="StatusUpdate">Status Update</option>
-                            <option value="ResourceSharing">Resource Sharing</option>
-                            <option value="Information">Information</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Add Image (Optional)</label>
-                        <input type="file" class="form-control" id="image" name="Image" accept="image/*">
-                        <div class="form-text">Upload an image to include with your post (max 5MB)</div>
-                    </div>
-                    
-                    <!-- Hidden geocoordinates -->
-                    <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
-                    <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
-                    
-                    <!-- Image Preview -->
-                    <div id="imagePreview" class="mt-3 d-none">
+                        <label for="modalAttachment" class="form-label small text-muted">Add Attachment (optional)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0">
+                                <i class="fas fa-paperclip text-primary"></i>
+                            </span>
+                            <input type="file" class="form-control bg-light border-0" id="modalAttachment" name="Attachment">
+                        </div>
+                        <div id="filePreview" class="mt-3 d-none text-center">
                         <div class="position-relative d-inline-block">
-                            <img id="preview" class="img-fluid rounded" style="max-height: 200px;">
-                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="removeImage()">
+                                <div id="filePreviewContent"></div>
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" id="removeFile" style="margin-right: -10px; margin-top: -10px;">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
+                            <p class="text-muted small mt-2">Selected file preview</p>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                    
+                    <!-- Hidden fields -->
+                    <input type="number" step="any" class="d-none" id="modalLatitude" name="Latitude">
+                    <input type="number" step="any" class="d-none" id="modalLongitude" name="Longitude">
+                </div>
+                <!-- Enhanced footer with better styled buttons -->
+                <div class="modal-footer border-top border-light pt-0 pb-3 px-4">
+                    <div class="d-flex justify-content-between w-100">
+                        <button type="button" class="btn btn-light px-4 rounded-pill" data-bs-dismiss="modal" 
+                                style="background: linear-gradient(45deg, #f8f9fa, #e9ecef); border: none; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
                         <i class="fas fa-times me-2"></i>Cancel
                     </button>
-                    <button type="button" class="btn btn-primary" onclick="return confirmPost()">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill" id="submit-post-btn" 
+                                style="background: linear-gradient(45deg, #4361ee, #4895ef); border: none; box-shadow: 0 2px 5px rgba(79, 111, 255, 0.3);">
                         <i class="fas fa-paper-plane me-2"></i>Post
                     </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -413,6 +434,56 @@
         </button>
     </form>
 }
+
+<!-- Chat Robot Widget -->
+<div class="chat-robot-widget" id="chatRobotWindow" style="display: none;">
+    <div class="chat-robot-window">
+        <div class="chat-robot-header">
+            <div class="d-flex align-items-center">
+                <div class="chat-robot-avatar me-2">
+                    <i class="fas fa-robot text-white"></i>
+                </div>
+                <div class="chat-robot-info">
+                    <h6 class="mb-0">THYNK Assistant</h6>
+                    <small>Emergency Response Bot</small>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" id="chatRobotClose"></button>
+        </div>
+        <div class="chat-robot-body" id="chatRobotBody">
+            <!-- Messages will be added here dynamically -->
+        </div>
+        <div class="chat-robot-footer">
+            <div class="input-group">
+                <input type="text" class="form-control" id="chatRobotInput" placeholder="Type your message...">
+                <button class="btn btn-danger" type="button" id="chatRobotSend">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        <div class="chat-robot-samples">
+            <div class="d-flex flex-column gap-2">
+                <button class="sample-question" data-question="What should be in my emergency kit?">
+                    What should be in my emergency kit?
+                </button>
+                <button class="sample-question" data-question="How do I prepare for a disaster?">
+                    How do I prepare for a disaster?
+                </button>
+                <button class="sample-question" data-question="What are the evacuation procedures?">
+                    What are the evacuation procedures?
+                </button>
+                <button class="sample-question" data-question="Can I see an emergency checklist?">
+                    Can I see an emergency checklist?
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Bot Button -->
+<div class="chat-bot-button" id="chatBotButton">
+    <i class="fas fa-robot"></i>
+</div>
 
 @section Styles {
     <style>
@@ -1141,11 +1212,231 @@
             animation: highlightAlert 2s ease-in-out;
             border: 2px solid #dc3545;
         }
+
+        /* Chat Robot Widget Enhanced Styles */
+        .chat-robot-widget {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 350px;
+            z-index: 9999;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fff;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-robot-window {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-robot-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #dc3545;
+            color: #fff;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-robot-avatar {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-robot-info h6 {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .chat-robot-info small {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+        }
+
+        .chat-robot-body {
+            flex: 1;
+            padding: 1.2rem;
+            overflow-y: auto;
+            background: #fff;
+        }
+
+        .chat-robot-message {
+            display: flex;
+            margin-bottom: 1rem;
+            animation: messageIn 0.3s ease-out;
+        }
+
+        .chat-robot-message-bot .chat-robot-message-content {
+            background: #f8f9fa;
+            color: #212529;
+            border-radius: 15px;
+            padding: 0.8rem 1.2rem;
+            max-width: 85%;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .chat-robot-message-user .chat-robot-message-content {
+            background: #dc3545;
+            color: #fff;
+            border-radius: 15px;
+            padding: 0.8rem 1.2rem;
+            max-width: 85%;
+            margin-left: auto;
+        }
+
+        .chat-robot-footer {
+            padding: 1rem;
+            background: #fff;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .chat-robot-footer .input-group {
+            background: #f8f9fa;
+            border-radius: 25px;
+            padding: 0.3rem;
+        }
+
+        .chat-robot-footer input {
+            border: none;
+            background: transparent;
+            padding: 0.5rem 1rem;
+        }
+
+        .chat-robot-footer input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .chat-robot-footer button {
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #dc3545;
+            border: none;
+        }
+
+        .chat-robot-footer button:hover {
+            background: #bb2d3b;
+        }
+
+        .chat-robot-samples {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .sample-question {
+            text-align: left;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.7rem 1rem;
+            color: #212529;
+            transition: all 0.2s;
+        }
+
+        .sample-question:hover {
+            background: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+
+        @@keyframes messageIn {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #6c757d;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typingDot 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @@keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        @@media (max-width: 576px) {
+            .chat-robot-widget {
+                width: 100%;
+            }
+        }
+
+        /* Chat Bot Button Styles */
+        .chat-bot-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #dc3545;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s ease;
+            z-index: 9998;
+        }
+
+        .chat-bot-button i {
+            font-size: 24px;
+        }
+
+        .chat-bot-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        @@media (max-width: 576px) {
+            .chat-bot-button {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+            }
+
+            .chat-bot-button i {
+                font-size: 20px;
+            }
+        }
     </style>
 }
 
 @section Scripts {
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    
     <script>
         $(document).ready(function() {
             // Check for alertId in URL parameters
@@ -1522,6 +1813,230 @@
                     }
                 });
             });
+
+            // Update submit button color and placeholder text based on selected post type
+            $('#modalType').on('change', function() {
+                const postType = $(this).val();
+                const $submitBtn = $('#submit-post-btn');
+                const $textarea = $('#modalContent');
+                
+                // Remove all color classes
+                $submitBtn.removeClass('btn-primary btn-danger btn-success btn-info btn-warning');
+                
+                // Add appropriate color class and placeholder based on post type
+                switch(postType) {
+                    case 'HelpRequest':
+                        $submitBtn.addClass('btn-danger');
+                        $submitBtn.css('background', 'linear-gradient(45deg, #dc3545, #c82333)');
+                        $textarea.attr('placeholder', 
+                            'Describe what help you need:\n' +
+                            '• What type of assistance do you require?\n' +
+                            '• How urgent is your need?\n' +
+                            '• What resources or skills are needed?\n' +
+                            '• Are there any specific requirements?'
+                        );
+                        break;
+                    case 'StatusUpdate':
+                        $submitBtn.addClass('btn-warning');
+                        $submitBtn.css('background', 'linear-gradient(45deg, #ffc107, #e0a800)');
+                        $textarea.attr('placeholder', 
+                            'Share your current status:\n' +
+                            '• What is the current situation?\n' +
+                            '• Are there any changes or developments?\n' +
+                            '• What impact does this have?\n' +
+                            '• Any specific actions being taken?'
+                        );
+                        break;
+                    case 'ResourceSharing':
+                        $submitBtn.addClass('btn-success');
+                        $submitBtn.css('background', 'linear-gradient(45deg, #28a745, #218838)');
+                        $textarea.attr('placeholder', 
+                            'Share available resources:\n' +
+                            '• What resources are you sharing?\n' +
+                            '• How can others access these resources?\n' +
+                            '• Are there any conditions or requirements?\n' +
+                            '• What is the availability period?'
+                        );
+                        break;
+                    case 'Information':
+                        $submitBtn.addClass('btn-info');
+                        $submitBtn.css('background', 'linear-gradient(45deg, #17a2b8, #138496)');
+                        $textarea.attr('placeholder', 
+                            'Share important information:\n' +
+                            '• What is the key information?\n' +
+                            '• Who does this affect?\n' +
+                            '• When is this relevant?\n' +
+                            '• Are there any actions required?'
+                        );
+                        break;
+                    default:
+                        $submitBtn.addClass('btn-primary');
+                        $submitBtn.css('background', 'linear-gradient(45deg, #4361ee, #4895ef)');
+                        $textarea.attr('placeholder', 
+                            'Share with the community:\n' +
+                            '• What would you like to share?\n' +
+                            '• Why is this important?\n' +
+                            '• Who might find this useful?\n' +
+                            '• Any additional context?'
+                        );
+                }
+                
+                // Reset box shadow for the button
+                $submitBtn.css('box-shadow', '0 2px 5px rgba(0, 0, 0, 0.2)');
+                
+                // Trigger the placeholder to update visually
+                $textarea.trigger('focus').trigger('blur');
+            });
+            
+            // Trigger change event on page load to set initial placeholder and button style
+            $('#modalType').trigger('change');
+            
+            // Add hover effect for the submit button
+            $('#submit-post-btn').hover(
+                function() {
+                    $(this).css('transform', 'translateY(-2px)');
+                    $(this).css('box-shadow', '0 4px 10px rgba(0, 0, 0, 0.3)');
+                },
+                function() {
+                    $(this).css('transform', 'translateY(0)');
+                    $(this).css('box-shadow', '0 2px 5px rgba(0, 0, 0, 0.2)');
+                }
+            );
+
+            // Chat Robot Widget Functionality
+            if ($('#chatRobotWindow').length) {
+                const chatRobotWindow = document.getElementById('chatRobotWindow');
+                const chatRobotClose = document.getElementById('chatRobotClose');
+                const chatRobotInput = document.getElementById('chatRobotInput');
+                const chatRobotSend = document.getElementById('chatRobotSend');
+                const chatRobotBody = document.getElementById('chatRobotBody');
+
+                // Add welcome message
+                addMessage("Hi! I'm the THYNK Assistant powered by Google's Gemini AI. How can I help you today?", 'bot');
+
+                function addMessage(text, sender) {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `chat-robot-message chat-robot-message-${sender}`;
+                    
+                    if (sender === 'bot') {
+                        // Show typing indicator
+                        const typingDiv = document.createElement('div');
+                        typingDiv.className = 'chat-robot-message chat-robot-message-bot';
+                        typingDiv.innerHTML = `
+                            <div class="chat-robot-message-content">
+                                <div class="typing-indicator">
+                                    <span></span><span></span><span></span>
+                                </div>
+                            </div>`;
+                        chatRobotBody.appendChild(typingDiv);
+                        chatRobotBody.scrollTop = chatRobotBody.scrollHeight;
+                        
+                        // Simulate typing delay
+                        setTimeout(() => {
+                            typingDiv.remove();
+                            messageDiv.innerHTML = `<div class="chat-robot-message-content">${formatMessage(text)}</div>`;
+                            chatRobotBody.appendChild(messageDiv);
+                            chatRobotBody.scrollTop = chatRobotBody.scrollHeight;
+                        }, 1000);
+                    } else {
+                        messageDiv.innerHTML = `<div class="chat-robot-message-content">${formatMessage(text)}</div>`;
+                        chatRobotBody.appendChild(messageDiv);
+                        chatRobotBody.scrollTop = chatRobotBody.scrollHeight;
+                    }
+                }
+
+                function formatMessage(text) {
+                    return text
+                        .replace(/\n/g, '<br>')
+                        .replace(/•/g, '&#8226;')
+                        .replace(/□/g, '&#9744;')
+                        .replace(/✓/g, '&#10004;');
+                }
+
+                async function getGeminiResponse(message) {
+                    try {
+                        const response = await fetch('/api/ChatBot/ask', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ message: message })
+                        });
+
+                        const data = await response.json();
+
+                        if (!response.ok) {
+                            console.error('API Error:', data.error);
+                            throw new Error(data.error || 'Failed to get response');
+                        }
+
+                        return data.response;
+                    } catch (error) {
+                        console.error('Error:', error);
+                        return `I apologize, but I encountered an error: ${error.message}. Please try again later.`;
+                    }
+                }
+
+                // Send message function
+                async function sendMessage() {
+                    const msg = chatRobotInput.value.trim();
+                    if (!msg) return;
+                    
+                    // Disable input and button while processing
+                    chatRobotInput.disabled = true;
+                    chatRobotSend.disabled = true;
+                    
+                    try {
+                        // Add user message
+                        addMessage(msg, 'user');
+                        chatRobotInput.value = '';
+                        
+                        // Get and display bot response
+                        const response = await getGeminiResponse(msg);
+                        addMessage(response, 'bot');
+                    } catch (error) {
+                        console.error('Error in sendMessage:', error);
+                        addMessage('I apologize, but I encountered an error. Please try again later.', 'bot');
+                    } finally {
+                        // Re-enable input and button
+                        chatRobotInput.disabled = false;
+                        chatRobotSend.disabled = false;
+                        chatRobotInput.focus();
+                    }
+                }
+
+                // Send button click
+                chatRobotSend.addEventListener('click', sendMessage);
+
+                // Enter key press
+                chatRobotInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+
+                // Sample question clicks
+                $('.sample-question').on('click', async function() {
+                    const question = $(this).data('question');
+                    chatRobotInput.value = question;
+                    await sendMessage();
+                });
+            }
+
+            // Add this to your existing document.ready function
+            const chatBotButton = document.getElementById('chatBotButton');
+            const chatRobotWindow = document.getElementById('chatRobotWindow');
+
+            chatBotButton.addEventListener('click', function() {
+                chatRobotWindow.style.display = 'flex';
+                chatBotButton.style.display = 'none';
+            });
+
+            document.getElementById('chatRobotClose').addEventListener('click', function() {
+                chatRobotWindow.style.display = 'none';
+                chatBotButton.style.display = 'flex';
+            });
         });
 
         // Function to handle post submission confirmation
@@ -1587,78 +2102,6 @@
                 setTimeout(() => toast.remove(), 300);
             }, 5000);
         }
-
-        // Initialize the functionality when the document is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set initial button style based on default post type
-            updateSubmitButtonStyle(document.getElementById('modalType').value);
-            
-            // Tooltips initialization
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-        });
-
-        // Preview image before upload
-        document.getElementById('image').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > 5 * 1024 * 1024) { // 5MB
-                    showToastNotification('Error', 'File size must be less than 5MB', 'warning');
-                    this.value = '';
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('preview');
-                    preview.src = e.target.result;
-                    document.getElementById('imagePreview').classList.remove('d-none');
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // Function to remove image
-        function removeImage() {
-            document.getElementById('image').value = '';
-            document.getElementById('imagePreview').classList.add('d-none');
-        }
-
-        // Update submit button style based on post type
-        document.getElementById('modalType').addEventListener('change', function() {
-            updateSubmitButtonStyle(this.value);
-        });
-        
-        function updateSubmitButtonStyle(postType) {
-            const submitBtn = document.querySelector('.create-post-form .btn-primary');
-            
-            // Reset all classes first
-            submitBtn.className = 'btn btn-primary';
-            
-            // Apply appropriate style based on post type
-            switch(postType) {
-                case 'HelpRequest':
-                    submitBtn.classList.add('btn-danger');
-                    submitBtn.innerHTML = '<i class="fas fa-hands-helping me-1"></i>Post Help Request';
-                    break;
-                case 'StatusUpdate':
-                    submitBtn.classList.add('btn-info');
-                    submitBtn.innerHTML = '<i class="fas fa-chart-line me-1"></i>Post Status Update';
-                    break;
-                case 'ResourceSharing':
-                    submitBtn.classList.add('btn-success');
-                    submitBtn.innerHTML = '<i class="fas fa-share-alt me-1"></i>Share Resource';
-                    break;
-                case 'Information':
-                    submitBtn.classList.add('btn-primary');
-                    submitBtn.innerHTML = '<i class="fas fa-info-circle me-1"></i>Post Information';
-                    break;
-                default:
-                    submitBtn.classList.add('btn-secondary');
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Post Update';
-            }
-        }
     </script>
+    <script src="/js/community-attachment.js"></script>
 } 

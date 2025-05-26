@@ -20,104 +20,145 @@
 <body>
     <div class="d-flex" id="wrapper">
         <!-- Sidebar -->
-        <div class="bg-dark text-white" id="sidebar-wrapper">
-            <div class="sidebar-heading text-center py-4">
-                <h3 class="m-0">THYNK</h3>
-                <small>Admin Dashboard</small>
-            </div>
-            <div class="list-group list-group-flush my-3">
-                <a href="@Url.Action("Dashboard", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
-                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                </a>
+        <div class="sidebar sidebar-collapsed md:sidebar-expanded" id="sidebar">
+            <div class="sidebar-content">
+                <!-- Fixed Header -->
+                <div class="sidebar-header">
+                    <div class="text-center">
+                        <h3 class="brand-title">
+                            <span class="brand-highlight">THYNK</span>
+                            <span class="brand-dot">.</span>
+                        </h3>
+                        <p class="brand-subtitle">
+                            <span class="subtitle-line">Admin</span>
+                            <span class="subtitle-dot">•</span>
+                            <span class="subtitle-line">Portal</span>
+                        </p>
+                    </div>
+                    <hr class="divider" />
+                </div>
                 
-                <!-- User Management -->
-                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
-                    <span>User Management</span>
-                </div>
-                <a href="@Url.Action("PendingLGUApplications", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "PendingLGUApplications" ? "active" : "")">
-                    <i class="fas fa-user-shield me-2"></i>Pending LGU Applications
-                </a>
-                <a href="@Url.Action("ManageUsers", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageUsers" ? "active" : "")">
-                    <i class="fas fa-users me-2"></i>Manage Users
-                </a>
-                
-                <!-- Content Management -->
-                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
-                    <span>Content Management</span>
-                </div>
-                <a href="@Url.Action("IncidentReports", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Incident Reports
-                </a>
-                <a href="@Url.Action("PendingPosts", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "PendingPosts" || ViewContext.RouteData.Values["Action"].ToString() == "PostDetails" ? "active" : "")">
-                    <i class="fas fa-clipboard-list me-2"></i>Pending Posts
-                </a>
-                
-                <!-- Alerts & Notifications -->
-                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
-                    <span>Alerts & Notifications</span>
-                </div>
-                <a href="@Url.Action("ManageAlerts", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageAlerts" ? "active" : "")">
-                    <i class="fas fa-bell me-2"></i>Manage Alerts
-                </a>
-                <a href="@Url.Action("CreateAlert", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "CreateAlert" ? "active" : "")">
-                    <i class="fas fa-plus-circle me-2"></i>Create Alert
-                </a>
-                
-                <!-- System -->
-                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
-                    <span>System</span>
-                </div>
-                <a href="@Url.Action("SystemLogs", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "SystemLogs" ? "active" : "")">
-                    <i class="fas fa-history me-2"></i>System Logs
-                </a>
-                
-                <!-- Educational Resources -->
-                <div class="sidebar-heading px-3 pt-3 pb-1 text-muted small text-uppercase">
-                    <span>Educational Resources</span>
-                </div>
-                <a href="@Url.Action("PendingResources", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "PendingResources" || ViewContext.RouteData.Values["Action"].ToString() == "ReviewResource" ? "active" : "")">
-                    <i class="fas fa-clipboard-check me-2"></i>Pending Resources
-                </a>
-                <a href="@Url.Action("AllResources", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "AllResources" ? "active" : "")">
-                    <i class="fas fa-book-open me-2"></i>All Resources
-                </a>
-            </div>
-            <div class="list-group list-group-flush mt-4">
-                <div class="sidebar-heading">
-                    <span class="sidebar-heading-icon me-2"><i class="fas fa-cogs"></i></span>
-                    <span>Administration</span>
-                </div>
+                <!-- Scrollable Navigation Area -->
+                <div class="sidebar-nav">
+                    <div class="space-y-1">
+                        <!-- Dashboard -->
+                        <a href="@Url.Action("Dashboard", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
 
-                <a href="@Url.Action("ManagePosts", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManagePosts" ? "active" : "")">
-                    <i class="fas fa-comments me-2"></i>Community Posts
-                </a>
-                <a href="@Url.Action("ManageResources", "Admin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Action"].ToString() == "ManageResources" || ViewContext.RouteData.Values["Action"].ToString() == "CreateResource" || ViewContext.RouteData.Values["Action"].ToString() == "EditResource" ? "active" : "")">
-                    <i class="fas fa-book me-2"></i>Educational Resources
-                </a>
-                <a href="@Url.Action("ActiveChats", "SupportAdmin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Controller"].ToString() == "SupportAdmin" && ViewContext.RouteData.Values["Action"].ToString() == "ActiveChats" ? "active" : "")">
-                    <i class="fas fa-headset me-2"></i>Active Support Chats
-                </a>
-                <a href="@Url.Action("ManageFAQs", "SupportAdmin")" class="list-group-item list-group-item-action bg-transparent text-white @(ViewContext.RouteData.Values["Controller"].ToString() == "SupportAdmin" && (ViewContext.RouteData.Values["Action"].ToString() == "ManageFAQs" || ViewContext.RouteData.Values["Action"].ToString() == "CreateFAQ" || ViewContext.RouteData.Values["Action"].ToString() == "EditFAQ") ? "active" : "")">
-                    <i class="fas fa-question-circle me-2"></i>Manage FAQs
-                </a>
+                        <!-- User Management -->
+                        <a href="@Url.Action("PendingLGUApplications", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "PendingLGUApplications" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-user-shield"></i></span>
+                            <span class="nav-text">LGU Applications</span>
+                        </a>
+
+                        <a href="@Url.Action("ManageUsers", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ManageUsers" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-users"></i></span>
+                            <span class="nav-text">Users</span>
+                        </a>
+
+                        <!-- Content Management -->
+                        <a href="@Url.Action("IncidentReports", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "IncidentReports" || ViewContext.RouteData.Values["Action"].ToString() == "ReportDetails" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-exclamation-triangle"></i></span>
+                            <span class="nav-text">Incidents</span>
+                        </a>
+
+                        <a href="@Url.Action("PendingPosts", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "PendingPosts" || ViewContext.RouteData.Values["Action"].ToString() == "PostDetails" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
+                            <span class="nav-text">Posts</span>
+                        </a>
+
+                        <!-- Alerts & Notifications -->
+                        <a href="@Url.Action("ManageAlerts", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ManageAlerts" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-bell"></i></span>
+                            <span class="nav-text">Alerts</span>
+                        </a>
+
+                        <a href="@Url.Action("CreateAlert", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "CreateAlert" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-plus-circle"></i></span>
+                            <span class="nav-text">New Alert</span>
+                        </a>
+
+                        <!-- System -->
+                        <a href="@Url.Action("SystemLogs", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "SystemLogs" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-history"></i></span>
+                            <span class="nav-text">Logs</span>
+                        </a>
+
+                        <!-- Educational Resources -->
+                        <a href="@Url.Action("PendingResources", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "PendingResources" || ViewContext.RouteData.Values["Action"].ToString() == "ReviewResource" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-clipboard-check"></i></span>
+                            <span class="nav-text">Resources</span>
+                        </a>
+
+                        <!-- Administration -->
+                        <a href="@Url.Action("ManagePosts", "Admin")" class="nav-item @(ViewContext.RouteData.Values["Action"].ToString() == "ManagePosts" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-comments"></i></span>
+                            <span class="nav-text">Community</span>
+                        </a>
+
+                        <a href="@Url.Action("ActiveChats", "SupportAdmin")" class="nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "SupportAdmin" && ViewContext.RouteData.Values["Action"].ToString() == "ActiveChats" ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-headset"></i></span>
+                            <span class="nav-text">Support</span>
+                        </a>
+
+                        <a href="@Url.Action("ManageFAQs", "SupportAdmin")" class="nav-item @(ViewContext.RouteData.Values["Controller"].ToString() == "SupportAdmin" && (ViewContext.RouteData.Values["Action"].ToString() == "ManageFAQs" || ViewContext.RouteData.Values["Action"].ToString() == "CreateFAQ" || ViewContext.RouteData.Values["Action"].ToString() == "EditFAQ") ? "active" : "")">
+                            <span class="nav-icon"><i class="fas fa-question-circle"></i></span>
+                            <span class="nav-text">FAQs</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Admin Identity Section -->
+                <div class="sidebar-footer">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <div class="admin-profile">
+                            <a href="/Identity/Account/Manage" class="admin-link">
+                                <div class="admin-avatar">
+                                    @if (!string.IsNullOrEmpty(User.FindFirst("ProfilePhotoUrl")?.Value))
+                                    {
+                                        <img src="@User.FindFirst("ProfilePhotoUrl")?.Value" alt="Profile" class="admin-avatar-img">
+                                    }
+                                    else
+                                    {
+                                        @(User.Identity.Name != null && User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpper() : "A")
+                                    }
+                                </div>
+                                <div class="admin-info">
+                                    <p class="admin-name">@User.Identity.Name</p>
+                                    <p class="admin-role">Administrator</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="admin-actions">
+                            <a href="/Identity/Account/Manage" class="admin-action">
+                                <i class="fas fa-user-cog"></i>
+                                <span>Account</span>
+                            </a>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#logoutModal" class="admin-action">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
         <!-- Page Content -->
         <div id="page-content-wrapper">
-            <nav class="navbar navbar-expand-lg navbar-light bg-light py-3 px-4">
+            <nav class="navbar">
                 <div class="d-flex align-items-center">
-                    <i class="fas fa-align-left text-dark fs-4 me-3" id="menu-toggle"></i>
-                    <h2 class="m-0">@ViewData["Title"]</h2>
-                </div>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item dropdown">
-                            <partial name="_LoginPartial" />
-                        </li>
-                    </ul>
+                    <button class="menu-toggle d-md-none" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="page-title-wrapper">
+                        <h2 class="page-title">
+                            <span class="title-text">@ViewData["Title"]</span>
+                            <span class="title-line"></span>
+                        </h2>
+                    </div>
                 </div>
             </nav>
 
@@ -160,12 +201,6 @@
         </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - THYNK - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <!-- DataTables JS -->
@@ -176,10 +211,34 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
-        // Toggle sidebar
-        $("#menu-toggle").click(function(e) {
-            e.preventDefault();
-            $("#wrapper").toggleClass("toggled");
+        // Update the sidebar toggle script
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.createElement('div');
+            overlay.className = 'sidebar-overlay';
+            document.body.appendChild(overlay);
+            
+            function toggleSidebar() {
+                sidebar.classList.toggle('expanded');
+                overlay.classList.toggle('active');
+                document.body.style.overflow = sidebar.classList.contains('expanded') ? 'hidden' : '';
+            }
+            
+            menuToggle.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', toggleSidebar);
+            
+            // Handle window resize
+            function handleResize() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('expanded');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+            
+            window.addEventListener('resize', handleResize);
+            handleResize(); // Initial check
         });
 
         // Check for pending reports on page load
@@ -341,6 +400,39 @@
                 });
             });
         });
+
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltipElements = document.querySelectorAll('[data-tooltip]');
+            
+            tooltipElements.forEach(element => {
+                element.addEventListener('mouseenter', function(e) {
+                    const tooltip = this.getAttribute('data-tooltip');
+                    const rect = this.getBoundingClientRect();
+                    
+                    const tooltipEl = document.createElement('div');
+                    tooltipEl.className = 'tooltip';
+                    tooltipEl.textContent = tooltip;
+                    tooltipEl.style.position = 'fixed';
+                    tooltipEl.style.left = rect.right + 10 + 'px';
+                    tooltipEl.style.top = rect.top + (rect.height / 2) + 'px';
+                    tooltipEl.style.transform = 'translateY(-50%)';
+                    tooltipEl.style.background = 'rgba(0, 0, 0, 0.8)';
+                    tooltipEl.style.color = 'white';
+                    tooltipEl.style.padding = '0.5rem 0.75rem';
+                    tooltipEl.style.borderRadius = '4px';
+                    tooltipEl.style.fontSize = '0.75rem';
+                    tooltipEl.style.zIndex = '1000';
+                    tooltipEl.style.pointerEvents = 'none';
+                    
+                    document.body.appendChild(tooltipEl);
+                    
+                    this.addEventListener('mouseleave', function() {
+                        tooltipEl.remove();
+                    }, { once: true });
+                });
+            });
+        });
     </script>
     <button id="enableSound" class="btn btn-sm btn-primary" style="position: fixed; top: 20px; right: 20px; z-index: 9999; display: block;">Enable Sound</button>
     <audio id="alarmSound" src="~/sounds/alarm.mp3" preload="auto"></audio>
@@ -372,88 +464,522 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <style>
-        /* Toast Notification Styles */
-        .toast-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            min-width: 300px;
-            max-width: 400px;
-            background-color: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 0.5rem;
-            z-index: 9999;
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(-20px);
-            animation: toast-enter 0.3s forwards;
+        /* CSS Variables */
+        :root {
+            --primary: #545454;
+            --primary-dark: #3c3c3c;
+            --primary-light: #6e6e6e;
+            --primary-rgb: 84, 84, 84;
+            
+            --secondary: #E5DFD2;
+            --secondary-dark: #d6cfbf;
+            --secondary-light: #f4f0e5;
+            --secondary-rgb: 229, 223, 210;
+            
+            --accent: #F5F5F5;
+            --accent-rgb: 245, 245, 245;
+            
+            --sidebar-bg: #2C3E50;
+            --sidebar-light: #34495E;
+            --sidebar-accent: #3498DB;
+            --sidebar-text: #ECF0F1;
+            --sidebar-hover: #1ABC9C;
+            --sidebar-hover-light: #2CD3AF;
+            
+            --success: #6a8d73;
+            --warning: #e0a458;
+            --danger: #b56357;
+            --danger-rgb: 181, 99, 87;
+            
+            --dark: #545454;
+            --dark-alt: #696969;
+            --dark-light: #7e7e7e;
+            --light: #F5F5F5;
+            --muted: #a0a0a0;
+            
+            --body-bg: #E5DFD2;
+            --body-color: #545454;
         }
-
-        .toast-notification.hide {
-            animation: toast-exit 0.3s forwards;
+        
+        body {
+            @@apply text-primary font-sans;
         }
-
-        .toast-notification .toast-header {
+        
+        /* Base Layout */
+        #wrapper {
             display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            background-color: rgba(0, 0, 0, 0.03);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
         }
-
-        .toast-notification .toast-body {
-            padding: 0.75rem 1rem;
+        
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 240px;
+            background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-light) 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
-
-        .toast-notification.success .toast-header i {
-            color: var(--success);
+        
+        .sidebar.collapsed {
+            transform: translateX(-240px);
         }
-
-        .toast-notification.warning .toast-header i {
-            color: var(--warning);
+        
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
         }
-
-        .toast-notification.info .toast-header i {
-            color: var(--primary);
+        
+        /* Header Section */
+        .sidebar-header {
+            padding: 1.25rem 0.75rem;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 100%);
         }
-
-        @@keyframes toast-enter {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @@keyframes toast-exit {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            to {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-        }
-
-        /* Sound Toggle Button Styles */
-        #toggleSound {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+        
+        .brand-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: 1px;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 2px;
+        }
+        
+        .brand-highlight {
+            background: linear-gradient(45deg, #fff, rgba(255,255,255,0.8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .brand-dot {
+            color: var(--sidebar-hover);
+            font-size: 1.6rem;
+            line-height: 1;
+            margin-top: -4px;
+        }
+        
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0.35rem 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            letter-spacing: 0.5px;
+        }
+        
+        .subtitle-line {
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .subtitle-dot {
+            color: var(--sidebar-hover);
+            font-size: 0.6rem;
+            margin-top: -2px;
+        }
+        
+        .divider {
+            margin: 1rem 0;
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 1px;
+            background: var(--sidebar-hover);
+        }
+        
+        /* Navigation Area */
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0.5rem;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+        
+        .sidebar-nav:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Navigation Items */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            color: var(--sidebar-text);
+            border-radius: 8px;
+            margin-bottom: 1px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--sidebar-hover-light);
+            transform: translateX(3px);
+            color: white !important;
+        }
+        
+        .nav-item.active {
+            background-color: var(--sidebar-hover);
+            position: relative;
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: white;
+            border-radius: 0 2px 2px 0;
+        }
+        
+        .nav-icon {
+            width: 18px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .nav-text {
+            font-size: 0.8rem;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Footer Section */
+        .sidebar-footer {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-profile {
+            margin-bottom: 0.75rem;
+        }
+        
+        .admin-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .admin-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .admin-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--sidebar-hover);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .admin-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .admin-info {
+            margin-left: 0.75rem;
+            min-width: 0;
+        }
+        
+        .admin-name {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: white;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .admin-role {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .admin-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .admin-action:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+        
+        .admin-action i {
+            font-size: 0.9rem;
+        }
+        
+        /* Page Content */
+        #page-content-wrapper {
+            flex: 1;
+            margin-left: 240px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+            width: calc(100% - 240px);
+        }
+        
+        #page-content-wrapper.expanded {
+            margin-left: 0;
+            width: 100%;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+            padding: 0.5rem 0.75rem;
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Menu Toggle Button */
+        .menu-toggle {
+            display: none;
+            background: var(--sidebar-bg);
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            width: 38px;
+            height: 38px;
             padding: 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-right: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-toggle:hover {
+            background: var(--sidebar-light);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        }
+        
+        .menu-toggle:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .page-title-wrapper {
+            position: relative;
+            padding-left: 0.5rem;
         }
 
-        #toggleSound:hover {
-            transform: scale(1.1);
+        .page-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .title-text {
+            position: relative;
+            padding-right: 0.5rem;
+        }
+
+        .title-text::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 3px;
+            background: var(--sidebar-hover);
+            border-radius: 50%;
+        }
+
+        .title-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--sidebar-hover) 0%, rgba(26, 188, 156, 0.1) 100%);
+            max-width: 100px;
+        }
+        
+        /* Responsive Styles */
+        @@media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .navbar {
+                padding: 0.5rem 0.75rem;
+            }
+
+            .sidebar {
+                transform: translateX(-240px);
+            }
+            
+            .sidebar.expanded {
+                transform: translateX(0);
+            }
+            
+            #page-content-wrapper {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .page-title {
+                font-size: 1rem;
+            }
+
+            .title-line {
+                max-width: 60px;
+            }
+        }
+        
+        @@media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            #page-content-wrapper {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+        }
+        
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Update container padding */
+        .container-fluid {
+            padding-top: 0.75rem;
         }
     </style>
+
+    <!-- Logout Modal -->
+    <div class="modal fade logout-modal" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">
+                        <i class="fas fa-sign-out-alt me-2 text-danger"></i>
+                        Confirm Logout
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Are you sure you want to logout from your admin account?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>
+                        Cancel
+                    </button>
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html> 

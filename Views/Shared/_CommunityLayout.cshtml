@@ -1015,11 +1015,6 @@
                         <span class="nav-text">Report Incident</span>
                     </a>
                     
-                    <a href="@Url.Action("Alerts", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "Alerts" ? "active" : "")">
-                        <span class="nav-icon"><i class="fas fa-bell"></i></span>
-                        <span class="nav-text">Alerts</span>
-                    </a>
-                    
                     <a href="@Url.Action("IncidentMap", "Community")" class="nav-item @(ViewContext.RouteData.Values.ContainsKey("Action") && ViewContext.RouteData.Values["Action"].ToString() == "IncidentMap" ? "active" : "")">
                         <span class="nav-icon"><i class="fas fa-map-marked-alt"></i></span>
                         <span class="nav-text">Incident Map</span>

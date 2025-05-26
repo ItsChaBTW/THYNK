@@ -414,8 +414,19 @@ namespace THYNK.Controllers
         }
 
         // Create new alert
-        public IActionResult CreateAlert()
+        public async Task<IActionResult> CreateAlert()
         {
+            // Get a list of unique cities from community users
+            var cities = await _context.Users
+                .Where(u => u.UserRole == UserRoleType.Community && !string.IsNullOrEmpty(u.CityMunicipalityName))
+                .Select(u => u.CityMunicipalityName)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToListAsync();
+
+            // Pass the cities to the view
+            ViewBag.Cities = cities;
+            
             return View();
         }
 
@@ -494,7 +505,7 @@ namespace THYNK.Controllers
                 }
                 
                 // Set required properties directly
-                alert.DateIssued = DateTime.Now;
+                alert.DateIssued = DateTime.UtcNow;
                 alert.IsActive = true;
                 alert.IssuedByUserId = userId;
                 
@@ -569,7 +580,6 @@ namespace THYNK.Controllers
                                 alertWithUser.BackgroundStyle,
                                 alertWithUser.IconStyle,
                                 alertWithUser.ColorScheme,
-                                issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
                                 User = new 
                                 {
                                     Id = alertWithUser.User?.Id,
@@ -636,8 +646,7 @@ namespace THYNK.Controllers
         // Manage alerts
         public async Task<IActionResult> ManageAlerts(bool? isActive = null)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            IQueryable<Alert> alertsQuery = _context.Alerts.Where(a => a.IssuedByUserId == userId);
+            IQueryable<Alert> alertsQuery = _context.Alerts;
             
             // Filter for active/inactive alerts if requested
             if (isActive.HasValue)
@@ -705,7 +714,6 @@ namespace THYNK.Controllers
                                 alertWithUser.BackgroundStyle,
                                 alertWithUser.IconStyle,
                                 alertWithUser.ColorScheme,
-                                issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
                                 User = new 
                                 {
                                     Id = alertWithUser.User?.Id,
@@ -812,7 +820,6 @@ namespace THYNK.Controllers
                         alertWithUser.BackgroundStyle,
                         alertWithUser.IconStyle,
                         alertWithUser.ColorScheme,
-                        issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
                         User = new 
                         {
                             Id = alertWithUser.User?.Id,
