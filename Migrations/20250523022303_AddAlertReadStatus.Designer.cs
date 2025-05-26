@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using THYNK.Data;
 
@@ -11,9 +12,11 @@ using THYNK.Data;
 namespace THYNK.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250523022303_AddAlertReadStatus")]
+    partial class AddAlertReadStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -601,39 +604,6 @@ namespace THYNK.Migrations
                     b.ToTable("DisasterReports");
                 });
 
-            modelBuilder.Entity("THYNK.Models.DisasterReportRating", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Comment")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("DisasterReportId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DisasterReportId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DisasterReportRatings");
-                });
-
             modelBuilder.Entity("THYNK.Models.EducationalResource", b =>
                 {
                     b.Property<int>("Id")
@@ -1140,25 +1110,6 @@ namespace THYNK.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("THYNK.Models.DisasterReportRating", b =>
-                {
-                    b.HasOne("THYNK.Models.DisasterReport", "Report")
-                        .WithMany("Ratings")
-                        .HasForeignKey("DisasterReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("THYNK.Models.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Report");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("THYNK.Models.EducationalResource", b =>
                 {
                     b.HasOne("THYNK.Models.LGUUser", "CreatedBy")
@@ -1229,11 +1180,6 @@ namespace THYNK.Migrations
             modelBuilder.Entity("THYNK.Models.ChatSession", b =>
                 {
                     b.Navigation("Messages");
-                });
-
-            modelBuilder.Entity("THYNK.Models.DisasterReport", b =>
-                {
-                    b.Navigation("Ratings");
                 });
 #pragma warning restore 612, 618
         }

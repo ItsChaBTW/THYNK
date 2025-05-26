@@ -718,6 +718,69 @@
             display: flex !important;
             align-items: center;
             justify-content: center;
+            min-width: 18px;
+            height: 18px;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        #notificationBadge.animate__animated {
+            animation-duration: 0.5s;
+        }
+
+        @@keyframes bounceIn {
+            0% {
+                transform: translate(25%, -25%) scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(25%, -25%) scale(1.05);
+            }
+            70% {
+                transform: translate(25%, -25%) scale(0.9);
+            }
+            100% {
+                transform: translate(25%, -25%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @@keyframes pulse {
+            0% {
+                transform: translate(25%, -25%) scale(1);
+            }
+            50% {
+                transform: translate(25%, -25%) scale(1.1);
+            }
+            100% {
+                transform: translate(25%, -25%) scale(1);
+            }
+        }
+
+        @@keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .animate__bounceIn {
+            animation-name: bounceIn;
+        }
+
+        .animate__pulse {
+            animation-name: pulse;
+        }
+
+        .animate__fadeOut {
+            animation-name: fadeOut;
         }
 
         .dropdown-header {
@@ -811,6 +874,27 @@
                 transform: translateY(-20px);
             }
         }
+
+        /* Alert highlight animation */
+        @@keyframes highlightAlert {
+            0% {
+                background-color: rgba(220, 53, 69, 0.1);
+                transform: scale(1);
+            }
+            50% {
+                background-color: rgba(220, 53, 69, 0.2);
+                transform: scale(1.01);
+            }
+            100% {
+                background-color: transparent;
+                transform: scale(1);
+            }
+        }
+
+        .highlight-alert {
+            animation: highlightAlert 2s ease-in-out;
+            border: 2px solid #dc3545;
+        }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -883,9 +967,6 @@
                             </div>
                         </div>
                     }
-                    <a href="@Url.Action("Alerts", "Community")" class="header-alert-btn relative p-2 text-primary">
-                        <i class="fas fa-bell"></i>
-                    </a>
                     
                     <!-- Sound permissions button -->
                     <button id="enableSoundPermission" class="header-alert-btn relative p-2 text-primary">
@@ -1093,30 +1174,72 @@
     <script>
         // Initialize sound on page load or first interaction based on saved preference
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded - Initializing sound...');
+            
             // Check if sound was previously enabled
             if (localStorage.getItem('soundEnabled') === 'true') {
                 console.log('Sound was previously enabled, attempting to initialize automatically');
                 initSound(true);
             } else {
+                console.log('Sound not previously enabled, waiting for user interaction');
                 // Wait for first interaction to initialize sound
-                document.addEventListener('click', function() { initSound(false); }, { once: true });
-                document.addEventListener('keydown', function() { initSound(false); }, { once: true });
-                document.addEventListener('touchstart', function() { initSound(false); }, { once: true });
+                document.addEventListener('click', function() { 
+                    console.log('User clicked - initializing sound');
+                    initSound(false); 
+                }, { once: true });
+                document.addEventListener('keydown', function() { 
+                    console.log('User pressed key - initializing sound');
+                    initSound(false); 
+                }, { once: true });
+                document.addEventListener('touchstart', function() { 
+                    console.log('User touched screen - initializing sound');
+                    initSound(false); 
+                }, { once: true });
+            }
+
+            // Add click handler for sound toggle button
+            const soundBtn = document.getElementById('enableSoundPermission');
+            if (soundBtn) {
+                soundBtn.addEventListener('click', function() {
+                    console.log('Sound toggle button clicked');
+                    const isEnabled = localStorage.getItem('soundEnabled') === 'true';
+                    if (!isEnabled) {
+                        console.log('Enabling sound...');
+                        initSound(false);
+                    } else {
+                        console.log('Disabling sound...');
+                        localStorage.setItem('soundEnabled', 'false');
+                        updateSoundButtonStatus(false);
+                    }
+                });
             }
         });
 
         function initSound(fromPreference = false) {
-            const sound = document.getElementById('alertSound');
-            if (sound) {
+            console.log('Initializing sound...');
+            const alertSound = document.getElementById('alertSound');
+            const notificationSound = document.getElementById('notificationSound');
+            
+            if (alertSound && notificationSound) {
+                console.log('Audio elements found');
                 // Unmute the audio
-                sound.muted = false;
+                alertSound.muted = false;
+                notificationSound.muted = false;
                 
                 // Try to play and stop immediately to initialize audio
-                sound.play()
-                    .then(() => {
-                        sound.pause();
-                        sound.currentTime = 0;
-                        console.log('Audio initialized successfully');
+                Promise.all([
+                    alertSound.play().then(() => {
+                        console.log('Alert sound initialized successfully');
+                        alertSound.pause();
+                        alertSound.currentTime = 0;
+                    }),
+                    notificationSound.play().then(() => {
+                        console.log('Notification sound initialized successfully');
+                        notificationSound.pause();
+                        notificationSound.currentTime = 0;
+                    })
+                ]).then(() => {
+                    console.log('All audio initialized successfully');
                         
                         // If called from a preference, save it permanently
                         if (!fromPreference) {
@@ -1125,8 +1248,7 @@
                         
                         // Update sound button appearance to indicate sound is enabled
                         updateSoundButtonStatus(true);
-                    })
-                    .catch(error => {
+                }).catch(error => {
                         console.warn('Audio could not be initialized automatically:', error);
                         localStorage.removeItem('soundEnabled'); // Clear preference if failed
                         updateSoundButtonStatus(false);
@@ -1136,11 +1258,14 @@
                 if (Notification && Notification.permission !== "granted") {
                     Notification.requestPermission();
                 }
+            } else {
+                console.error('Audio elements not found');
             }
         }
         
         // Update sound button appearance based on status
         function updateSoundButtonStatus(enabled) {
+            console.log('Updating sound button status:', enabled);
             const soundBtn = document.getElementById('enableSoundPermission');
             if (soundBtn) {
                 if (enabled) {
@@ -1152,6 +1277,32 @@
                     soundBtn.classList.remove('sound-enabled');
                     soundBtn.title = "Click to enable sound notifications";
                 }
+            }
+        }
+
+        // Function to play notification sound
+        function playNotificationSound(type = 'notification') {
+            console.log('Attempting to play notification sound:', type);
+            if (localStorage.getItem('soundEnabled') === 'true') {
+                const sound = document.getElementById(type === 'alert' ? 'alertSound' : 'notificationSound');
+                if (sound) {
+                    console.log('Found sound element, attempting to play');
+                    sound.currentTime = 0;
+                    sound.play().then(() => {
+                        console.log('Sound played successfully');
+                    }).catch(error => {
+                        console.warn('Could not play sound:', error);
+                        // If sound fails to play, try to reinitialize
+                        if (error.name === 'NotAllowedError') {
+                            console.log('Attempting to reinitialize sound...');
+                            initSound(false);
+                        }
+                    });
+                } else {
+                    console.error('Sound element not found');
+                }
+            } else {
+                console.log('Sound notifications are disabled');
             }
         }
 
@@ -1310,11 +1461,160 @@
                 // Clear loading message
                 notificationList.innerHTML = '';
                 
+                // Update badge count with unread count from server
+                if (typeof data.unreadCount === 'number') {
+                    console.log('Updating badge count from server:', data.unreadCount);
+                    // Force update the badge count with the server's count
+                    updateNotificationBadge(data.unreadCount);
+                } else {
+                    // If server doesn't provide unread count, count unread notifications manually
+                    const unreadCount = data.notifications?.filter(n => !n.isRead).length || 0;
+                    console.log('Manually counted unread notifications:', unreadCount);
+                    updateNotificationBadge(unreadCount);
+                }
+                
                 if (data.notifications && data.notifications.length > 0) {
-                    data.notifications.forEach(notification => {
+                    // Track post IDs we've seen to prevent duplicates
+                    const processedPostIds = new Set();
+                    
+                    // Debug: Log original notifications
+                    console.log("Original notifications:", data.notifications.map(n => ({
+                        id: n.id,
+                        title: n.title,
+                        date: n.createdAt,
+                        entityType: n.relatedEntityType,
+                        entityId: n.relatedEntityId
+                    })));
+                    
+                    // Sort notifications by date (newest first) with proper date handling
+                    const sortedNotifications = [...data.notifications].sort((a, b) => {
+                        try {
+                            const dateA = new Date(a.createdAt);
+                            const dateB = new Date(b.createdAt);
+                            
+                            // Check if dates are valid
+                            if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+                                console.warn("Invalid date found during sort:", {
+                                    a: a.createdAt, 
+                                    b: b.createdAt,
+                                    aValid: !isNaN(dateA.getTime()),
+                                    bValid: !isNaN(dateB.getTime())
+                                });
+                                
+                                // If one date is invalid, prioritize the valid one
+                                if (isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) return 1;
+                                if (!isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return -1;
+                                
+                                // If both are invalid, sort by ID
+                                return b.id - a.id;
+                            }
+                            
+                            return dateB - dateA;
+                        } catch (e) {
+                            console.error("Error during date sort:", e);
+                            return 0;
+                        }
+                    });
+                    
+                    // Debug: Log sorted notifications
+                    console.log("Sorted notifications:", sortedNotifications.map(n => ({
+                        id: n.id,
+                        title: n.title,
+                        date: n.createdAt,
+                        parsedDate: new Date(n.createdAt).toISOString(),
+                        entityType: n.relatedEntityType,
+                        entityId: n.relatedEntityId
+                    })));
+                    
+                    // Group notifications by post ID to find the latest for each post
+                    const postNotificationMap = new Map();
+                    
+                    // First pass: Group post notifications by post ID and find the latest one
+                    sortedNotifications.forEach(notification => {
+                        if (notification.relatedEntityType === "CommunityPost" && 
+                            notification.title && 
+                            (notification.title.includes("Post Approved") || notification.title.includes("Post Rejected"))) {
+                            
+                            const postId = notification.relatedEntityId?.toString();
+                            if (!postId) return;
+                            
+                            // Parse date safely
+                            let notificationDate;
+                            try {
+                                notificationDate = new Date(notification.createdAt);
+                                if (isNaN(notificationDate.getTime())) {
+                                    // If date is invalid, use current time as fallback
+                                    console.warn("Invalid date found:", notification.createdAt);
+                                    notificationDate = new Date();
+                                }
+                            } catch (e) {
+                                console.warn("Error parsing date:", e);
+                                notificationDate = new Date();
+                            }
+                            
+                            // If we haven't seen this post ID yet, or if this notification is newer
+                            if (!postNotificationMap.has(postId) || 
+                                notificationDate > postNotificationMap.get(postId).date) {
+                                
+                                postNotificationMap.set(postId, {
+                                    notification: notification,
+                                    date: notificationDate
+                                });
+                                
+                                console.log(`Found notification for post ${postId}, date: ${notificationDate.toISOString()}`);
+                            }
+                        }
+                    });
+                    
+                    console.log(`Found ${postNotificationMap.size} unique post notifications`);
+                    
+                    // Filter out duplicate post notifications
+                    const filteredNotifications = sortedNotifications.filter(notification => {
+                        // If this is a post notification
+                        if (notification.relatedEntityType === "CommunityPost" && 
+                            notification.title && 
+                            (notification.title.includes("Post Approved") || notification.title.includes("Post Rejected"))) {
+                            
+                            const postId = notification.relatedEntityId?.toString();
+                            if (!postId) return true;
+                            
+                            // If this post ID is in our map
+                            if (postNotificationMap.has(postId)) {
+                                // Only keep this notification if it's the latest one for this post
+                                const isLatest = postNotificationMap.get(postId).notification.id === notification.id;
+                                
+                                if (!isLatest) {
+                                    console.log(`Filtering out older notification for post ${postId}: ${notification.id}`);
+                                    return false;
+                                } else {
+                                    console.log(`Keeping latest notification for post ${postId}: ${notification.id}`);
+                                    return true;
+                                }
+                            }
+                        }
+                        
+                        // Keep all other notifications
+                        return true;
+                    });
+                    
+                    filteredNotifications.forEach(notification => {
                         const notificationItem = document.createElement('div');
                         notificationItem.className = `dropdown-item notification-item p-3 border-bottom ${notification.isRead ? '' : 'unread'}`;
                         notificationItem.dataset.id = notification.id;
+                        
+                        // Add data attributes for better tracking
+                        if (notification.relatedEntityType) {
+                            notificationItem.dataset.entityType = notification.relatedEntityType;
+                            
+                            if (notification.relatedEntityId) {
+                                notificationItem.dataset.entityId = notification.relatedEntityId;
+                                
+                                // For post notifications, add a special data attribute
+                                if (notification.relatedEntityType === "CommunityPost") {
+                                    notificationItem.dataset.postId = notification.relatedEntityId;
+                                }
+                            }
+                        }
                         
                         let iconType = 'bell text-primary';
                         if (notification.notificationType === 'success') {
@@ -1323,6 +1623,10 @@
                             iconType = 'exclamation-circle text-warning';
                         } else if (notification.notificationType === 'info') {
                             iconType = 'info-circle text-info';
+                        } else if (notification.notificationType === 'danger') {
+                            iconType = 'exclamation-triangle text-danger';
+                        } else if (notification.notificationType === 'critical') {
+                            iconType = 'radiation text-dark';
                         }
                         
                         notificationItem.innerHTML = `
@@ -1336,14 +1640,41 @@
                                         <small class="text-muted">${new Date(notification.createdAt).toLocaleString()}</small>
                                     </div>
                                     <p class="mb-1 small">${notification.message}</p>
-                                    ${notification.relatedEntityId ? `
-                                        <a href="${notification.relatedEntityType === 'Report' ? 
-                                            '/Community/ReportDetails/' + notification.relatedEntityId : 
-                                            '/Community/CommunityFeed'}" 
-                                            class="btn btn-sm btn-outline-primary mt-1">
-                                            <i class="fas fa-${notification.relatedEntityType === 'Report' ? 'eye' : 'comments'} me-1"></i>
-                                            View ${notification.relatedEntityType === 'Report' ? 'Report' : 'Post'}
-                                        </a>
+                                    ${notification.relatedEntityType === 'Alert' ? `
+                                        <div class="mt-1">
+                                            ${notification.affectedArea ? `<small class="text-muted d-block">Affected Area: ${notification.affectedArea}</small>` : ''}
+                                            ${notification.issuedBy ? `<small class="text-muted d-block">Issued by: ${notification.issuedBy}</small>` : ''}
+                                            <div class="d-flex gap-2">
+                                                <button onclick="scrollToAlert(${notification.relatedEntityId})" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i>View Alert
+                                                </button>
+                                                <button onclick="markAlertAsRead(${notification.relatedEntityId})" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-check me-1"></i>Mark as Read
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ` : notification.relatedEntityType === 'Report' ? `
+                                        <div class="mt-1">
+                                            <div class="d-flex gap-2">
+                                                <a href="/Community/ReportDetails/${notification.relatedEntityId}" class="btn btn-sm btn-outline-primary" onclick="markAsRead(${notification.id})">
+                                                    <i class="fas fa-eye me-1"></i>View Report
+                                                </a>
+                                                <button onclick="markAsRead(${notification.id})" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-check me-1"></i>Mark as Read
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ` : notification.relatedEntityId ? `
+                                        <div class="mt-1">
+                                            <div class="d-flex gap-2">
+                                                <a href="/Community/CommunityFeed?postId=${notification.relatedEntityId}" class="btn btn-sm btn-outline-primary" onclick="markAsRead(${notification.id})">
+                                                    <i class="fas fa-eye me-1"></i>View Post
+                                                </a>
+                                                <button onclick="markAsRead(${notification.id})" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-check me-1"></i>Mark as Read
+                                                </button>
+                                            </div>
+                                        </div>
                                     ` : ''}
                                 </div>
                             </div>
@@ -1387,78 +1718,225 @@
         // Initialize SignalR connection
         async function initializeSignalR() {
             try {
-                const conn = new signalR.HubConnectionBuilder()
+                // Initialize both community and alert hubs
+                const communityConn = new signalR.HubConnectionBuilder()
                     .withUrl("/communityHub")
                     .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
-                    .configureLogging(signalR.LogLevel.Information)
+                    .configureLogging(signalR.LogLevel.Debug)
                     .build();
 
-                // Set up connection event handlers
-                conn.onreconnecting(error => {
-                    console.log('Reconnecting to SignalR...', error);
-                    retryCount++;
+                const alertConn = new signalR.HubConnectionBuilder()
+                    .withUrl("/alertHub")
+                    .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
+                    .configureLogging(signalR.LogLevel.Debug)
+                    .build();
+
+                // Set up community hub event handlers
+                communityConn.onreconnecting(error => {
+                    console.log('Reconnecting to CommunityHub...', error);
+                    showToastNotification(
+                        "Connection Lost",
+                        "Attempting to reconnect to community updates...",
+                        "warning"
+                    );
                 });
 
-                conn.onreconnected(connectionId => {
-                    console.log('Reconnected to SignalR');
-                    retryCount = 0;
-                    // Rejoin user group on reconnection
+                communityConn.onreconnected(connectionId => {
+                    console.log('Reconnected to CommunityHub:', connectionId);
+                    showToastNotification(
+                        "Connection Restored",
+                        "Community updates are now active",
+                        "success"
+                    );
                     const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
                     if (userId) {
-                        conn.invoke("JoinUserGroup", userId)
+                        communityConn.invoke("JoinUserGroup", userId)
                             .then(() => {
-                                console.log('Rejoined user group after reconnection');
+                                console.log('Rejoined community user group:', userId);
                                 debouncedLoadNotifications();
                             })
-                            .catch(err => console.error('Error rejoining user group:', err));
+                            .catch(err => {
+                                console.error('Error rejoining community group:', err);
+                                showToastNotification(
+                                    "Connection Error",
+                                    "Failed to restore community updates",
+                                    "warning"
+                                );
+                            });
                     }
                 });
 
-                conn.onclose(error => {
-                    console.log('SignalR connection closed', error);
-                    isInitialized = false;
-                    if (retryCount < maxRetries) {
-                        setTimeout(() => initializeSignalR(), 5000);
+                communityConn.onclose(error => {
+                    console.log('CommunityHub connection closed:', error);
+                    showToastNotification(
+                        "Connection Lost",
+                        "Lost connection to community updates",
+                        "warning"
+                    );
+                });
+
+                // Handle post moderation updates
+                communityConn.on("PostModerationUpdate", function(data) {
+                    console.log("Post moderation update received:", data);
+                    
+                    // Generate a unique key for this post update
+                    const postUpdateKey = `post-update-${data.postId}`;
+                    
+                    // Initialize tracking variables if not exists
+                    if (!window.processedPostUpdates) {
+                        window.processedPostUpdates = new Set();
                     }
+                    
+                    if (!window.processedPostNotifications) {
+                        window.processedPostNotifications = new Map();
+                    }
+                    
+                    // Check if we've already processed this exact post update
+                    if (window.processedPostUpdates.has(postUpdateKey)) {
+                        console.log("Skipping duplicate post update:", postUpdateKey);
+                        return;
+                    }
+                    
+                    // If there's an existing notification for this post in the dropdown, remove it
+                    const existingNotifications = document.querySelectorAll(`.notification-item[data-entity-type="CommunityPost"][data-entity-id="${data.postId}"]`);
+                    if (existingNotifications.length > 0) {
+                        console.log(`Found and removing ${existingNotifications.length} existing notifications for post ID ${data.postId}`);
+                        existingNotifications.forEach(item => item.remove());
+                    }
+                    
+                    // Mark this post update as processed
+                    window.processedPostUpdates.add(postUpdateKey);
+                    
+                    // Format the date correctly
+                    let timestamp;
+                    try {
+                        timestamp = new Date(data.timestamp);
+                        if (isNaN(timestamp.getTime())) {
+                            console.warn("Invalid timestamp received:", data.timestamp);
+                            timestamp = new Date(); // Use current time as fallback
+                        }
+                    } catch (e) {
+                        console.error("Error parsing timestamp:", e);
+                        timestamp = new Date(); // Use current time as fallback
+                    }
+                    
+                    // Store the formatted timestamp to ensure consistent date display
+                    const formattedTimestamp = timestamp.toISOString();
+                    
+                    // Add this post ID to our map of processed posts 
+                    window.processedPostNotifications.set(data.postId.toString(), {
+                        timestamp: timestamp,
+                        formattedTimestamp: formattedTimestamp,
+                        processed: true
+                    });
+                    
+                    // Create notification object with consistent date format
+                    const notification = {
+                        id: `post-${data.postId}-${Date.now()}`, // Create a unique ID based on post ID and current time
+                        title: data.isApproved ? "Post Approved" : "Post Rejected",
+                        message: data.isApproved ? 
+                            "Your community post has been approved and is now visible in the community feed." :
+                            (data.reason ? `Your post was rejected. Reason: ${data.reason}` : "Your post was rejected."),
+                        notificationType: data.isApproved ? "success" : "warning",
+                        createdAt: formattedTimestamp, // Use ISO string format for consistent date handling
+                        relatedEntityType: "CommunityPost",
+                        relatedEntityId: data.postId
+                    };
+                    
+                    console.log("Created notification with date:", formattedTimestamp);
+                    
+                    // Handle the notification
+                    handleNewNotification(notification);
+                    
+                    // Force a reload of the notifications from server (after a small delay)
+                    setTimeout(() => {
+                        console.log("Forcing notification reload after post update");
+                        loadNotifications();
+                    }, 2000);
                 });
 
-                // Set up notification handlers with correct case
-                conn.on("JoinedGroup", function (userId) {
-                    console.log('Joined group:', userId);
-                    debouncedLoadNotifications();
+                // Handle general notifications
+                communityConn.on("NotificationReceived", function(notification) {
+                    console.log("New notification received:", notification);
+                    
+                    // Skip if this is an alert notification (it will be handled by ReceiveAlert)
+                    if (notification.relatedEntityType === "Alert") {
+                        console.log("Skipping alert notification in NotificationReceived as it will be handled by ReceiveAlert");
+                        return;
+                    }
+                    
+                    // Create a unique identifier for this notification that includes both the ID and entity info
+                    let notificationKey = notification.id;
+                    
+                    // For post notifications, create a key that identifies the specific post update
+                    if (notification.relatedEntityType === "CommunityPost") {
+                        const postUpdateKey = `post-update-${notification.relatedEntityId}`;
+                        
+                        // Check if this post update was already handled by PostModerationUpdate
+                        if (window.processedPostUpdates && window.processedPostUpdates.has(postUpdateKey)) {
+                            console.log("Skipping duplicate post notification already handled by PostModerationUpdate");
+                            return;
+                        }
+                        
+                        // Add a composite key for post notifications
+                        notificationKey = `notification-${notification.id}-post-${notification.relatedEntityId}`;
+                    } else if (notification.relatedEntityType === "Report") {
+                        // Create a key for report notifications
+                        notificationKey = `notification-${notification.id}-report-${notification.relatedEntityId}`;
+                    }
+                    
+                    // Store the notification keys in a Set to track what we've shown
+                    if (!window.shownNotifications) {
+                        window.shownNotifications = new Set();
+                    }
+                    
+                    // Skip if we've already shown this notification
+                    if (window.shownNotifications.has(notificationKey)) {
+                        console.log("Skipping duplicate notification:", notificationKey);
+                        return;
+                    }
+                    
+                    // Add the notification key to our tracking Set
+                    window.shownNotifications.add(notificationKey);
+                    
+                    // Increment notification badge immediately
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        const currentCount = parseInt(badge.textContent || '0');
+                        updateNotificationBadge(currentCount + 1);
+                    }
+                    
+                    handleNewNotification(notification);
+                    showToastNotification(notification.title, notification.message, notification.notificationType);
                 });
 
-                conn.on("NotificationReceived", function (notification) {
-                    console.log('New notification received:', notification);
-                    debouncedLoadNotifications();
-                });
-
-                conn.on("ForceReloadNotifications", function () {
-                    console.log('Force reloading notifications');
-                    loadNotifications(); // Use non-debounced version for immediate reload
-                });
-
-                conn.on("ReportStatusUpdated", function (reportId, status, title) {
+                // Handle incident report status updates
+                communityConn.on("ReportStatusUpdated", function(reportId, status, title) {
                     console.log('Report status updated:', { reportId, status, title });
                     
                     // Show toast notification
                     let toastType = 'info';
-                    let statusText = status.toLowerCase();
+                    let message = '';
                     
                     if (status === 'Resolved') {
                         toastType = 'success';
-                        statusText = 'resolved';
+                        message = `Your report '${title}' has been resolved by CDRRMC.`;
                     } else if (status === 'InProgress') {
                         toastType = 'warning';
-                        statusText = 'in progress';
+                        message = `Your report '${title}' is now being addressed by local authorities.`;
                     } else if (status === 'Verified') {
                         toastType = 'success';
-                        statusText = 'verified';
+                        message = `Your report '${title}' has been verified and is now being processed.`;
+                    } else if (status === 'Assigned') {
+                        toastType = 'info';
+                        message = `Your report '${title}' has been assigned to CDRRMC and is now being processed.`;
+                    } else {
+                        message = `Report "${title}" status has been updated to ${status.toLowerCase()}`;
                     }
                     
                     showToastNotification(
                         'Report Status Updated',
-                        `Report "${title}" has been ${statusText}`,
+                        message,
                         toastType
                     );
 
@@ -1466,37 +1944,338 @@
                     loadNotifications();
                 });
 
-                // Start the connection
-                await conn.start();
-                console.log('SignalR Connected');
+                // Track alerts we've already processed to prevent duplicates
+                const processedAlerts = new Set();
 
-                // Join user group after connection is established
+                // Handle new alerts
+                alertConn.on("ReceiveAlert", function(alert) {
+                    console.log("New alert received:", alert);
+                    
+                    // Skip if null or invalid alert
+                    if (!alert || !alert.id) {
+                        console.log("Skipping invalid alert");
+                        return;
+                    }
+                    
+                    // Create a unique key for this alert
+                    const alertKey = `alert-${alert.id}`;
+                    
+                    // Skip if we've already processed this exact alert recently
+                    if (processedAlerts.has(alertKey)) {
+                        console.log("Skipping duplicate alert:", alertKey);
+                        return;
+                    }
+                    
+                    // Store the alert in our tracking Sets
+                    if (!window.shownNotifications) {
+                        window.shownNotifications = new Set();
+                    }
+                    processedAlerts.add(alertKey);
+                    window.shownNotifications.add(alert.id);
+                    
+                    // Remove from processed alerts after 10 seconds to prevent memory leak
+                    setTimeout(() => {
+                        processedAlerts.delete(alertKey);
+                    }, 10000);
+                    
+                    // Create a notification object for consistent handling
+                    const notification = {
+                        id: alert.id,
+                        title: alert.title,
+                        message: `${alert.message}\n\nAffected Area: ${alert.affectedArea}\nIssued by: ${alert.issuedBy}`,
+                        notificationType: getSeverityType(alert.severity),
+                        createdAt: new Date().toISOString(),
+                        relatedEntityType: "Alert",
+                        relatedEntityId: alert.id,
+                        affectedArea: alert.affectedArea,
+                        issuedBy: alert.issuedBy,
+                        isRead: false
+                    };
+                    
+                    // Increment badge count immediately
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        const currentCount = parseInt(badge.textContent || '0');
+                        updateNotificationBadge(currentCount + 1);
+                    }
+                    
+                    // Handle the notification
+                    handleNewNotification(notification);
+                    
+                    // Show toast notification
+                    showToastNotification(
+                        alert.title,
+                        `${alert.message}\n\nAffected Area: ${alert.affectedArea}\nIssued by: ${alert.issuedBy}`,
+                        getSeverityType(alert.severity)
+                    );
+                    
+                    // Play alert sound
+                    playNotificationSound('alert');
+                    
+                    // Force a reload of notifications to get the correct count from server
+                    loadNotifications();
+                });
+
+                // Start both connections
+                try {
+                    console.log('Starting CommunityHub connection...');
+                    await communityConn.start();
+                    console.log('CommunityHub Connected Successfully');
+
+                    console.log('Starting AlertHub connection...');
+                    await alertConn.start();
+                    console.log('AlertHub Connected Successfully');
+
+                    console.log('Both SignalR connections established');
+
+                    // Join user group for community hub
                 const userId = '@User.FindFirstValue(ClaimTypes.NameIdentifier)';
                 if (userId) {
-                    await conn.invoke("JoinUserGroup", userId);
-                    console.log('Joined user group:', userId);
-                }
+                        await communityConn.invoke("JoinUserGroup", userId);
+                        console.log('Joined community user group:', userId);
+                    }
 
-                retryCount = 0;
-                await debouncedLoadNotifications();
-                return conn;
+                    // Load initial data
+                    await Promise.all([
+                        debouncedLoadNotifications(),
+                        loadExistingAlerts()
+                    ]);
+
+                    return { communityConn, alertConn };
+            } catch (err) {
+                    console.error('Error starting SignalR connections:', err);
+                    throw err;
+                }
             } catch (err) {
                 console.error('SignalR Connection Error:', err);
-                if (retryCount < maxRetries) {
-                    await new Promise(resolve => setTimeout(resolve, 5000));
-                    return initializeSignalR();
-                }
+                showToastNotification(
+                    "Connection Error",
+                    "Failed to establish real-time connection",
+                    "warning"
+                );
+                // Retry connection after delay
+                setTimeout(() => {
+                    console.log('Retrying SignalR connection...');
+                    initializeSignalR();
+                }, 5000);
                 throw err;
             }
         }
 
+        // Function to handle new notifications
+        function handleNewNotification(notification) {
+            const notificationList = document.getElementById('notificationList');
+            if (!notificationList) return;
+
+            // Check if this is a post notification and if we already have a notification for this post
+            if (notification.relatedEntityType === "CommunityPost") {
+                // Find all existing notifications for this post
+                const existingNotifications = notificationList.querySelectorAll(`.notification-item[data-post-id="${notification.relatedEntityId}"]`);
+                
+                // Remove all existing notifications for this post to avoid duplicates
+                existingNotifications.forEach(item => {
+                    console.log("Removing existing notification for post:", notification.relatedEntityId);
+                    item.remove();
+                });
+            }
+
+            // Create notification item with clear data attributes
+            const notificationItem = document.createElement('div');
+            notificationItem.className = `dropdown-item notification-item p-3 border-bottom ${notification.isRead ? '' : 'unread'}`;
+            notificationItem.dataset.id = notification.id;
+            
+            // Add more detailed data attributes for better tracking
+            if (notification.relatedEntityType) {
+                notificationItem.dataset.entityType = notification.relatedEntityType;
+                
+                if (notification.relatedEntityId) {
+                    notificationItem.dataset.entityId = notification.relatedEntityId;
+                    
+                    // For post notifications, add a special data attribute
+                    if (notification.relatedEntityType === "CommunityPost") {
+                        notificationItem.dataset.postId = notification.relatedEntityId;
+                    }
+                }
+            }
+
+            // Get appropriate icon based on type
+            let iconType = 'bell text-primary';
+            if (notification.notificationType === 'success') {
+                iconType = 'check-circle text-success';
+            } else if (notification.notificationType === 'warning') {
+                iconType = 'exclamation-circle text-warning';
+            } else if (notification.notificationType === 'info') {
+                iconType = 'info-circle text-info';
+            } else if (notification.notificationType === 'danger') {
+                iconType = 'exclamation-triangle text-danger';
+            } else if (notification.notificationType === 'critical') {
+                iconType = 'radiation text-dark';
+            }
+
+            // Format the date
+            const date = new Date(notification.createdAt);
+            const formattedDate = date.toLocaleString();
+
+            notificationItem.innerHTML = `
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 mt-1">
+                        <i class="fas fa-${iconType}"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h6 class="mb-1">${notification.title}</h6>
+                            <small class="text-muted">${formattedDate}</small>
+                        </div>
+                        <p class="mb-1 small">${notification.message}</p>
+                        ${notification.relatedEntityType === 'Alert' ? `
+                            <div class="mt-1">
+                                ${notification.affectedArea ? `<small class="text-muted d-block">Affected Area: ${notification.affectedArea}</small>` : ''}
+                                ${notification.issuedBy ? `<small class="text-muted d-block">Issued by: ${notification.issuedBy}</small>` : ''}
+                                <div class="d-flex gap-2">
+                                    <button onclick="scrollToAlert(${notification.relatedEntityId})" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Alert
+                                    </button>
+                                    <button onclick="markAlertAsRead(${notification.relatedEntityId})" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-check me-1"></i>Mark as Read
+                                    </button>
+                                </div>
+                            </div>
+                        ` : notification.relatedEntityType === 'Report' ? `
+                            <div class="mt-1">
+                                <div class="d-flex gap-2">
+                                    <a href="/Community/ReportDetails/${notification.relatedEntityId}" class="btn btn-sm btn-outline-primary" onclick="markAsRead(${notification.id})">
+                                        <i class="fas fa-eye me-1"></i>View Report
+                                    </a>
+                                    <button onclick="markAsRead(${notification.id})" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-check me-1"></i>Mark as Read
+                                    </button>
+                                </div>
+                            </div>
+                        ` : notification.relatedEntityId ? `
+                            <div class="mt-1">
+                                <div class="d-flex gap-2">
+                                    <a href="/Community/CommunityFeed?postId=${notification.relatedEntityId}" class="btn btn-sm btn-outline-primary" onclick="markAsRead(${notification.id})">
+                                        <i class="fas fa-eye me-1"></i>View Post
+                                    </a>
+                                    <button onclick="markAsRead(${notification.id})" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-check me-1"></i>Mark as Read
+                                    </button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Add to top of notification list
+            if (notificationList.firstChild) {
+                notificationList.insertBefore(notificationItem, notificationList.firstChild);
+            } else {
+                notificationList.appendChild(notificationItem);
+            }
+
+            // Add animation
+            notificationItem.style.opacity = '0';
+            notificationItem.style.transform = 'translateY(-10px)';
+            notificationItem.style.transition = 'all 0.3s ease';
+
+            setTimeout(() => {
+                notificationItem.style.opacity = '1';
+                notificationItem.style.transform = 'translateY(0)';
+            }, 10);
+        }
+
+        // Initialize SignalR when the page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Track processed notifications by their keys
+            window.shownNotifications = new Set();
+            window.processedPostUpdates = new Set();
+            
+            // Store the processed post IDs with their latest notification
+            window.processedPostNotifications = new Map();
+            
+            try {
+                const { communityConn, alertConn } = await initializeSignalR();
+                window.communityConn = communityConn;
+                window.alertConn = alertConn;
+            } catch (error) {
+                console.error('Failed to initialize SignalR:', error);
+            }
+        });
+
+        // Function to load existing alerts
+        async function loadExistingAlerts() {
+            try {
+                const response = await fetch('/Community/GetRecentAlerts');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const alerts = await response.json();
+                console.log('Loaded existing alerts:', alerts);
+                // Update your alerts UI here
+            } catch (error) {
+                console.error('Error loading existing alerts:', error);
+            }
+        }
+
+        // Helper function to get severity type for notifications
+        function getSeverityType(severity) {
+            switch (severity) {
+                case 0: return 'info';     // Info
+                case 1: return 'warning';  // Warning
+                case 2: return 'danger';   // Danger
+                case 3: return 'critical'; // Critical
+                default: return 'info';
+            }
+        }
+
+        // Keep track of recent toast notifications to prevent duplicates
+        const recentToasts = new Map();
+
         // Function to show toast notification
         function showToastNotification(title, message, type = 'info') {
+            // Create a unique key for this toast that includes more details for alerts
+            let toastKey = `${title}-${type}`;
+            
+            // For alerts, include more details in the key to prevent duplicates
+            if (type === 'info' || type === 'warning' || type === 'danger' || type === 'critical') {
+                // Extract affected area and issued by from message if present
+                const affectedAreaMatch = message.match(/Affected Area: (.*?)(?:\n|$)/);
+                const issuedByMatch = message.match(/Issued by: (.*?)(?:\n|$)/);
+                
+                if (affectedAreaMatch || issuedByMatch) {
+                    toastKey = `${title}-${type}-${affectedAreaMatch ? affectedAreaMatch[1] : ''}-${issuedByMatch ? issuedByMatch[1] : ''}`;
+                }
+            }
+            
+            // Check if we've shown this toast recently (within 5 seconds)
+            if (recentToasts.has(toastKey)) {
+                console.log('Skipping duplicate toast:', toastKey);
+                return;
+            }
+            
+            // Add to recent toasts map
+            recentToasts.set(toastKey, Date.now());
+            
+            // Remove old entries after 5 seconds to clean up memory
+            setTimeout(() => {
+                recentToasts.delete(toastKey);
+            }, 5000);
+            
+            // Create toast element
             const toast = document.createElement('div');
             toast.className = `toast-notification ${type}`;
+            
+            // Get appropriate icon based on type
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            else if (type === 'warning') icon = 'exclamation-circle';
+            else if (type === 'danger') icon = 'exclamation-triangle';
+            else if (type === 'critical') icon = 'radiation';
+            
             toast.innerHTML = `
                 <div class="toast-header">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <i class="fas fa-${icon}"></i>
                     <strong class="ms-2">${title}</strong>
                 </div>
                 <div class="toast-body">
@@ -1515,24 +2294,374 @@
         // Function to update notification badge
         function updateNotificationBadge(count) {
             const badge = document.getElementById('notificationBadge');
-            if (!badge) return;
+            if (!badge) {
+                console.warn('Notification badge element not found');
+                return;
+            }
             
-            if (count > 0) {
-                badge.textContent = count;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
+            // Ensure count is a valid number
+            const safeCount = Math.max(0, parseInt(count) || 0);
+            
+            // Get current count for comparison
+            const currentCount = parseInt(badge.textContent || '0');
+            
+            console.log(`Updating badge count: ${currentCount} → ${safeCount}`);
+            
+            // Only update if the count has actually changed
+            if (currentCount !== safeCount) {
+                // Update the text content
+                badge.textContent = safeCount;
+                
+                if (safeCount > 0) {
+                    // Make sure badge is visible
+                    badge.style.display = 'flex';
+                    
+                    // Add appropriate animation
+                    if (safeCount > currentCount) {
+                        // New notification - bounce in
+                        badge.classList.remove('animate__bounceIn', 'animate__pulse', 'animate__fadeOut');
+                        void badge.offsetWidth; // Force reflow
+                        badge.classList.add('animate__animated', 'animate__bounceIn');
+                    } else if (safeCount < currentCount) {
+                        // Notification read - pulse
+                        badge.classList.remove('animate__bounceIn', 'animate__pulse', 'animate__fadeOut');
+                        void badge.offsetWidth; // Force reflow
+                        badge.classList.add('animate__animated', 'animate__pulse');
+                    }
+                    
+                    // Remove animation classes after animation completes
+                    setTimeout(() => {
+                        badge.classList.remove('animate__animated', 'animate__bounceIn', 'animate__pulse', 'animate__fadeOut');
+                    }, 1000);
+                } else {
+                    // No unread notifications - fade out and hide
+                    badge.classList.remove('animate__bounceIn', 'animate__pulse');
+                    void badge.offsetWidth; // Force reflow
+                    badge.classList.add('animate__animated', 'animate__fadeOut');
+                    
+                    // Hide the badge after animation completes
+                    setTimeout(() => {
+                        badge.style.display = 'none';
+                        badge.classList.remove('animate__animated', 'animate__fadeOut');
+                    }, 300);
+                }
             }
         }
 
-        // Initialize SignalR when the page loads
-        document.addEventListener('DOMContentLoaded', async function() {
+        // Function to update community feed
+
+        // Function to update community feed
+        function updateCommunityFeed(data) {
+            const feedContainer = document.querySelector('.community-feed');
+            if (!feedContainer) return;
+
+            // Update the feed content with new data
+            // This will depend on your feed structure
+            feedContainer.innerHTML = data.html; // Assuming the server returns HTML
+        }
+
+        // Add function to load alert count
+        async function loadAlertCount() {
             try {
-                await initializeSignalR();
+                const response = await fetch('/Community/GetAlertCount');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                updateAlertBadge(data.count);
             } catch (error) {
-                console.error('Failed to initialize SignalR:', error);
+                console.error('Error loading alert count:', error);
+            }
+        }
+
+        // Call loadAlertCount when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAlertCount();
+        });
+
+        // Add click handler for mark all as read
+        document.getElementById('markAllRead').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/Community/MarkAllNotificationsAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    updateNotificationBadge(0);
+                    debouncedLoadNotifications();
+                }
+            } catch (error) {
+                console.error('Error marking notifications as read:', error);
             }
         });
+
+        // Add this new function to mark notifications as read
+        async function markAsRead(notificationId) {
+            try {
+                console.log('Marking notification as read:', notificationId);
+                const response = await fetch('/Community/MarkNotificationAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ notificationId })
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok && data.success) {
+                    // Update the notification count
+                    console.log('Updating badge count to:', data.unreadCount);
+                    updateNotificationBadge(data.unreadCount);
+                    
+                    // Update the notification list
+                    console.log('Reloading notifications');
+                    await loadNotifications();
+                    
+                    // Remove unread class from the notification item
+                    const notificationItem = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+                    if (notificationItem) {
+                        notificationItem.classList.remove('unread');
+                    }
+                } else {
+                    console.error('Failed to mark notification as read:', data);
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+        
+        // Function to mark notification as read and then navigate to a URL
+        async function markAsReadAndNavigate(notificationId, url) {
+            try {
+                console.log('Marking notification as read and navigating to:', url);
+                const response = await fetch('/Community/MarkNotificationAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ notificationId })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Update the notification count
+                    const badge = document.getElementById('notificationBadge');
+                    const currentCount = parseInt(badge?.textContent || '0');
+                    if (currentCount > 0) {
+                        updateNotificationBadge(currentCount - 1);
+                    }
+                    
+                    // Remove unread class from notification item
+                    const notificationItem = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+                    if (notificationItem) {
+                        notificationItem.classList.remove('unread');
+                    }
+                    
+                    // Close the dropdown if it's open
+                    const dropdown = document.querySelector('.dropdown-menu.show');
+                    if (dropdown) {
+                        dropdown.classList.remove('show');
+                    }
+                }
+                
+                // Navigate to the URL
+                window.location.href = url;
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+                // Still navigate to the URL even if there was an error
+                window.location.href = url;
+            }
+        }
+
+        // Function to mark alert as read
+        async function markAlertAsRead(alertId) {
+            try {
+                console.log('Marking alert as read:', alertId);
+                const response = await fetch('/Community/MarkAlertAsRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ alertId })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        // Update badge count with the server's count
+                        updateNotificationBadge(data.unreadCount);
+                        
+                        // Update notification item in the list
+                        const notificationItem = document.querySelector(`.notification-item[data-entity-type="Alert"][data-entity-id="${alertId}"]`);
+                        if (notificationItem) {
+                            notificationItem.classList.remove('unread');
+                        }
+                        
+                        // Close the dropdown if it's open
+                        const dropdown = document.querySelector('.dropdown-menu.show');
+                        if (dropdown) {
+                            dropdown.classList.remove('show');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error marking alert as read:', error);
+            }
+        }
+
+        // Function to scroll to alert in feed
+        function scrollToAlert(alertId) {
+            // Check if we're on the Community Feed page
+            if (!window.location.pathname.includes('/Community/CommunityFeed')) {
+                // If not on Community Feed, redirect there with the alert ID
+                window.location.href = `/Community/CommunityFeed?alertId=${alertId}`;
+                return;
+            }
+
+            // Close the notification dropdown
+            const dropdown = document.querySelector('.dropdown-menu.show');
+            if (dropdown) {
+                dropdown.classList.remove('show');
+            }
+
+            // Wait for the feed to load and then scroll to the alert
+            const checkForAlert = setInterval(() => {
+                const alertElement = document.querySelector(`.post-card[data-post-id="${alertId}"][data-post-type="Alert"]`);
+                if (alertElement) {
+                    clearInterval(checkForAlert);
+                    
+                    // Mark the alert as read
+                    markAlertAsRead(alertId);
+                    
+                    // Scroll to the alert with smooth animation
+                    alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Add highlight effect
+                    alertElement.classList.add('highlight-alert');
+                    setTimeout(() => {
+                        alertElement.classList.remove('highlight-alert');
+                    }, 2000);
+                    
+                    // Remove the alertId from URL without refreshing
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            }, 100); // Check every 100ms
+
+            // Stop checking after 5 seconds to prevent infinite loop
+            setTimeout(() => {
+                clearInterval(checkForAlert);
+            }, 5000);
+        }
+
+        // Add highlight animation style
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes highlightAlert {
+                0% {
+                    background-color: rgba(220, 53, 69, 0.1);
+                    transform: scale(1);
+                }
+                50% {
+                    background-color: rgba(220, 53, 69, 0.2);
+                    transform: scale(1.01);
+                }
+                100% {
+                    background-color: transparent;
+                    transform: scale(1);
+                }
+            }
+
+            .highlight-alert {
+                animation: highlightAlert 2s ease-in-out;
+                border: 2px solid #dc3545;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Function to show alert notification in dropdown
+        function showAlertNotification(alert, isNew = true) {
+            const notificationList = document.getElementById('notificationList');
+            if (!notificationList) return;
+
+            // Create notification item
+            const notificationItem = document.createElement('div');
+            notificationItem.className = 'dropdown-item notification-item p-3 border-bottom unread';
+            notificationItem.dataset.id = `alert-${alert.id}`;
+            notificationItem.dataset.entityType = 'Alert';
+            notificationItem.dataset.entityId = alert.id;
+
+            // Get severity icon and color
+            let iconType = 'bell text-primary';
+            let severityText = getSeverityText(alert.severity);
+            let severityClass = getSeverityBadgeClass(alert.severity);
+
+            // Format the date
+            const date = new Date(alert.dateIssued);
+            const formattedDate = date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            }) + ' ' + date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            notificationItem.innerHTML = `
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 mt-1">
+                        <i class="fas fa-${iconType}"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h6 class="mb-1">${isNew ? 'New Alert: ' : ''}${alert.title}</h6>
+                            <small class="text-muted">${formattedDate}</small>
+                        </div>
+                        <p class="mb-1 small">${alert.message}</p>
+                        <div class="d-flex align-items-center mt-2">
+                            <span class="badge ${severityClass} me-2">${severityText}</span>
+                            <button onclick="scrollToAlert(${alert.id})" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>View Alert
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add to top of notification list
+            if (notificationList.firstChild) {
+                notificationList.insertBefore(notificationItem, notificationList.firstChild);
+            } else {
+                notificationList.appendChild(notificationItem);
+            }
+
+            // Update notification badge
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                const currentCount = parseInt(badge.textContent || '0');
+                badge.textContent = currentCount + 1;
+                badge.style.display = 'flex';
+            }
+
+            // Show toast notification only for new alerts
+            if (isNew) {
+                showToastNotification(
+                    alert.title,
+                    `${alert.message}\n\nAffected Area: ${alert.affectedArea}`,
+                    getSeverityType(alert.severity)
+                );
+            }
+
+            // Force a reload of notifications to get the correct count from server
+            loadNotifications();
+        }
     </script>
     @await RenderSectionAsync("Scripts", required: false)
     
@@ -1664,5 +2793,13 @@
             });
         });
     </script>
+
+    <!-- Add audio elements for notifications -->
+    <audio id="alertSound" preload="auto">
+        <source src="/sounds/notification.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="notificationSound" preload="auto">
+        <source src="/sounds/notification.mp3" type="audio/mpeg">
+    </audio>
 </body>
 </html> 

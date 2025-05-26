@@ -1,4 +1,4 @@
-@model IEnumerable<THYNK.Models.CommunityUpdate>
+@model THYNK.Models.CommunityFeedViewModel
 @{
     ViewData["Title"] = "Community Feed";
     Layout = "_CommunityLayout";
@@ -58,6 +58,7 @@
                 <div class="feed-filters">
                                 <select class="form-select form-select-sm bg-light border-0" id="post-filter">
                         <option value="all">All Posts</option>
+                                    <option value="Alert">LGU Alerts</option>
                                     <option value="HelpRequest">Help Requests</option>
                                     <option value="StatusUpdate">Status Updates</option>
                                     <option value="ResourceSharing">Resources</option>
@@ -71,68 +72,98 @@
             </div>
 
             <div id="posts-container">
-            @if (Model != null && Model.Any())
+                @if (Model?.Items != null && Model.Items.Any())
             {
-                foreach (var post in Model)
+                    foreach (var item in Model.Items)
                 {
-                        <div class="card shadow-sm border-0 mb-4 post-card" data-post-type="@post.Type">
+                        <div class="card shadow-sm border-0 mb-4 post-card" data-post-type="@item.Type" data-post-id="@item.Id">
                         <div class="card-body p-4">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avatar-circle me-3">
-                                    <i class="fas fa-user"></i>
+                                        <i class="@(item.Type == "Alert" ? item.IconStyle : "fas fa-user")"></i>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-0">@(post.User != null ? $"{post.User.FirstName} {post.User.LastName}" : "Unknown User")</h6>
-                                    <small class="text-muted">@post.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+                                        <h6 class="mb-0">
+                                            @if (item.Type == "Alert")
+                                            {
+                                                <span class="text-danger">@item.IssuedBy</span>
+                                            }
+                                            else
+                                            {
+                                                @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown User")
+                                            }
+                                        </h6>
+                                        <small class="text-muted">@item.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
                                 </div>
                                 <div class="post-type">
-                                    <span class="badge rounded-pill @(post.Type == UpdateType.HelpRequest ? "bg-danger" : 
-                                                                    post.Type == UpdateType.StatusUpdate ? "bg-info" : 
-                                                                    post.Type == UpdateType.ResourceSharing ? "bg-success" : 
-                                                                    post.Type == UpdateType.Information ? "bg-primary" : "bg-secondary")">
-                                        @post.Type
+                                        @if (item.Type == "Alert")
+                                        {
+                                            <span class="badge rounded-pill @item.BackgroundStyle">
+                                                <i class="@item.IconStyle me-1"></i>@item.Severity Alert
                                     </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill @(item.Title == "HelpRequest" ? "bg-danger" : 
+                                                                        item.Title == "StatusUpdate" ? "bg-info" : 
+                                                                        item.Title == "ResourceSharing" ? "bg-success" : 
+                                                                        item.Title == "Information" ? "bg-primary" : "bg-secondary")">
+                                                @item.Title
+                                            </span>
+                                        }
                                 </div>
                             </div>
 
-                                <div class="post-content mb-3">
-                                    <p class="card-text mb-0">@post.Content</p>
-                                </div>
-
-                                @if (!string.IsNullOrEmpty(post.ImageUrl))
+                                @if (item.Type == "Alert")
                                 {
+                                    <h5 class="mb-3">@item.Title</h5>
+                                }
+
+                                @if (!string.IsNullOrEmpty(item.ImageUrl) && item.ImageUrl != "/images/no-image.png")
+                                {
+                                    <div class="post-content mb-3">
+                                        <p class="card-text mb-0">@item.Message</p>
+                                    </div>
                                     <div class="post-image mb-3">
-                                        <img src="@post.ImageUrl" class="img-fluid rounded" alt="Post image" 
+                                        <img src="@item.ImageUrl" class="img-fluid rounded" alt="" 
                                              onclick="openImageViewer(this.src)" style="cursor: pointer;">
                                     </div>
                                 }
-
-                                @if (!string.IsNullOrEmpty(post.Location) && post.Location != "Not specified")
+                                else
                                 {
-                                    <div class="post-location mb-3">
-                                        <a href="https://www.google.com/maps?q=@post.Latitude,@post.Longitude" 
-                                           target="_blank" class="text-decoration-none">
-                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
-                                            <span class="text-muted">@post.Location</span>
-                                            <i class="fas fa-external-link-alt ms-1 text-muted small"></i>
-                                        </a>
+                                    <div class="post-content mb-3">
+                                        <p class="card-text mb-0">@item.Message</p>
                                     </div>
                                 }
 
+                                @if (!string.IsNullOrEmpty(item.Location))
+                                {
+                                    <div class="mb-2">
+                                        <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                        @if (item.Type == "Alert")
+                                        {
+                                            <span class="text-muted">Affected Area: </span>
+                                        }
+                                        @item.Location
+                                    </div>
+                                }
+
+                                @if (item.Type != "Alert")
+                                {
                                 <div class="post-actions d-flex align-items-center gap-3">
-                                    <button class="btn btn-subtle btn-sm rounded-pill post-like-btn" data-post-id="@post.Id">
+                                        <button class="btn btn-subtle btn-sm rounded-pill post-like-btn" data-post-id="@item.Id">
                                         <i class="far fa-heart me-1"></i><span class="like-count">0</span> Like
                                     </button>
-                                    <button class="btn btn-subtle btn-sm rounded-pill" data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
+                                        <button class="btn btn-subtle btn-sm rounded-pill" data-bs-toggle="collapse" data-bs-target="#comments-@item.Id">
                                         <i class="far fa-comment me-1"></i>Comment
                                     </button>
-                                    <button class="btn btn-subtle btn-sm rounded-pill share-btn" data-post-id="@post.Id">
+                                        <button class="btn btn-subtle btn-sm rounded-pill share-btn" data-post-id="@item.Id">
                                         <i class="far fa-share-square me-1"></i>Share
                                     </button>
                                 </div>
                                 
                                 <!-- Comments Section (Collapsed by default) -->
-                                <div class="collapse mt-3" id="comments-@post.Id">
+                                    <div class="collapse mt-3" id="comments-@item.Id">
                                     <div class="card card-body bg-light border-0">
                                         <div class="comments-list mb-3">
                                             <!-- Empty placeholder for comments -->
@@ -148,8 +179,8 @@
                                             <div class="flex-grow-1">
                                                 <div class="input-group">
                                                     <input type="text" class="form-control bg-white border comment-input" 
-                                                           placeholder="Write a comment..." data-post-id="@post.Id">
-                                                    <button class="btn btn-primary send-comment-btn" type="button" data-post-id="@post.Id">
+                                                               placeholder="Write a comment..." data-post-id="@item.Id">
+                                                        <button class="btn btn-primary send-comment-btn" type="button" data-post-id="@item.Id">
                                                         <i class="fas fa-paper-plane"></i>
                                                     </button>
                                                 </div>
@@ -157,6 +188,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                }
                             </div>
                         </div>
                     }
@@ -193,62 +225,42 @@
                                 placeholder="Share your thoughts, updates, or information with the community..."></textarea>
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="modalType" class="form-label small text-muted">Post Type</label>
-                            <select class="form-select bg-light border-0" id="modalType" name="Type" required>
-                                <option value="GeneralUpdate">General Update</option>
-                                <option value="HelpRequest">Help Request</option>
-                                <option value="StatusUpdate">Status Update</option>
-                                <option value="ResourceSharing">Resource Sharing</option>
-                                <option value="Information">Information</option>
-                            </select>
-                            <small class="text-muted d-block mt-1">Select the category that best fits your post</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="modalLocation" class="form-label small text-muted">Location (optional)</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-0">
-                                    <i class="fas fa-map-marker-alt text-muted"></i>
-                                </span>
-                                <input type="text" class="form-control bg-light border-0" id="modalLocation" name="Location" 
-                                       placeholder="Add location">
-                                <button type="button" class="btn btn-primary" id="detect-modal-location">
-                                    <i class="fas fa-crosshairs"></i>
-                                </button>
-                            </div>
-                            <small class="text-muted d-block mt-1">Current location will be automatically detected</small>
-                        </div>
-                    </div>
-
                     <div class="mb-3">
-                        <label for="modalImage" class="form-label small text-muted">Add Image (optional)</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0">
-                                <i class="fas fa-image text-primary"></i>
-                            </span>
-                            <input type="file" class="form-control bg-light border-0" id="modalImage" name="Image" accept="image/*">
-                        </div>
-                        <div id="imagePreview" class="mt-3 d-none text-center">
-                            <div class="position-relative d-inline-block">
-                                <img src="#" alt="Preview" class="img-thumbnail mx-auto" style="max-height: 250px; max-width: 100%; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
-                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" id="removeImage" style="margin-right: -10px; margin-top: -10px;">
-                                    <i class="fas fa-times"></i>
-                            </button>
-                            </div>
-                            <p class="text-muted small mt-2">Selected image preview</p>
-                        </div>
+                        <label for="type" class="form-label">Post Type</label>
+                        <select class="form-select" id="modalType" name="Type">
+                            <option value="GeneralUpdate">General Update</option>
+                            <option value="HelpRequest">Help Request</option>
+                            <option value="StatusUpdate">Status Update</option>
+                            <option value="ResourceSharing">Resource Sharing</option>
+                            <option value="Information">Information</option>
+                        </select>
                     </div>
                     
-                    <!-- Hidden fields -->
-                    <input type="number" step="any" class="d-none" id="modalLatitude" name="Latitude">
-                    <input type="number" step="any" class="d-none" id="modalLongitude" name="Longitude">
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Add Image (Optional)</label>
+                        <input type="file" class="form-control" id="image" name="Image" accept="image/*">
+                        <div class="form-text">Upload an image to include with your post (max 5MB)</div>
+                    </div>
+                    
+                    <!-- Hidden geocoordinates -->
+                    <input type="number" step="any" class="d-none" id="latitude" name="Latitude">
+                    <input type="number" step="any" class="d-none" id="longitude" name="Longitude">
+                    
+                    <!-- Image Preview -->
+                    <div id="imagePreview" class="mt-3 d-none">
+                        <div class="position-relative d-inline-block">
+                            <img id="preview" class="img-fluid rounded" style="max-height: 200px;">
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="removeImage()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
                         <i class="fas fa-times me-2"></i>Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary" id="submit-post-btn" style="background-color: rgb(46, 137, 255);">
+                    <button type="button" class="btn btn-primary" onclick="return confirmPost()">
                         <i class="fas fa-paper-plane me-2"></i>Post
                     </button>
                 </div>
@@ -392,6 +404,16 @@
     </div>
 </div>
 
+@if (User.IsInRole("Admin"))
+{
+    <form asp-action="CreateNotificationsForExistingAlerts" method="post" class="mb-4">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-sync me-2"></i>Sync Existing Alerts to Notifications
+        </button>
+    </form>
+}
+
 @section Styles {
     <style>
         :root {
@@ -476,10 +498,11 @@
         }
 
         .post-image img {
-            max-height: 400px;
-            object-fit: cover;
+            max-height: 200px;
             width: 100%;
+            object-fit: cover;
             border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .create-post-form .form-control,
@@ -1077,465 +1100,565 @@
         .review-pending-icon {
             animation: pulse 2s infinite;
         }
+
+        /* New alert animation */
+        @@keyframes newAlertPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+            }
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+        
+        .new-alert {
+            animation: newAlertPulse 1s ease-in-out;
+        }
+
+        /* Alert highlight animation */
+        @@keyframes highlightAlert {
+            0% {
+                background-color: rgba(220, 53, 69, 0.1);
+                transform: scale(1);
+            }
+            50% {
+                background-color: rgba(220, 53, 69, 0.2);
+                transform: scale(1.01);
+            }
+            100% {
+                background-color: transparent;
+                transform: scale(1);
+            }
+        }
+
+        .highlight-alert {
+            animation: highlightAlert 2s ease-in-out;
+            border: 2px solid #dc3545;
+        }
     </style>
 }
 
 @section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
-        // Document ready function to initialize all components
         $(document).ready(function() {
-            // Initialize all tooltips
-            $('[data-bs-toggle="tooltip"]').tooltip();
+            // Check for alertId in URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const alertId = urlParams.get('alertId');
+            const postId = urlParams.get('postId');
             
-            // Update submit button color based on selected post type
-            $('#modalType').on('change', function() {
-                const postType = $(this).val();
-                const $submitBtn = $('#submit-post-btn');
-                
-                // Remove all color classes
-                $submitBtn.removeClass('btn-primary btn-danger btn-success btn-info btn-warning');
-                
-                // Add appropriate color class based on post type
-                switch(postType) {
-                    case 'HelpRequest':
-                        $submitBtn.addClass('btn-danger');
-                        break;
-                    case 'StatusUpdate':
-                        $submitBtn.addClass('btn-warning');
-                        break;
-                    case 'ResourceSharing':
-                        $submitBtn.addClass('btn-success');
-                        break;
-                    case 'Information':
-                        $submitBtn.addClass('btn-info');
-                        break;
-                    default:
-                        $submitBtn.addClass('btn-primary');
-                }
-            });
-            
-            // Image preview functionality
-            $('#modalImage').on('change', function() {
-                const file = this.files[0];
-                if (file) {
-                    // File size validation
-                    if (file.size > 5 * 1024 * 1024) { // 5MB
-                        alert('File size must be less than 5MB');
-                        this.value = '';
-                        $('#imagePreview').addClass('d-none');
-                        return;
+            if (alertId) {
+                // Wait for the feed to load completely
+                const checkForAlert = setInterval(() => {
+                    const alertElement = document.querySelector(`.post-card[data-post-id="${alertId}"][data-post-type="Alert"]`);
+                    if (alertElement) {
+                        clearInterval(checkForAlert);
+                        // Scroll to the alert with smooth animation
+                        alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Add highlight effect
+                        alertElement.classList.add('highlight-alert');
+                        setTimeout(() => {
+                            alertElement.classList.remove('highlight-alert');
+                        }, 2000);
+                        // Remove the alertId from URL without refreshing
+                        window.history.replaceState({}, document.title, window.location.pathname);
                     }
-                    
-                    // Preview image
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        // Make sure the image element exists
-                        let $image = $('#imagePreview img');
-                        if ($image.length === 0) {
-                            // Create the image element if it doesn't exist
-                            $('#imagePreview').html(`
-                                <div class="position-relative d-inline-block">
-                                    <img src="${e.target.result}" alt="Preview" class="img-thumbnail mx-auto" 
-                                         style="max-height: 250px; max-width: 100%; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
-                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" 
-                                            id="removeImage" style="margin-right: -10px; margin-top: -10px;">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <p class="text-muted small mt-2">Selected image preview</p>
-                            `);
-                            
-                            // Re-attach the click handler for the remove button
-                            $('#removeImage').on('click', function() {
-                                $('#modalImage').val('');
-                                $('#imagePreview').addClass('d-none');
-                            });
-                        } else {
-                            // Update existing image
-                            $image.attr('src', e.target.result);
-                        }
-                        
-                        // Show the preview container
-                        $('#imagePreview').removeClass('d-none');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+                }, 100); // Check every 100ms
+
+                // Stop checking after 5 seconds to prevent infinite loop
+                setTimeout(() => {
+                    clearInterval(checkForAlert);
+                }, 5000);
+            } else if (postId) {
+                // Wait for the feed to load completely
+                const checkForPost = setInterval(() => {
+                    const postElement = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+                    if (postElement) {
+                        clearInterval(checkForPost);
+                        // Scroll to the post with smooth animation
+                        postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Add highlight effect
+                        postElement.classList.add('highlight-alert');
+                        setTimeout(() => {
+                            postElement.classList.remove('highlight-alert');
+                        }, 2000);
+                        // Remove the postId from URL without refreshing
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                }, 100); // Check every 100ms
+
+                // Stop checking after 5 seconds to prevent infinite loop
+                setTimeout(() => {
+                    clearInterval(checkForPost);
+                }, 5000);
+            }
             
-            // Geolocation support for post form
-            $('#detect-modal-location').on('click', function() {
-                $(this).html('<i class="fas fa-spinner fa-spin"></i>');
-                
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                        $('#modalLatitude').val(position.coords.latitude);
-                        $('#modalLongitude').val(position.coords.longitude);
-                        
-                        // Reverse geocoding to get address
-                        fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${position.coords.longitude},${position.coords.latitude}.json?access_token=pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.features && data.features.length > 0) {
-                                    $('#modalLocation').val(data.features[0].place_name);
-                                }
-                                $('#detect-modal-location').html('<i class="fas fa-crosshairs"></i>');
-                            })
-                            .catch(err => {
-                                console.error('Error fetching location:', err);
-                                $('#detect-modal-location').html('<i class="fas fa-crosshairs"></i>');
-                            });
-                    }, function(error) {
-                        console.error('Geolocation error:', error);
-                        alert('Could not detect your location. Please enter manually.');
-                        $('#detect-modal-location').html('<i class="fas fa-crosshairs"></i>');
+            // Create audio element for alert sound
+            const alertSound = new Audio('/sounds/notification.mp3');
+            
+            // Initialize SignalR connection to AlertHub
+            const alertConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/alertHub")
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 20000])
+                .configureLogging(signalR.LogLevel.Information)
+                .build();
+
+            // Load existing alerts into notifications
+            function loadExistingAlerts() {
+                fetch('/LGU/GetRecentAlerts')
+                    .then(response => response.json())
+                    .then(alerts => {
+                        console.log('Loading existing alerts:', alerts);
+                        alerts.forEach(alert => {
+                            showAlertNotification(alert, false); // false means don't play sound
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading existing alerts:', error);
                     });
-                } else {
-                    alert('Geolocation is not supported by your browser');
-                    $('#detect-modal-location').html('<i class="fas fa-crosshairs"></i>');
+            }
+
+            // Handle new alerts
+            alertConnection.on("ReceiveAlert", function(alert) {
+                console.log("New alert received:", alert);
+                // Play alert sound
+                alertSound.play().catch(error => {
+                    console.log("Error playing sound:", error);
+                });
+                
+                // Ensure severity is properly set
+                if (alert.severity === undefined || alert.severity === null) {
+                    alert.severity = 1; // Default to Warning if not specified
                 }
+                addAlertToFeed(alert);
+
+                // Show notification in dropdown
+                showAlertNotification(alert, true); // true means play sound
             });
 
-            // Set post type when click on different shortcut buttons
-            $('[data-post-type]').click(function() {
-                const postType = $(this).data('post-type');
-                $('#modalType').val(postType).trigger('change');
-            });
-            
-            // Handle post form submission with validation
-            $('.create-post-form').on('submit', function(e) {
-                const content = $('#modalContent').val().trim();
-                
-                if (content === '') {
-                    e.preventDefault();
-                    $('#modalContent').addClass('is-invalid');
-                    return false;
-                }
-                
-                // Show loading state on button
-                $('#submit-post-btn').html('<span class="spinner-border spinner-border-sm me-2"></span>Posting...').prop('disabled', true);
-                
-                // Let the form submit normally to the server
-                // The form will be submitted to the PostUpdate action in CommunityController
-                return true;
-            });
-            
-            // Show confirmation dialog when the submit button is clicked
-            $('#submit-post-btn').on('click', function(e) {
-                e.preventDefault();
-                
-                // Validate the form first
-                const content = $('#modalContent').val().trim();
-                if (content === '') {
-                    $('#modalContent').addClass('is-invalid');
-                    return false;
-                }
-                
-                // Get the post type to style the confirmation modal
-                const postType = $('#modalType').val();
-                
-                // Set the confirmation modal styling based on post type
-                const $header = $('#postConfirmHeader');
-                const $icon = $('#postConfirmIcon');
-                
-                // Reset classes
-                $header.removeClass('bg-primary bg-danger bg-success bg-info bg-secondary bg-primary-soft bg-danger-soft bg-success-soft bg-info-soft bg-secondary-soft');
-                $icon.removeClass('fas fa-pen fa-hands-helping fa-share-alt fa-info-circle fa-comment-alt').addClass('fas');
-                
-                // Set appropriate classes based on post type
-                switch(postType) {
-                    case 'HelpRequest':
-                        $header.addClass('bg-danger-soft');
-                        $icon.addClass('fa-hands-helping text-danger');
-                        break;
-                    case 'ResourceSharing':
-                        $header.addClass('bg-success-soft');
-                        $icon.addClass('fa-share-alt text-success');
-                        break;
-                    case 'Information':
-                        $header.addClass('bg-info-soft');
-                        $icon.addClass('fa-info-circle text-info');
-                        break;
-                    case 'StatusUpdate':
-                        $header.addClass('bg-primary-soft');
-                        $icon.addClass('fa-comment-alt text-primary');
-                        break;
-                    default: // GeneralUpdate
-                        $header.addClass('bg-primary-soft');
-                        $icon.addClass('fa-pen text-primary');
-                }
-                
-                // Show the confirmation modal
-                new bootstrap.Modal(document.getElementById('postConfirmModal')).show();
-            });
-            
-            // Confirm button handler
-            $('#confirmPostBtn').on('click', function() {
-                // Hide the confirmation modal
-                bootstrap.Modal.getInstance(document.getElementById('postConfirmModal')).hide();
-                
-                // Actually submit the form
-                $('.create-post-form').submit();
-            });
-            
-            // Edit button handler - go back to edit the post
-            $('#editPostBtn').on('click', function() {
-                // Just close the confirmation modal
-                bootstrap.Modal.getInstance(document.getElementById('postConfirmModal')).hide();
-            });
-            
-            // Clear validation on input
-            $('#modalContent').on('input', function() {
-                $(this).removeClass('is-invalid');
-            });
-            
-            // Image viewer functionality
-            window.openImageViewer = function(src) {
-                $('#fullImage').attr('src', src);
-                new bootstrap.Modal(document.getElementById('imageViewerModal')).show();
-            };
-            
-            // Post like functionality
-            $('.post-like-btn').on('click', function() {
-                const $this = $(this);
-                const postId = $this.data('post-id');
-                const $icon = $this.find('i');
-                const $count = $this.find('.like-count');
-                
-                // Toggle like state
-                if ($icon.hasClass('far')) {
-                    $icon.removeClass('far').addClass('fas text-danger');
-                    $count.text(parseInt($count.text()) + 1);
-                } else {
-                    $icon.removeClass('fas text-danger').addClass('far');
-                    $count.text(Math.max(0, parseInt($count.text()) - 1));
-                }
-                
-                // Here you would normally make an AJAX call to save the like
-                console.log('Like toggled for post ID:', postId);
-            });
-            
-            // Comment submit functionality
-            $('.send-comment-btn').on('click', function() {
-                const postId = $(this).data('post-id');
-                const $input = $(`.comment-input[data-post-id="${postId}"]`);
-                const commentText = $input.val().trim();
-                
-                if (commentText !== '') {
-                    // Remove empty comments message if present
-                    $(`#comments-${postId} .empty-comments`).remove();
-                    
-                    // Add the new comment
-                    const $commentsList = $(`#comments-${postId} .comments-list`);
-                    const now = new Date();
-                    const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    
-                    const commentHtml = `
-                        <div class="comment d-flex mb-2 animate__animated animate__fadeIn">
-                            <div class="avatar-circle me-2" style="width:24px;height:24px">
-                                <i class="fas fa-user" style="font-size:10px"></i>
-                            </div>
-                            <div class="comment-content bg-white rounded p-2 flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-bold small">Current User</span>
-                                    <small class="text-muted">${timeStr}</small>
-                                </div>
-                                <p class="mb-0 small">${commentText}</p>
-                            </div>
-                        </div>
-                    `;
-                    
-                    $commentsList.append(commentHtml);
-                    $input.val('');
-                    
-                    // Here you would normally make an AJAX call to save the comment
-                    console.log('New comment on post ID:', postId, commentText);
-                }
-            });
-            
-            // Comment input Enter key handling
-            $('.comment-input').on('keypress', function(e) {
-                if (e.which === 13) {
-                    e.preventDefault();
-                    const postId = $(this).data('post-id');
-                    $(`.send-comment-btn[data-post-id="${postId}"]`).click();
-                }
-            });
-            
-            // Share post functionality
-            $('.share-btn').on('click', function() {
-                const postId = $(this).data('post-id');
-                const postUrl = `${window.location.origin}/Community/ViewPost/${postId}`;
-                
-                // Set share links
-                $('#share-facebook').attr('href', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`);
-                $('#share-twitter').attr('href', `https://twitter.com/intent/tweet?url=${encodeURIComponent(postUrl)}&text=${encodeURIComponent('Check out this community post!')}`);
-                $('#share-whatsapp').attr('href', `https://wa.me/?text=${encodeURIComponent('Check out this community post: ' + postUrl)}`);
-                $('#share-email').attr('href', `mailto:?subject=${encodeURIComponent('Community Post')}&body=${encodeURIComponent('Check out this community post: ' + postUrl)}`);
-                
-                // Set copy link input
-                $('#share-link').val(postUrl);
-                
-                // Show modal
-                new bootstrap.Modal(document.getElementById('sharePostModal')).show();
-            });
-            
-            // Copy share link functionality
-            $('#copy-link-btn').on('click', function() {
-                const $shareLink = $('#share-link');
-                $shareLink.select();
-                document.execCommand('copy');
-                
-                // Show copied feedback
-                const $this = $(this);
-                const originalHTML = $this.html();
-                $this.html('<i class="fas fa-check"></i>').addClass('btn-success').removeClass('btn-primary');
-                
-                setTimeout(() => {
-                    $this.html(originalHTML).addClass('btn-primary').removeClass('btn-success');
-                }, 2000);
-            });
-            
-            // Search functionality
-            $('#post-search').on('input', function() {
-                const searchTerm = $(this).val().toLowerCase().trim();
-                
-                // Clear previous highlights
-                $('.search-highlight').each(function() {
-                    const $this = $(this);
-                    $this.replaceWith($this.text());
+            // Function to show alert notification in dropdown
+            function showAlertNotification(alert, isNew = true) {
+                const notificationList = document.getElementById('notificationList');
+                if (!notificationList) return;
+
+                // Create notification item
+                const notificationItem = document.createElement('div');
+                notificationItem.className = 'dropdown-item notification-item p-3 border-bottom unread';
+                notificationItem.dataset.id = `alert-${alert.id}`;
+
+                // Get severity icon and color
+                let iconType = 'bell text-primary';
+                let severityText = getSeverityText(alert.severity);
+                let severityClass = getSeverityBadgeClass(alert.severity);
+
+                // Format the date
+                const date = new Date(alert.dateIssued);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }) + ' ' + date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
                 });
-                
-                if (searchTerm === '') {
-                    // If search is empty, trigger filter change to restore state
-                    $('#post-filter').trigger('change');
-                    return;
-                }
-                
-                // Hide the empty state message
-                $('.empty-state, .empty-state-filtered, .empty-state-search').hide();
-                
-                // Get current filter
-                const currentFilter = $('#post-filter').val();
-                let hasVisiblePosts = false;
-                
-                // For each post card
-                $('.post-card').each(function() {
-                    const $card = $(this);
-                    const postContent = $card.find('.post-content').text().toLowerCase();
-                    const postType = $card.data('post-type').toString().toLowerCase();
-                    
-                    // Check if post matches search and filter
-                    const matchesSearch = postContent.includes(searchTerm) || 
-                                         postType.includes(searchTerm);
-                    
-                    const matchesFilter = currentFilter === 'all' || $card.data('post-type') === currentFilter;
-                    
-                    if (matchesSearch && matchesFilter) {
-                        $card.show();
-                        hasVisiblePosts = true;
-                        
-                        // Highlight matching text in content
-                        if (postContent.includes(searchTerm)) {
-                            const $content = $card.find('.post-content p');
-                            const originalContent = $content.text();
-                            const regex = new RegExp('(' + searchTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'gi');
-                            const newContent = originalContent.replace(regex, '<span class="search-highlight">$1</span>');
-                            $content.html(newContent);
-                        }
-                    } else {
-                        $card.hide();
-                    }
-                });
-                
-                // Show empty state if no posts match
-                if (!hasVisiblePosts) {
-                    // Remove any existing search empty state
-                    $('.empty-state-search').remove();
-                    
-                    $('#posts-container').append(`
-                        <div class="text-center py-5 empty-state empty-state-search">
-                            <div class="empty-state-icon mb-3">
-                                <i class="fas fa-search text-muted fa-4x"></i>
-                            </div>
-                            <h5 class="text-muted mb-2">No Results Found</h5>
-                            <p class="text-muted mb-0">Try a different search term or filter</p>
+
+                notificationItem.innerHTML = `
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 mt-1">
+                            <i class="fas fa-${iconType}"></i>
                         </div>
-                    `);
-                }
-            });
-            
-            // Filter posts
-            $('#post-filter').change(function() {
-                const filterValue = $(this).val();
-                
-                // Check if search is active
-                const searchTerm = $('#post-search').val().trim();
-                if (searchTerm !== '') {
-                    // If search is active, trigger search again with new filter
-                    $('#post-search').trigger('input');
-                    return;
-                }
-                
-                // Remove any existing empty state message first
-                $('.empty-state-filtered, .empty-state-search').remove();
-                
-                if (filterValue === 'all') {
-                    $('.post-card').show();
-                    
-                    // If there are no posts at all, show the original empty state
-                    if ($('.post-card').length === 0) {
-                        $('.empty-state').show();
-                    } else {
-                        $('.empty-state').hide();
-                    }
-                } else {
-                    $('.post-card').hide();
-                    $('.empty-state').hide();
-                    $(`.post-card[data-post-type="${filterValue}"]`).show();
-                    
-                    // Show empty state if no posts visible for this filter
-                    if ($(`.post-card[data-post-type="${filterValue}"]:visible`).length === 0) {
-                        // Format the filter value for display
-                        const formattedFilter = filterValue
-                            .replace(/([A-Z])/g, ' $1')
-                            .replace(/^./, function(str) { return str.toUpperCase(); });
-                            
-                        $('#posts-container').append(`
-                            <div class="text-center py-5 empty-state empty-state-filtered">
-                                <div class="empty-state-icon mb-3">
-                                    <i class="fas fa-filter text-muted fa-4x"></i>
-                                </div>
-                                <h5 class="text-muted mb-2">No ${formattedFilter} Posts</h5>
-                                <p class="text-muted mb-0">Try selecting a different filter</p>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h6 class="mb-1">${isNew ? 'New Alert: ' : ''}${alert.title}</h6>
+                                <small class="text-muted">${formattedDate}</small>
                             </div>
-                        `);
-                    }
-                }
-            });
-            
-            // Add success notification toast when post is created
-            if (window.location.search.includes('success=true')) {
-                const toastHtml = `
-                    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-                            <div class="toast-header bg-success-soft">
-                                <i class="fas fa-check-circle me-2 text-success"></i>
-                                <strong class="me-auto">Success</strong>
-                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                            <div class="toast-body">
-                                Your post has been successfully published.
+                            <p class="mb-1 small">${alert.message}</p>
+                            <div class="d-flex align-items-center mt-2">
+                                <span class="badge ${severityClass} me-2">${severityText}</span>
+                                <button onclick="scrollToAlert(${alert.id})" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>View Alert
+                                </button>
                             </div>
                         </div>
                     </div>
                 `;
-                $('body').append(toastHtml);
+
+                // Add to top of notification list
+                if (notificationList.firstChild) {
+                    notificationList.insertBefore(notificationItem, notificationList.firstChild);
+                } else {
+                    notificationList.appendChild(notificationItem);
+                }
+
+                // Update notification badge
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    const currentCount = parseInt(badge.textContent || '0');
+                    badge.textContent = currentCount + 1;
+                    badge.style.display = 'flex';
+                }
+
+                // Show toast notification only for new alerts
+                if (isNew) {
+                    showToastNotification(
+                        'New Alert',
+                        `${alert.title} - ${alert.message}`,
+                        'warning'
+                    );
+                }
+            }
+
+            // Function to scroll to alert in feed
+            function scrollToAlert(alertId) {
+                const alertElement = document.querySelector(`.post-card[data-post-id="${alertId}"][data-post-type="Alert"]`);
+                if (alertElement) {
+                    // Close the notification dropdown
+                    const dropdown = document.querySelector('.dropdown-menu.show');
+                    if (dropdown) {
+                        dropdown.classList.remove('show');
+                    }
+
+                    // Scroll to the alert with smooth animation
+                    alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Add highlight effect
+                    alertElement.classList.add('highlight-alert');
+                    setTimeout(() => {
+                        alertElement.classList.remove('highlight-alert');
+                    }, 2000);
+                }
+            }
+
+            // Handle alert updates
+            alertConnection.on("AlertUpdated", function(alert) {
+                console.log("Alert updated:", alert);
+                const existingAlert = document.querySelector(`.post-card[data-post-id="${alert.id}"][data-post-type="Alert"]`);
+                if (existingAlert) {
+                    updateAlertInFeed(existingAlert, alert);
+                }
+            });
+
+            // Handle alert deletion
+            alertConnection.on("AlertDeleted", function(alertId) {
+                console.log("Alert deleted:", alertId);
+                const alertElement = document.querySelector(`.post-card[data-post-id="${alertId}"][data-post-type="Alert"]`);
+                if (alertElement) {
+                    alertElement.remove();
+                }
+            });
+
+            // Function to add a new alert to the feed
+            function addAlertToFeed(alert) {
+                const postsContainer = document.getElementById('posts-container');
+                if (!postsContainer) return;
+
+                const alertElement = createAlertElement(alert);
+                postsContainer.insertBefore(alertElement, postsContainer.firstChild);
                 
-                // Auto hide after 5 seconds
-                setTimeout(function() {
-                    $('.toast').toast('hide');
-                }, 5000);
+                // Add animation class for new alerts
+                alertElement.classList.add('new-alert');
+                setTimeout(() => {
+                    alertElement.classList.remove('new-alert');
+                }, 2000);
+            }
+
+            // Function to update an existing alert in the feed
+            function updateAlertInFeed(alertElement, alert) {
+                const newContent = createAlertElement(alert);
+                alertElement.replaceWith(newContent);
+            }
+
+            // Helper function to get severity text
+            function getSeverityText(severity) {
+                switch (severity) {
+                    case 0: return 'Info';
+                    case 1: return 'Warning';
+                    case 2: return 'Danger';
+                    case 3: return 'Critical';
+                    default: return 'Warning';
+                }
+            }
+
+            // Helper function to get severity class
+            function getSeverityClass(severity) {
+                switch (severity) {
+                    case 0: return 'bg-info';
+                    case 1: return 'bg-warning';
+                    case 2: return 'bg-danger';
+                    case 3: return 'bg-danger';
+                    default: return 'bg-warning';
+                }
+            }
+
+            // Function to create an alert element
+            function createAlertElement(alert) {
+                console.log("Creating alert element with data:", alert);
+                
+                const div = document.createElement('div');
+                div.className = 'card shadow-sm border-0 mb-4 post-card';
+                div.setAttribute('data-post-type', 'Alert');
+                div.setAttribute('data-post-id', alert.id);
+
+                // Format the date to match server format
+                const date = new Date(alert.dateIssued);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }) + ' ' + date.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+
+                // Get the correct badge class based on severity
+                const badgeClass = getSeverityBadgeClass(alert.severity);
+                const severityText = getSeverityText(alert.severity);
+
+                // Check if alert has an image
+                const hasImage = alert.imagePath && alert.imagePath !== "/images/no-image.png";
+
+                // Get the organization name from the alert
+                const organizationName = alert.issuedBy || (alert.user && alert.user.organizationName) || "Organization";
+
+                div.innerHTML = `
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-circle me-3">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">
+                                    <span class="text-danger">${organizationName}</span>
+                                </h6>
+                                <small class="text-muted">${formattedDate}</small>
+                            </div>
+                            <div class="post-type">
+                                <span class="badge rounded-pill ${badgeClass}">
+                                    <i class="fas fa-bell me-1"></i>${severityText} Alert
+                                </span>
+                            </div>
+                        </div>
+
+                        <h5 class="mb-3">${alert.title}</h5>
+
+                        <div class="post-content mb-3">
+                            <p class="card-text mb-0">${alert.message}</p>
+                        </div>
+
+                        ${hasImage ? `
+                            <div class="post-image mb-3">
+                                <img src="${alert.imagePath}" class="img-fluid rounded" alt="" 
+                                     onclick="openImageViewer(this.src)" style="cursor: pointer;">
+                            </div>
+                        ` : ''}
+
+                        ${alert.affectedArea ? `
+                            <div class="mb-2">
+                                <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                <span class="text-muted">Affected Area: </span>
+                                ${alert.affectedArea}
+                            </div>
+                        ` : ''}
+                        </div>
+                    `;
+                    
+                return div;
+            }
+
+            // Helper function to get severity badge class
+            function getSeverityBadgeClass(severity) {
+                switch (severity) {
+                    case 0: return 'bg-info'; // Info - Blue
+                    case 1: return 'bg-warning'; // Warning - Yellow
+                    case 2: return 'bg-danger'; // Danger - Red
+                    case 3: return 'bg-dark'; // Critical - Black
+                    default: return 'bg-info';
+                }
+            }
+
+            // Start the connection and load existing alerts
+            alertConnection.start()
+                .then(() => {
+                    console.log("SignalR Connected to AlertHub");
+                    // Load existing alerts
+                    loadExistingAlerts();
+                    // Verify connection is working
+                    alertConnection.invoke("PingConnection")
+                        .then(response => {
+                            console.log("Connection verified:", response);
+                        })
+                        .catch(err => {
+                            console.error("Error verifying connection:", err);
+                        });
+                })
+                .catch(err => console.error("Error connecting to AlertHub:", err));
+            
+            // Search functionality
+            $('#post-search').on('input', function() {
+                const searchTerm = $(this).val().toLowerCase();
+                $('.post-card').each(function() {
+                    const postContent = $(this).text().toLowerCase();
+                    $(this).toggle(postContent.includes(searchTerm));
+                });
+            });
+
+            // Filter functionality
+            $('#post-filter').on('change', function() {
+                const filter = $(this).val();
+                $('.post-card').each(function() {
+                    const postType = $(this).data('post-type');
+                    if (filter === 'all' || postType === filter) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        });
+
+        // Function to handle post submission confirmation
+        function confirmPost() {
+            const postContent = document.getElementById('modalContent').value;
+            const postType = document.getElementById('modalType').value;
+            
+            if (!postContent.trim()) {
+                showToastNotification(
+                    "Error",
+                    "Please enter some content for your post",
+                    "warning"
+                );
+                return false;
+            }
+
+            // Show confirmation modal
+            const confirmModal = new bootstrap.Modal(document.getElementById('postConfirmModal'));
+            confirmModal.show();
+
+            // Set up confirmation button
+            document.getElementById('confirmPostBtn').onclick = function() {
+                // Submit the form
+                document.querySelector('.create-post-form').submit();
+                // Hide the confirmation modal
+                confirmModal.hide();
+            };
+
+            // Set up edit button
+            document.getElementById('editPostBtn').onclick = function() {
+                confirmModal.hide();
+            };
+
+            return false; // Prevent form submission until confirmed
+        }
+
+        // Function to show toast notification
+        function showToastNotification(title, message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            
+            // Get appropriate icon based on type
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            else if (type === 'warning') icon = 'exclamation-circle';
+            else if (type === 'danger') icon = 'exclamation-triangle';
+            else if (type === 'critical') icon = 'radiation';
+            
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <i class="fas fa-${icon}"></i>
+                    <strong class="ms-2">${title}</strong>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            // Remove toast after 5 seconds
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Initialize the functionality when the document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial button style based on default post type
+            updateSubmitButtonStyle(document.getElementById('modalType').value);
+            
+            // Tooltips initialization
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // Preview image before upload
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) { // 5MB
+                    showToastNotification('Error', 'File size must be less than 5MB', 'warning');
+                    this.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('d-none');
+                }
+                reader.readAsDataURL(file);
             }
         });
+
+        // Function to remove image
+        function removeImage() {
+            document.getElementById('image').value = '';
+            document.getElementById('imagePreview').classList.add('d-none');
+        }
+
+        // Update submit button style based on post type
+        document.getElementById('modalType').addEventListener('change', function() {
+            updateSubmitButtonStyle(this.value);
+        });
+        
+        function updateSubmitButtonStyle(postType) {
+            const submitBtn = document.querySelector('.create-post-form .btn-primary');
+            
+            // Reset all classes first
+            submitBtn.className = 'btn btn-primary';
+            
+            // Apply appropriate style based on post type
+            switch(postType) {
+                case 'HelpRequest':
+                    submitBtn.classList.add('btn-danger');
+                    submitBtn.innerHTML = '<i class="fas fa-hands-helping me-1"></i>Post Help Request';
+                    break;
+                case 'StatusUpdate':
+                    submitBtn.classList.add('btn-info');
+                    submitBtn.innerHTML = '<i class="fas fa-chart-line me-1"></i>Post Status Update';
+                    break;
+                case 'ResourceSharing':
+                    submitBtn.classList.add('btn-success');
+                    submitBtn.innerHTML = '<i class="fas fa-share-alt me-1"></i>Share Resource';
+                    break;
+                case 'Information':
+                    submitBtn.classList.add('btn-primary');
+                    submitBtn.innerHTML = '<i class="fas fa-info-circle me-1"></i>Post Information';
+                    break;
+                default:
+                    submitBtn.classList.add('btn-secondary');
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Post Update';
+            }
+        }
     </script>
 } 

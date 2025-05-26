@@ -229,8 +229,63 @@ namespace THYNK.Controllers
                 .Where(c => c.ModerationStatus == ModerationStatus.Approved)
                 .OrderByDescending(c => c.DatePosted)
                 .ToListAsync();
+
+            var alerts = await _context.Alerts
+                .Include(a => a.User)
+                .Where(a => a.IsActive && (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now))
+                .OrderByDescending(a => a.DateIssued)
+                .ToListAsync();
+
+            var viewModel = new CommunityFeedViewModel
+            {
+                Items = new List<FeedItem>()
+            };
+
+            // Add community updates
+            foreach (var update in updates)
+            {
+                viewModel.Items.Add(new FeedItem
+                {
+                    Id = update.Id,
+                    Type = "CommunityUpdate",
+                    Title = update.Type.ToString(),
+                    Message = update.Content,
+                    DatePosted = update.DatePosted,
+                    User = update.User,
+                    ImageUrl = update.ImageUrl,
+                    Location = update.Location,
+                    Latitude = update.Latitude,
+                    Longitude = update.Longitude
+                });
+            }
+
+            // Add LGU alerts
+            foreach (var alert in alerts)
+            {
+                viewModel.Items.Add(new FeedItem
+                {
+                    Id = alert.Id,
+                    Type = "Alert",
+                    Title = alert.Title,
+                    Message = alert.Message,
+                    DatePosted = alert.DateIssued,
+                    User = alert.User,
+                    ImageUrl = alert.ImagePath,
+                    Location = alert.AffectedArea,
+                    Severity = alert.Severity,
+                    BackgroundStyle = alert.Severity == AlertSeverity.Info ? "bg-info" :
+                                    alert.Severity == AlertSeverity.Warning ? "bg-warning" :
+                                    alert.Severity == AlertSeverity.Danger ? "bg-danger" :
+                                    alert.Severity == AlertSeverity.Critical ? "bg-dark" : "bg-info",
+                    IconStyle = "fas fa-bell",
+                    IssuedBy = alert.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU"
+                });
+            }
+
+            // Sort all items by date
+            viewModel.Items = viewModel.Items.OrderByDescending(i => i.DatePosted).ToList();
                 
-            return View(updates);
+            return View(viewModel);
         }
         
         // Post community update
@@ -402,36 +457,51 @@ namespace THYNK.Controllers
         }
         
         // View alerts
-        public async Task<IActionResult> Alerts(string type = null)
+        public async Task<IActionResult> Alerts(string type = null, string notificationType = null)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return RedirectToAction("Login", "Account", new { area = "Identity" });
             }
 
-            // Get user notifications
-            var query = _context.UserNotifications
-                .Where(n => n.UserId == userId);
+            // Get active alerts
+            var alertsQuery = _context.Alerts
+                .Include(a => a.User)
+                .Where(a => a.IsActive && (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now));
 
-            // Filter by notification type if specified
-            if (!string.IsNullOrEmpty(type))
+            // Filter alerts by severity if specified
+            if (!string.IsNullOrEmpty(type) && Enum.TryParse<AlertSeverity>(type, out var severity))
             {
-                query = query.Where(n => n.NotificationType == type);
+                alertsQuery = alertsQuery.Where(a => a.Severity == severity);
             }
 
-            var notifications = await query
+            var alerts = await alertsQuery
+                .OrderByDescending(a => a.DateIssued)
+                .ToListAsync();
+
+            // Get user notifications
+            var notificationsQuery = _context.UserNotifications
+                .Where(n => n.UserId == userId);
+
+            // Filter notifications by type if specified
+            if (!string.IsNullOrEmpty(notificationType))
+            {
+                notificationsQuery = notificationsQuery.Where(n => n.NotificationType == notificationType);
+            }
+
+            var notifications = await notificationsQuery
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
 
-            // Mark all as read
-            foreach (var notification in notifications.Where(n => !n.IsRead))
+            // Create view model
+            var viewModel = new AlertsViewModel
             {
-                notification.IsRead = true;
-            }
-            await _context.SaveChangesAsync();
+                Alerts = alerts,
+                Notifications = notifications
+            };
 
-            return View(notifications);
+            return View(viewModel);
         }
         
         // View incident map
@@ -448,42 +518,38 @@ namespace THYNK.Controllers
                 .Include(r => r.AssignedTo)
                 .AsQueryable();
 
-            // Only show In Progress and Resolved by default if no status filter
             if (status.HasValue)
             {
-                query = query.Where(r => (int)r.Status == status.Value);
-            }
-            else
-            {
-                query = query.Where(r => r.Status == ReportStatus.InProgress || r.Status == ReportStatus.Resolved);
+                query = query.Where(r => r.Status == (ReportStatus)status.Value);
             }
 
             if (dateFrom.HasValue)
             {
                 query = query.Where(r => r.DateReported >= dateFrom.Value);
             }
+
             if (dateTo.HasValue)
             {
                 query = query.Where(r => r.DateReported <= dateTo.Value);
             }
 
             var reports = await query
-                .Select(r => new {
+                .Select(r => new
+                {
                     r.Id,
                     r.Title,
                     r.Description,
-                    r.Type,
                     r.Latitude,
                     r.Longitude,
-                    r.Severity,
                     r.Status,
                     r.DateReported,
-                    r.Location,
-                    r.Barangay,
-                    r.City,
-                    AssignedTo = r.AssignedTo != null ? new {
-                        Name = $"{r.AssignedTo.FirstName} {r.AssignedTo.LastName}",
-                        Organization = r.AssignedTo.OrganizationName
+                    AssignedTo = r.AssignedTo != null ? new
+                    {
+                        r.AssignedTo.Id,
+                        r.AssignedTo.FirstName,
+                        r.AssignedTo.LastName,
+                        OrganizationName = r.AssignedTo.GetType().Name == "LGUUser" ? 
+                            ((LGUUser)r.AssignedTo).OrganizationName : "LGU"
                     } : null
                 })
                 .ToListAsync();
@@ -534,6 +600,8 @@ namespace THYNK.Controllers
             var report = await _context.DisasterReports
                 .Include(r => r.User)
                 .Include(r => r.AssignedTo)
+                .Include(r => r.Ratings)
+                    .ThenInclude(rating => rating.User)
                 .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
 
             if (report == null)
@@ -561,31 +629,82 @@ namespace THYNK.Controllers
                 return Json(new { notifications = new List<object>(), unreadCount = 0 });
             }
 
-            var notifications = await _context.UserNotifications
-                .Where(n => n.UserId == userId)
+            // Get user notifications
+            var notificationsQuery = _context.UserNotifications
+                .Where(n => n.UserId == userId);
+
+            // Get active alerts
+            var alertsQuery = _context.Alerts
+                .Include(a => a.User)
+                .Where(a => a.IsActive && (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now));
+
+            // Get notifications
+            var notifications = await notificationsQuery
                 .OrderByDescending(n => n.CreatedAt)
                 .Take(10)
-                .Select(n => new {
-                    n.Id,
-                    n.Title,
-                    n.Message,
-                    n.NotificationType,
-                    n.IsRead,
-                    n.CreatedAt,
-                    n.RelatedEntityId,
-                    n.RelatedEntityType
+                .Select(n => new NotificationItem
+                {
+                    Id = n.Id,
+                    Title = n.Title,
+                    Message = n.Message,
+                    NotificationType = n.NotificationType,
+                    IsRead = n.IsRead,
+                    CreatedAt = n.CreatedAt,
+                    RelatedEntityId = n.RelatedEntityId,
+                    RelatedEntityType = n.RelatedEntityType
                 })
                 .ToListAsync();
 
-            var unreadCount = await _context.UserNotifications
-                .CountAsync(n => n.UserId == userId && !n.IsRead);
+            // Get read alert IDs for current user
+            var readAlertIds = await _context.AlertReadStatus
+                .Where(rs => rs.UserId == userId)
+                .Select(rs => rs.AlertId)
+                .ToListAsync();
 
-            return Json(new { notifications, unreadCount });
+            // Get alerts
+            var alerts = await alertsQuery
+                .OrderByDescending(a => a.DateIssued)
+                .Take(5)
+                .Select(a => new NotificationItem
+                {
+                    Id = a.Id,
+                    Title = a.Title,
+                    Message = a.Message,
+                    NotificationType = a.Severity.ToString().ToLower(),
+                    IsRead = readAlertIds.Contains(a.Id), // Mark as read if in readAlertIds
+                    CreatedAt = a.DateIssued,
+                    RelatedEntityId = a.Id,
+                    RelatedEntityType = "Alert",
+                    Severity = a.Severity,
+                    AffectedArea = a.AffectedArea,
+                    ImagePath = a.ImagePath,
+                    IssuedBy = a.User.GetType().Name == "LGUUser" ? 
+                        ((LGUUser)a.User).OrganizationName : "LGU"
+                })
+                .ToListAsync();
+
+            // Combine notifications and alerts
+            var allNotifications = notifications.Concat(alerts)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(10)
+                .ToList();
+
+            // Calculate total unread count (unread notifications + unread active alerts)
+            var unreadNotificationsCount = await _context.UserNotifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
+            var unreadAlertsCount = await _context.Alerts
+                .CountAsync(a => a.IsActive && 
+                    (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now) &&
+                    !_context.AlertReadStatus.Any(rs => rs.AlertId == a.Id && rs.UserId == userId));
+
+            var totalUnreadCount = unreadNotificationsCount + unreadAlertsCount;
+
+            return Json(new { notifications = allNotifications, unreadCount = totalUnreadCount });
         }
 
         // Mark a notification as read
         [HttpPost]
-        public async Task<JsonResult> MarkNotificationRead(int id)
+        public async Task<JsonResult> MarkNotificationAsRead([FromBody] MarkNotificationRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -594,7 +713,7 @@ namespace THYNK.Controllers
             }
 
             var notification = await _context.UserNotifications
-                .FirstOrDefaultAsync(n => n.Id == id && n.UserId == userId);
+                .FirstOrDefaultAsync(n => n.Id == request.notificationId && n.UserId == userId);
 
             if (notification != null)
             {
@@ -602,7 +721,16 @@ namespace THYNK.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Json(new { success = true });
+            // Get updated unread count
+            var unreadCount = await _context.UserNotifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
+
+            return Json(new { success = true, unreadCount });
+        }
+
+        public class MarkNotificationRequest
+        {
+            public int notificationId { get; set; }
         }
 
         // Mark all notifications as read
@@ -799,5 +927,216 @@ namespace THYNK.Controllers
         {
             return degrees * Math.PI / 180.0;
         }
+
+        // Add function to create notifications for existing alerts
+        [HttpPost]
+        public async Task<IActionResult> CreateNotificationsForExistingAlerts()
+        {
+            try
+            {
+                // Get all active alerts that don't have corresponding notifications
+                var activeAlerts = await _context.Alerts
+                    .Include(a => a.User)
+                    .Where(a => a.IsActive && (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now))
+                    .ToListAsync();
+
+                // Get all users
+                var users = await _context.Users.ToListAsync();
+                int notificationsCreated = 0;
+
+                foreach (var alert in activeAlerts)
+                {
+                    foreach (var user in users)
+                    {
+                        // Check if notification already exists for this alert and user
+                        var existingNotification = await _context.UserNotifications
+                            .AnyAsync(n => n.RelatedEntityId == alert.Id && 
+                                         n.RelatedEntityType == "Alert" && 
+                                         n.UserId == user.Id);
+
+                        if (!existingNotification)
+                        {
+                            // Create new notification
+                            var notification = new UserNotification
+                            {
+                                UserId = user.Id,
+                                Title = alert.Title,
+                                Message = alert.Message,
+                                NotificationType = alert.Severity.ToString().ToLower(),
+                                RelatedEntityId = alert.Id,
+                                RelatedEntityType = "Alert",
+                                CreatedAt = alert.DateIssued,
+                                IsRead = false
+                            };
+
+                            _context.UserNotifications.Add(notification);
+                            notificationsCreated++;
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Successfully created {notificationsCreated} notifications for existing alerts.";
+                return RedirectToAction(nameof(CommunityFeed));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating notifications for existing alerts");
+                TempData["ErrorMessage"] = "An error occurred while creating notifications for existing alerts.";
+                return RedirectToAction(nameof(CommunityFeed));
+            }
+        }
+
+        // Mark an alert as read
+        [HttpPost]
+        public async Task<JsonResult> MarkAlertAsRead([FromBody] MarkAlertRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false });
+            }
+
+            // Check if alert exists and is active
+            var alert = await _context.Alerts
+                .FirstOrDefaultAsync(a => a.Id == request.alertId && a.IsActive);
+
+            if (alert == null)
+            {
+                return Json(new { success = false, message = "Alert not found" });
+            }
+
+            // Check if we already have a read status for this alert
+            var readStatus = await _context.AlertReadStatus
+                .FirstOrDefaultAsync(rs => rs.AlertId == request.alertId && rs.UserId == userId);
+
+            if (readStatus == null)
+            {
+                // Create new read status
+                readStatus = new AlertReadStatus
+                {
+                    AlertId = request.alertId,
+                    UserId = userId,
+                    ReadAt = DateTime.Now
+                };
+                _context.AlertReadStatus.Add(readStatus);
+                await _context.SaveChangesAsync();
+            }
+
+            // Get updated unread count
+            var unreadNotificationsCount = await _context.UserNotifications
+                .CountAsync(n => n.UserId == userId && !n.IsRead);
+            var unreadAlertsCount = await _context.Alerts
+                .CountAsync(a => a.IsActive && 
+                    (a.ExpiresAt == null || a.ExpiresAt > DateTime.Now) &&
+                    !_context.AlertReadStatus.Any(rs => rs.AlertId == a.Id && rs.UserId == userId));
+
+            var totalUnreadCount = unreadNotificationsCount + unreadAlertsCount;
+
+            return Json(new { success = true, unreadCount = totalUnreadCount });
+        }
+
+        public class MarkAlertRequest
+        {
+            public int alertId { get; set; }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RateReport(int id, int rating, string comment)
+        {
+            if (rating < 1 || rating > 5)
+            {
+                TempData["ErrorMessage"] = "Invalid rating value. Please provide a rating between 1 and 5.";
+                return RedirectToAction(nameof(ReportDetails), new { id });
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account", new { area = "Identity" });
+            }
+
+            var report = await _context.DisasterReports
+                .Include(r => r.Ratings)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (report == null)
+            {
+                TempData["ErrorMessage"] = "Report not found.";
+                return RedirectToAction(nameof(MyReports));
+            }
+
+            if (report.Status != ReportStatus.Resolved)
+            {
+                TempData["ErrorMessage"] = "Only resolved reports can be rated.";
+                return RedirectToAction(nameof(ReportDetails), new { id });
+            }
+
+            // Check if user has already rated this report
+            var existingRating = await _context.DisasterReportRatings
+                .FirstOrDefaultAsync(r => r.DisasterReportId == id && r.UserId == userId);
+
+            if (existingRating != null)
+            {
+                TempData["ErrorMessage"] = "You have already rated this report. Multiple ratings are not allowed.";
+                return RedirectToAction(nameof(ReportDetails), new { id });
+            }
+
+            var reportRating = new DisasterReportRating
+            {
+                DisasterReportId = id,
+                UserId = userId,
+                Rating = rating,
+                Comment = comment,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.DisasterReportRatings.Add(reportRating);
+            await _context.SaveChangesAsync();
+
+            // Create a notification for the LGU user
+            if (report.AssignedTo != null)
+            {
+                var notification = new UserNotification
+                {
+                    UserId = report.AssignedToId,
+                    Title = "New Report Rating",
+                    Message = $"A community member has rated your response to the report '{report.Title}'.",
+                    NotificationType = "info",
+                    RelatedEntityId = report.Id,
+                    RelatedEntityType = "Report",
+                    IsRead = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.UserNotifications.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Send real-time notification
+                await _hubContext.Clients.Group($"user_{report.AssignedToId}")
+                    .SendAsync("NotificationReceived", notification);
+            }
+
+            TempData["SuccessMessage"] = "Thank you for rating this report!";
+            return RedirectToAction(nameof(ReportDetails), new { id });
+        }
+    }
+
+    public class NotificationItem
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public string NotificationType { get; set; }
+        public bool IsRead { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public int? RelatedEntityId { get; set; }
+        public string RelatedEntityType { get; set; }
+        public AlertSeverity? Severity { get; set; }
+        public string AffectedArea { get; set; }
+        public string ImagePath { get; set; }
+        public string IssuedBy { get; set; }
     }
 } 

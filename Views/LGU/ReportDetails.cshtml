@@ -354,6 +354,54 @@
             max-height: 200px;
         }
     }
+    
+    /* Rating styles */
+    .rating-stars {
+        display: flex;
+        gap: 0.2rem;
+    }
+    
+    .rating-item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: rgba(0, 0, 0, 0.02);
+        margin-bottom: 1rem;
+    }
+    
+    .rating-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .rating-item .rating-stars {
+        margin-bottom: 0.5rem;
+    }
+    
+    .rating-item .text-muted {
+        font-size: 0.85rem;
+    }
+    
+    .rating-count {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-left: 0.5rem;
+    }
+    
+    .rating-summary {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .rating-average {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-right: 1rem;
+    }
+    
+    .rating-count {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
 </style>
 
 <div class="report-container">
@@ -576,14 +624,17 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
-                        <a href="@Url.Action("ManageReports", "LGU")" class="action-btn btn-back">
-                            <i class="fas fa-arrow-left"></i>Back to Reports
-                        </a>
-                        <a href="@Url.Action("IncidentMap", "LGU")" class="action-btn btn-primary">
-                            <i class="fas fa-map"></i>View on Map
-                        </a>
+                            <button type="button" class="action-btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
+                                <i class="fas fa-edit"></i>Update Status
+                            </button>
+                            <a href="@Url.Action("ManageReports", "LGU")" class="action-btn btn-back">
+                                <i class="fas fa-arrow-left"></i>Back to Reports
+                            </a>
+                            <a href="@Url.Action("IncidentMap", "LGU")" class="action-btn btn-primary">
+                                <i class="fas fa-map"></i>View on Map
+                            </a>
+                        </div>
                     </div>
-                </div>
             </div>
         </div>
     </div>
@@ -603,6 +654,85 @@
                     <img src="@Model.ImageUrl" alt="Report Image" class="img-fluid w-100">
                 </div>
             </div>
+        </div>
+    </div>
+}
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content modal-container">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusModalLabel">Update Report Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="UpdateReportStatus" asp-route-id="@Model.Id" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select id="status" name="status" class="form-select" required>
+                            @{
+                                var inProgressSelected = Model.Status == THYNK.Models.ReportStatus.InProgress ? "selected" : "";
+                                var resolvedSelected = Model.Status == THYNK.Models.ReportStatus.Resolved ? "selected" : "";
+                            }
+                            @Html.Raw($"<option value=\"2\" {inProgressSelected}>In Progress</option>")
+                            @Html.Raw($"<option value=\"3\" {resolvedSelected}>Resolved</option>")
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="notes" class="form-label">Response Notes</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="4" required placeholder="Describe the actions taken or resolution details..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Update Status
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Rating Information for Resolved Reports -->
+@if (Model.Status == THYNK.Models.ReportStatus.Resolved)
+{
+    <div class="report-card animate-in">
+        <div class="card-header">
+            <h5 class="card-title"><i class="fas fa-star"></i>Community Ratings</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Ratings.Any())
+            {
+                <div class="ratings-list">
+                    @foreach (var rating in Model.Ratings.OrderByDescending(r => r.CreatedAt))
+                    {
+                        <div class="rating-item">
+                            <div class="rating-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="@(i <= rating.Rating ? "fas" : "far") fa-star text-warning"></i>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(rating.Comment))
+                            {
+                                <div class="rating-comment mb-2">@rating.Comment</div>
+                            }
+                            <div class="text-muted">
+                                By @rating.User.FirstName @rating.User.LastName on @rating.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>This report has not been rated yet.
+                </div>
+            }
         </div>
     </div>
 }

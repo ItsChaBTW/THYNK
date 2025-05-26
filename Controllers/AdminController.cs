@@ -500,7 +500,7 @@ namespace THYNK.Controllers
             }
 
             // Return to reports list
-            return RedirectToAction("IncidentReports");
+            return RedirectToAction("ReportDetails", new { id });
         }
 
         // Update report status

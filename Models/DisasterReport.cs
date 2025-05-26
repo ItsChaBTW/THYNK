@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace THYNK.Models
 {
@@ -88,6 +90,13 @@ namespace THYNK.Models
         // Alias for ResolvedAt to maintain compatibility
         [NotMapped]
         public DateTime? DateResolved => ResolvedAt;
+
+        // Navigation property for ratings
+        public virtual ICollection<DisasterReportRating> Ratings { get; set; } = new List<DisasterReportRating>();
+
+        // Computed property for average rating
+        [NotMapped]
+        public double? AverageRating => Ratings?.Any() == true ? Ratings.Average(r => r.Rating) : null;
     }
 
     public enum DisasterType

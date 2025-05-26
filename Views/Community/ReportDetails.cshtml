@@ -1,3 +1,4 @@
+@using System.Security.Claims
 @model THYNK.Models.DisasterReport
 @{
     ViewData["Title"] = "Incident Details";
@@ -298,6 +299,103 @@
                         </div>
                     </div>
                     
+                    <!-- Rating Section - Only show for resolved reports -->
+                    @if (Model.Status == ReportStatus.Resolved)
+                    {
+                        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                        var userRating = Model.Ratings.FirstOrDefault(r => r.UserId == userId);
+                        var hasRated = userRating != null;
+
+                        <div class="card mt-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-star text-warning me-2"></i>Report Rating
+                                </h5>
+                                @if (User.Identity.IsAuthenticated && hasRated)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>You've Rated
+                                    </span>
+                                }
+                            </div>
+                            <div class="card-body">
+                                @if (!User.Identity.IsAuthenticated)
+                                {
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        Please <a asp-area="Identity" asp-page="/Account/Login">login</a> to rate this report.
+                                    </div>
+                                }
+                                else if (hasRated)
+                                {
+                                    <div class="alert alert-success border-success">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <i class="fas fa-check-circle me-2"></i>
+                                                <strong>Your Rating for this Report</strong>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="rating-display mb-3">
+                                                <label class="text-muted d-block mb-2">Your Rating:</label>
+                                                <div class="rating-stars">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        <i class="@(i <= userRating.Rating ? "fas" : "far") fa-star text-warning"></i>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="comment-display">
+                                                <label class="text-muted d-block mb-2">Your Comment:</label>
+                                                @if (!string.IsNullOrEmpty(userRating.Comment))
+                                                {
+                                                    <p class="mb-0 p-3 bg-light rounded">@userRating.Comment</p>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted mb-0 p-3 bg-light rounded fst-italic">No comment provided</p>
+                                                }
+                                            </div>
+                                            <div class="mt-3 text-muted small">
+                                                <i class="far fa-clock me-1"></i>Rated on @userRating.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <form asp-action="RateReport" asp-controller="Community" method="post" id="ratingForm">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@Model.Id" />
+                                        <div class="form-group">
+                                            <label class="fw-bold mb-2">Your Rating</label>
+                                            <div class="rating-stars mb-3">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <input type="radio" id="star@(i)" name="rating" value="@i" class="d-none" required />
+                                                    <label for="star@(i)" class="rating-star" data-rating="@i">
+                                                        <i class="far fa-star text-warning"></i>
+                                                    </label>
+                                                }
+                                            </div>
+                                            <div class="text-muted small mb-3">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Note: You can only rate once. Your rating cannot be changed after submission.
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="comment" class="fw-bold mb-2">Comment (Optional)</label>
+                                            <textarea name="comment" id="comment" class="form-control" rows="3" placeholder="Share your thoughts about how this incident was handled..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary mt-3">
+                                            <i class="fas fa-paper-plane me-1"></i>Submit Rating
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+                    
                     <!-- Action Buttons -->
                     <div class="d-flex flex-wrap gap-3 justify-content-between mt-4 action-buttons-container">
                         <div class="d-flex gap-2">
@@ -451,134 +549,150 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
     
     <script>
-        // Lightbox configuration
-        lightbox.option({
-            'resizeDuration': 200,
-            'wrapAround': true,
-            'fadeDuration': 200,
-            'imageFadeDuration': 200,
-            'positionFromTop': 50,
-            'alwaysShowNavOnTouchDevices': true,
-            'showImageNumberLabel': false
-        });
-        
-        // Add custom close button to lightbox
-        $(document).on('click', '.lb-container', function(e) {
-            if ($(e.target).hasClass('lb-container')) {
-                lightbox.end();
+        $(document).ready(function() {
+            var hasRated = @(Model.Ratings.Any(r => r.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)).ToString().ToLower());
+            var form = $('#ratingForm');
+            
+            if (hasRated) {
+                // Disable the entire form if user has already rated
+                form.find('input, textarea, button').prop('disabled', true);
+                $('.rating-star').css({
+                    'pointer-events': 'none',
+                    'opacity': '0.7',
+                    'cursor': 'not-allowed'
+                });
+                return;
             }
-        });
-        
-        // Create and append custom close button after lightbox is opened
-        lightbox.option({
-            'albumLabel': '',
-            'onOpen': function() {
-                setTimeout(function() {
-                    if (!$('.lb-custom-close').length) {
-                        const closeBtn = $('<div class="lb-custom-close"><i class="fas fa-times"></i></div>');
-                        $('.lb-container').append(closeBtn);
-                        
-                        // Add click event to close lightbox
-                        $('.lb-custom-close').on('click', function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            lightbox.end();
+
+            // Handle star rating hover and click
+            $('.rating-star').hover(
+                function() {
+                    if (!hasRated) {
+                        var rating = $(this).data('rating');
+                        $('.rating-star').each(function() {
+                            var starValue = $(this).data('rating');
+                            if (starValue <= rating) {
+                                $(this).find('i').removeClass('far').addClass('fas');
+                            } else {
+                                $(this).find('i').removeClass('fas').addClass('far');
+                            }
                         });
                     }
-                }, 100);
-            }
-        });
-    
-        // Initialize the map
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhYW5nZ2cwMTkzIiwiYSI6ImNtOHo5ODF6cDAxcTUyaXB0ODBtYXlhN3oifQ.SJ-eGgWUplbUFNE_UwK7JA';
-        const map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v11',
-            center: [@Model.Longitude, @Model.Latitude],
-            zoom: 15
-        });
+                },
+                function() {
+                    if (!hasRated) {
+                        var selectedRating = $('input[name="rating"]:checked').val();
+                        $('.rating-star').each(function() {
+                            var starValue = $(this).data('rating');
+                            if (selectedRating && starValue <= selectedRating) {
+                                $(this).find('i').removeClass('far').addClass('fas');
+                            } else {
+                                $(this).find('i').removeClass('fas').addClass('far');
+                            }
+                        });
+                    }
+                }
+            );
 
-        // Add map controls
-        map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-        
-        // Add a marker based on incident type
-        const markerColor = 
-            @switch(Model.Type) {
-                case DisasterType.Earthquake: @Html.Raw("'#dc3545'"); break;
-                case DisasterType.Flood: @Html.Raw("'#0d6efd'"); break;
-                case DisasterType.Fire: @Html.Raw("'#fd7e14'"); break;
-                case DisasterType.Landslide: @Html.Raw("'#6c757d'"); break;
-                case DisasterType.Storm: @Html.Raw("'#0dcaf0'"); break;
-                case DisasterType.Accident: @Html.Raw("'#212529'"); break;
-                default: @Html.Raw("'#6c757d'"); break;
-            };
-            
-        const marker = new mapboxgl.Marker({
-            color: markerColor
-        }).setLngLat([@Model.Longitude, @Model.Latitude])
-          .addTo(map);
-          
-        // Add a popup
-        new mapboxgl.Popup({
-            offset: 25,
-            closeButton: false
-        }).setLngLat([@Model.Longitude, @Model.Latitude])
-          .setHTML(`
-            <div class="map-popup">
-                <strong>${'@Model.Title'}</strong>
-                <br>
-                <span class="text-muted">${'@Model.Type'}</span>
-            </div>
-          `)
-          .addTo(map);
+            $('.rating-star').click(function() {
+                if (!hasRated) {
+                    var rating = $(this).data('rating');
+                    $('input[name="rating"][value="' + rating + '"]').prop('checked', true);
+                    $('.rating-star').each(function() {
+                        var starValue = $(this).data('rating');
+                        if (starValue <= rating) {
+                            $(this).find('i').removeClass('far').addClass('fas');
+                        } else {
+                            $(this).find('i').removeClass('fas').addClass('far');
+                        }
+                    });
+                }
+            });
 
-        // Social Media Sharing Functions
-        function getShareUrl() {
-            return window.location.href;
-        }
-        
-        function getShareTitle() {
-            return '@Model.Title';
-        }
-        
-        function getShareDescription() {
-            return '@Model.Description'.substring(0, 200) + '...';
-        }
-        
-        function shareToFacebook() {
-            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl())}`;
-            window.open(url, '_blank', 'width=600,height=400');
-        }
-        
-        function shareToTwitter() {
-            const text = `${getShareTitle()} - Check out this incident report on THYNK`;
-            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(getShareUrl())}`;
-            window.open(url, '_blank', 'width=600,height=400');
-        }
-        
-        function shareToLinkedIn() {
-            const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(getShareUrl())}`;
-            window.open(url, '_blank', 'width=600,height=400');
-        }
-        
-        function shareGeneral() {
-            if (navigator.share) {
-                navigator.share({
-                    title: getShareTitle(),
-                    text: getShareDescription(),
-                    url: getShareUrl()
-                }).catch(console.error);
-            } else {
-                // Fallback for browsers that don't support Web Share API
-                const shareUrl = getShareUrl();
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert('Link copied to clipboard!');
-                }).catch(err => {
-                    console.error('Failed to copy: ', err);
-                });
-            }
-        }
+            // Handle form submission
+            form.on('submit', function(e) {
+                            e.preventDefault();
+
+                if (hasRated) {
+                    return false;
+                }
+
+                var rating = $('input[name="rating"]:checked').val();
+                if (!rating) {
+                    alert('Please select a rating before submitting.');
+                    return false;
+                }
+
+                // Submit the form normally
+                this.submit();
+            });
+        });
     </script>
+
+    <style>
+        /* Rating styles */
+        .rating-stars {
+            display: flex;
+            flex-direction: row;
+            gap: 0.2rem;
+        }
+
+        .rating-star {
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .rating-star i {
+            color: #ffc107;
+        }
+
+        .rating-star:hover i,
+        .rating-star:hover ~ .rating-star i {
+            color: #ffc107;
+        }
+
+        .rating-star.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        button[type="submit"]:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .rating-summary {
+            background-color: rgba(248, 249, 250, 0.5);
+        }
+
+        .rating-item {
+            transition: all 0.2s ease;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            background-color: rgba(0, 0, 0, 0.02);
+            margin-bottom: 1rem;
+        }
+
+        .rating-item:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .rating-item.border-success {
+            background-color: rgba(25, 135, 84, 0.05);
+        }
+
+        .rating-display {
+            background-color: rgba(255, 193, 7, 0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .comment-display {
+            margin-top: 1rem;
+        }
+    </style>
 }
 
 @section Styles {

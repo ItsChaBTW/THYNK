@@ -28,7 +28,42 @@
                     </span>
                 </td>
                 <td>@(string.IsNullOrEmpty(report.Location) ? "Not specified" : report.Location)</td>
-                <td class="date-cell">@report.DateReported.ToString("MMM dd, yyyy HH:mm")</td>
+                <td class="date-cell">
+                    <div>@report.DateReported.ToString("MMM dd, yyyy HH:mm")</div>
+                    @if (report.Status == THYNK.Models.ReportStatus.Resolved)
+                    {
+                        if (report.Ratings != null && report.Ratings.Any())
+                        {
+                            var ratings = report.Ratings.ToList(); // Materialize the ratings
+                            var averageRating = ratings.Average(r => r.Rating);
+                            <div class="mt-2 d-flex align-items-center">
+                                <div class="rating-stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= Math.Floor(averageRating))
+                                        {
+                                            <i class="fas fa-star"></i>
+                                        }
+                                        else if (i - 0.5 <= averageRating)
+                                        {
+                                            <i class="fas fa-star-half-alt"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-star"></i>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mt-2">
+                                <span class="text-muted small">No ratings</span>
+                            </div>
+                        }
+                    }
+                </td>
                 <td>
                     <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
                                    report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 

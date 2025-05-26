@@ -153,7 +153,11 @@ namespace THYNK.Controllers
             _logger.LogInformation($"Current user: {currentUser.Id}, Organization: {currentUser.OrganizationName}");
 
             // Get reports
-            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports;
+            IQueryable<DisasterReport> reportsQuery = _context.DisasterReports
+                .Include(r => r.Ratings)
+                    .ThenInclude(rating => rating.User)
+                .AsSplitQuery()  // Split the query to avoid cartesian explosion
+                .AsNoTracking(); // Improve performance for read-only data
 
             // Default behavior - only get specific reports
             reportsQuery = reportsQuery.Where(r => 
@@ -231,6 +235,8 @@ namespace THYNK.Controllers
             var report = await _context.DisasterReports
                 .Include(r => r.User)
                 .Include(r => r.AssignedTo)
+                .Include(r => r.Ratings)
+                    .ThenInclude(rating => rating.User)
                 .FirstOrDefaultAsync(r => r.Id == id.Value);
                 
             if (report == null)
@@ -488,7 +494,7 @@ namespace THYNK.Controllers
                 }
                 
                 // Set required properties directly
-                alert.DateIssued = DateTime.UtcNow;
+                alert.DateIssued = DateTime.Now;
                 alert.IsActive = true;
                 alert.IssuedByUserId = userId;
                 
@@ -563,6 +569,7 @@ namespace THYNK.Controllers
                                 alertWithUser.BackgroundStyle,
                                 alertWithUser.IconStyle,
                                 alertWithUser.ColorScheme,
+                                issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
                                 User = new 
                                 {
                                     Id = alertWithUser.User?.Id,
@@ -629,7 +636,8 @@ namespace THYNK.Controllers
         // Manage alerts
         public async Task<IActionResult> ManageAlerts(bool? isActive = null)
         {
-            IQueryable<Alert> alertsQuery = _context.Alerts;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            IQueryable<Alert> alertsQuery = _context.Alerts.Where(a => a.IssuedByUserId == userId);
             
             // Filter for active/inactive alerts if requested
             if (isActive.HasValue)
@@ -697,6 +705,7 @@ namespace THYNK.Controllers
                                 alertWithUser.BackgroundStyle,
                                 alertWithUser.IconStyle,
                                 alertWithUser.ColorScheme,
+                                issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
                                 User = new 
                                 {
                                     Id = alertWithUser.User?.Id,
@@ -803,6 +812,7 @@ namespace THYNK.Controllers
                         alertWithUser.BackgroundStyle,
                         alertWithUser.IconStyle,
                         alertWithUser.ColorScheme,
+                        issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
                         User = new 
                         {
                             Id = alertWithUser.User?.Id,
@@ -2578,6 +2588,53 @@ namespace THYNK.Controllers
         private bool EvacuationSiteExists(int id)
         {
             return _context.EvacuationSites.Any(e => e.Id == id);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetRecentAlerts()
+        {
+            try
+            {
+                var recentAlerts = await _context.Alerts
+                    .Include(a => a.User)
+                    .Where(a => a.DateIssued >= DateTime.UtcNow.AddHours(-24))
+                    .OrderByDescending(a => a.DateIssued)
+                    .Take(10)
+                    .Select(a => new {
+                        a.Id,
+                        a.Title,
+                        a.Message,
+                        a.Severity,
+                        a.DateIssued,
+                        a.ImagePath,
+                        a.AffectedArea,
+                        id = a.Id,
+                        title = a.Title,
+                        message = a.Message,
+                        severity = (int)a.Severity,
+                        dateIssued = a.DateIssued,
+                        expiresAt = a.ExpiresAt,
+                        isActive = a.IsActive,
+                        affectedArea = a.AffectedArea,
+                        imagePath = a.ImagePath,
+                        backgroundStyle = a.BackgroundStyle,
+                        iconStyle = a.IconStyle,
+                        colorScheme = a.ColorScheme,
+                        issuedBy = a.User.GetType().Name == "LGUUser" ? ((LGUUser)a.User).OrganizationName : "LGU",
+                        user = new {
+                            id = a.User.Id,
+                            name = $"{a.User.FirstName} {a.User.LastName}"
+                        }
+                    })
+                    .ToListAsync();
+
+                return Json(new { success = true, alerts = recentAlerts });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching recent alerts");
+                return Json(new { success = false, message = "Error fetching alerts" });
+            }
         }
     }
 } 

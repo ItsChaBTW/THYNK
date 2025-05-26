@@ -23,6 +23,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<SupportChat> SupportChats { get; set; }
     public DbSet<NotificationPreferences> NotificationPreferences { get; set; }
     public DbSet<UserNotification> UserNotifications { get; set; }
+    public DbSet<AlertReadStatus> AlertReadStatus { get; set; }
+    public DbSet<DisasterReportRating> DisasterReportRatings { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -93,6 +95,19 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(sc => sc.ResolvedBy)
             .WithMany()
             .HasForeignKey(sc => sc.ResolvedById)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        // Configure DisasterReportRating relationships
+        builder.Entity<DisasterReportRating>()
+            .HasOne(r => r.Report)
+            .WithMany(d => d.Ratings)
+            .HasForeignKey(r => r.DisasterReportId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<DisasterReportRating>()
+            .HasOne(r => r.User)
+            .WithMany()
+            .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.NoAction);
 
         // Make some fields optional

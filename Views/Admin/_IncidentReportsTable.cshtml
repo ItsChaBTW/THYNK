@@ -25,7 +25,7 @@
                             @report.Severity
                         </span>
                     </td>
-                    <td>@report.Barangay, @report.City</td>
+                    <td>@(report.Location?.Replace(", Philippines", ""))</td>
                     <td>
                         <span class="badge @(report.Status == THYNK.Models.ReportStatus.Pending ? "bg-warning" : 
                                           report.Status == THYNK.Models.ReportStatus.Verified ? "bg-info" : 
