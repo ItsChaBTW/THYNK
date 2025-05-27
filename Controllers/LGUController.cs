@@ -505,9 +505,15 @@ namespace THYNK.Controllers
                 }
                 
                 // Set required properties directly
-                alert.DateIssued = DateTime.UtcNow;
+                alert.DateIssued = DateTime.Now;  // Store as local time
                 alert.IsActive = true;
                 alert.IssuedByUserId = userId;
+                
+                // If ExpiresAt is set, ensure it's in local time
+                if (alert.ExpiresAt.HasValue)
+                {
+                    alert.ExpiresAt = alert.ExpiresAt.Value;
+                }
                 
                 // Set customization options if provided
                 if (!string.IsNullOrEmpty(backgroundStyle)) alert.BackgroundStyle = backgroundStyle;
@@ -572,23 +578,27 @@ namespace THYNK.Controllers
                                 alertWithUser.Title,
                                 alertWithUser.Message,
                                 alertWithUser.Severity,
-                                alertWithUser.DateIssued,
-                                alertWithUser.ExpiresAt,
+                                dateIssued = alertWithUser.DateIssued,  // Send as DateTime
+                                expiresAt = alertWithUser.ExpiresAt,    // Send as DateTime
                                 alertWithUser.IsActive,
                                 alertWithUser.AffectedArea,
                                 alertWithUser.ImagePath,
                                 alertWithUser.BackgroundStyle,
                                 alertWithUser.IconStyle,
                                 alertWithUser.ColorScheme,
+                                issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
+                                organizationName = alertWithUser.User is LGUUser lgu ? lgu.OrganizationName : "LGU",
                                 User = new 
                                 {
                                     Id = alertWithUser.User?.Id,
                                     Name = alertWithUser.User != null 
                                         ? $"{alertWithUser.User.FirstName} {alertWithUser.User.LastName}"
-                                        : "System"
+                                        : "System",
+                                    OrganizationName = alertWithUser.User is LGUUser lguUser2 ? lguUser2.OrganizationName : "LGU"
                                 }
                             };
 
+                            _logger.LogInformation($"Broadcasting alert with date: {alertWithUser.DateIssued:o}");
                             await _alertHubContext.Clients.All.SendAsync("ReceiveAlert", broadcastAlert);
                             _logger.LogInformation($"Alert {alert.Id} broadcast to all connected clients");
                         }
@@ -646,7 +656,10 @@ namespace THYNK.Controllers
         // Manage alerts
         public async Task<IActionResult> ManageAlerts(bool? isActive = null)
         {
-            IQueryable<Alert> alertsQuery = _context.Alerts;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            IQueryable<Alert> alertsQuery = _context.Alerts
+                .Where(a => a.IssuedByUserId == userId); // Only show alerts created by current user
             
             // Filter for active/inactive alerts if requested
             if (isActive.HasValue)
@@ -714,12 +727,15 @@ namespace THYNK.Controllers
                                 alertWithUser.BackgroundStyle,
                                 alertWithUser.IconStyle,
                                 alertWithUser.ColorScheme,
+                                issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
+                                organizationName = alertWithUser.User is LGUUser lgu ? lgu.OrganizationName : "LGU",
                                 User = new 
                                 {
                                     Id = alertWithUser.User?.Id,
                                     Name = alertWithUser.User != null 
                                         ? $"{alertWithUser.User.FirstName} {alertWithUser.User.LastName}"
-                                        : "System"
+                                        : "System",
+                                    OrganizationName = alertWithUser.User is LGUUser lguUser2 ? lguUser2.OrganizationName : "LGU"
                                 }
                             };
 
@@ -820,12 +836,15 @@ namespace THYNK.Controllers
                         alertWithUser.BackgroundStyle,
                         alertWithUser.IconStyle,
                         alertWithUser.ColorScheme,
+                        issuedBy = alertWithUser.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
+                        organizationName = alertWithUser.User is LGUUser lgu ? lgu.OrganizationName : "LGU",
                         User = new 
                         {
                             Id = alertWithUser.User?.Id,
                             Name = alertWithUser.User != null 
                                 ? $"{alertWithUser.User.FirstName} {alertWithUser.User.LastName}"
-                                : "System"
+                                : "System",
+                            OrganizationName = alertWithUser.User is LGUUser lguUser2 ? lguUser2.OrganizationName : "LGU"
                         }
                     };
 

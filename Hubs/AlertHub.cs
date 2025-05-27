@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using THYNK.Models;
+using System.Threading.Tasks;
 
 namespace THYNK.Hubs
 {
@@ -29,12 +30,14 @@ namespace THYNK.Hubs
                 alert.IconStyle,
                 alert.ColorScheme,
                 issuedBy = alert.User is LGUUser lguUser ? lguUser.OrganizationName : "LGU",
+                organizationName = alert.User is LGUUser lgu ? lgu.OrganizationName : "LGU",
                 User = new
                 {
                     Id = alert.User?.Id,
                     Name = alert.User != null
                         ? $"{alert.User.FirstName} {alert.User.LastName}"
-                        : "System"
+                        : "System",
+                    OrganizationName = alert.User is LGUUser lguUser2 ? lguUser2.OrganizationName : "LGU"
                 }
             };
 
@@ -62,6 +65,11 @@ namespace THYNK.Hubs
                 connectionId = Context.ConnectionId
                 
             });
+        }
+
+        public async Task SendAlert(object alerts)
+        {
+            await Clients.All.SendAsync("ReceiveAlert", alerts);
         }
     }
 } 

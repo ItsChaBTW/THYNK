@@ -25,11 +25,13 @@ namespace THYNK.Models
         [ForeignKey("UserId")]
         public virtual ApplicationUser? User { get; set; }
 
-        public string? Location { get; set; }
+        [Required(ErrorMessage = "Location is required")]
+        public string Location { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
-        public string? ImageUrl { get; set; }
+        [Required(ErrorMessage = "Please upload an image")]
+        public string ImageUrl { get; set; }
         public int? DisasterReportId { get; set; }
         
         [ForeignKey("DisasterReportId")]

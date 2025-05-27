@@ -4,6 +4,13 @@
     Layout = "_CommunityLayout";
 }
 
+@functions {
+    public string FormatLocalDateTime(DateTime utcDateTime)
+    {
+        return utcDateTime.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt");
+    }
+}
+
 <div class="container-fluid px-4 py-4">
     <div class="row g-4">
         <!-- Create Post Card - Trigger for Modal -->
@@ -86,7 +93,7 @@
                                                 @(item.User != null ? $"{item.User.FirstName} {item.User.LastName}" : "Unknown User")
                                             }
                                         </h6>
-                                        <small class="text-muted">@item.DatePosted.ToString("MMM dd, yyyy HH:mm")</small>
+                                        <small class="text-muted">@FormatLocalDateTime(item.DatePosted)</small>
                                 </div>
                                 <div class="post-type">
                                         @if (item.Type == "Alert")
@@ -219,26 +226,26 @@
                         <div class="col-md-6">
                             <label for="modalType" class="form-label small text-muted">Post Type</label>
                             <select class="form-select bg-light border-0" id="modalType" name="Type" required>
-                            <option value="GeneralUpdate">General Update</option>
-                            <option value="StatusUpdate">Status Update</option>
-                            <option value="ResourceSharing">Resource Sharing</option>
-                            <option value="Information">Information</option>
-                        </select>
+                                <option value="GeneralUpdate">General Update</option>
+                                <option value="StatusUpdate">Status Update</option>
+                                <option value="ResourceSharing">Resource Sharing</option>
+                                <option value="Information">Information</option>
+                            </select>
                             <small class="text-muted d-block mt-1">Select the category that best fits your post</small>
                         </div>
                         <div class="col-md-6">
-                            <label for="modalLocation" class="form-label small text-muted">Location (optional)</label>
+                            <label for="modalLocation" class="form-label small text-muted">Location <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-0">
                                     <i class="fas fa-map-marker-alt text-muted"></i>
                                 </span>
                                 <input type="text" class="form-control bg-light border-0" id="modalLocation" name="Location" 
-                                       placeholder="Add location">
+                                       placeholder="Add location" required>
                                 <button type="button" class="btn btn-primary" id="detect-modal-location">
                                     <i class="fas fa-crosshairs"></i>
                                 </button>
                             </div>
-                            <small class="text-muted d-block mt-1">Current location will be automatically detected</small>
+                            <small class="text-muted d-block mt-1">Location is required for all posts</small>
                         </div>
                     </div>
                     
@@ -247,26 +254,26 @@
                                 placeholder="Share your thoughts, updates, or information with the community..."></textarea>
                     </div>
                     
-                  
-
                     <div class="mb-3">
-                        <label for="modalAttachment" class="form-label small text-muted">Add Attachment (optional)</label>
+                        <label for="modalImage" class="form-label small text-muted">Add Image <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-0">
-                                <i class="fas fa-paperclip text-primary"></i>
+                                <i class="fas fa-image text-primary"></i>
                             </span>
-                            <input type="file" class="form-control bg-light border-0" id="modalAttachment" name="Attachment">
+                            <input type="file" class="form-control bg-light border-0" id="modalImage" name="Image" 
+                                   accept="image/jpeg,image/png,image/gif" required>
                         </div>
-                        <div id="filePreview" class="mt-3 d-none text-center">
-                        <div class="position-relative d-inline-block">
-                                <div id="filePreviewContent"></div>
-                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" id="removeFile" style="margin-right: -10px; margin-top: -10px;">
-                                <i class="fas fa-times"></i>
-                            </button>
+                        <small class="text-muted d-block mt-1">Upload an image (JPEG, PNG, or GIF, max 5MB)</small>
+                        <div id="imagePreview" class="mt-3 d-none">
+                            <div class="position-relative d-inline-block">
+                                <img src="" class="img-fluid rounded" style="max-height: 200px;">
+                                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" 
+                                        onclick="removeImage()" style="margin-right: -10px; margin-top: -10px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </div>
-                            <p class="text-muted small mt-2">Selected file preview</p>
                     </div>
-                </div>
                     
                     <!-- Hidden fields -->
                     <input type="number" step="any" class="d-none" id="modalLatitude" name="Latitude">
@@ -1439,6 +1446,28 @@
     
     <script>
         $(document).ready(function() {
+            // Add a utility function for consistent date formatting
+            function formatLocalDateTime(dateString) {
+                try {
+                    // Parse the date string
+                    const date = new Date(dateString);
+                    
+                    // Format the date using local timezone
+                    return date.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                        timeZone: 'Asia/Manila'  // Use Philippine timezone
+                    });
+                } catch (error) {
+                    console.error('Error formatting date:', error);
+                    return dateString;
+                }
+            }
+
             // Check for alertId in URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const alertId = urlParams.get('alertId');
@@ -1492,7 +1521,21 @@
             
             // Create audio element for alert sound
             const alertSound = new Audio('/sounds/notification.mp3');
-            
+            // Preload the sound
+            alertSound.load();
+
+            // Function to play alert sound
+            async function playAlertSound() {
+                try {
+                    // Reset the audio to the beginning
+                    alertSound.currentTime = 0;
+                    // Play the sound
+                    await alertSound.play();
+                } catch (error) {
+                    console.log("Error playing sound:", error);
+                }
+            }
+
             // Initialize SignalR connection to AlertHub
             const alertConnection = new signalR.HubConnectionBuilder()
                 .withUrl("/alertHub")
@@ -1503,12 +1546,31 @@
             // Load existing alerts into notifications
             function loadExistingAlerts() {
                 fetch('/LGU/GetRecentAlerts')
-                    .then(response => response.json())
-                    .then(alerts => {
-                        console.log('Loading existing alerts:', alerts);
-                        alerts.forEach(alert => {
-                            showAlertNotification(alert, false); // false means don't play sound
-                        });
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data && data.success && Array.isArray(data.alerts)) {
+                            console.log('=== PAGE REFRESH: Loading existing alerts ===');
+                            console.log('Raw alerts data:', data.alerts);
+                            data.alerts.forEach(alert => {
+                                if (alert && typeof alert === 'object') {
+                                    console.log('PAGE REFRESH - Alert organization info:', {
+                                        alertId: alert.id,
+                                        organizationName: alert.organizationName,
+                                        issuedBy: alert.issuedBy,
+                                        userOrg: alert.user?.OrganizationName,
+                                        fullAlert: alert
+                                    });
+                                    showAlertNotification(alert, false); // false means don't play sound
+                                }
+                            });
+                        } else {
+                            console.warn('Received invalid alert data:', data);
+                        }
                     })
                     .catch(error => {
                         console.error('Error loading existing alerts:', error);
@@ -1517,16 +1579,57 @@
 
             // Handle new alerts
             alertConnection.on("ReceiveAlert", function(alert) {
-                console.log("New alert received:", alert);
-                // Play alert sound
-                alertSound.play().catch(error => {
-                    console.log("Error playing sound:", error);
+                console.log('=== REAL-TIME: New alert received ===');
+                console.log('Raw alert data:', alert);
+                
+                // Validate the alert object
+                if (!alert || typeof alert !== 'object') {
+                    console.warn("Received invalid alert data:", alert);
+                    return;
+                }
+
+                // Check for required properties
+                if (!alert.id || !alert.title || !alert.message) {
+                    console.warn("Alert missing required properties:", alert);
+                    return;
+                }
+
+                // Log the organization information for debugging
+                console.log("REAL-TIME - Alert organization info:", {
+                    alertId: alert.id,
+                    organizationName: alert.organizationName,
+                    issuedBy: alert.issuedBy,
+                    userOrg: alert.user?.OrganizationName,
+                    fullAlert: alert
                 });
+
+                // Get the organization name with proper fallbacks
+                const organizationName = alert.organizationName || 
+                                      alert.issuedBy || 
+                                      (alert.user && alert.user.OrganizationName) || 
+                                      "Organization";
+
+                console.log("REAL-TIME - Resolved organization name:", organizationName);
+
+                // Store the organization name in the alert object for other functions to use
+                alert.displayOrganizationName = organizationName;
+
+                // Check if this alert already exists in the feed
+                const existingAlert = document.querySelector(`.post-card[data-post-id="${alert.id}"][data-post-type="Alert"]`);
+                if (existingAlert) {
+                    console.log("Alert already exists in feed, updating instead:", alert.id);
+                    updateAlertInFeed(existingAlert, alert);
+                    return;
+                }
+                
+                // Play alert sound for new alerts
+                playAlertSound();
                 
                 // Ensure severity is properly set
                 if (alert.severity === undefined || alert.severity === null) {
                     alert.severity = 1; // Default to Warning if not specified
                 }
+                
                 addAlertToFeed(alert);
 
                 // Show notification in dropdown
@@ -1536,7 +1639,22 @@
             // Function to show alert notification in dropdown
             function showAlertNotification(alert, isNew = true) {
                 const notificationList = document.getElementById('notificationList');
-                if (!notificationList) return;
+                if (!notificationList) {
+                    console.warn('Notification list element not found');
+                    return;
+                }
+
+                // Validate alert object
+                if (!alert || typeof alert !== 'object') {
+                    console.error('Invalid alert object:', alert);
+                    return;
+                }
+
+                // Ensure required properties exist
+                if (!alert.id || !alert.title || !alert.message) {
+                    console.error('Alert missing required properties:', alert);
+                    return;
+                }
 
                 // Create notification item
                 const notificationItem = document.createElement('div');
@@ -1545,20 +1663,11 @@
 
                 // Get severity icon and color
                 let iconType = 'bell text-primary';
-                let severityText = getSeverityText(alert.severity);
-                let severityClass = getSeverityBadgeClass(alert.severity);
+                let severityText = getSeverityText(alert.severity || 1);
+                let severityClass = getSeverityBadgeClass(alert.severity || 1);
 
-                // Format the date
-                const date = new Date(alert.dateIssued);
-                const formattedDate = date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                }) + ' ' + date.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
+                // Format the date using the utility function
+                const formattedDate = formatLocalDateTime(alert.dateIssued);
 
                 notificationItem.innerHTML = `
                     <div class="d-flex align-items-start">
@@ -1648,16 +1757,35 @@
             // Function to add a new alert to the feed
             function addAlertToFeed(alert) {
                 const postsContainer = document.getElementById('posts-container');
-                if (!postsContainer) return;
+                if (!postsContainer) {
+                    console.warn("Posts container not found");
+                    return;
+                }
 
-                const alertElement = createAlertElement(alert);
-                postsContainer.insertBefore(alertElement, postsContainer.firstChild);
-                
-                // Add animation class for new alerts
-                alertElement.classList.add('new-alert');
-                setTimeout(() => {
-                    alertElement.classList.remove('new-alert');
-                }, 2000);
+                try {
+                    const alertElement = createAlertElement(alert);
+                    if (!alertElement) {
+                        console.warn("Failed to create alert element");
+                        return;
+                    }
+
+                    // Check if this alert already exists
+                    const existingAlert = document.querySelector(`.post-card[data-post-id="${alert.id}"][data-post-type="Alert"]`);
+                    if (existingAlert) {
+                        console.log("Alert already exists, skipping:", alert.id);
+                        return;
+                    }
+
+                    postsContainer.insertBefore(alertElement, postsContainer.firstChild);
+                    
+                    // Add animation class for new alerts
+                    alertElement.classList.add('new-alert');
+                    setTimeout(() => {
+                        alertElement.classList.remove('new-alert');
+                    }, 2000);
+                } catch (error) {
+                    console.error("Error adding alert to feed:", error);
+                }
             }
 
             // Function to update an existing alert in the feed
@@ -1690,78 +1818,81 @@
 
             // Function to create an alert element
             function createAlertElement(alert) {
-                console.log("Creating alert element with data:", alert);
-                
-                const div = document.createElement('div');
-                div.className = 'card shadow-sm border-0 mb-4 post-card';
-                div.setAttribute('data-post-type', 'Alert');
-                div.setAttribute('data-post-id', alert.id);
+                if (!alert || !alert.id || !alert.title || !alert.message) {
+                    console.warn("Invalid alert data for creating element:", alert);
+                    return null;
+                }
 
-                // Format the date to match server format
-                const date = new Date(alert.dateIssued);
-                const formattedDate = date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                }) + ' ' + date.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
+                try {
+                    const div = document.createElement('div');
+                    div.className = 'card shadow-sm border-0 mb-4 post-card';
+                    div.setAttribute('data-post-type', 'Alert');
+                    div.setAttribute('data-post-id', alert.id);
 
-                // Get the correct badge class based on severity
-                const badgeClass = getSeverityBadgeClass(alert.severity);
-                const severityText = getSeverityText(alert.severity);
+                    // Format the date using the utility function
+                    const formattedDate = formatLocalDateTime(alert.dateIssued);
 
-                // Check if alert has an image
-                const hasImage = alert.imagePath && alert.imagePath !== "/images/no-image.png";
+                    // Get the correct badge class based on severity
+                    const badgeClass = getSeverityBadgeClass(alert.severity);
+                    const severityText = getSeverityText(alert.severity);
 
-                // Get the organization name from the alert
-                const organizationName = alert.issuedBy || (alert.user && alert.user.organizationName) || "Organization";
+                    // Check if alert has an image
+                    const hasImage = alert.imagePath && alert.imagePath !== "/images/no-image.png";
 
-                div.innerHTML = `
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="avatar-circle me-3">
-                                <i class="fas fa-bell"></i>
+                    // Get the organization name from the alert with proper fallbacks
+                    const organizationName = alert.displayOrganizationName || 
+                                          alert.organizationName || 
+                                          alert.issuedBy || 
+                                          (alert.user && alert.user.OrganizationName) || 
+                                          "Organization";
+
+                    div.innerHTML = `
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-circle me-3">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">
+                                        <span class="text-danger">${organizationName}</span>
+                                    </h6>
+                                    <small class="text-muted">${formattedDate}</small>
+                                </div>
+                                <div class="post-type">
+                                    <span class="badge rounded-pill ${badgeClass}">
+                                        <i class="fas fa-bell me-1"></i>${severityText} Alert
+                                    </span>
+                                </div>
                             </div>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-0">
-                                    <span class="text-danger">${organizationName}</span>
-                                </h6>
-                                <small class="text-muted">${formattedDate}</small>
-                            </div>
-                            <div class="post-type">
-                                <span class="badge rounded-pill ${badgeClass}">
-                                    <i class="fas fa-bell me-1"></i>${severityText} Alert
-                                </span>
-                            </div>
-                        </div>
 
-                        <h5 class="mb-3">${alert.title}</h5>
+                            <h5 class="mb-3">${alert.title}</h5>
 
-                        <div class="post-content mb-3">
-                            <p class="card-text mb-0">${alert.message}</p>
-                        </div>
-
-                        ${hasImage ? `
-                            <div class="post-image mb-3">
-                                <img src="${alert.imagePath}" class="img-fluid rounded" alt="" 
-                                     onclick="openImageViewer(this.src)" style="cursor: pointer;">
+                            <div class="post-content mb-3">
+                                <p class="card-text mb-0">${alert.message}</p>
                             </div>
-                        ` : ''}
 
-                        ${alert.affectedArea ? `
-                            <div class="mb-2">
-                                <i class="fas fa-map-marker-alt text-muted me-2"></i>
-                                <span class="text-muted">Affected Area: </span>
-                                ${alert.affectedArea}
-                            </div>
-                        ` : ''}
+                            ${hasImage ? `
+                                <div class="post-image mb-3">
+                                    <img src="${alert.imagePath}" class="img-fluid rounded" alt="" 
+                                         onclick="openImageViewer(this.src)" style="cursor: pointer;">
+                                </div>
+                            ` : ''}
+
+                            ${alert.affectedArea ? `
+                                <div class="mb-2">
+                                    <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                                    <span class="text-muted">Affected Area: </span>
+                                    ${alert.affectedArea}
+                                </div>
+                            ` : ''}
                         </div>
                     `;
-                    
-                return div;
+                        
+                    return div;
+                } catch (error) {
+                    console.error("Error creating alert element:", error);
+                    return null;
+                }
             }
 
             // Helper function to get severity badge class
@@ -2102,6 +2233,93 @@
                 setTimeout(() => toast.remove(), 300);
             }, 5000);
         }
+
+        // Image preview functionality
+        document.getElementById('modalImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    this.value = '';
+                    return;
+                }
+
+                // Validate file type
+                if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.type.toLowerCase())) {
+                    alert('Only JPEG, PNG, and GIF images are allowed');
+                    this.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.querySelector('#imagePreview');
+                    const img = preview.querySelector('img');
+                    img.src = e.target.result;
+                    preview.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Remove image preview
+        function removeImage() {
+            const input = document.getElementById('modalImage');
+            input.value = '';
+            const preview = document.getElementById('imagePreview');
+            preview.classList.add('d-none');
+            preview.querySelector('img').src = '';
+        }
+
+        // Location detection
+        document.getElementById('detect-modal-location').addEventListener('click', function() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    
+                    // Update hidden fields
+                    document.getElementById('modalLatitude').value = latitude;
+                    document.getElementById('modalLongitude').value = longitude;
+                    
+                    // Reverse geocoding using Nominatim
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const location = data.display_name.split(',').slice(0, 3).join(',');
+                            document.getElementById('modalLocation').value = location;
+                        })
+                        .catch(error => {
+                            console.error('Error getting location:', error);
+                            alert('Could not get location name. Please enter it manually.');
+                        });
+                }, function(error) {
+                    console.error('Error getting location:', error);
+                    alert('Could not detect location. Please enter it manually.');
+                });
+            } else {
+                alert('Location detection is not supported by your browser. Please enter location manually.');
+            }
+        });
+
+        // Form validation before submit
+        document.querySelector('form.create-post-form').addEventListener('submit', function(e) {
+            const location = document.getElementById('modalLocation').value.trim();
+            const image = document.getElementById('modalImage').files[0];
+            
+            if (!location) {
+                e.preventDefault();
+                alert('Please specify a location for your post.');
+                return;
+            }
+            
+            if (!image) {
+                e.preventDefault();
+                alert('Please upload an image with your post.');
+                return;
+            }
+        });
     </script>
     <script src="/js/community-attachment.js"></script>
 } 

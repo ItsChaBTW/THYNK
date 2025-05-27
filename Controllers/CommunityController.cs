@@ -250,7 +250,7 @@ namespace THYNK.Controllers
                     Type = "CommunityUpdate",
                     Title = update.Type.ToString(),
                     Message = update.Content,
-                    DatePosted = update.DatePosted,
+                    DatePosted = update.DatePosted.ToUniversalTime(),
                     User = update.User,
                     ImageUrl = update.ImageUrl,
                     Location = update.Location,
@@ -268,7 +268,7 @@ namespace THYNK.Controllers
                     Type = "Alert",
                     Title = alert.Title,
                     Message = alert.Message,
-                    DatePosted = alert.DateIssued,
+                    DatePosted = alert.DateIssued.ToUniversalTime(),
                     User = alert.User,
                     ImageUrl = alert.ImagePath,
                     Location = alert.AffectedArea,
@@ -305,98 +305,81 @@ namespace THYNK.Controllers
                 if (string.IsNullOrEmpty(userId))
                 {
                     TempData["ErrorMessage"] = "User not authenticated.";
-                    return View(update);
+                    return RedirectToAction(nameof(CommunityFeed));
+                }
+
+                // Validate required fields
+                if (string.IsNullOrEmpty(update.Location))
+                {
+                    ModelState.AddModelError("Location", "Location is required");
+                    TempData["ErrorMessage"] = "Please specify a location for your post.";
+                    return RedirectToAction(nameof(CommunityFeed));
+                }
+
+                if (Image == null || Image.Length == 0)
+                {
+                    ModelState.AddModelError("Image", "Please upload an image");
+                    TempData["ErrorMessage"] = "Please upload an image with your post.";
+                    return RedirectToAction(nameof(CommunityFeed));
+                }
+
+                // Validate image size (max 5MB)
+                if (Image.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("Image", "Image size must be less than 5MB");
+                    TempData["ErrorMessage"] = "Image size must be less than 5MB.";
+                    return RedirectToAction(nameof(CommunityFeed));
+                }
+
+                // Validate image type
+                var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+                if (!allowedTypes.Contains(Image.ContentType.ToLower()))
+                {
+                    ModelState.AddModelError("Image", "Only JPEG, PNG, and GIF images are allowed");
+                    TempData["ErrorMessage"] = "Only JPEG, PNG, and GIF images are allowed.";
+                    return RedirectToAction(nameof(CommunityFeed));
                 }
 
                 // Set required fields
                 update.UserId = userId;
-                update.DatePosted = DateTime.Now;
+                update.DatePosted = DateTime.UtcNow;
                 update.ModerationStatus = ModerationStatus.Pending;
 
-                // Handle image upload if provided
-                if (Image != null)
+                // Handle image upload
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "community_posts");
+                if (!Directory.Exists(uploadsFolder))
                 {
-                    var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "community_posts");
-                    if (!Directory.Exists(uploadsFolder))
-                    {
-                        Directory.CreateDirectory(uploadsFolder);
-                    }
-
-                    var uniqueFileName = $"{Guid.NewGuid()}_{Image.FileName}";
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await Image.CopyToAsync(fileStream);
-                    }
-
-                    update.ImageUrl = $"/uploads/community_posts/{uniqueFileName}";
-                }
-                else
-                {
-                    update.ImageUrl = "/images/no-image.png"; // Set a default image URL
+                    Directory.CreateDirectory(uploadsFolder);
                 }
 
-                // Ensure location fields are properly set
-                if (string.IsNullOrEmpty(update.Location))
+                var uniqueFileName = $"{Guid.NewGuid()}_{Image.FileName}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    update.Location = "Not specified";
+                    await Image.CopyToAsync(fileStream);
                 }
 
-                // If coordinates are not provided, set them to null
-                if (update.Latitude == 0 && update.Longitude == 0)
-                {
-                    update.Latitude = null;
-                    update.Longitude = null;
-                }
-
-                // Debug: Log the update object before saving
-                TempData["DebugInfo"] = $"Attempting to save post: Content={update.Content}, Type={update.Type}, UserId={update.UserId}";
+                update.ImageUrl = $"/uploads/community_posts/{uniqueFileName}";
 
                 // Add the post to the database
                 _context.CommunityUpdates.Add(update);
-                
-                // Debug: Log the entity state
-                var entry = _context.Entry(update);
-                TempData["DebugInfo"] += $", State={entry.State}";
+                await _context.SaveChangesAsync();
 
-                var result = await _context.SaveChangesAsync();
+                // Update dashboard stats after successful post creation
+                await _hubContext.Clients.All.SendAsync("ReceiveDashboardStats",
+                    await _context.LGUUsers.CountAsync(u => !u.IsApproved),
+                    await _context.DisasterReports.CountAsync(r => r.Status == ReportStatus.Pending),
+                    await _context.CommunityUpdates.CountAsync(p => p.ModerationStatus == ModerationStatus.Pending)
+                );
 
-                if (result > 0)
-                {
-                    // Update dashboard stats after successful post creation
-                    await _hubContext.Clients.All.SendAsync("ReceiveDashboardStats",
-                        await _context.LGUUsers.CountAsync(u => !u.IsApproved),
-                        await _context.DisasterReports.CountAsync(r => r.Status == ReportStatus.Pending),
-                        await _context.CommunityUpdates.CountAsync(p => p.ModerationStatus == ModerationStatus.Pending)
-                    );
-
-                    TempData["SuccessMessage"] = "Your post has been submitted and is pending approval.";
-                    return RedirectToAction(nameof(CommunityFeed));
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = "Failed to save the post. No records were affected.";
-                    return View(update);
-                }
-            }
-            catch (DbUpdateException dbEx)
-            {
-                TempData["ErrorMessage"] = "Database error: " + dbEx.Message;
-                if (dbEx.InnerException != null)
-                {
-                    TempData["InnerErrorMessage"] = "Inner error: " + dbEx.InnerException.Message;
-                }
-                return View(update);
+                TempData["SuccessMessage"] = "Your post has been submitted and is pending approval.";
+                return RedirectToAction(nameof(CommunityFeed));
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Error creating post: " + ex.Message;
-                if (ex.InnerException != null)
-                {
-                    TempData["InnerErrorMessage"] = "Inner error: " + ex.InnerException.Message;
-                }
-                return View(update);
+                TempData["ErrorMessage"] = "An error occurred while creating your post.";
+                return RedirectToAction(nameof(CommunityFeed));
             }
         }
         

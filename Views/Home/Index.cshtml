@@ -6,6 +6,15 @@
     <title>Document</title>
 </head>
 <body>
+    <!-- Alert Marquee Section -->
+    <div class="alert-marquee-container" style="display: none;">
+        <div class="alert-marquee">
+            <div class="alert-content" id="alertContent">
+                <!-- Alerts will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
     @{
     ViewData["Title"] = "Home";
 }
@@ -2441,11 +2450,259 @@
                 flex-wrap: wrap;
             }
         }
+
+        /* Alert Marquee Styles */
+        .alert-marquee-container {
+            position: fixed;
+            top: 100px; /* Increased spacing under navbar */
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, var(--sidebar-bg) 0%, var(--sidebar-light) 100%);
+            z-index: 999;
+            overflow: hidden;
+            padding: 6px 0;
+            box-shadow: var(--shadow-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .alert-marquee {
+            white-space: nowrap;
+            display: inline-block;
+            animation: marquee 25s linear infinite;
+            color: var(--sidebar-text);
+        }
+
+        .alert-content {
+            display: inline-block;
+            padding-left: 100%;
+        }
+
+        .alert-item {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 50px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-family: var(--font-body);
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+
+        .alert-item.danger {
+            background-color: #dc3545; /* Bootstrap danger color */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+
+        .alert-item.critical {
+            background-color: #721c24; /* Darker red for critical */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(114, 28, 36, 0.3);
+        }
+
+        .alert-item i {
+            margin-right: 8px;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .severity-badge {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-weight: 600;
+            font-size: 0.8em;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .alert-message {
+            margin-right: 10px;
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .affected-area {
+            opacity: 0.85;
+            font-size: 0.9em;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        @@keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .alert-marquee-container {
+                top: 70px; /* Slightly less space on mobile */
+                padding: 6px 0;
+            }
+
+            .alert-item {
+                padding: 4px 10px;
+                margin-right: 30px;
+            }
+
+            .severity-badge {
+                padding: 2px 6px;
+                font-size: 0.75em;
+            }
+
+            .alert-message {
+                font-size: 0.9em;
+            }
+
+            .affected-area {
+                font-size: 0.85em;
+            }
+        }
     </style>
 }
 
 @section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
     <script>
+        // SignalR Alert Handling
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/alertHub")
+            .withAutomaticReconnect([0, 500, 1000])
+            .configureLogging(signalR.LogLevel.Information)
+            .build();
+
+        let currentAlerts = [];
+
+        // Start SignalR connection
+        async function startConnection() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+                await fetchAlerts(); // Initial fetch
+            } catch (err) {
+                console.error("SignalR Connection Error:", err);
+                setTimeout(startConnection, 500);
+            }
+        }
+
+        // SignalR event handlers for real-time updates
+        connection.on("ReceiveAlert", function (alert) {
+            console.log("New alert received:", alert);
+            // Add new alert and update display immediately
+            if (!currentAlerts.some(a => a.id === alert.id)) {
+                currentAlerts.unshift(alert); // Add to beginning of array
+                updateAlertDisplay();
+            }
+        });
+
+        connection.on("UpdateAlert", function (alert) {
+            console.log("Alert updated:", alert);
+            const index = currentAlerts.findIndex(a => a.id === alert.id);
+            if (index !== -1) {
+                currentAlerts[index] = alert;
+            } else {
+                currentAlerts.unshift(alert);
+            }
+            updateAlertDisplay();
+        });
+
+        connection.on("DeleteAlert", function (alertId) {
+            console.log("Alert deleted:", alertId);
+            currentAlerts = currentAlerts.filter(a => a.id !== alertId);
+            updateAlertDisplay();
+        });
+
+        // Initial fetch of alerts
+        async function fetchAlerts() {
+            try {
+                const response = await fetch('/api/Alert', {
+                    method: 'GET',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                if (response.ok) {
+                    const alerts = await response.json();
+                    currentAlerts = alerts;
+                    updateAlertDisplay();
+                }
+            } catch (error) {
+                console.error('Error fetching alerts:', error);
+            }
+        }
+
+        function getSeverityText(severity) {
+            switch (severity) {
+                case 2: return 'DANGER';
+                case 3: return 'CRITICAL';
+                default: return '';
+            }
+        }
+
+        function updateAlertDisplay() {
+            const alertContent = document.getElementById("alertContent");
+            if (!alertContent) return;
+            
+            // Filter active alerts and sort by creation time (newest first)
+            const filteredAlerts = currentAlerts
+                .filter(alert => (alert.severity === 2 || alert.severity === 3) && alert.isActive)
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 3); // Limit to 3 alerts
+
+            // Show/hide the marquee container
+            const marqueeContainer = document.querySelector('.alert-marquee-container');
+            if (!marqueeContainer) return;
+
+            if (filteredAlerts.length > 0) {
+                // Update content
+                alertContent.innerHTML = ''; // Clear existing alerts
+                
+                // Create alert items
+                filteredAlerts.forEach(alert => {
+                    const alertItem = document.createElement("div");
+                    alertItem.className = `alert-item ${alert.severity === 3 ? 'critical' : 'danger'}`;
+                    alertItem.innerHTML = `
+                        <i class="fas ${alert.severity === 3 ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
+                        <span class="severity-badge">${getSeverityText(alert.severity)}</span>
+                        <span class="alert-message">${alert.title}</span>
+                        ${alert.affectedArea ? `<span class="affected-area">| Area: ${alert.affectedArea}</span>` : ''}
+                    `;
+                    alertContent.appendChild(alertItem);
+                });
+                
+                // Show container and reset animation
+                marqueeContainer.style.display = 'block';
+                const marquee = document.querySelector('.alert-marquee');
+                if (marquee) {
+                    marquee.style.animation = 'none';
+                    marquee.offsetHeight; // Trigger reflow
+                    marquee.style.animation = 'marquee 25s linear infinite';
+                }
+            } else {
+                marqueeContainer.style.display = 'none';
+            }
+        }
+
+        // Start the connection when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            startConnection();
+        });
+
+        // Reconnect if connection is lost
+        connection.onclose(async () => {
+            console.log("SignalR Connection Lost. Attempting to reconnect...");
+            await startConnection();
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
             // Animate elements when they come into view
             const observer = new IntersectionObserver((entries) => {
